@@ -19,13 +19,11 @@ class LiveDisplayObject extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Wrap(
-        alignment: WrapAlignment.spaceAround,
-        spacing: 60,
-        runSpacing: 8,
-        children: [
-          _buildDisplayItem(disMsg1, disValues1),
-          _buildDisplayItem(disMsg2, disValues2),
+       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+         children: [
+           Expanded(child: _buildDisplayItem(disMsg1, disValues1)),
+           Expanded(child: _buildDisplayItem(disMsg2, disValues2)),
         ],
       ),
     );
@@ -33,12 +31,16 @@ class LiveDisplayObject extends StatelessWidget {
 
   Widget _buildDisplayItem(String label, String value) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           decoration: BoxDecoration(
             color: Colors.white30,
-           ),
+            borderRadius: BorderRadius.circular(6),
+          ),
           child: Text(
             "$label :",
             style: const TextStyle(
@@ -47,7 +49,8 @@ class LiveDisplayObject extends StatelessWidget {
             ),
           ),
         ),
-         Container(
+        const SizedBox(width: 2),
+        Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
             color: CupertinoColors.white,
@@ -58,12 +61,11 @@ class LiveDisplayObject extends StatelessWidget {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               color: Colors.black,
-            ),
+             ),
           ),
         ),
       ],
     );
   }
 }
-
 

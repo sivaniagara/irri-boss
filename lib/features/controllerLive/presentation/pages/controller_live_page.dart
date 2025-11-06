@@ -1,9 +1,16 @@
 // lib/features/dashboard/presentation/pages/dashboard_page.dart
+import 'dart:math';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/widgets/fertstatus_section.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/widgets/previousday_section.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/widgets/prs_gauge_section.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/widgets/well_level_section.dart';
 import '../../../../core/utils/route_constants.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
@@ -167,21 +174,125 @@ class CtrlLivePage extends StatelessWidget {
                                     remainingTime: selectedController?.remFlow ?? '00:00:00',
                                   ),
                                   const SizedBox(height: 8),
-                                  GlassCard(
+                                   GlassCard(
                                     padding: const EdgeInsets.all(0),
-                                     margin: const EdgeInsets.all(0),
+                                    margin: const EdgeInsets.all(0),
                                     child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      padding: const EdgeInsets.all(6.0),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          LiveDisplayObject(disMsg1: 'Phase', disValues1: '2phase', disMsg2: 'Bat.V', disValues2: '4.0v')                                        ],
+                                          // Your LiveDisplayObject is used here
+                                          LiveDisplayObject(
+                                            disMsg1: "Phase",
+                                            disValues1: "2-Phase",
+                                            disMsg2: "Bat.V",
+                                            disValues2: "4.4V",
+                                          ),
+                                          const SizedBox(height: 10),
+                                          LiveDisplayObject(
+                                            disMsg1: "Program",
+                                            disValues1: "Program 2",
+                                            disMsg2: "Mode",
+                                            disValues2: "Timer",
+                                          ),
+                                          const SizedBox(height: 10),
+                                          LiveDisplayObject(
+                                            disMsg1: "Zone",
+                                            disValues1: "001",
+                                            disMsg2: "Valve",
+                                            disValues2: "V,1,2,3",
+                                          ),
+                                          const SizedBox(height: 10),
+                                          PressureGaugeSection(prsIn: 2.5, prsOut: 3.5, fertFlow: 200),
+                                          const SizedBox(height: 10),
+                                          WellLevelSection(level: 34, flow: 343)
+
+                                         ],
                                       ),
                                     ),
-                                  )
-
-                                 ],
-
+                                  ),
+                                  FertStatusSection(F1: "1", F2: "2", F3: "0", F4: "1", F5: "1", F6: "0"),
+                                  const SizedBox(height: 10),
+                                  GlassCard(
+                                    child: Center(
+                                      child: LiveDisplayObject(
+                                        disMsg1: "Ec",
+                                        disValues1: "21.3",
+                                        disMsg2: "PH",
+                                        disValues2: "7.0",
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  GlassCard(
+                                    child: Center(
+                                      child: Column(
+                                        children: [
+                                          LiveDisplayObject(
+                                            disMsg1: "F1",
+                                            disValues1: "00:00",
+                                            disMsg2: "F2",
+                                            disValues2: "00:00",
+                                          ),
+                                          LiveDisplayObject(
+                                            disMsg1: "F3",
+                                            disValues1: "00:00",
+                                            disMsg2: "F4",
+                                            disValues2: "00:00",
+                                          ),
+                                          LiveDisplayObject(
+                                            disMsg1: "F5",
+                                            disValues1: "00:00",
+                                            disMsg2: "F6",
+                                            disValues2: "00:00",
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  PreviousDaySection(runTimeToday: "00:23:00", runTimePrevious: "00:23:00", flowToday: "1234", flowPrevious: "4234", cFlowToday: "23", cFlowPrevious: "34"),
+                                  const SizedBox(height: 10),
+                                  GlassCard(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.max,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.white30,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  "Version:",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 2),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: CupertinoColors.white,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  "V3.22.23.2",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                                ],
                               ),
                             ),
                           ),

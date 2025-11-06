@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/presentation/pages/sign_up_page.dart';
+import 'package:niagara_smart_drip_irrigation/features/controllerLive/presentation/pages/controller_live_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/presentation/pages/chat.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/presentation/pages/groups.dart';
@@ -21,7 +22,6 @@ import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/pages/otp_page.dart';
 import 'features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'features/dealer_dashboard/presentation/pages/dealer_dashboard_page.dart';
-import 'features/my_device/presentation/pages/my_device_page.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream stream) {
@@ -153,6 +153,17 @@ class AppRouter {
             return BlocProvider.value(
               value: authBloc,
               child: const DashboardPage(),
+            );
+          },
+        ),
+        GoRoute(
+          name: 'ctrlLivePage',
+          path: RouteConstants.ctrlLivePage,
+          builder: (context, state) {
+            print('Building ctrlLivePage, AuthBloc state: ${authBloc.state}');  // Add for debug
+            return BlocProvider.value(
+              value: authBloc,
+              child: const CtrlLivePage(),
             );
           },
         ),
