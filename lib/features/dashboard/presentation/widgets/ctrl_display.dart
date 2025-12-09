@@ -1,23 +1,21 @@
 import 'package:flutter/material.dart';
 
 class CtrlDisplay extends StatelessWidget {
-  final int signal;
-  final int battery;
-  final String status;
-  final int vrb;
-  final double amp;
+  final String signal;
+  final String battery;
+  final String l1display;
+  final String l2display;
 
   const CtrlDisplay({
     super.key,
     required this.signal,
     required this.battery,
-    required this.status,
-    required this.vrb,
-    required this.amp,
+    required this.l1display,
+    required this.l2display,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext dialogContext) {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -36,12 +34,12 @@ class CtrlDisplay extends StatelessWidget {
                 Text("$signal%",style: TextStyle(color: Color(0xFFC1F629),fontWeight: FontWeight.bold),),
               ]),
                Column(children: [
-              Text(status, style: const TextStyle(fontWeight: FontWeight.bold,color: Color(0xFFC1F629))),
-              Text("VRB: $vrb  AMP: $amp",style: TextStyle(color: Color(0xFFC1F629),fontWeight: FontWeight.bold),),
+              Text(l1display, style: const TextStyle(fontWeight: FontWeight.bold,color: Color(0xFFC1F629))),
+              Text(l2display,style: TextStyle(color: Color(0xFFC1F629),fontWeight: FontWeight.bold),),
               ]),
               Column(children: [
                 const Icon(Icons.battery_full, color: Color(0xFFC1F629),),
-                Text("$battery%",style: TextStyle(color: Color(0xFFC1F629),fontWeight: FontWeight.bold),),
+                Text("$battery.V",style: TextStyle(color: Color(0xFFC1F629),fontWeight: FontWeight.bold),),
               ]),
             ],
           ),

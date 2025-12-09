@@ -5,6 +5,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
 import 'package:niagara_smart_drip_irrigation/core/usecases/usecase.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/domain/entities/user_entity.dart';
+import 'package:niagara_smart_drip_irrigation/features/auth/domain/usecases/login_params.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/domain/usecases/login_usecase.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/presentation/bloc/auth_event.dart';
@@ -65,7 +66,7 @@ void main() {
             .thenAnswer((_) async => Right(tUserDetails));
         return authBloc;
       },
-      act: (bloc) => bloc.add(LoginWithPasswordEvent(tLoginParams)),
+      act: (bloc) => bloc.add(LoginWithPasswordEvent(phone: '', password: '')),
       expect: () => [AuthLoading(), Authenticated(tUserDetails)],
     );
 
@@ -76,7 +77,7 @@ void main() {
             .thenAnswer((_) async => Left(ServerFailure('Login failed')));
         return authBloc;
       },
-      act: (bloc) => bloc.add(LoginWithPasswordEvent(tLoginParams)),
+      act: (bloc) => bloc.add(LoginWithPasswordEvent(phone: '', password: '')),
       expect: () => [AuthLoading(), AuthError(message: 'Login failed')],
     );
   });
@@ -89,7 +90,7 @@ void main() {
             .thenAnswer((_) async => const Right(''));
         return authBloc;
       },
-      act: (bloc) => bloc.add(SendOtpEvent(tPhoneParams)),
+      act: (bloc) => bloc.add(SendOtpEvent(phone: '', countryCode: '')),
       expect: () => [AuthLoading(), OtpSent(verificationId: '', phone: '', countryCode: '+91')],
     );
 
@@ -100,7 +101,7 @@ void main() {
             .thenAnswer((_) async => Left(ServerFailure('OTP send failed')));
         return authBloc;
       },
-      act: (bloc) => bloc.add(SendOtpEvent(tPhoneParams)),
+      act: (bloc) => bloc.add(SendOtpEvent(phone: '', countryCode: '')),
       expect: () => [AuthLoading(), AuthError(message: 'OTP send failed')],
     );
   });
@@ -113,7 +114,7 @@ void main() {
             .thenAnswer((_) async => Right(tUserDetails));
         return authBloc;
       },
-      act: (bloc) => bloc.add(VerifyOtpEvent(tVerifyOtpParams)),
+      act: (bloc) => bloc.add(VerifyOtpEvent(otp: '', countryCode: '', verificationId: '')),
       expect: () => [AuthLoading(), Authenticated(tUserDetails)],
     );
 
@@ -124,7 +125,7 @@ void main() {
             .thenAnswer((_) async => Left(ServerFailure('OTP verification failed')));
         return authBloc;
       },
-      act: (bloc) => bloc.add(VerifyOtpEvent(tVerifyOtpParams)),
+      act: (bloc) => bloc.add(VerifyOtpEvent(otp: '', countryCode: '', verificationId: '')),
       expect: () => [AuthLoading(), AuthError(message: 'OTP verification failed')],
     );
   });

@@ -16,6 +16,9 @@ class LiveMessageModel extends LiveMessageEntity {
     required super.rCurrent,
     required super.yCurrent,
     required super.bCurrent,
+    required super.phase,
+    required super.signal,
+    required super.batVolt,
     required super.modeOfOperation,
     required super.programName,
     required super.zoneNo,
@@ -26,6 +29,7 @@ class LiveMessageModel extends LiveMessageEntity {
     required super.prsOut,
     required super.flowRate,
     required super.wellLevel,
+    required super.wellPercent,
     required super.fertStatus,
     required super.ec,
     required super.ph,
@@ -60,6 +64,9 @@ class LiveMessageModel extends LiveMessageEntity {
         rCurrent: '0.0',
         yCurrent: '0.0',
         bCurrent: '0.0',
+        phase: 'Phase',
+        signal: '00',
+        batVolt: '0.0',
         modeOfOperation: '',
         programName: '',
         zoneNo: '0',
@@ -70,7 +77,8 @@ class LiveMessageModel extends LiveMessageEntity {
         prsOut: '0.0',
         flowRate: '0.0',
         wellLevel: '0',
-        fertStatus: <String>[],
+        wellPercent: '0',
+        fertStatus: <String>['0','0','0','0','0','0',],
         ec: '0',
         ph: '0',
         totalMeterFlow: '0',
@@ -82,7 +90,7 @@ class LiveMessageModel extends LiveMessageEntity {
         moisture2: '0',
         energy: '0',
         powerFactor: '0',
-        fertValues: <String>[],
+        fertValues: <String>['0','0','0','0','0','0',],
         versionModule: '',
         versionBoard: '',
       );
@@ -93,11 +101,14 @@ class LiveMessageModel extends LiveMessageEntity {
     // Safe access helper
     String safeString(int index, String defaultValue) => index < parts.length ? parts[index] : defaultValue;
     List<String> safeList(int index, List<String> defaultValue) {
-      if (index >= parts.length) return defaultValue;
-      final str = parts[index];
-      if (str.contains(':')) {
+      if (index >= parts.length) return defaultValue; // prevent RangeError
+
+      final str = parts[index].trim();
+      if (str.isEmpty || str.toUpperCase() == 'NA') return defaultValue;
+
+      if (index == 24) {
         return str.split(':').map((s) => s.trim()).toList();
-      } else if (str.contains(';')) {
+      } else if (index == 36) {
         return str.split(';').map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
       }
       return [str];
@@ -117,49 +128,45 @@ class LiveMessageModel extends LiveMessageEntity {
     final rCurrent = safeString(11, '0.0');
     final yCurrent = safeString(12, '0.0');
     final bCurrent = safeString(13, '0.0');
-    final modeOfOperation = safeString(14, '');
+    final phase =  getPhaseValue(rVoltage,yVoltage,bVoltage);
+    final signal = safeString(37, '0.0');
+     final modeOfOperation = safeString(14, '');
     final programName = safeString(15, '');
     final zoneNo = safeString(16, '0');
     final valveForZone = safeString(17, '');
     final zoneDuration = safeString(18, '00:00:00');
     final zoneRemainingTime = safeString(19, '00:00:00');
     final prsIn = safeString(20, '0.0');
-    final prsOut = safeString(23, '0.0');
+    final prsOut = safeString(21, '0.0');
     final flowRateTemp = safeString(25, '0.0:0');
     final flowParts = flowRateTemp.split(':');
-    final flowRate = flowParts.length > 0 ? flowParts[0] : '0.0';
-    final totalMeterFlow = flowParts.length > 1 ? flowParts[1] : '0';
-    final wellLevel = safeString(34, '0'); // Assuming position for wellLevel
-    final runTimeToday = safeString(35, '0');
-    final flowPrevDay = safeString(27, '00:00:00');
-    final flowToday = safeString(28, '00:00:00');
+    final flowRate = flowParts.isNotEmpty ? flowParts[0] : '0.0';
+    final totalMeterFlow = flowParts.isNotEmpty && flowParts.length > 1 ? flowParts[1] : '0';
+
+    final result = parseWellLevel(safeString(23, '0'));
+    final wellLevel =  result["level"] ?? '0';
+    final wellPercent =  result["percentage"] ?? "0";
+    final runTimeToday = safeString(27, '00:00:00');
+    final flowPrevDay = safeString(29, '0');
+    final flowToday = safeString(30, '0');
     final moisture1 = safeString(31, '0');
     final moisture2 = safeString(32, '0');
-    final energy = safeString(29, '0');
-    final powerFactor = safeString(30, '0');
+    final energy = safeString(33, '0');
+    final powerFactor = safeString(34, '0');
 
     // Fert values
-    final fertValues = safeList(24, <String>[]);
+    final fertValues = safeList(24, <String>['0','0','0','0','0','0',]);
+    final fertStatus = safeList(36, <String>['0','0','0','0','0','0',]);
+     // final batvolt = fertStatus.length > 8 ? fertStatus[8] : '0.0';
+     final batvolt = fertStatus.length > 8 ? fertStatus[8] : '0.0';
+    // List<String> fertStatus = <String>[];
+    String runTimePrevious = safeString(28, '00:00:00');
+    List<String> ecph = parts.length < 23 ? parts[25].split(':') : ['0:0'];
+    final ec = ecph.isNotEmpty ? ecph[0] : "0";
+    final ph = ecph.isNotEmpty && ecph.length > 1 ? ecph[1] : "0";
 
-    // Fert status (run times, split by ';', take first 8)
-    List<String> fertStatus = <String>[];
-    String runTimePrevious = '0';
-    String ec = '0';
-    if (parts.length > 36) {
-      final longPart = parts[36];
-      final semiParts = longPart.split(';');
-      if (semiParts.length >= 9) {
-        fertStatus = semiParts.sublist(0, 8).map((s) => s.trim()).toList();
-        ec = semiParts[8].trim();
-        runTimePrevious = semiParts.sublist(0, 8).last.trim(); // Last run time as previous?
-      } else {
-        fertStatus = semiParts.map((s) => s.trim()).toList();
-        if (semiParts.isNotEmpty) runTimePrevious = semiParts.last.trim();
-      }
-    }
 
-    final ph = safeString(37, '0');
-    final versionModule = safeString(39, '');
+     final versionModule = safeString(39, '');
     final versionBoard = safeString(40, '');
 
     return LiveMessageModel(
@@ -176,6 +183,9 @@ class LiveMessageModel extends LiveMessageEntity {
       rCurrent: rCurrent,
       yCurrent: yCurrent,
       bCurrent: bCurrent,
+      phase: phase,
+      signal: signal,
+      batVolt: batvolt,
       modeOfOperation: modeOfOperation,
       programName: programName,
       zoneNo: zoneNo,
@@ -186,6 +196,7 @@ class LiveMessageModel extends LiveMessageEntity {
       prsOut: prsOut,
       flowRate: flowRate,
       wellLevel: wellLevel,
+      wellPercent: wellPercent,
       fertStatus: fertStatus,
       ec: ec,
       ph: ph,
@@ -219,6 +230,9 @@ class LiveMessageModel extends LiveMessageEntity {
     "rCurrent": rCurrent,
     "yCurrent": yCurrent,
     "bCurrent": bCurrent,
+    "phase": phase,
+    "signal": signal,
+    "batVolt": batVolt,
     "modeOfOperation": modeOfOperation,
     "programName": programName,
     "zoneNo": zoneNo,
@@ -229,6 +243,7 @@ class LiveMessageModel extends LiveMessageEntity {
     "prsOut": prsOut,
     "flowRate": flowRate,
     "wellLevel": wellLevel,
+    "wellPercent": wellPercent,
     "fertStatus": fertStatus,
     "ec": ec,
     "ph": ph,
@@ -245,4 +260,40 @@ class LiveMessageModel extends LiveMessageEntity {
     "versionModule": versionModule,
     "versionBoard": versionBoard,
   };
+}
+String getPhaseValue(String rVoltage, String yVoltage, String bVoltage) {
+  String phaseVal = "";
+
+  if (rVoltage != "000" && yVoltage != "000" && bVoltage != "000") {
+    phaseVal = "3-Phase";
+  } else if ((rVoltage != "000" && yVoltage != "000" && bVoltage == "000") ||
+      (rVoltage == "000" && yVoltage != "000" && bVoltage != "000") ||
+      (rVoltage != "000" && yVoltage == "000" && bVoltage != "000")) {
+    phaseVal = "2-phase";
+  } else if ((rVoltage != "000" && yVoltage == "000" && bVoltage == "000") ||
+      (rVoltage == "000" && yVoltage == "000" && bVoltage != "000") ||
+      (rVoltage == "000" && yVoltage != "000" && bVoltage == "000")) {
+    phaseVal = "1-phase";
+  } else {
+    phaseVal = "phase";
+  }
+
+  return phaseVal;
+}
+
+Map<String, String> parseWellLevel(String input) {
+  String level = "0";
+  String percentage = "0";
+
+  if (input.contains("F-")) {
+    final parts = input.split("F-");
+    if (parts.isNotEmpty) {
+      level = parts.first;
+      if (parts.length > 1) {
+        percentage = parts.last;
+      }
+    }
+  }
+
+  return {"level": level, "percentage": percentage};
 }

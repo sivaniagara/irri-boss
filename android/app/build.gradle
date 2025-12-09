@@ -24,7 +24,8 @@ android {
     }
 
     namespace = "com.niagaraautomations"
-    compileSdk = flutter.compileSdkVersion
+//    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     signingConfigs {
@@ -65,6 +66,7 @@ android {
         applicationId = "com.niagaraautomations.niagara"
 //        minSdk = flutter.minSdkVersion
         //noinspection GradleIdeError
+//        minSdkVersion flutter.minSdkVersion
         minSdkVersion flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

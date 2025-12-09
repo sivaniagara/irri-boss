@@ -77,6 +77,7 @@ class UserModel extends UserEntity{
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    print("json in UserModel :: $json");
     return UserModel(
       id: json['userId'] as int? ?? 0,
       name: json['userName'] as String? ?? '',

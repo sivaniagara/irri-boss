@@ -10,7 +10,7 @@ class MotorValveSection extends StatelessWidget {
   const MotorValveSection({super.key, required this.motorOn, required this.valveOn, required this.model, required this.motorOn2});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext dialogContext) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [

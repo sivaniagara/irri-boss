@@ -15,7 +15,7 @@ class PressureGaugeSection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext dialogContext) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [

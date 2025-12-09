@@ -49,7 +49,7 @@ class RYBSection extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext dialogContext) {
     return Row(
       children: [
         _buildBox(Colors.red, "RY $r V", "R $r V", "C1 $c1 A"),

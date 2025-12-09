@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:niagara_smart_drip_irrigation/features/dashboard/domain/entities/group_entity.dart';
-import 'package:niagara_smart_drip_irrigation/features/dashboard/domain/entities/controller_entity.dart';
+import '../../domain/dashboard_domain.dart';
 
 abstract class DashboardState extends Equatable {
   @override

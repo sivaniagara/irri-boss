@@ -20,7 +20,7 @@ class FertStatusSection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext dialogContext) {
     return GlassCard(
       padding: const EdgeInsets.all(6),
       margin: const EdgeInsets.all(6),

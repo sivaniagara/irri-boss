@@ -4,6 +4,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/domain/entities/user_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/domain/repositories/auth_repository.dart';
+import 'package:niagara_smart_drip_irrigation/features/auth/domain/usecases/login_params.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/domain/usecases/login_usecase.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}

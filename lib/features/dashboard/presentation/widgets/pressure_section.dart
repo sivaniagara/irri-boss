@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 
 class PressureSection extends StatelessWidget {
   final String prsIn;
@@ -16,7 +15,7 @@ class PressureSection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext dialogContext) {
     return  Column(
       children: [
         Text("$fertlizer",style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),

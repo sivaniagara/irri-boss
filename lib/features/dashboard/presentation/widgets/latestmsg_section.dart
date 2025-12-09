@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 
 class LatestMsgSection extends StatelessWidget {
   final String msg;
@@ -10,7 +9,7 @@ class LatestMsgSection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext dialogContext) {
     return  Center(child: Text(msg.isEmpty ? "No Message" : msg, textAlign: TextAlign.center,style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.white,)));
   }
 }

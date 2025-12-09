@@ -14,6 +14,9 @@ class LiveMessageEntity extends Equatable{
   final String rCurrent;
   final String yCurrent;
   final String bCurrent;
+  final String phase;
+  final String signal;
+  final String batVolt;
   final String modeOfOperation;
   final String programName;
   final String zoneNo;
@@ -24,7 +27,8 @@ class LiveMessageEntity extends Equatable{
   final String prsOut;
   final String flowRate;
   final String wellLevel;
-  final List<String> fertStatus; // f1–f6
+  final String wellPercent;
+  final List<String> fertStatus;
   final String ec;
   final String ph;
   final String totalMeterFlow;
@@ -54,6 +58,9 @@ class LiveMessageEntity extends Equatable{
     required this.rCurrent,
     required this.yCurrent,
     required this.bCurrent,
+    required this.phase,
+    required this.signal,
+    required this.batVolt,
     required this.modeOfOperation,
     required this.programName,
     required this.zoneNo,
@@ -64,6 +71,7 @@ class LiveMessageEntity extends Equatable{
     required this.prsOut,
     required this.flowRate,
     required this.wellLevel,
+    required this.wellPercent,
     required this.fertStatus,
     required this.ec,
     required this.ph,
@@ -97,6 +105,9 @@ class LiveMessageEntity extends Equatable{
     rCurrent,
     yCurrent,
     bCurrent,
+    phase,
+    signal,
+    batVolt,
     modeOfOperation,
     programName,
     zoneNo,
@@ -107,6 +118,7 @@ class LiveMessageEntity extends Equatable{
     prsOut,
     flowRate,
     wellLevel,
+    wellPercent,
     fertStatus,
     ec,
     ph,

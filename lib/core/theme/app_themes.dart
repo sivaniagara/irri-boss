@@ -61,6 +61,7 @@ class AppThemes {
     brightness: Brightness.light,
     primarySwatch: primarySwatch,
     primaryColor: primaryColor,
+    iconTheme: IconThemeData(color: Colors.white),
     colorScheme: ColorScheme.light(
       primary: primaryColor,
       secondary: secondaryColor,
@@ -78,6 +79,110 @@ class AppThemes {
           borderRadius: BorderRadius.all(Radius.circular(8)),
         ),
       ),
+    ),
+    listTileTheme: ListTileThemeData(
+      textColor: Colors.white,
+    ),
+    textTheme: TextTheme(
+      titleMedium: TextStyle(color: Colors.white),
+      titleSmall: TextStyle(color: Colors.white),
+      titleLarge: TextStyle(color: Colors.white),
+      bodySmall: TextStyle(color: Colors.white),
+      bodyLarge: TextStyle(color: Colors.white),
+      bodyMedium: TextStyle(color: Colors.white),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      border: UnderlineInputBorder(
+        borderSide: BorderSide(color: Colors.white),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: UnderlineInputBorder(
+        borderSide: BorderSide(color: Colors.white),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      focusedBorder: UnderlineInputBorder(
+        borderSide: BorderSide(color: Colors.white, width: 2.0),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      errorBorder: UnderlineInputBorder(
+        borderSide: BorderSide(color: Colors.redAccent),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      focusedErrorBorder: UnderlineInputBorder(
+        borderSide: BorderSide(color: Colors.redAccent, width: 2.0),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      disabledBorder: UnderlineInputBorder(
+        borderSide: BorderSide(color: Colors.white.withOpacity(0.5)),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      hintStyle: TextStyle(color: Colors.white54),
+      labelStyle: TextStyle(color: Colors.white54),
+      iconColor: Colors.white,
+    ),
+    checkboxTheme: CheckboxThemeData(
+      fillColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+        if (states.contains(WidgetState.selected)) {
+          return Colors.white;
+        }
+        if (states.contains(WidgetState.disabled)) {
+          return primaryColor.withOpacity(0.1);
+        }
+        return Colors.white.withOpacity(0.05);
+      }),
+      checkColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+        if (states.contains(WidgetState.selected) || states.contains(WidgetState.disabled)) {
+          return primaryColor;
+        }
+        return null;
+      }),
+      overlayColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+        if (states.contains(WidgetState.selected)) {
+          return Colors.white.withOpacity(0.1);
+        }
+        if (states.contains(WidgetState.hovered)) {
+          return Colors.white.withOpacity(0.08);
+        }
+        if (states.contains(WidgetState.focused) || states.contains(WidgetState.pressed)) {
+          return Colors.white.withOpacity(0.12);
+        }
+        return null;
+      }),
+      side: BorderSide(color: Colors.white54, width: 2),
+      splashRadius: 24.0,
+    ),
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+        if (states.contains(WidgetState.selected) || states.contains(WidgetState.disabled)) {
+          return primaryColor;
+        }
+        return Colors.white.withOpacity(0.3);
+      }),
+      trackColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+        if (states.contains(WidgetState.selected)) {
+          return Colors.white.withOpacity(0.6);
+        }
+        if (states.contains(WidgetState.disabled)) {
+          return primaryColor.withOpacity(0.1);
+        }
+        return Colors.white.withOpacity(0.1);
+      }),
+      overlayColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+        if (states.contains(WidgetState.hovered)) {
+          return Colors.white.withOpacity(0.06);
+        }
+        if (states.contains(WidgetState.focused) || states.contains(WidgetState.pressed)) {
+          return Colors.white.withOpacity(0.1);
+        }
+        return Colors.white;
+      }),
+      trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+        if(states.contains(WidgetState.selected)) {
+          return Colors.white;
+        }
+        return Colors.white54;
+      }),
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     ),
   );
 

@@ -1,4 +1,4 @@
-// Domain entity for user details
+// Domain entities for user details
 import '../../../dashboard/domain/entities/group_entity.dart';
 
 class UserEntity {
@@ -41,7 +41,7 @@ class UserEntity {
   });
 }
 
-// Domain entity for the entire registration details response
+// Domain entities for the entire registration details response
 class RegisterDetailsEntity {
   final UserEntity userDetails;
   final String mqttIPAddress;

@@ -11,7 +11,7 @@ class WellLevelSection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext dialogContext) {
     return Container(
       width: 300,
       height: 120,
@@ -63,7 +63,7 @@ class WellLevelSection extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      "${level.toStringAsFixed(0)} %",
+                      "${flow.toStringAsFixed(0)} %",
                       style: const TextStyle(
                         color: Colors.cyanAccent,
                         fontWeight: FontWeight.bold,
@@ -85,7 +85,7 @@ class WellLevelSection extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      "${flow.toStringAsFixed(2)}F",
+                      "${level.toStringAsFixed(2)}F",
                       style: const TextStyle(
                         color: Color(0xFF0077B6),
                         fontWeight: FontWeight.bold,

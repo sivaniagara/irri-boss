@@ -7,7 +7,7 @@ class HeaderSection extends StatelessWidget {
   const HeaderSection({super.key, required this.ctrlName, required this.isMqttConnected});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext dialogContext) {
     return Row(
       children: [
         const Icon(Icons.call, color: Colors.blue),

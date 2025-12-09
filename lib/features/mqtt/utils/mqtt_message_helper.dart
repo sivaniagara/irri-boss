@@ -53,16 +53,13 @@ class FaultSms {
 // Notification plugin instance (initialize in main.dart)
 final FlutterLocalNotificationsPlugin notifications = FlutterLocalNotificationsPlugin();
 
-// Dispatcher interface for decoupling (injected or passed)
 abstract class MessageDispatcher {
   void onLiveUpdate(String deviceId, LiveMessageEntity liveMessage);
-  void onFertilizerUpdate(String deviceId, String rawMessage); // Example for other types
+  void onFertilizerUpdate(String deviceId, String rawMessage);
   void onScheduleUpdate(String deviceId, String rawMessage);
   void onSmsNotification(String deviceId, String message, String description);
-  // Add more for other types as needed
 }
 
-// Default no-op dispatcher for testing/pure processing
 class NoOpDispatcher implements MessageDispatcher {
   @override
   void onLiveUpdate(String deviceId, LiveMessageEntity liveMessage) {}
@@ -166,10 +163,9 @@ class MqttMessageHelper {
           break;
         case 'V03':
           await prefs.setString('WATER_PUMP_SETTINGS_VIEW_MSG_$qrCode', '$trimmedMsg,$cd,$ct');
-          dispatcher.onScheduleUpdate(qrCode, trimmedMsg); // Reuse or add specific
+          dispatcher.onScheduleUpdate(qrCode, trimmedMsg);
           break;
         default:
-          // Handle unknown types
           break;
       }
     }
@@ -239,5 +235,7 @@ class MqttMessageHelper {
 }
 
 class PublishMessageHelper {
-  static const Map<String, dynamic> requestLive = {"sentSms": "#live"};
+  static const String key = "sentSms";
+  static const Map<String, dynamic> requestLive = {key: "#live"};
+  static Map<String, dynamic> settingsPayload(String value) => {key: value};
 }

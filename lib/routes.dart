@@ -1,27 +1,25 @@
-
-
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:niagara_smart_drip_irrigation/features/auth/presentation/pages/sign_up_page.dart';
-import 'package:niagara_smart_drip_irrigation/features/controllerLive/presentation/pages/controller_live_page.dart';
-import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/dashboard_page.dart';
-import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/presentation/pages/chat.dart';
-import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/presentation/pages/groups.dart';
-import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/presentation/pages/sub_users.dart';
+import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
+import 'features/dashboard/utils/dashboard_routes.dart';
+import 'features/side_drawer/groups/utils/group_routes.dart';
+import 'features/auth/utils/auth_routes.dart';
 
 import 'core/di/injection.dart' as di;
 import 'core/utils/route_constants.dart';
-import 'core/widgets/app_drawer.dart';
-import 'features/auth/presentation/bloc/auth_bloc.dart';
-import 'features/auth/presentation/bloc/auth_state.dart';
-import 'features/auth/presentation/pages/login_page.dart';
-import 'features/auth/presentation/pages/otp_page.dart';
-import 'features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'core/widgets/glassy_wrapper.dart';
 import 'features/dealer_dashboard/presentation/pages/dealer_dashboard_page.dart';
+import 'features/side_drawer/groups/presentation/pages/chat.dart';
+import 'features/side_drawer/groups/presentation/widgets/app_drawer.dart';
+import 'features/auth/auth.dart';
+import 'features/dashboard/dashboard.dart';
+import 'features/side_drawer/sub_users/sub_users_barrel.dart';
+import 'features/side_drawer/groups/groups_barrel.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream stream) {
@@ -44,7 +42,7 @@ class AppRouter {
 
   AppRouter({required this.authBloc}) {
     router = GoRouter(
-      initialLocation: RouteConstants.login,
+      initialLocation: AuthRoutes.login,
       debugLogDiagnostics: true,
       refreshListenable: GoRouterRefreshStream(authBloc.stream),
       redirect: (context, state) {
@@ -52,78 +50,58 @@ class AppRouter {
         final isLoggedIn = authState is Authenticated;
         final isOtpSent = authState is OtpSent;
 
-        print('GoRouter redirect: authState=$authState, currentLocation=${state.matchedLocation}');
+        final location = state.matchedLocation;
 
-        if (isOtpSent && state.matchedLocation != RouteConstants.verifyOtp) {
-          print('Redirecting to OTP screen: ${RouteConstants.verifyOtp}');
-          return RouteConstants.verifyOtp;
-          return RouteConstants.dealerDashboard;
+        final isPublicRoute = location == AuthRoutes.login ||
+            location == AuthRoutes.verifyOtp ||
+            location == AuthRoutes.signUp;
+
+        if (isOtpSent && location != AuthRoutes.verifyOtp) {
+          return AuthRoutes.verifyOtp;
         }
-        if (isLoggedIn &&
-            (state.matchedLocation == RouteConstants.login ||
-                state.matchedLocation == RouteConstants.verifyOtp)) {
-          print('Redirecting to dashboard: ${RouteConstants.dashboard}');
-          return RouteConstants.dealerDashboard;
-          return RouteConstants.dealerDashboard;
+
+        if (isLoggedIn && (location == AuthRoutes.login || location == AuthRoutes.verifyOtp)) {
+          if (authState.user.userDetails.userType == 2) {
+            return DealerRoutes.dealerDashboard;
+          } else if (authState.user.userDetails.userType == 1) {
+            return DashBoardRoutes.dashboard;
+          }
         }
-        if (!isLoggedIn &&
-            !isOtpSent &&
-            state.matchedLocation != RouteConstants.login &&
-            state.matchedLocation != RouteConstants.verifyOtp) {
-          print('Redirecting to login: ${RouteConstants.login}');
-          return RouteConstants.login;
-          return RouteConstants.dealerDashboard;
+
+        if (!isLoggedIn && !isOtpSent && !isPublicRoute) {
+          return AuthRoutes.login;
         }
-        print('No redirect needed');
+
         return null;
       },
       routes: [
-        GoRoute(
+        _authRoute(
           name: 'login',
-          path: RouteConstants.login,
-          builder: (context, state) {
-            print('Building LoginPage, AuthBloc state: ${authBloc.state}');
-            return BlocProvider.value(
-              value: authBloc,
-              child: const LoginPage(),
-            );
-          },
+          path: AuthRoutes.login,
+          builder: (context, state) => const LoginPage(),
         ),
-        GoRoute(
+        _authRoute(
           name: 'signUp',
-          path: RouteConstants.signUp,
-          builder: (context, state) {
-            print('Building SignUpPage, AuthBloc state: ${authBloc.state}');
-            return BlocProvider.value(
-              value: authBloc,
-              child: UserProfileForm(
-                isEdit: false,
-              ),
-            );
-          },
+          path: AuthRoutes.signUp,
+          builder: (context, state) => UserProfileForm(isEdit: false),
         ),
-        GoRoute(
+        _authRoute(
           name: 'editProfile',
-          path: RouteConstants.editProfile,
+          path: AuthRoutes.editProfile,
           builder: (context, state) {
-            print('Building EditProfile, AuthBloc state: ${authBloc.state}');
             final authState = authBloc.state;
             final initialData = authState is Authenticated ? authState.user.userDetails : null;
-            return BlocProvider.value(
-              value: authBloc,
-              child: UserProfileForm(
-                key: const ValueKey('editProfile'),
-                isEdit: true,
-                initialData: initialData,
-              ),
+            return UserProfileForm(
+              key: const ValueKey('editProfile'),
+              isEdit: true,
+              initialData: initialData,
             );
           },
         ),
-        GoRoute(
+        _authRoute(
           name: 'verifyOtp',
-          path: RouteConstants.verifyOtp,
+          path: AuthRoutes.verifyOtp,
           builder: (context, state) {
-            print('Building OtpVerificationPage, AuthBloc state: ${authBloc.state}');
             final authState = authBloc.state;
             final params = state.extra is Map ? state.extra as Map : null;
             final verificationId = params?['verificationId'] ?? (authState is OtpSent ? authState.verificationId : '');
@@ -131,82 +109,70 @@ class AppRouter {
             final countryCode = params?['countryCode'] ?? (authState is OtpSent ? authState.countryCode : '');
 
             if (verificationId.isEmpty || phone.isEmpty) {
-              print('Invalid OTP parameters, redirecting to login');
               return const LoginPage();
             }
 
-            return BlocProvider.value(
-              value: authBloc,
-              child: OtpVerificationPage(
-                verificationId: verificationId,
-                phone: phone,
-                countryCode: countryCode,
-              ),
+            return OtpVerificationPage(
+              verificationId: verificationId,
+              phone: phone,
+              countryCode: countryCode,
             );
           },
         ),
         GoRoute(
           name: 'dashboard',
-          path: RouteConstants.dashboard,
+          path: DashBoardRoutes.dashboard,
           builder: (context, state) {
-            print('Building DashboardPage, AuthBloc state: ${authBloc.state}');  // Add for debug
-            return BlocProvider.value(
-              value: authBloc,
-              child: const DashboardPage(),
+            final authData = _getAuthData();
+            final bloc = BlocProvider(
+              create: (context) => di.sl<DashboardBloc>()
+                ..add(FetchDashboardGroupsEvent(authData.id))
+                ..add(ResetDashboardSelectionEvent()),
+              child: DashboardPage(userId: authData.id, userType: authData.userType),
             );
+            return bloc;
           },
         ),
         GoRoute(
           name: 'ctrlLivePage',
-          path: RouteConstants.ctrlLivePage,
+          path: DashBoardRoutes.ctrlLivePage,
           builder: (context, state) {
-            print('Building ctrlLivePage, AuthBloc state: ${authBloc.state}');  // Add for debug
+            print('Building ctrlLivePage, AuthBloc state: ${authBloc.state}');
+            final selectedController = state.extra as LiveMessageEntity?;
             return BlocProvider.value(
               value: authBloc,
-              child: const CtrlLivePage(),
+              child: CtrlLivePage(selectedController: selectedController),
             );
           },
         ),
+        ...pumpSettingsRoutes,
         ShellRoute(
           builder: (context, state, child) {
             final location = state.matchedLocation;
             String title = 'Dealer Dashboard';
-            if (location == RouteConstants.groups) {
+            if (location == GroupRoutes.groups) {
               title = 'Groups';
-            } else if (location == RouteConstants.subUsers) {
+            } else if (location == SubUserRoutes.subUsers) {
               title = 'Sub Users';
             } else if (location == RouteConstants.chat) {
               title = 'Chat';
+            } else if (location == SubUserRoutes.subUserDetails) {
+              title = 'Sub User Details';
             }
-            return BlocProvider<DashboardBloc>(
-              create: (_) => di.sl<DashboardBloc>(),
+
+            return BlocProvider.value(
+              value: authBloc,
               child: Scaffold(
-                extendBodyBehindAppBar: true,
-                appBar: AppBar(
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  centerTitle: true,
-                  title: Text(title),
-                  flexibleSpace: _buildAppBarBackground(),
-                ),
+                appBar: AppBar(centerTitle: true, title: Text(title)),
                 drawer: const AppDrawer(),
-                body: Stack(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Theme.of(context).colorScheme.primaryContainer,
-                            Colors.black87,
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned.fill(child: _buildBackgroundDecorations()),
-                    child
-                  ],
+                body: GlassyWrapper(
+                  child: NotificationListener<OverscrollIndicatorNotification>(
+                    onNotification: (notification) {
+                      notification.disallowIndicator();
+                      return true;
+                    },
+                    child: child,
+                  ),
                 ),
               ),
             );
@@ -214,43 +180,74 @@ class AppRouter {
           routes: [
             GoRoute(
               name: 'dealerDashboard',
-              path: RouteConstants.dealerDashboard,
-              builder: (context, state) {
-                return BlocProvider.value(
-                  value: authBloc,
-                  child: const DealerDashboardPage(),
-                );
-              },
+              path: DealerRoutes.dealerDashboard,
+              builder: (context, state) => BlocProvider.value(
+                value: authBloc,
+                child: const DealerDashboardPage(),
+              ),
             ),
             GoRoute(
               name: 'groups',
-              path: RouteConstants.groups,
+              path: GroupRoutes.groups,
               builder: (context, state) {
-                return BlocProvider.value(
-                  value: authBloc,
-                  child: const Groups(),
+                final authData = _getAuthData();
+                final groupFetchingUseCase = di.sl<GroupFetchingUsecase>();
+                final groupAddingUseCase = di.sl<GroupAddingUsecase>();
+                final editGroupUsecase = di.sl<EditGroupUsecase>();
+                final deleteGroupUsecase = di.sl<DeleteGroupUsecase>();
+                return BlocProvider(
+                  create: (context) => GroupBloc(
+                    groupFetchingUsecase: groupFetchingUseCase,
+                    groupAddingUsecase: groupAddingUseCase,
+                    editGroupUsecase: editGroupUsecase,
+                    deleteGroupUsecase: deleteGroupUsecase,
+                  )..add(FetchGroupsEvent(authData.id)),
+                  child: GroupsPage(userId: authData.id),
                 );
               },
             ),
-            GoRoute(
+            _authRoute(
               name: 'subUsers',
-              path: RouteConstants.subUsers,
+              path: SubUserRoutes.subUsers,
               builder: (context, state) {
-                return BlocProvider.value(
-                  value: authBloc,
-                  child: const SubUsers(),
+                final authData = _getAuthData();
+                final getSubUserUsecase = di.sl<GetSubUsersUsecase>();
+                final getSubUserDetailsUsecase = di.sl<GetSubUserDetailsUsecase>();
+                final updateSubUserDetailsUsecase = di.sl<UpdateSubUserDetailsUseCase>();
+                final getSubUserByPhoneUseCase = di.sl<GetSubUserByPhoneUsecase>();
+                return BlocProvider(
+                  create: (context) => SubUsersBloc(
+                    getSubUsersUsecase: getSubUserUsecase,
+                    getSubUserDetailsUsecase: getSubUserDetailsUsecase,
+                    updateSubUserDetailsUseCase: updateSubUserDetailsUsecase,
+                    getSubUserByPhoneUsecase: getSubUserByPhoneUseCase,
+                  )..add(GetSubUsersEvent(userId: authData.id)),
+                  child: SubUsers(userId: authData.id),
                 );
               },
             ),
-            GoRoute(
+            _authRoute(
+              name: 'subUserDetails',
+              path: SubUserRoutes.subUserDetails,
+              builder: (context, state) {
+                final params = state.extra is Map ? state.extra as Map : null;
+                final SubUsersBloc existingBloc = params?['existingBloc'] as SubUsersBloc;
+                return BlocProvider.value(
+                  value: existingBloc,
+                  child: SubUserDetailsScreen(
+                    subUserDetailsParams: GetSubUserDetailsParams(
+                        userId: params?['userId'],
+                        subUserCode: params?['subUserCode'],
+                        isNewSubUser: params?['isNewSubUser']
+                    ),
+                  ),
+                );
+              },
+            ),
+            _authRoute(
               name: 'chat',
               path: RouteConstants.chat,
-              builder: (context, state) {
-                return BlocProvider.value(
-                  value: authBloc,
-                  child: const Chat(),
-                );
-              },
+              builder: (context, state) => const Chat(),
             ),
           ],
         ),
@@ -258,59 +255,34 @@ class AppRouter {
     );
   }
 
-  Widget _buildAppBarBackground() {
-    return ClipRRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.white.withOpacity(0.06),
-                Colors.white.withOpacity(0.02)
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-        ),
-      ),
+  UserEntity _getAuthData() {
+    final authState = authBloc.state;
+    if (authState is Authenticated) {
+      return authState.user.userDetails;
+    }
+    return UserEntity(
+      id: 0,
+      name: '',
+      mobile: '',
+      userType: 0,
+      deviceToken: '',
+      mobCctv: '',
+      webCctv: '',
+      altPhoneNum: [],
     );
   }
 
+  Widget _buildWithAuthBloc(Widget child) => BlocProvider.value(value: authBloc, child: child);
 
-  Widget _buildBackgroundDecorations() {
-    return Stack(
-      children: [
-        Positioned(
-          top: -80,
-          left: -60,
-          child: Container(
-            width: 240,
-            height: 240,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [Colors.white.withOpacity(0.06), Colors.transparent],
-              ),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: -100,
-          right: -80,
-          child: Container(
-            width: 320,
-            height: 320,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [Colors.white.withOpacity(0.04), Colors.transparent],
-              ),
-            ),
-          ),
-        ),
-      ],
+  GoRoute _authRoute({
+    required String name,
+    required String path,
+    required Widget Function(BuildContext, GoRouterState) builder,
+  }) {
+    return GoRoute(
+      name: name,
+      path: path,
+      builder: (context, state) => _buildWithAuthBloc(builder(context, state)),
     );
   }
 }

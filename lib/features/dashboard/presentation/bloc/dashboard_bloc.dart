@@ -2,16 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../mqtt/presentation/bloc/mqtt_bloc.dart';
-import '../../../mqtt/presentation/bloc/mqtt_event.dart';
-import '../../../mqtt/presentation/bloc/mqtt_state.dart';
-import '../../data/models/controller_model.dart';
-import '../../domain/entities/controller_entity.dart';
-import '../../domain/usecases/fetch_controllers_usecase.dart';
-import '../../domain/usecases/fetch_dashboard_groups_usecase.dart';
-import 'dashboard_event.dart';
-import 'dashboard_state.dart';
-import '../../../mqtt/utils/mqtt_message_helper.dart'; // For PublishMessageHelper
+import '../../../../core/di/injection.dart' as di;
+import '../../../../core/services/selected_controller_persistence.dart';
+import '../../../mqtt/mqtt_barrel.dart';
+import '../../dashboard.dart';
 
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   final FetchDashboardGroups fetchDashboardGroups;
@@ -19,7 +13,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   final MqttBloc mqttBloc;
   Timer? _pollTimer;
   DateTime? _lastPollTime;
-  bool _isPollingActive = false; // Prevent stacked timers
+  bool _isPollingActive = false;
 
   DashboardBloc({
     required this.fetchDashboardGroups,
@@ -33,7 +27,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       result.fold(
             (failure) => emit(DashboardError(message: failure.message)),
             (groups) {
-          emit(DashboardGroupsLoaded(groups: groups));
+          emit(DashboardGroupsLoaded(groups: groups, groupControllers: {}));
 
           if (groups.isNotEmpty) {
             add(FetchControllersEvent(event.userId, groups[0].userGroupId));
@@ -65,57 +59,88 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     });
 
     on<SelectGroupEvent>((event, emit) async {
-      if (state is DashboardGroupsLoaded) {
-        final currentState = state as DashboardGroupsLoaded;
-        final newState = currentState.copyWith(
-          selectedGroupId: event.groupId,
-          selectedControllerIndex: null,
-        );
-        emit(newState);
+      if (state is! DashboardGroupsLoaded) return;
 
-        final group = currentState.groups.firstWhere((g) => g.userGroupId == event.groupId, orElse: () => throw Exception('Group not found'));
-        final userId = group.userId;
-        if (!currentState.groupControllers.containsKey(event.groupId)) {
-          final result = await fetchControllers(UserGroupParams(userId, event.groupId));
-          result.fold(
-                (failure) => emit(DashboardError(message: failure.message)),
-                (controllers) {
-              final updatedControllers = Map<int, List<ControllerEntity>>.from(newState.groupControllers);
-              updatedControllers[event.groupId] = controllers;
-              if (controllers.isNotEmpty) {
-                mqttBloc.add(SubscribeMqttEvent(controllers[0].deviceId));
-              }
-              final updatedState = newState.copyWith(
-                groupControllers: updatedControllers,
-                selectedControllerIndex: controllers.isNotEmpty ? 0 : null,
-              );
-              emit(updatedState);
-            },
-          );
-        } else {
-          final controllers = currentState.groupControllers[event.groupId] ?? [];
+      final currentState = state as DashboardGroupsLoaded;
+
+      // Step 1: Immediately update UI with selected group (optimistic)
+      final newState = currentState.copyWith(
+        selectedGroupId: event.groupId,
+        selectedControllerIndex: null,
+      );
+      emit(newState);
+
+      final group = currentState.groups.firstWhere(
+            (g) => g.userGroupId == event.groupId,
+        orElse: () => throw Exception('Group not found'),
+      );
+
+      final userId = group.userId;
+      final persistence = di.sl.get<SelectedControllerPersistence>();
+
+      // Step 2: Check if controllers already loaded
+      if (currentState.groupControllers.containsKey(event.groupId)) {
+        final controllers = currentState.groupControllers[event.groupId]!;
+
+        if (controllers.isNotEmpty) {
+          mqttBloc.add(SubscribeMqttEvent(controllers[0].deviceId));
+          await persistence.save(controllers[0].deviceId, event.groupId);
+        }
+
+        emit(newState.copyWith(
+          selectedControllerIndex: controllers.isNotEmpty ? 0 : null,
+        ));
+        return;
+      }
+
+      emit(DashboardLoading());
+
+      final result = await fetchControllers(UserGroupParams(userId, event.groupId));
+
+      await result.fold(
+            (failure) async {
+          emit(DashboardError(message: failure.message));
+        },
+            (controllers) async {
+          final updatedControllers = Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
+          updatedControllers[event.groupId] = controllers;
+
           if (controllers.isNotEmpty) {
             mqttBloc.add(SubscribeMqttEvent(controllers[0].deviceId));
+            await persistence.save(controllers[0].deviceId, event.groupId);
           }
-          final updatedState = newState.copyWith(
+
+          emit(DashboardGroupsLoaded(
+            groups: currentState.groups,
+            groupControllers: updatedControllers,
+            selectedGroupId: event.groupId,
             selectedControllerIndex: controllers.isNotEmpty ? 0 : null,
-          );
-          emit(updatedState);
-        }
-      }
+          ));
+        },
+      );
     });
 
     on<SelectControllerEvent>((event, emit) async {
-      if (state is DashboardGroupsLoaded) {
-        final currentState = state as DashboardGroupsLoaded;
-        if (currentState.selectedGroupId != null &&
-            (currentState.groupControllers[currentState.selectedGroupId!]?.length ?? 0) > event.controllerIndex) {
-          final controllers = currentState.groupControllers[currentState.selectedGroupId!] ?? [];
-          final selectedController = controllers[event.controllerIndex];
-          mqttBloc.add(SubscribeMqttEvent(selectedController.deviceId));
-          emit(currentState.copyWith(selectedControllerIndex: event.controllerIndex));
-        }
-      }
+      if (state is! DashboardGroupsLoaded) return;
+
+      final currentState = state as DashboardGroupsLoaded;
+      final groupId = currentState.selectedGroupId;
+      if (groupId == null) return;
+
+      final controllers = currentState.groupControllers[groupId] ?? [];
+      if (event.controllerIndex >= controllers.length) return;
+
+      final selectedController = controllers[event.controllerIndex];
+
+      // Subscribe to MQTT
+      mqttBloc.add(SubscribeMqttEvent(selectedController.deviceId));
+
+      // Persist selection
+      final persistence = di.sl.get<SelectedControllerPersistence>();
+      await persistence.save(selectedController.deviceId, groupId);
+
+      // Update state
+      emit(currentState.copyWith(selectedControllerIndex: event.controllerIndex));
     });
 
     on<ResetDashboardSelectionEvent>((event, emit) async {

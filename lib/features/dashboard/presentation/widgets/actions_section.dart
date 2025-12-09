@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
+import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
 
 class ActionsSection extends StatelessWidget {
   final int model;
-  const ActionsSection({super.key, required this.model});
+  final Map<String, dynamic> data;
+  const ActionsSection({super.key, required this.model, required this.data});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext dialogContext) {
     return ([1, 5].contains(model)) ? Padding(
       padding: const EdgeInsets.symmetric(horizontal: 0),
       child: Row(
@@ -15,7 +18,9 @@ class ActionsSection extends StatelessWidget {
             child: MenuButton(
               icon: Icons.settings,
               title: "Pump\nSettings",
-              onTap: () {},
+              onTap: () {
+                dialogContext.push(PumpSettingsPageRoutes.pumpSettingMenuList, extra: data);
+              },
             ),
           ),
           Expanded(
@@ -55,7 +60,9 @@ class ActionsSection extends StatelessWidget {
             child: MenuButton(
               icon: Icons.settings,
               title: "Pump\nSettings",
-              onTap: () {},
+              onTap: () {
+                dialogContext.push(PumpSettingsPageRoutes.pumpSettingMenuList, extra: data);
+              },
             ),
           ),
           Expanded(
@@ -101,7 +108,7 @@ class MenuButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext dialogContext) {
     return GestureDetector(
       onTap: isEnabled ? onTap : null,
       child: GlassCard(

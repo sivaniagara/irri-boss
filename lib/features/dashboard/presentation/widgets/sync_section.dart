@@ -9,7 +9,7 @@ class SyncSection extends StatelessWidget {
   const SyncSection({super.key, required this.liveSync, required this.smsSync, required this.model});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext dialogContext) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -43,13 +43,13 @@ class ProgramButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext dialogContext) {
     return GlassCard(
       padding:  const EdgeInsets.all(0),
       margin: const EdgeInsets.all(0),
       child: TextButton.icon(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
+          ScaffoldMessenger.of(dialogContext).showSnackBar(
             SnackBar(content: Text('$programTitle clicked!')),
           );
         },

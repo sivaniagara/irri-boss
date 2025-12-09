@@ -1,8 +1,7 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
-import '../entities/user_entity.dart';
-import '../usecases/login_usecase.dart';
+import '../auth_domain.dart';
 
 abstract class AuthRepository {
   Future<Either<Failure, RegisterDetailsEntity>> loginWithPassword(String phone, String password);

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:niagara_smart_drip_irrigation/features/auth/domain/entities/user_entity.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 
+import '../../../../core/widgets/glassy_wrapper.dart';
+import '../../domain/entities/user_entity.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 
-class UserProfileForm extends StatefulWidget {
+class UserProfileForm extends StatelessWidget {
   final bool isEdit;
   final UserEntity? initialData;
 
@@ -17,367 +19,360 @@ class UserProfileForm extends StatefulWidget {
   });
 
   @override
-  State<UserProfileForm> createState() => _UserProfileFormState();
+  Widget build(BuildContext dialogContext) {
+    // Reuse existing AuthBloc from DI instead of creating new one
+    return _UserProfileFormBody(isEdit: isEdit, initialData: initialData);
+  }
 }
 
-class _UserProfileFormState extends State<UserProfileForm> {
-  // Controllers for form fields
-  late final TextEditingController _mobileController;
-  late final TextEditingController _userNameController;
-  late final TextEditingController _address1Controller;
-  late final TextEditingController _address2Controller;
-  late final TextEditingController _townController;
-  late final TextEditingController _villageController;
-  late final TextEditingController _cityController;
-  late final TextEditingController _postalCodeController;
-  late final TextEditingController _altPhoneController;
-  late final TextEditingController _emailController;
-  late final TextEditingController _passwordController;
+class _UserProfileFormBody extends StatelessWidget {
+  final bool isEdit;
+  final UserEntity? initialData;
 
-  // Dropdown values
-  String? _selectedOption;
-  String? _selectedCountry;
-  String? _selectedState;
-
-  // Possible values for dropdowns (to validate prefills)
-  final List<String> _optionValues = ['1', '2', '3'];
-  final List<String> _countryValues = ['India', 'USA', 'UK'];
-  final List<String> _stateValues = ['State 1', 'State 2', 'State 3'];
+  const _UserProfileFormBody({required this.isEdit, this.initialData});
 
   @override
-  void initState() {
-    super.initState();
-    // Initialize controllers with initial data if editing
-    _mobileController = TextEditingController(text: widget.initialData?.mobile ?? '');
-    _userNameController = TextEditingController(text: widget.initialData?.name ?? '');
-    _address1Controller = TextEditingController(text: widget.initialData?.addressOne ?? '');
-    _address2Controller = TextEditingController(text: widget.initialData?.addressTwo ?? '');
-    _townController = TextEditingController(text: widget.initialData?.town ?? '');
-    _villageController = TextEditingController(text: widget.initialData?.village ?? '');
-    _cityController = TextEditingController(text: widget.initialData?.city ?? '');
-    _postalCodeController = TextEditingController(text: widget.initialData?.postalCode ?? '');
-    _altPhoneController = TextEditingController(text: widget.initialData?.altPhoneNum != null && widget.initialData!.altPhoneNum.isNotEmpty ? widget.initialData!.altPhoneNum[0] : '');
-    _emailController = TextEditingController(text: widget.initialData?.email ?? '');
-    _passwordController = TextEditingController(text: widget.isEdit ? '' : '');
+  Widget build(BuildContext dialogContext) {
+    final formKey = GlobalKey<FormState>();
 
-    // Prefill dropdowns and validate against possible values
-    String? tempOption = widget.initialData?.userType.toString();
-    _selectedOption = _optionValues.contains(tempOption) ? tempOption : null;
+    // Controllers
+    final nameCtrl = TextEditingController(text: initialData?.name ?? '');
+    final address1Ctrl = TextEditingController(text: initialData?.addressOne ?? '');
+    final address2Ctrl = TextEditingController(text: initialData?.addressTwo ?? '');
+    final townCtrl = TextEditingController(text: initialData?.town ?? '');
+    final villageCtrl = TextEditingController(text: initialData?.village ?? '');
+    final cityCtrl = TextEditingController(text: initialData?.city ?? '');
+    final postalCodeCtrl = TextEditingController(text: initialData?.postalCode ?? '');
+    final altPhoneCtrl = TextEditingController(
+      text: initialData?.altPhoneNum.isNotEmpty == true
+          ? initialData!.altPhoneNum.first
+          : '',
+    );
+    final emailCtrl = TextEditingController(text: initialData?.email ?? '');
+    final passwordCtrl = TextEditingController();
 
-    _selectedCountry = widget.initialData?.country != null && _countryValues.contains(widget.initialData!.country) ? widget.initialData!.country : null;
+    // Phone field state
+    String? phoneNumber;           // Full international number (e.g. +918888888888)
+    String? phoneCountryCode;      // e.g. "IN"
+    String? phoneWithoutCountry;   // e.g. "8888888888"
 
-    _selectedState = widget.initialData?.state != null && _stateValues.contains(widget.initialData!.state) ? widget.initialData!.state : null;
-  }
-
-  @override
-  void dispose() {
-    _mobileController.dispose();
-    _userNameController.dispose();
-    _address1Controller.dispose();
-    _address2Controller.dispose();
-    _townController.dispose();
-    _villageController.dispose();
-    _cityController.dispose();
-    _postalCodeController.dispose();
-    _altPhoneController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  // Basic validation
-  bool _validateForm() {
-    if (_mobileController.text.isEmpty || _userNameController.text.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please fill required fields')),
-        );
-      }
-      return false;
+    String getUserTypeLabel(int? type) {
+      const map = {1: 'Customer', 2: 'Dealer', 3: 'Admin'};
+      return map[type] ?? '';
     }
-    if (!widget.isEdit && _passwordController.text.isEmpty) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+
+    // Dropdown state
+    final selectedUserType = ValueNotifier<String?>(
+      ['Customer', 'Dealer', 'Admin'].contains(getUserTypeLabel(initialData?.userType))
+          ? getUserTypeLabel(initialData?.userType)
+          : null,
+    );
+
+    final selectedCountry = ValueNotifier<String?>(
+      ['India', 'USA', 'UK'].contains(initialData?.country) ? initialData!.country : 'India',
+    );
+
+    final selectedState = ValueNotifier<String?>(
+      ['State 1', 'State 2', 'State 3'].contains(initialData?.state) ? initialData!.state : null,
+    );
+
+    // User type mapping
+    int? mapUserTypeToInt(String label) {
+      const map = {'Customer': 1, 'Dealer': 2, 'Admin': 3};
+      return map[label];
+    }
+
+    void submit() {
+      if (!formKey.currentState!.validate()) return;
+
+      if (phoneNumber == null || phoneNumber!.isEmpty) {
+        ScaffoldMessenger.of(dialogContext).showSnackBar(
+          const SnackBar(content: Text('Please enter a valid mobile number')),
+        );
+        return;
+      }
+
+      if (!isEdit && passwordCtrl.text.isEmpty) {
+        ScaffoldMessenger.of(dialogContext).showSnackBar(
           const SnackBar(content: Text('Password is required for signup')),
         );
+        return;
       }
-      return false;
-    }
-    return true;
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    final title = widget.isEdit ? 'Edit Profile' : 'Sign Up';
+      if (selectedUserType.value == null) {
+        ScaffoldMessenger.of(dialogContext).showSnackBar(
+          const SnackBar(content: Text('Please select User Type')),
+        );
+        return;
+      }
+
+      final userTypeInt = mapUserTypeToInt(selectedUserType.value!);
+
+      // Use normalized mobile (last 10 digits or full with country code as per backend)
+      final mobileToSend = phoneWithoutCountry ?? phoneNumber!.replaceAll(RegExp(r'\D'), '');
+
+      if (isEdit) {
+        dialogContext.read<AuthBloc>().add(UpdateProfileEvent(
+          id: initialData!.id,
+          name: nameCtrl.text.trim(),
+          mobile: mobileToSend,
+          userType: userTypeInt,
+          addressOne: address1Ctrl.text.trim(),
+          addressTwo: address2Ctrl.text.trim(),
+          town: townCtrl.text.trim(),
+          village: villageCtrl.text.trim(),
+          country: selectedCountry.value,
+          state: selectedState.value,
+          city: cityCtrl.text.trim(),
+          postalCode: postalCodeCtrl.text.trim(),
+          altPhone: altPhoneCtrl.text.trim(),
+          email: emailCtrl.text.trim(),
+          password: passwordCtrl.text.isEmpty ? null : passwordCtrl.text,
+        ));
+      } else {
+        dialogContext.read<AuthBloc>().add(SignUpEvent(
+          mobile: mobileToSend,
+          name: nameCtrl.text.trim(),
+          userType: userTypeInt,
+          addressOne: address1Ctrl.text.trim(),
+          addressTwo: address2Ctrl.text.trim(),
+          town: townCtrl.text.trim(),
+          village: villageCtrl.text.trim(),
+          country: selectedCountry.value,
+          state: selectedState.value,
+          city: cityCtrl.text.trim(),
+          postalCode: postalCodeCtrl.text.trim(),
+          altPhone: altPhoneCtrl.text.trim(),
+          email: emailCtrl.text.trim(),
+          password: passwordCtrl.text,));
+      }
+    }
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: Text(title,),
-        leading: widget.isEdit
+        title: Text(isEdit ? 'Edit Profile' : 'Sign Up'),
+        leading: isEdit
             ? IconButton(
           icon: const Icon(Icons.close, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(dialogContext),
         )
             : null,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Card(
-              elevation: 8,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              color: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Personal Information',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor),
-                    ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _mobileController,
-                      decoration: InputDecoration(
-                        labelText: 'Mobile Number *',
-                        prefixIcon: Icon(Icons.phone, color: Theme.of(context).primaryColor),
-                        prefixText: '+91 ',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _userNameController,
-                      decoration: InputDecoration(
-                        labelText: 'User Name *',
-                        prefixIcon: Icon(Icons.person, color: Theme.of(context).primaryColor),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      value: _selectedOption,
-                      decoration: InputDecoration(
-                        labelText: 'Select One',
-                        prefixIcon: Icon(Icons.list, color: Theme.of(context).primaryColor),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      items: _optionValues.map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                      onChanged: (value) => setState(() => _selectedOption = value),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Address',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Theme.of(context).primaryColor),
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: _address1Controller,
-                      decoration: InputDecoration(
-                        labelText: 'Address 1',
-                        prefixIcon: Icon(Icons.location_on, color: Theme.of(context).primaryColor),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _address2Controller,
-                      decoration: InputDecoration(
-                        labelText: 'Address 2',
-                        prefixIcon: Icon(Icons.location_on, color: Theme.of(context).primaryColor),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _townController,
-                            decoration: InputDecoration(
-                              labelText: 'Town',
-                              prefixIcon: Icon(Icons.location_city, color: Theme.of(context).primaryColor),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                          ),
+      body: SafeArea(
+        child: GlassyWrapper(
+          child: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Personal Information',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Mobile Number with intl_phone_field
+                  IntlPhoneField(
+                    initialCountryCode: _detectInitialCountry(initialData?.mobile),
+                    initialValue: _extractPhoneNumber(initialData?.mobile),
+                    decoration: _inputDecoration('Mobile Number *', Icons.phone),
+                    onChanged: (phone) {
+                      phoneNumber = phone.completeNumber;
+                      phoneCountryCode = phone.countryISOCode;
+                      phoneWithoutCountry = phone.number;
+                    },
+                    onCountryChanged: (country) {
+                      selectedCountry.value = country.name;
+                    },
+                    validator: (phone) {
+                      if (phone == null || phone.number.isEmpty || phone.number.length < 10) {
+                        return 'Enter valid mobile number';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  _buildField(nameCtrl, 'User Name *', Icons.person,
+                      validator: (v) => v!.trim().isEmpty ? 'Name is required' : null),
+                  const SizedBox(height: 16),
+
+                  // User Type Dropdown
+                  ValueListenableBuilder<String?>(
+                    valueListenable: selectedUserType,
+                    builder: (_, value, __) {
+                      return DropdownButtonFormField<String>(
+                        value: value,
+                        decoration: _inputDecoration('User Type *', Icons.person_outline),
+                        validator: (_) => value == null ? 'Please select user type' : null,
+                        items: const [
+                          DropdownMenuItem(value: 'Customer', child: Text('Customer')),
+                          DropdownMenuItem(value: 'Dealer', child: Text('Dealer')),
+                          DropdownMenuItem(value: 'Admin', child: Text('Admin')),
+                        ],
+                        onChanged: (v) => selectedUserType.value = v,
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 24),
+
+                  const Text(
+                    'Address',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
+                  ),
+                  const SizedBox(height: 16),
+
+                  _buildField(address1Ctrl, 'Address Line 1', Icons.home),
+                  const SizedBox(height: 16),
+                  _buildField(address2Ctrl, 'Address Line 2 (Optional)', Icons.home),
+                  const SizedBox(height: 16),
+                  _buildField(townCtrl, 'Town', Icons.location_on),
+                  const SizedBox(height: 16),
+                  _buildField(villageCtrl, 'Village', Icons.location_on),
+                  const SizedBox(height: 16),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ValueListenableBuilder<String?>(
+                          valueListenable: selectedCountry,
+                          builder: (_, value, __) {
+                            return DropdownButtonFormField<String>(
+                              value: value,
+                              decoration: _inputDecoration('Country', Icons.public),
+                              items: const [
+                                DropdownMenuItem(value: 'India', child: Text('India')),
+                                DropdownMenuItem(value: 'USA', child: Text('USA')),
+                                DropdownMenuItem(value: 'UK', child: Text('UK')),
+                              ],
+                              onChanged: (v) => selectedCountry.value = v,
+                            );
+                          },
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: TextField(
-                            controller: _villageController,
-                            decoration: InputDecoration(
-                              labelText: 'Village',
-                              prefixIcon: Icon(Icons.location_city, color: Theme.of(context).primaryColor),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            value: _selectedCountry,
-                            decoration: InputDecoration(
-                              labelText: 'Select Country',
-                              prefixIcon: Icon(Icons.public, color: Theme.of(context).primaryColor),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                            items: _countryValues.map((String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
-                            onChanged: (value) => setState(() => _selectedCountry = value),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: DropdownButtonFormField<String>(
-                            value: _selectedState,
-                            decoration: InputDecoration(
-                              labelText: 'Select State',
-                              prefixIcon: Icon(Icons.map, color: Theme.of(context).primaryColor),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                            items: _stateValues.map((String value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
-                            onChanged: (value) => setState(() => _selectedState = value),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _cityController,
-                      decoration: InputDecoration(
-                        labelText: 'City',
-                        prefixIcon: Icon(Icons.location_city, color: Theme.of(context).primaryColor),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _postalCodeController,
-                      decoration: InputDecoration(
-                        labelText: 'Postal Code',
-                        prefixIcon: Icon(Icons.mail, color: Theme.of(context).primaryColor),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      keyboardType: TextInputType.number,
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _altPhoneController,
-                      decoration: InputDecoration(
-                        labelText: 'Alternate Phone Number',
-                        prefixIcon: Icon(Icons.phone, color: Theme.of(context).primaryColor),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      keyboardType: TextInputType.phone,
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: 'Email Address',
-                        prefixIcon: Icon(Icons.email, color: Theme.of(context).primaryColor),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-                    if (!widget.isEdit) ...[
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _passwordController,
-                        decoration: InputDecoration(
-                          labelText: 'Password *',
-                          prefixIcon: Icon(Icons.lock, color: Theme.of(context).primaryColor),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.visibility_off),
-                            onPressed: () {
-                              // Implement toggle obscureText here if needed
-                            },
-                          ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: ValueListenableBuilder<String?>(
+                          valueListenable: selectedState,
+                          builder: (_, value, __) {
+                            return DropdownButtonFormField<String>(
+                              value: value,
+                              decoration: _inputDecoration('State', Icons.map),
+                              items: const [
+                                DropdownMenuItem(value: 'State 1', child: Text('State 1')),
+                                DropdownMenuItem(value: 'State 2', child: Text('State 2')),
+                                DropdownMenuItem(value: 'State 3', child: Text('State 3')),
+                              ],
+                              onChanged: (v) => selectedState.value = v,
+                            );
+                          },
                         ),
-                        obscureText: true,
                       ),
                     ],
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        if (_validateForm()) {
-                          if(widget.isEdit) {
-                            context.read<AuthBloc>().add(UpdateProfileEvent(UpdateProfileParams(
-                              id: widget.initialData!.id, // Assuming UserEntity has id
-                              name: _userNameController.text,
-                              addressOne: _address1Controller.text,
-                              mobile: _mobileController.text,
-                              userType: widget.initialData!.userType,
-                              addressTwo: _address2Controller.text,
-                              town: _townController.text,
-                              village: _villageController.text,
-                              country: _selectedCountry,
-                              state: _selectedState,
-                              city: _cityController.text,
-                              postalCode: _postalCodeController.text,
-                              altPhone: _altPhoneController.text,
-                              email: _emailController.text,
-                              password: _passwordController.text,
-                            )));
-                          } else {
-                            context.read<AuthBloc>().add(SignUpEvent(SignUpParams(
-                              name: _userNameController.text,
-                              addressOne: _address1Controller.text,
-                              mobile: _mobileController.text,
-                              userType: widget.initialData!.userType,
-                              addressTwo: _address2Controller.text,
-                              town: _townController.text,
-                              village: _villageController.text,
-                              country: _selectedCountry,
-                              state: _selectedState,
-                              city: _cityController.text,
-                              postalCode: _postalCodeController.text,
-                              altPhone: _altPhoneController.text,
-                              email: _emailController.text,
-                              password: _passwordController.text,
-                            )));
-                          }
+                  ),
+                  const SizedBox(height: 16),
+
+                  _buildField(cityCtrl, 'City', Icons.location_city),
+                  const SizedBox(height: 16),
+                  _buildField(postalCodeCtrl, 'Postal Code', Icons.mail),
+                  const SizedBox(height: 16),
+                  _buildField(altPhoneCtrl, 'Alternate Phone (Optional)', Icons.phone),
+                  const SizedBox(height: 16),
+
+                  _buildField(emailCtrl, 'Email (Optional)', Icons.email,
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (v) {
+                        if (v!.isNotEmpty && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
+                          return 'Enter valid email';
                         }
-                      },
+                        return null;
+                      }),
+                  const SizedBox(height: 16),
+
+                  if (!isEdit)
+                    TextFormField(
+                      controller: passwordCtrl,
+                      obscureText: true,
+                      decoration: _inputDecoration('Password *', Icons.lock),
+                      validator: (_) => passwordCtrl.text.isEmpty ? 'Password required' : null,
+                    ),
+
+                  const SizedBox(height: 32),
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: submit,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).primaryColor,
-                        minimumSize: const Size(double.infinity, 50),
+                        backgroundColor: Theme.of(dialogContext).primaryColor,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
                       child: Text(
-                        widget.isEdit ? 'Update Profile' : 'Sign Up',
-                        style: const TextStyle(color: Colors.white, fontSize: 16),
+                        isEdit ? 'Update Profile' : 'Sign Up',
+                        style: const TextStyle(fontSize: 16, color: Colors.white),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
+    );
+  }
+
+  // Helper: Detect initial country from mobile
+  String _detectInitialCountry(String? mobile) {
+    if (mobile == null || mobile.isEmpty) return 'IN';
+    if (mobile.startsWith('+91')) return 'IN';
+    if (mobile.startsWith('+1')) return 'US';
+    if (mobile.startsWith('+44')) return 'GB';
+    return 'IN';
+  }
+
+  // Helper: Extract phone number without country code
+  String _extractPhoneNumber(String? mobile) {
+    if (mobile == null || mobile.isEmpty) return '';
+    return mobile.replaceAll(RegExp(r'^\+\d{1,3}'), '').trim();
+  }
+
+  Widget _buildField(
+      TextEditingController controller,
+      String label,
+      IconData icon, {
+        TextInputType keyboardType = TextInputType.text,
+        String? Function(String?)? validator,
+      }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: _inputDecoration(label, icon),
+      validator: validator ??
+              (v) {
+            if (label.contains('*') && (v == null || v.trim().isEmpty)) {
+              return 'This field is required';
+            }
+            return null;
+          },
+    );
+  }
+
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, color: Colors.white70),
+      enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white70)),
+      focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white, width: 2)),
+      errorBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.redAccent)),
+      focusedErrorBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.redAccent, width: 2)),
+      labelStyle: const TextStyle(color: Colors.white70),
+      errorStyle: const TextStyle(color: Colors.redAccent),
     );
   }
 }

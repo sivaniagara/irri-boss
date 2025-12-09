@@ -1,10 +1,7 @@
-// lib/features/dashboard/data/models/controller_model.dart
 import 'package:equatable/equatable.dart';
-import 'package:niagara_smart_drip_irrigation/features/dashboard/data/models/live_message_model.dart';
-import 'package:niagara_smart_drip_irrigation/features/dashboard/domain/entities/livemessage_entity.dart';
-
-import '../../domain/entities/controller_entity.dart';
-import 'dart:convert'; // Add this import for jsonDecode
+import '../../data/dashboard_data.dart';
+import '../../domain/dashboard_domain.dart';
+// Add this import for jsonDecode
 
 class ProgramModel extends ProgramEntity {
   const ProgramModel({
@@ -161,7 +158,13 @@ class ControllerModel extends Equatable implements ControllerEntity {
     }
 
     // Parse liveMessage
+    // print("liveMessage :: ${json['liveMessage']}");
+    try {
     LiveMessageEntity parsedLiveMessage = LiveMessageModel.fromLiveMessage(json['liveMessage'] ?? {});
+    } catch (e, sta) {
+      print('Error ==> $e');
+      print('Stack trace ==> $sta');
+    }
 
     return ControllerModel(
       userDeviceId: json['userDeviceId'] as int? ?? 0,
@@ -175,7 +178,7 @@ class ControllerModel extends Equatable implements ControllerEntity {
       status1: json['status1'] as String? ?? '',
       msgcode: json['msgcode'] as String? ?? '',
       ctrlLatestMsg: json['ctrlLatestMsg'] as String? ?? '',
-      liveMessage: parsedLiveMessage,
+      liveMessage: LiveMessageModel.fromLiveMessage(json['liveMessage']),
       relaystatus: json['relaystatus'] as String? ?? '',
       operationMode: json['operationMode'] as String? ?? '',
       gprsMode: json['gprsMode'] as String? ?? '',
@@ -263,7 +266,7 @@ class ControllerModel extends Equatable implements ControllerEntity {
       status1: status1 ?? this.status1,
       msgcode: msgcode ?? this.msgcode,
       ctrlLatestMsg: ctrlLatestMsg ?? this.ctrlLatestMsg,
-      liveMessage: liveMessage ?? this.liveMessage,
+      liveMessage: liveMessage,
       relaystatus: relaystatus ?? this.relaystatus,
       operationMode: operationMode ?? this.operationMode,
       gprsMode: gprsMode ?? this.gprsMode,

@@ -3,38 +3,27 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart'; // For platform-specific handling if needed
+// For platform-specific handling if needed
 import 'package:get_it/get_it.dart';
+import 'package:crypto/crypto.dart';
+import 'package:niagara_smart_drip_irrigation/features/auth/utils/api_urls.dart';
+import 'dart:convert';
 
+import '../../../../core/di/injection.dart' as di;
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/services/api_client.dart';
-import '../../../../core/services/api_urls.dart';
-import '../../domain/entities/user_entity.dart';
-import '../../domain/usecases/login_usecase.dart';
+import '../../domain/auth_domain.dart';
 import '../models/user_model.dart';
 import 'auth_local_data_source.dart';
 
 /// Abstract class defining the remote data source contract for authentication operations.
 abstract class AuthRemoteDataSource {
-  /// Logs in a user using phone number and password.
   Future<RegisterDetailsModel> loginWithPassword(String phone, String password);
-
-  /// Sends an OTP to the provided phone number.
   Future<String> sendOtp(String phone);
-
-  /// Logs out the current user from Firebase and optionally the backend.
   Future<void> logout();
-
-  /// Verifies the OTP and completes the login process.
   Future<RegisterDetailsModel> verifyOtp(String verificationId, String otp, String countryCode);
-
-  /// Checks if a phone number is already registered.
   Future<bool> checkPhoneNumber(String phone, String countryCode);
-
-  /// Registers a new user with the provided parameters.
   Future<RegisterDetailsModel> signUp(SignUpParams params);
-
-  /// Updates the user's profile with the provided parameters.
   Future<RegisterDetailsModel> updateProfile(UpdateProfileParams params);
 }
 
@@ -81,8 +70,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final deviceInfo = await _getDeviceInfo();
 
       final response = await _apiClient.post(
-        ApiUrls.loginWithOtpUrl,
-        // ApiUrls.loginWithPasswordUrl,
+        AuthUrls.loginWithOtpUrl,
+        // AuthUrls.loginWithPasswordUrl,
         body: {
           'mobileNumber': mobileNumber,
           'password': password,
@@ -117,7 +106,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         if (kDebugMode) {
           print('Web: OTP sent, verificationId=${confirmationResult.verificationId}');
         }
-        return confirmationResult.verificationId!;
+        return confirmationResult.verificationId;
       } else {
         // Mobile flow: Use verifyPhoneNumber with Completer for async handling.
         final completer = Completer<String>();
@@ -193,7 +182,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final mobileNumber = _normalizePhoneNumber(firebaseUser.phoneNumber ?? '', countryCode: countryCode);
 
       final response = await _apiClient.post(
-        ApiUrls.loginWithOtpUrl,
+        AuthUrls.loginWithOtpUrl,
         headers: {'Authorization': 'Bearer $idToken'},
         body: {
           'mobileNumber': mobileNumber,
@@ -251,21 +240,20 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       final body = {
         'mobileNumber': phone,
-        'countryCode': countryCode.substring(1), // Remove '+' prefix
+        'countryCode': countryCode.substring(1),
       };
 
       if (kDebugMode) {
         print('Check phone body: $body');
       }
 
-      final response = await _apiClient.post(ApiUrls.verifyUserUrl, body: body);
+      final response = await _apiClient.post(AuthUrls.verifyUserUrl, body: body);
 
       if (kDebugMode) {
         print('Check phone response: $response');
       }
 
       return response['code'] == 200;
-      return _handleApiResponse(response, successCode: 200, operation: 'Phone check') != null;
     } catch (e) {
       if (kDebugMode) {
         print('Check phone number error: $e');
@@ -280,26 +268,31 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final deviceInfo = await _getDeviceInfo();
 
       final body = {
+        'mobileCountryCode': '91',
         'mobileNumber': params.mobile,
-        'name': params.name,
+        'userName': params.name,
         'userType': params.userType ?? '',
+        "language":1,
         'addressOne': params.addressOne ?? '',
         'addressTwo': params.addressTwo ?? '',
         'town': params.town ?? '',
         'village': params.village ?? '',
-        'country': params.country ?? '',
-        'state': params.state ?? '',
+        'country': 'IND',
+        'state': 'TN',
         'city': params.city ?? '',
         'postalCode': params.postalCode ?? '',
-        'altPhone': params.altPhone ?? '',
+        'altPhoneNum': [
+          {'mobileNumber': params.altPhone}
+        ],
         'email': params.email ?? '',
-        'password': params.password ?? '', // Ensure backend hashes this
+        'password': md5.convert(utf8.encode(params.password ?? '')).toString(),
         ...deviceInfo,
       };
 
-      final response = await _apiClient.post(ApiUrls.signUp, body: body);
+      final response = await _apiClient.post(AuthUrls.signUp, body: body);
 
       if (kDebugMode) {
+        print('Sign up req body: $body');
         print('Sign up response: $response');
       }
 
@@ -335,7 +328,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       };
 
       // Note: Consider using PUT instead of POST for updates if backend supports it.
-      final response = await _apiClient.post(ApiUrls.editProfile, body: body); // Or apiClient.put if available
+      final response = await _apiClient.put(AuthUrls.editProfile, body: body); // Or apiClient.put if available
 
       if (kDebugMode) {
         print('Update profile response: $response');
@@ -357,13 +350,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       // Sign out from Firebase
       await _firebaseAuth.signOut();
 
-      // Optional: Call backend logout endpoint if needed for session cleanup
-      await _apiClient.post(ApiUrls.logOutUrl, body: {});
-
       // Clear local cached auth data
       final authLocalDataSource = GetIt.instance<AuthLocalDataSource>();
       await authLocalDataSource.clearAuthData();
-
+      await di.sl.reset();
+      await di.init();
+      await _apiClient.put(AuthUrls.logOutUrl, body: {});
       if (kDebugMode) {
         print('User logged out successfully');
       }

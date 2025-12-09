@@ -12,7 +12,7 @@ class TimerSection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext dialogContext) {
     return Row(
       children: const [
         Expanded(
@@ -34,7 +34,7 @@ class TimerCard extends StatelessWidget {
   const TimerCard({required this.title, required this.time});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext dialogContext) {
     return GlassCard(
       padding: const EdgeInsets.all(1),
       margin: const EdgeInsets.all(1),

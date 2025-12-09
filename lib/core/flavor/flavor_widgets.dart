@@ -23,7 +23,7 @@ class FlavorBanner extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext dialogContext) {
     final cfg = FlavorConfig.instance;
     if (!cfg.values.showFlavorBanner) return child;
 
@@ -44,5 +44,5 @@ class FlavorAwareBuilder extends StatelessWidget {
   const FlavorAwareBuilder({super.key, required this.builder});
 
   @override
-  Widget build(BuildContext context) => builder(context, FlavorConfig.instance);
+  Widget build(BuildContext dialogContext) => builder(dialogContext, FlavorConfig.instance);
 }
