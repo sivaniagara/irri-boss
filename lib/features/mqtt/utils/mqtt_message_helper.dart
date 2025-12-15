@@ -22,6 +22,7 @@ class MqttMessageType {
   static const waterPumpSettings = MqttMessageType('V03');
   static const sms = MqttMessageType('SMS');
   static const normal = MqttMessageType('NLM');
+  static const setSerialView = MqttMessageType('SETSERIALVIEW');
 
   // Factory to get instance from string code
   static MqttMessageType? fromCode(String code) {

@@ -1,5 +1,7 @@
 import 'package:collection/collection.dart';
 
+import 'setting_widget_type.dart';
+
 class TemplateJsonEntity {
   final String type;
   final List<ParameterGroupEntity> groups;
@@ -90,7 +92,7 @@ class ParameterItemEntity {
 
 class SettingsEntity {
   final int serialNumber;
-  final int widgetType;
+  final SettingWidgetType widgetType;
   final String value;
   final String smsFormat;
   final String title;

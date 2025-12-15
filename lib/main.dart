@@ -37,3 +37,7 @@ Future<void> main() async {
   FlavorConfig.setupFromDartDefine();
   await appMain();
 }
+
+
+
+// https://www.figma.com/design/9V12owzLBNIgaCHUjjpjPB/niagara-app-design?node-id=1273-5253&t=WXnm0khgFYQPaT8M-1

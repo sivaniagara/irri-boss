@@ -61,6 +61,7 @@ class AppThemes {
     brightness: Brightness.light,
     primarySwatch: primarySwatch,
     primaryColor: primaryColor,
+    primaryColorLight: Color(0xff6DA8F5),
     iconTheme: IconThemeData(color: Colors.white),
     colorScheme: ColorScheme.light(
       primary: primaryColor,
@@ -82,6 +83,7 @@ class AppThemes {
     ),
     listTileTheme: ListTileThemeData(
       textColor: Colors.white,
+      titleTextStyle: TextStyle(color: Colors.black, fontSize: 20)
     ),
     textTheme: TextTheme(
       titleMedium: TextStyle(color: Colors.white),
@@ -94,27 +96,27 @@ class AppThemes {
     inputDecorationTheme: InputDecorationTheme(
       border: UnderlineInputBorder(
         borderSide: BorderSide(color: Colors.white),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
       ),
       enabledBorder: UnderlineInputBorder(
         borderSide: BorderSide(color: Colors.white),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
       ),
       focusedBorder: UnderlineInputBorder(
         borderSide: BorderSide(color: Colors.white, width: 2.0),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
       ),
       errorBorder: UnderlineInputBorder(
         borderSide: BorderSide(color: Colors.redAccent),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
       ),
       focusedErrorBorder: UnderlineInputBorder(
         borderSide: BorderSide(color: Colors.redAccent, width: 2.0),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
       ),
       disabledBorder: UnderlineInputBorder(
         borderSide: BorderSide(color: Colors.white.withOpacity(0.5)),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
       ),
       hintStyle: TextStyle(color: Colors.white54),
       labelStyle: TextStyle(color: Colors.white54),
@@ -184,6 +186,7 @@ class AppThemes {
       }),
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     ),
+
   );
 
   // Dark Theme

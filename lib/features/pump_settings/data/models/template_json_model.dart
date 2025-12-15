@@ -1,6 +1,8 @@
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/data/models/settings_menu_model.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/template_json_entity.dart';
 
+import '../../domain/entities/setting_widget_type.dart';
+
 class TemplateJsonModel extends TemplateJsonEntity {
   TemplateJsonModel({
     required super.type,
@@ -9,7 +11,7 @@ class TemplateJsonModel extends TemplateJsonEntity {
   });
 
   factory TemplateJsonModel.fromJson(Map<String, dynamic> json, List<Map<String, dynamic>> staticTemplate) {
-    print("json in the TemplateJsonModel :: $json");
+    // print("json in the TemplateJsonModel :: $json");
     final String type = json['type'] as String;
 
     final groups = <ParameterGroupEntity>[];
@@ -155,8 +157,8 @@ class SettingsModel extends SettingsEntity {
   factory SettingsModel.fromJson(Map<String, dynamic> json) {
     return SettingsModel(
         serialNumber: json["SN"],
-        widgetType: json["WT"],
-        value: json["VAL"],
+        widgetType: SettingWidgetType.fromInt(json['WT'] ?? 0),
+        value: json["VAL"] ?? '',
         smsFormat: json["SF"],
         title: json["TT"],
         hiddenFlag: json["HF"]

@@ -8,17 +8,17 @@ class TimePickerService {
   static Future<String?> show({
     required BuildContext context,
     required String initialTime,
-    bool showSeconds = true,
+    String title = "Select Time"
   }) async {
     String? selectedTime = initialTime;
     String? temp = initialTime;
 
     await GlassyAlertDialog.show(
       context: context,
-      title: "Select Time",
+      title: title,
       content: _TimePickerContent(
         initialTime: initialTime,
-        showSeconds: showSeconds,
+        showSeconds: initialTime.split(":").length > 2,
         onTimeChanged: (newTime) {
           temp = newTime;
         },
@@ -61,6 +61,7 @@ class _TimePickerContent extends StatelessWidget {
       child: SettingTimePicker(
         initialTime: initialTime,
         onTimeChanged: onTimeChanged,
+        showSeconds: showSeconds,
       ),
     );
   }

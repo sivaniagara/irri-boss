@@ -1,5 +1,6 @@
-import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/menu_item_entity.dart';
+import 'dart:developer';
 
+import '../../domain/entities/menu_item_entity.dart';
 import '../models/menu_item_model.dart';
 import '../models/settings_menu_model.dart';
 import '../../utils/pump_settings_urls.dart';
@@ -52,7 +53,7 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
           .replaceAll(':menuId', menuId.toString());
 
       final response = await apiClient.get(endpoint);
-      print("response :: $response");
+      // print("response :: $response");
 
       return handleApiResponse<MenuItemEntity>(
         response,
@@ -72,73 +73,155 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
 
           final staticJson = [
             {
-              "TID": 4501,
-              "NAME": "On Delay Settings",
+              "TID": 4491,
+              "NAME": "Dry Run Settings",
               "SETS": [
                 {
                   "SN": 1,
                   "WT": 2,
                   "VAL": "OF",
-                  "SF": "ONDELAY",
-                  "TT": "On Delay Timer",
-                  "HF": "1"
-                }
-              ]
-            },
-            {
-              "TID": 4502,
-              "NAME": "Starting Capacitor Settings",
-              "SETS": [
-                {
-                  "SN": 1,
-                  "WT": 2,
-                  "VAL": "OF",
-                  "SF": "SCRDELAY",
-                  "TT": "Starting Capacitor Delay",
+                  "SF": "DRYRUN",
+                  "TT": "Dry Run Scan",
                   "HF": "1"
                 },
                 {
                   "SN": 2,
                   "WT": 3,
                   "VAL": "00:00:00",
-                  "SF": "SCRDELAY",
-                  "TT": "Starting Capacitor Timer",
+                  "SF": "DRSCAN",
+                  "TT": "Dry Run Scan Timer",
                   "HF": "1"
-                }
-              ]
-            },
-            {
-              "TID": 4503,
-              "NAME": "Star To Delta Settings",
-              "SETS": [
+                },
                 {
-                  "SN": 1,
+                  "SN": 3,
+                  "WT": 1,
+                  "VAL": "0",
+                  "SF": "DRAMPS2",
+                  "TT": "Dry Run Amps 2PH",
+                  "HF": "0"
+                },
+                {
+                  "SN": 4,
+                  "WT": 1,
+                  "VAL": "0",
+                  "SF": "DRAMPS3",
+                  "TT": "Dry Run Amps 3PH",
+                  "HF": "1"
+                },
+                {
+                  "SN": 5,
+                  "WT": 2,
+                  "VAL": "OF",
+                  "SF": "DRRESTART",
+                  "TT": "Dry Run Restart",
+                  "HF": "0"
+                },
+                {
+                  "SN": 6,
                   "WT": 3,
                   "VAL": "00:00:00",
-                  "SF": "SDDELAY",
-                  "TT": "Star to Delta OFF Delay",
-                  "HF": "1"
+                  "SF": "DRRESTART",
+                  "TT": "Dry Run Restart Timer",
+                  "HF": "0"
+                },
+                {
+                  "SN": 7,
+                  "WT": 2,
+                  "VAL": "OF",
+                  "SF": "DRYRUN",
+                  "TT": "Dry Run Occurance",
+                  "HF": "0"
+                },
+                {
+                  "SN": 8,
+                  "WT": 3,
+                  "VAL": "00:00:00",
+                  "SF": "DROCCURTIM",
+                  "TT": "Dry Run Occurance Timer",
+                  "HF": "0"
+                },
+                {
+                  "SN": 9,
+                  "WT": 1,
+                  "VAL": "0",
+                  "SF": "DROCCURNBR",
+                  "TT": "Dry Run Occurance Count",
+                  "HF": "0"
                 }
               ]
             },
             {
-              "TID": 4504,
-              "NAME": "Starte Trip Settings",
+              "TID": 4492,
+              "NAME": "Overload Settings",
               "SETS": [
                 {
                   "SN": 1,
                   "WT": 2,
                   "VAL": "OF",
-                  "SF": "SFB",
-                  "TT": "Starter Trip",
+                  "SF": "OL",
+                  "TT": "Overload Scan",
                   "HF": "1"
                 },
                 {
                   "SN": 2,
                   "WT": 3,
                   "VAL": "00:00:00",
-                  "SF": "SFBDELAY",
-                  "TT": "Starter Trip Timer",
+                  "SF": "OLSCAN",
+                  "TT": "Overload Scan Timer",
+                  "HF": "1"
+                },
+                {
+                  "SN": 3,
+                  "WT": 1,
+                  "VAL": "0",
+                  "SF": "OLAMPS2",
+                  "TT": "Overload Amps 2PH",
+                  "HF": "0"
+                },
+                {
+                  "SN": 4,
+                  "WT": 1,
+                  "VAL": "0",
+                  "SF": "OLAMPS3",
+                  "TT": "Overload Amps 3PH",
+                  "HF": "1"
+                }
+              ]
+            },
+            {
+              "TID": 4493,
+              "NAME": "Power on reset Settings",
+              "SETS": [
+                {
+                  "SN": 1,
+                  "WT": 2,
+                  "VAL": "OF",
+                  "SF": "DRRESTART",
+                  "TT": "Dry Run Power ON Reset",
+                  "HF": "1"
+                },
+                {
+                  "SN": 2,
+                  "WT": 2,
+                  "VAL": "OF",
+                  "SF": "OLRST",
+                  "TT": "Overload Power ON Reset",
+                  "HF": "1"
+                },
+                {
+                  "SN": 3,
+                  "WT": 2,
+                  "VAL": "OF",
+                  "SF": "MOBILERST",
+                  "TT": "Auto Restart",
+                  "HF": "0"
+                },
+                {
+                  "SN": 4,
+                  "WT": 2,
+                  "VAL": "OF",
+                  "SF": "AUTORST2",
+                  "TT": "Auto Restart 2PH",
                   "HF": "1"
                 }
               ]
@@ -151,8 +234,8 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
             (menuItem) => menuItem,
       );
     } catch (e, s) {
-      print('getPumpSettings error :: $e');
-      print('getPumpSettings stacktrace :: $s');
+      log('getPumpSettings error :: $e');
+      log('getPumpSettings stacktrace :: $s');
       rethrow;
     }
   }

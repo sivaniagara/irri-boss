@@ -16,9 +16,9 @@ class MotorValveSection extends StatelessWidget {
       children: [
         // 🔹 Motor image
         Image.asset(
-          motorOn == "0"
+          motorOn == "1"
               ? 'assets/images/common/ui_motor.gif' // motor ON
-              : motorOn == "1"
+              : motorOn == "0"
               ? 'assets/images/common/live_motor_off.png' // motor OFF
               : 'assets/images/common/ui_motor_yellow.png', // no status
           width: 60,
@@ -63,17 +63,17 @@ class MotorValveSection extends StatelessWidget {
         // 🔹 Valve image
        ( model == 1 || model == 5) ?
         Image.asset(
-          valveOn == "0"
+          valveOn == "1"
               ? 'assets/images/common/valve_open.gif' // valve open
-              : valveOn == "1"
+              : valveOn == "0"
               ? 'assets/images/common/valve_stop.png' // valve stop
               : 'assets/images/common/valve_no_communication.png', // no communication
           width: 60,
           height: 60,
         ) :  ( model == 27) ?       Image.asset(
-         motorOn2 == "0"
+         motorOn2 == "1"
              ? 'assets/images/common/ui_motor.gif' // motor ON
-             : motorOn2 == "1"
+             : motorOn2 == "0"
              ? 'assets/images/common/live_motor_off.png' // motor OFF
              : 'assets/images/common/ui_motor_yellow.png', // no status
          width: 60,

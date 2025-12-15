@@ -197,6 +197,30 @@ class ApiUrls {
 
   //TODO: DASHBOARD URLS (Additional from partial)
 
+  /// Get methods
+  static const String dashboardForGroupUrl = 'controller/user/:userId/cluster';
+  static const String dashboardUrl = 'user/:userId/cluster/:groupId/controller';
+
+  //TODO: SetSerial URLS
+  /// Get methods
+  /// //%@/api/v1/user/%@/subuser/%d/controller/%d/menu/92/settings/481
+  /// %@/api/v1/user/%@/subuser/0/controller/%d/view/messages/
+
+
+  static const String getsetserialUrl = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/92/settings/481';
+  static const String postsetserialUrl = 'user/:userId/cluster/:groupId/controller';
+  static const String postsetserialviewUrl = 'user/:userId/cluster/:groupId/controller';
+  static const String putserialsetUrl = 'user/:userId/cluster/:groupId/controller';
+  //TODO: common calibration URLS
+  /// Get methods
+  static const String getcommncalUrl = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/92/settings/481';
+  static const String putcommncalUrl = 'user/:userId/cluster/:groupId/controller';
+  static const String getcommncalviewUrl = 'user/:userId/cluster/:groupId/controller';
+  //TODO: Send & Receive Message URLS
+  /// Get
+  /// http://3.1.62.165:8080/api/v1/user/153/subuser/0/controller/938/report?fromDate='2025-12-04'&toDate='2025-12-04'&type=sendrevmsg
+  static const String getSendRevMsgUrl = 'user/:userId/subuser/:subuserId/controller/:controllerId/report?fromDate=:fromdate&toDate=:toDate&type=sendrevmsg';
+
 }
 
 // Simple utility function for basic replacement.

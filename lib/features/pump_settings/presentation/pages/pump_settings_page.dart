@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/action_button.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/alert_dialog.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/retry.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/time_picker_service.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/menu_item_entity.dart';
-import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/template_json_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/cubit/pump_settings_cubit.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/widgets/setting_list_tile.dart';
 
 import '../../../../core/di/injection.dart' as di;
+import '../../domain/entities/setting_widget_type.dart';
+import '../../domain/entities/template_json_entity.dart';
 import '../bloc/pump_settings_state.dart';
 
 class PumpSettingsPage extends StatelessWidget {
@@ -39,8 +43,32 @@ class PumpSettingsPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           title: Text(menuName ?? 'Pump Settings'),
-          actions: const [
-            IconButton(onPressed: null, icon: Icon(Icons.hide_source, color: Colors.white)),
+          actions: [
+            IconButton(
+              onPressed: () {
+                print("IconButton pressed"); // This will print
+
+                final state = context.read<PumpSettingsCubit>().state;
+                print("Current state: $state"); // This WILL print now
+
+                if (state is GetPumpSettingsLoaded) {
+                  GlassyAlertDialog.show(
+                    context: context,
+                    title: "Hide/Show Settings",
+                    content: _SettingsList(
+                      menu: state.settings,
+                      isHiddenFlagPage: true,
+                    ),
+                  );
+                } else {
+                  // Optional: show a message or do nothing
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Settings not loaded yet")),
+                  );
+                }
+              },
+              icon: const Icon(Icons.hide_source),
+            ),
           ],
         ),
         body: GlassyWrapper(
@@ -49,187 +77,314 @@ class PumpSettingsPage extends StatelessWidget {
               n.disallowIndicator();
               return true;
             },
-            child: _buildBody(context),
+            child: BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
+              builder: (context, state) {
+                if (state is GetPumpSettingsInitial) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state is GetPumpSettingsError) {
+                  return Center(
+                    child: Retry(
+                      message: state.message,
+                      onPressed: () => context.read<PumpSettingsCubit>().loadSettings(
+                        userId: userId,
+                        subUserId: subUserId,
+                        controllerId: controllerId,
+                        menuId: menuId,
+                      ),
+                    ),
+                  );
+                }
+
+                return _SettingsList(menu: (state as GetPumpSettingsLoaded).settings);
+              },
+            ),
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildBody(BuildContext context) {
-    return BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
-      builder: (context, state) {
-        if (state is GetPumpSettingsInitial) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (state is GetPumpSettingsLoaded) {
-          return _buildSettingMenuList(context, state.settings);
-        }
-        if (state is GetPumpSettingsError) {
-          return Center(
-            child: Retry(
-              message: state.message,
-              onPressed: () => context.read<PumpSettingsCubit>().loadSettings(
-                userId: userId,
-                subUserId: subUserId,
-                controllerId: controllerId,
-                menuId: menuId,
-              ),
-            ),
-          );
-        }
-        return const SizedBox();
-      },
-    );
-  }
+class _SettingsList extends StatelessWidget {
+  final MenuItemEntity menu;
+  final bool isHiddenFlagPage;
+  const _SettingsList({required this.menu, this.isHiddenFlagPage = false});
 
-  Widget _buildSettingMenuList(BuildContext context, MenuItemEntity menuItem) {
+  @override
+  Widget build(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-      itemCount: menuItem.template.sections.length,
-      itemBuilder: (context, index) {
-        final section = menuItem.template.sections[index];
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 12),
-            Text(section.sectionName, style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            _buildSettingsList(context, section.settings, index),
-          ],
-        );
-      },
-    );
-  }
+      itemCount: menu.template.sections.length,
+      itemBuilder: (context, sectionIndex) {
+        final section = menu.template.sections[sectionIndex];
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 12),
+              Text(section.sectionName, style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              GlassCard(
+                margin: EdgeInsetsGeometry.symmetric(horizontal: 0),
+                padding: EdgeInsetsGeometry.symmetric(horizontal: 5),
+                child: ListView.separated(
+                    physics: NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemBuilder: (BuildContext context, int index) {
+                      final SettingsEntity setting = section.settings[index];
+                      if(isHiddenFlagPage) {
+                        return CheckboxListTile(
+                          contentPadding: EdgeInsetsGeometry.symmetric(horizontal: 10, vertical: 0),
 
-  Widget _buildSettingsList(BuildContext context, List<SettingsEntity> settings, int sectionIndex) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: settings.length,
-      itemBuilder: (context, index) {
-        final item = settings[index];
-        return Row(
-          spacing: 8,
-          children: [
-            Expanded(
-              child: GlassCard(
-                margin: const EdgeInsets.symmetric(vertical: 5),
-                padding: EdgeInsets.zero,
-                child: SettingListTile(
-                  title: item.title,
-                  trailing: _buildTrailing(item, context, sectionIndex, index),
-                  onTap: () => _handleTap(context, item, sectionIndex, index),
+                          title: Text(setting.title),
+                            value: setting.hiddenFlag == "1",
+                            onChanged: (newValue) {}
+                        );
+                      }
+                      return Visibility(
+                        visible: setting.hiddenFlag == "1",
+                        child: _SettingRow(
+                          setting: setting,
+                          sectionIndex: sectionIndex,
+                          settingIndex: index,
+                        ),
+                      );
+                    },
+                    separatorBuilder: (BuildContext context, int index) {
+                      if(section.settings[index].widgetType != SettingWidgetType.multiText) {
+                        final bool isHidden = section.settings[index].hiddenFlag == "1";
+                        final bool isLast = index == section.settings.where((e) => e.hiddenFlag == "1").length;
+                        return Visibility(
+                            visible: !isHiddenFlagPage ? (isHidden && !isLast) : true,
+                            child: Divider(color: Colors.white54,)
+                        );
+                      } else {
+                        return Container();
+                      }
+                    },
+                    itemCount: section.settings.length
                 ),
-              ),
-            ),
-            CircleAvatar(
-              backgroundColor: Colors.white,
-              child: IconButton(
-                onPressed: () {
-                  final cubit = context.read<PumpSettingsCubit>();
-                  final String payload = "${settings[index].smsFormat}${settings[index].value}";
-                  String finalPayload = payload.replaceAll(':', '').replaceAll(';', ',');
-                  cubit.sendSetting(finalPayload);
-                },
-                icon: Icon(Icons.send, color: Theme.of(context).primaryColor),
-              ),
-            ),
-          ],
+              )
+            ],
+          ),
         );
       },
     );
   }
+}
 
-  Widget _buildTrailing(SettingsEntity item, BuildContext context, int sectionIndex, int settingIndex) {
+class _SettingRow extends StatelessWidget {
+  final SettingsEntity setting;
+  final int sectionIndex;
+  final int settingIndex;
+
+  const _SettingRow({
+    required this.setting,
+    required this.sectionIndex,
+    required this.settingIndex,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     final cubit = context.read<PumpSettingsCubit>();
 
-    switch (item.widgetType) {
-      case 1:
-        return Text(item.value.isEmpty ? "-" : item.value);
-      case 2:
-        final isOn = item.value == "ON";
-        return Switch(value: isOn, onChanged: (newValue) {
-          final newVal = item.value == "OF" ? "ON" : "OF";
-          cubit.updateSettingValue(newVal, sectionIndex, settingIndex);
-        });
-      case 3:
-        return Text(item.value.isEmpty ? "00:00:00" : item.value, style: Theme.of(context).textTheme.bodyMedium);
-      case 4:
-      case 5:
-        final times = item.value.split(';');
-        final t1 = times.isNotEmpty ? times[0].trim() : "00:00:00";
-        final t2 = times.length > 1 ? times[1].trim() : "00:00:00";
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(t1),
-            const Padding(padding: EdgeInsets.symmetric(horizontal: 4), child: Text("→")),
-            Text(t2),
-          ],
-        );
-      default:
-        return Text(item.value);
-    }
+    return Row(
+      children: [
+        Expanded(child: _buildInput(context)),
+        const SizedBox(width: 8),
+        CircleAvatar(
+          backgroundColor: Colors.white,
+          child: IconButton(
+            padding: EdgeInsets.zero,
+            icon: Icon(Icons.send, color: Theme.of(context).primaryColor),
+            onPressed: () => cubit.sendCurrentSetting(sectionIndex, settingIndex),
+          ),
+        ),
+      ],
+    );
   }
 
-  void _handleTap(BuildContext context, SettingsEntity item, int sectionIndex, int settingIndex) async {
-    final cubit = context.read<PumpSettingsCubit>();
+  Widget _buildInput(BuildContext context) {
+    return switch (setting.widgetType) {
+      SettingWidgetType.phone => _PhoneInput(setting: setting, onChanged: _onChanged(context)),
+      SettingWidgetType.multiTime => _MultiTimeInput(setting: setting, onChanged: _onChanged(context)),
+      SettingWidgetType.fullText => _TextInput(setting: setting, onChanged: _onChanged(context)),
+      SettingWidgetType.multiText => _MultiTextInput(setting: setting, onChanged: _onChanged(context)),
+      _ => SettingListTile(
+        title: setting.title,
+        trailing: _buildTrailing(context),
+        onTap: () => _handleTap(context),
+      ),
+    };
+  }
 
-    switch (item.widgetType) {
-      case 1:
-        final newVal = await _showTextDialog(context, item.title, item.value);
-        if (newVal != null && newVal != item.value) {
-          cubit.updateSettingValue(newVal, sectionIndex, settingIndex);
-        }
+  Widget _buildTrailing(BuildContext context) {
+    return switch (setting.widgetType) {
+    // SettingWidgetType.text => Text(setting.value.isEmpty ? "-" : setting.value, style: Theme.of(context).textTheme.bodyMedium,),
+      SettingWidgetType.text => _TextInput(setting: setting, onChanged: _onChanged(context)),
+      SettingWidgetType.toggle => Switch(
+        value: setting.value == "ON",
+        onChanged: (_) => _onChanged(context)(setting.value == "ON" ? "OF" : "ON"),
+      ),
+      SettingWidgetType.time => Text(setting.value.isEmpty ? "00:00" : setting.value, style: Theme.of(context).textTheme.bodyMedium),
+      _ => Text(setting.value, style: Theme.of(context).textTheme.bodyMedium),
+    };
+  }
+
+  void Function(String newValue) _onChanged(BuildContext context) {
+    return (String newValue) {
+      context.read<PumpSettingsCubit>().updateSettingValue(
+        newValue,
+        sectionIndex,
+        settingIndex,
+      );
+    };
+  }
+
+  void _handleTap(BuildContext context) async {
+    String? newValue;
+
+    switch (setting.widgetType) {
+      case SettingWidgetType.toggle:
+        newValue = setting.value == "OF" ? "ON" : "OF";
         break;
 
-      case 2:
-        final newVal = item.value == "OF" ? "ON" : "OF";
-        cubit.updateSettingValue(newVal, sectionIndex, settingIndex);
-        break;
-
-      case 3:
-        final newTime = await TimePickerService.show(
+      case SettingWidgetType.time:
+        newValue = await TimePickerService.show(
           context: context,
-          initialTime: item.value,
-          showSeconds: true,
+          title: setting.title,
+          initialTime: setting.value,
         );
-        if (newTime != null && newTime != item.value) {
-          cubit.updateSettingValue(newTime, sectionIndex, settingIndex);
-        }
         break;
 
-      case 4:
-      case 5:
-        final times = item.value.contains(';') ? item.value.split(';') : ["00:00:00 ; 00:00:00"];
-        final onTime = times[0].trim();
-        final offTime = times.length > 1 ? times[1].trim() : "00:00:00";
+      default:
+        return;
+    }
 
-        final newOn = await TimePickerService.show(context: context, initialTime: onTime);
-        if (newOn == null) return;
-
-        final newOff = await TimePickerService.show(context: context, initialTime: offTime);
-        if (newOff == null) return;
-
-        final newValue = "$newOn;$newOff";
-        if (newValue != item.value) {
-          cubit.updateSettingValue(newValue, sectionIndex, settingIndex);
-        }
-        break;
+    if (newValue != null && newValue != setting.value) {
+      _onChanged(context)(newValue);
     }
   }
+}
 
-  Future<String?> _showTextDialog(BuildContext context, String title, String current) async {
-    final controller = TextEditingController(text: current);
-    return showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: TextField(controller: controller, keyboardType: TextInputType.number),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Cancel")),
-          TextButton(onPressed: () => Navigator.pop(ctx, controller.text.trim()), child: const Text("Save")),
+class _PhoneInput extends StatelessWidget {
+  final SettingsEntity setting;
+  final ValueChanged<String> onChanged;
+  const _PhoneInput({required this.setting, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: IntlPhoneField(
+        initialValue: setting.value,
+        initialCountryCode: 'IN',
+        style: const TextStyle(color: Colors.white),
+        dropdownTextStyle: const TextStyle(color: Colors.white),
+        dropdownIcon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+        onChanged: (phone) => onChanged(phone.completeNumber),
+      ),
+    );
+  }
+}
+
+class _TextInput extends StatelessWidget {
+  final SettingsEntity setting;
+  final ValueChanged<String> onChanged;
+  const _TextInput({required this.setting, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: TextFormField(
+        initialValue: setting.value,
+        keyboardType: TextInputType.number,
+        decoration: InputDecoration(
+            labelText: setting.title,
+            contentPadding: EdgeInsetsGeometry.symmetric(horizontal: 10)
+        ),
+        onChanged: onChanged,
+      ),
+    );
+  }
+}
+
+class _MultiTimeInput extends StatelessWidget {
+  final SettingsEntity setting;
+  final ValueChanged<String> onChanged;
+  const _MultiTimeInput({required this.setting, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final titles = setting.title.split(';').map((e) => e.trim()).toList();
+    final values = setting.value.split(';').map((e) => e.trim()).toList();
+
+    return Column(
+      children: List.generate(titles.length, (i) => SettingListTile(
+        title: titles[i],
+        trailing: Text(values[i], style: Theme.of(context).textTheme.bodyMedium,),
+        onTap: () async {
+          final newTime = await TimePickerService.show(context: context, title: titles[i], initialTime: values[i]);
+          if (newTime != null) {
+            final newValues = [...values]..[i] = newTime;
+            onChanged(newValues.join(';'));
+          }
+        },
+      )),
+    );
+  }
+}
+
+class _MultiTextInput extends StatelessWidget {
+  final SettingsEntity setting;
+  final ValueChanged<String> onChanged;
+  const _MultiTextInput({required this.setting, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final titles = setting.title.split(';').map((e) => e.trim()).toList();
+    final values = setting.value.split(';').map((e) => e.trim()).toList();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            spacing: 30,
+            children: [
+              for(int i = 0 ; i < titles.length; i++)
+                if(titles[i].isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    child: Text(titles[i]),
+                  )
+            ],
+          ),
+          // if(setting.title.isEmpty)
+          Row(
+            spacing: 30,
+            children: [
+              for(int i = 0; i < values.length; i++)
+                Flexible(
+                  child: TextFormField(
+                    initialValue: values[i],
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                        contentPadding: EdgeInsetsGeometry.symmetric(horizontal: 10, vertical: 0),
+                        isDense: true
+                    ),
+                    onChanged: (newValue) async {
+                      final newValues = [...values]..[i] = newValue;
+                      onChanged(newValues.join(';'));
+                    },
+                  ),
+                ),
+            ],
+          )
         ],
       ),
     );
