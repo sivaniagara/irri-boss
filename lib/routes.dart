@@ -21,31 +21,14 @@ import 'features/auth/utils/auth_routes.dart';
 import 'core/di/injection.dart' as di;
 import 'core/utils/route_constants.dart';
 import 'core/widgets/glassy_wrapper.dart';
-import 'features/auth/domain/entities/user_entity.dart';
-import 'features/auth/presentation/pages/sign_up_page.dart';
 import 'features/controller_details/domain/usecase/controller_details_params.dart';
 import 'features/controller_details/presentation/bloc/controller_details_bloc.dart';
 import 'features/controller_details/presentation/bloc/controller_details_bloc_event.dart';
 import 'features/controller_details/presentation/pages/controller_details_page.dart';
-import 'features/dashboard/presentation/pages/controller_live_page.dart';
-import 'features/dashboard/domain/entities/controller_entity.dart';
-import 'features/dashboard/presentation/bloc/dashboard_bloc.dart';
-import 'features/dashboard/presentation/bloc/dashboard_event.dart';
-import 'features/auth/presentation/bloc/auth_bloc.dart';
-import 'features/auth/presentation/bloc/auth_state.dart';
-import 'features/auth/presentation/pages/login_page.dart';
-import 'features/auth/presentation/pages/otp_page.dart';
-import 'features/dashboard/presentation/pages/dashboard_page.dart';
 import 'features/dealer_dashboard/presentation/pages/dealer_dashboard_page.dart';
 import 'features/setserialsettings/domain/usecase/setserial_details_params.dart';
 import 'features/setserialsettings/presentation/bloc/setserial_bloc.dart';
 import 'features/setserialsettings/presentation/bloc/setserial_bloc_event.dart';
-import 'features/side_drawer/groups/domain/usecases/add_group_usecase.dart';
-import 'features/side_drawer/groups/domain/usecases/delete_group_usecase.dart';
-import 'features/side_drawer/groups/domain/usecases/edit_group_usecase.dart';
-import 'features/side_drawer/groups/domain/usecases/group_fetching_usecase.dart';
-import 'features/side_drawer/groups/presentation/bloc/group_bloc.dart';
-import 'features/side_drawer/groups/presentation/bloc/group_event.dart';
 import 'features/side_drawer/groups/presentation/pages/chat.dart';
 import 'features/side_drawer/groups/presentation/widgets/app_drawer.dart';
 import 'features/auth/auth.dart';
@@ -68,7 +51,7 @@ class GoRouterRefreshStream extends ChangeNotifier {
   }
 }
 
-Widget pageSlider(context, animation, secondaryAnimation, child){
+Widget pageSlider(context, animation, secondaryAnimation, child) {
   const begin = Offset(2.0, 0.0);
   const end = Offset.zero;
   const curve = Curves.easeInOut;
@@ -105,7 +88,9 @@ class AppRouter {
           return AuthRoutes.verifyOtp;
         }
 
-        if (isLoggedIn && (location == AuthRoutes.login || location == AuthRoutes.verifyOtp)) {
+        if (isLoggedIn &&
+            (location == AuthRoutes.login ||
+                location == AuthRoutes.verifyOtp)) {
           if (authState.user.userDetails.userType == 2) {
             return DealerRoutes.dealerDashboard;
           } else if (authState.user.userDetails.userType == 1) {
@@ -135,7 +120,8 @@ class AppRouter {
           path: AuthRoutes.editProfile,
           builder: (context, state) {
             final authState = authBloc.state;
-            final initialData = authState is Authenticated ? authState.user.userDetails : null;
+            final initialData =
+                authState is Authenticated ? authState.user.userDetails : null;
             return UserProfileForm(
               key: const ValueKey('editProfile'),
               isEdit: true,
@@ -149,9 +135,12 @@ class AppRouter {
           builder: (context, state) {
             final authState = authBloc.state;
             final params = state.extra is Map ? state.extra as Map : null;
-            final verificationId = params?['verificationId'] ?? (authState is OtpSent ? authState.verificationId : '');
-            final phone = params?['phone'] ?? (authState is OtpSent ? authState.phone : '');
-            final countryCode = params?['countryCode'] ?? (authState is OtpSent ? authState.countryCode : '');
+            final verificationId = params?['verificationId'] ??
+                (authState is OtpSent ? authState.verificationId : '');
+            final phone = params?['phone'] ??
+                (authState is OtpSent ? authState.phone : '');
+            final countryCode = params?['countryCode'] ??
+                (authState is OtpSent ? authState.countryCode : '');
 
             if (verificationId.isEmpty || phone.isEmpty) {
               return const LoginPage();
@@ -173,23 +162,24 @@ class AppRouter {
               create: (context) => di.sl<DashboardBloc>()
                 ..add(FetchDashboardGroupsEvent(authData.id))
                 ..add(ResetDashboardSelectionEvent()),
-              child: DashboardPage(userId: authData.id, userType: authData.userType),
+              child: DashboardPage(
+                  userId: authData.id, userType: authData.userType),
             );
             return bloc;
           },
         ),
         GoRoute(
-          name: 'ctrlLivePage',
-          path: DashBoardRoutes.ctrlLivePage,
-          builder: (context, state) {
-            print('Building ctrlLivePage, AuthBloc state: ${authBloc.state}');
-            final selectedController = state.extra as LiveMessageEntity?;
-            return BlocProvider.value(
-              value: authBloc,
-              child: CtrlLivePage(selectedController: selectedController),
-            );
-          },
-          routes: [
+            name: 'ctrlLivePage',
+            path: DashBoardRoutes.ctrlLivePage,
+            builder: (context, state) {
+              print('Building ctrlLivePage, AuthBloc state: ${authBloc.state}');
+              final selectedController = state.extra as LiveMessageEntity?;
+              return BlocProvider.value(
+                value: authBloc,
+                child: CtrlLivePage(selectedController: selectedController),
+              );
+            },
+            routes: [
           ]
         ),
         ...pumpSettingsRoutes,
@@ -214,9 +204,17 @@ class AppRouter {
           path: RouteConstants.setSerialPage,
           builder: (context, state) {
             final params = state.extra as SetSerialParams;
-            return BlocProvider(create: (_) => di.sl<SetSerialBloc>()
-                ..add(LoadSerialEvent(userId: params.userId,controllerId: params.controllerId,)),
-              child: SerialSetCalibrationPage(userId: params.userId,controllerId: params.controllerId, type: params.type,),
+            return BlocProvider(
+              create: (_) => di.sl<SetSerialBloc>()
+                ..add(LoadSerialEvent(
+                  userId: params.userId,
+                  controllerId: params.controllerId,
+                )),
+              child: SerialSetCalibrationPage(
+                userId: params.userId,
+                controllerId: params.controllerId,
+                type: params.type,
+              ),
             );
           },
         ),
@@ -288,9 +286,12 @@ class AppRouter {
               builder: (context, state) {
                 final authData = _getAuthData();
                 final getSubUserUsecase = di.sl<GetSubUsersUsecase>();
-                final getSubUserDetailsUsecase = di.sl<GetSubUserDetailsUsecase>();
-                final updateSubUserDetailsUsecase = di.sl<UpdateSubUserDetailsUseCase>();
-                final getSubUserByPhoneUseCase = di.sl<GetSubUserByPhoneUsecase>();
+                final getSubUserDetailsUsecase =
+                    di.sl<GetSubUserDetailsUsecase>();
+                final updateSubUserDetailsUsecase =
+                    di.sl<UpdateSubUserDetailsUseCase>();
+                final getSubUserByPhoneUseCase =
+                    di.sl<GetSubUserByPhoneUsecase>();
                 return BlocProvider(
                   create: (context) => SubUsersBloc(
                     getSubUsersUsecase: getSubUserUsecase,
@@ -307,15 +308,15 @@ class AppRouter {
               path: SubUserRoutes.subUserDetails,
               builder: (context, state) {
                 final params = state.extra is Map ? state.extra as Map : null;
-                final SubUsersBloc existingBloc = params?['existingBloc'] as SubUsersBloc;
+                final SubUsersBloc existingBloc =
+                    params?['existingBloc'] as SubUsersBloc;
                 return BlocProvider.value(
                   value: existingBloc,
                   child: SubUserDetailsScreen(
                     subUserDetailsParams: GetSubUserDetailsParams(
                         userId: params?['userId'],
                         subUserCode: params?['subUserCode'],
-                        isNewSubUser: params?['isNewSubUser']
-                    ),
+                        isNewSubUser: params?['isNewSubUser']),
                   ),
                 );
               },
@@ -340,7 +341,7 @@ class AppRouter {
           ],
         ),
         ShellRoute(
-            builder: (context, state, child){
+            builder: (context, state, child) {
               return BlocProvider(
                 create: (context) => di.sl<ControllerTabCubit>(),
                 child: ControllerAppBar(child: child),
@@ -354,27 +355,30 @@ class AppRouter {
                   width: double.infinity,
                   decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          Color(0xffC6DDFF),
-                          Color(0xff67C8F1),
-                          Color(0xff6DA8F5),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      )
-                  ),
+                    colors: [
+                      Color(0xffC6DDFF),
+                      Color(0xff67C8F1),
+                      Color(0xff6DA8F5),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  )),
                 ),
               ),
               GoRoute(
                 path: ControllerSettingsRoutes.nodes,
-                builder: (context, state) => Center(child: Text('Nodes', style: TextStyle(color: Colors.black),),),
+                builder: (context, state) => Center(
+                  child: Text(
+                    'Nodes',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                ),
               ),
               GoRoute(
                 path: ControllerSettingsRoutes.program,
                 builder: (context, state) => ControllerProgram(),
               ),
-            ]
-        ),
+            ]),
       ],
     );
   }
@@ -396,7 +400,8 @@ class AppRouter {
     );
   }
 
-  Widget _buildWithAuthBloc(Widget child) => BlocProvider.value(value: authBloc, child: child);
+  Widget _buildWithAuthBloc(Widget child) =>
+      BlocProvider.value(value: authBloc, child: child);
 
   GoRoute _authRoute({
     required String name,

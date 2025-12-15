@@ -23,6 +23,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     required int controllerId,
     required int menuId,
   }) async {
+    if (state is GetPumpSettingsLoaded) return;
     emit(GetPumpSettingsInitial());
 
     final result = await getPumpSettingsUsecase(GetPumpSettingsParams(
@@ -38,7 +39,8 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     );
   }
 
-  void updateSettingValue(String newValue, int sectionIndex, int settingIndex,) {
+  void updateSettingValue(String newValue, int sectionIndex, int settingIndex, {bool isHiddenFlag = false}) {
+    print('Hidden flag updated: section $sectionIndex, setting $settingIndex, newValue: $newValue');
     if (state is! GetPumpSettingsLoaded) return;
 
     final currentState = state as GetPumpSettingsLoaded;
@@ -49,7 +51,11 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     final targetSection = newSections[sectionIndex];
     final newSettings = List<SettingsEntity>.from(targetSection.settings);
 
-    newSettings[settingIndex] = newSettings[settingIndex].copyWith(value: newValue);
+    if(isHiddenFlag) {
+      newSettings[settingIndex] = newSettings[settingIndex].copyWith(hiddenFlag: newValue);
+    } else {
+      newSettings[settingIndex] = newSettings[settingIndex].copyWith(value: newValue);
+    }
 
     newSections[sectionIndex] = targetSection.copyWith(settings: newSettings);
 
@@ -70,9 +76,5 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
   Future<void> sendSetting(String payload) async {
     final publishMessage = jsonEncode(PublishMessageHelper.settingsPayload(payload));
     di.sl.get<MqttBloc>().add(PublishMqttEvent(deviceId: '', message: publishMessage));
-  }
-
-  void updateHiddenFlag() {
-    if (state is! GetPumpSettingsLoaded) return;
   }
 }

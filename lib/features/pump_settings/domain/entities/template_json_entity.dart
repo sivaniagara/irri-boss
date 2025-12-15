@@ -1,8 +1,8 @@
-import 'package:collection/collection.dart';
+import 'package:equatable/equatable.dart';
 
 import 'setting_widget_type.dart';
 
-class TemplateJsonEntity {
+class TemplateJsonEntity extends Equatable{
   final String type;
   final List<ParameterGroupEntity> groups;
   final List<SettingSectionEntity> sections;
@@ -35,6 +35,9 @@ class TemplateJsonEntity {
 
     return copyWith(sections: updatedSections);
   }
+
+  @override
+  List<Object?> get props => [type, groups, sections];
 }
 
 class ParameterGroupEntity {
@@ -90,7 +93,7 @@ class ParameterItemEntity {
   });
 }
 
-class SettingsEntity {
+class SettingsEntity extends Equatable {
   final int serialNumber;
   final SettingWidgetType widgetType;
   final String value;
@@ -107,19 +110,22 @@ class SettingsEntity {
     required this.hiddenFlag,
   });
 
-  SettingsEntity copyWith({String? value}) {
+  SettingsEntity copyWith({String? value, String? hiddenFlag}) {
     return SettingsEntity(
       serialNumber: serialNumber,
       widgetType: widgetType,
       value: value ?? this.value,
       smsFormat: smsFormat,
       title: title,
-      hiddenFlag: hiddenFlag,
+      hiddenFlag: hiddenFlag ?? this.hiddenFlag,
     );
   }
+
+  @override
+  List<Object?> get props => [serialNumber, widgetType, value, smsFormat, title, hiddenFlag];
 }
 
-class SettingSectionEntity {
+class SettingSectionEntity extends Equatable{
   final int typeId;
   final String sectionName;
   final List<SettingsEntity> settings;
@@ -145,4 +151,7 @@ class SettingSectionEntity {
       }).toList(),
     );
   }
+
+  @override
+  List<Object?> get props => [typeId, sectionName, settings];
 }

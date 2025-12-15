@@ -11,16 +11,22 @@ import '../../presentation/bloc/pump_settings_state.dart';
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/widgets/retry.dart';
 import '../bloc/pump_settings_menu_bloc.dart';
+import '../cubit/pump_settings_cubit.dart';
 
 class PumpSettingsMenuPage extends StatelessWidget {
   final int userId, subUserId, controllerId;
-  const PumpSettingsMenuPage({super.key, required this.userId, required this.subUserId, required this.controllerId});
+  const PumpSettingsMenuPage(
+      {super.key,
+      required this.userId,
+      required this.subUserId,
+      required this.controllerId});
 
   @override
   Widget build(BuildContext dialogContext) {
     return BlocProvider(
-        create: (context) => di.sl<PumpSettingsMenuBloc>()
-          ..add(GetPumpSettingsMenuEvent(userId: userId, subUserId: subUserId, controllerId: controllerId)),
+      create: (context) => di.sl<PumpSettingsMenuBloc>()
+        ..add(GetPumpSettingsMenuEvent(
+            userId: userId, subUserId: subUserId, controllerId: controllerId)),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
@@ -28,8 +34,10 @@ class PumpSettingsMenuPage extends StatelessWidget {
           actions: [
             IconButton(
                 onPressed: null,
-                icon: Icon(Icons.hide_source, color: Colors.white,)
-            )
+                icon: Icon(
+                  Icons.hide_source,
+                  color: Colors.white,
+                ))
           ],
         ),
         body: GlassyWrapper(
@@ -38,39 +46,36 @@ class PumpSettingsMenuPage extends StatelessWidget {
                   notification.disallowIndicator();
                   return true;
                 },
-                child: _buildBody(dialogContext)
-            )
-        ),
+                child: _buildBody(dialogContext))),
       ),
     );
   }
 
-  Widget _buildBody (BuildContext context) {
+  Widget _buildBody(BuildContext context) {
     return BlocBuilder<PumpSettingsMenuBloc, PumpSettingsState>(
         builder: (context, state) {
-          if(state is GetPumpSettingsMenuInitial) {
-            return Center(
-              child: CircularProgressIndicator()
-            );
-          }
-          else if(state is GetPumpSettingsMenuLoaded) {
-            return _buildSettingMenuList(context, state.settingMenuList);
-          } else if(state is GetPumpSettingsMenuError) {
-            return Center(
-              child: Retry(
-                message: state.message,
-                onPressed: () => context.read<PumpSettingsMenuBloc>().add(
-                    GetPumpSettingsMenuEvent(userId: userId, subUserId: subUserId, controllerId: controllerId)
-                ),
-              ),
-            );
-          }
-          return SizedBox();
-        }
-    );
+      if (state is GetPumpSettingsMenuInitial) {
+        return Center(child: CircularProgressIndicator());
+      } else if (state is GetPumpSettingsMenuLoaded) {
+        return _buildSettingMenuList(context, state.settingMenuList);
+      } else if (state is GetPumpSettingsMenuError) {
+        return Center(
+          child: Retry(
+            message: state.message,
+            onPressed: () => context.read<PumpSettingsMenuBloc>().add(
+                GetPumpSettingsMenuEvent(
+                    userId: userId,
+                    subUserId: subUserId,
+                    controllerId: controllerId)),
+          ),
+        );
+      }
+      return SizedBox();
+    });
   }
 
-  Widget _buildSettingMenuList(BuildContext context, List<SettingsMenuEntity> settingMenuList) {
+  Widget _buildSettingMenuList(
+      BuildContext context, List<SettingsMenuEntity> settingMenuList) {
     return GridView.builder(
       padding: EdgeInsets.all(10),
       itemCount: settingMenuList.length,
@@ -79,23 +84,24 @@ class PumpSettingsMenuPage extends StatelessWidget {
         return GlassCard(
           child: InkWell(
             onTap: () {
-              context.push(
-                  PumpSettingsPageRoutes.pumpSettingsPage,
-                  extra: {
-                    'userId' : userId,
-                    'controllerId': controllerId,
-                    'subUserId' : subUserId,
-                    'menuId': item.menuSettingId,
-                    'menuName': item.templateName
-                  }
-              );
+              context.push(PumpSettingsPageRoutes.pumpSettingsPage, extra: {
+                "cubit": context.read<PumpSettingsCubit>(),
+                'userId': userId,
+                'controllerId': controllerId,
+                'subUserId': subUserId,
+                'menuId': item.menuSettingId,
+                'menuName': item.templateName
+              });
             },
             borderRadius: BorderRadius.circular(12.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              spacing: 10,
               children: [
-                Icon(Icons.settings, size: 25.0,),
+                Icon(
+                  Icons.settings,
+                  size: 25.0,
+                ),
+                const SizedBox(height: 8),
                 Text(
                   item.menuItem,
                   style: Theme.of(context).textTheme.titleSmall,

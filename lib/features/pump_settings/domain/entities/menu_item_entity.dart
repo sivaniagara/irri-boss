@@ -1,10 +1,11 @@
 // features/pump_settings/domain/entities/menu_item_entity.dart
 
 import 'package:collection/collection.dart';
+import 'package:equatable/equatable.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/settings_menu_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/template_json_entity.dart';
 
-class MenuItemEntity {
+class MenuItemEntity extends Equatable{
   final SettingsMenuEntity menu;
   final TemplateJsonEntity template;
 
@@ -39,18 +40,5 @@ class MenuItemEntity {
   }
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-          other is MenuItemEntity &&
-              runtimeType == other.runtimeType &&
-              menu == other.menu &&
-              template == other.template;
-
-  @override
-  int get hashCode => Object.hash(menu, template);
-
-  @override
-  String toString() {
-    return 'MenuItemEntity(menu: ${menu.templateName}, templateType: ${template.type})';
-  }
+  List<Object?> get props => [menu, template];
 }

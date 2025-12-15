@@ -20,19 +20,29 @@ final pumpSettingsRoutes = <GoRoute>[
     builder: (context, state) {
       final params = state.extra as Map<String, dynamic>;
 
-      return BlocProvider(
-        create: (_) => di.sl<PumpSettingsMenuBloc>()
-          ..add(GetPumpSettingsMenuEvent(
-            userId: params['userId'] as int,
-            subUserId: params['subUserId'] as int,
-            controllerId: params['controllerId'] as int,
-          )),
+      return MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (_) => di.sl<PumpSettingsMenuBloc>()
+              ..add(GetPumpSettingsMenuEvent(
+                userId: params['userId'],
+                subUserId: params['subUserId'],
+                controllerId: params['controllerId'],
+              )),
+          ),
+
+          // ADD THIS
+          BlocProvider(
+            create: (_) => di.sl<PumpSettingsCubit>(),
+          ),
+        ],
         child: PumpSettingsMenuPage(
-          userId: params['userId'] as int,
-          subUserId: params['subUserId'] as int,
-          controllerId: params['controllerId'] as int,
+          userId: params['userId'],
+          subUserId: params['subUserId'],
+          controllerId: params['controllerId'],
         ),
       );
+
     },
   ),
   GoRoute(
@@ -41,22 +51,25 @@ final pumpSettingsRoutes = <GoRoute>[
     builder: (context, state) {
       final params = state.extra as Map<String, dynamic>;
 
-      return BlocProvider(
-        create: (_) => di.sl<PumpSettingsCubit>()
-          ..loadSettings(
-            userId: params["userId"],
-            subUserId: params["subUserId"],
-            controllerId: params["controllerId"],
-            menuId: params["menuId"],
-          ),
+      final PumpSettingsCubit cubit = params["cubit"];
+
+      cubit.loadSettings(
+        userId: params['userId'],
+        subUserId: params['subUserId'],
+        controllerId: params['controllerId'],
+        menuId: params['menuId'],
+      );
+
+      return BlocProvider.value(
+        value: cubit,
         child: PumpSettingsPage(
-          menuId: params['menuId'] as int,
-          userId: params['userId'] as int,
-          subUserId: params['subUserId'] as int,
-          controllerId: params['controllerId'] as int,
+          menuId: params['menuId'],
+          userId: params['userId'],
+          subUserId: params['subUserId'],
+          controllerId: params['controllerId'],
           menuName: params['menuName'],
         ),
       );
-    },
+    }
   ),
 ];

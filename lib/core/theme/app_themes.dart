@@ -83,7 +83,7 @@ class AppThemes {
     ),
     listTileTheme: ListTileThemeData(
       textColor: Colors.white,
-      titleTextStyle: TextStyle(color: Colors.black, fontSize: 20)
+      // titleTextStyle: TextStyle(color: Colors.black, fontSize: 20)
     ),
     textTheme: TextTheme(
       titleMedium: TextStyle(color: Colors.white),

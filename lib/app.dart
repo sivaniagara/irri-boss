@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kDebugMode;
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/mqtt/bloc/mqtt_bloc.dart';
 import 'package:provider/provider.dart';
@@ -18,7 +21,19 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 late final AppRouter appRouter;
 
 Future<void> appMain() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await di.init();
+  if (Firebase.apps.isEmpty) {
+    try {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    } on UnsupportedError catch (e) {
+      // Platform not supported for Firebase initialization (e.g., desktop without config)
+      // Log and continue; Firebase-dependent features should handle missing Firebase gracefully.
+      if (kDebugMode) print('Firebase initialize skipped: $e');
+    }
+  }
   await FirebaseMessaging.instance.setAutoInitEnabled(true);
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await di.sl<NotificationService>().init();

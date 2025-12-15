@@ -8,11 +8,12 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  FirebaseMessaging? _firebaseMessaging;
 
   Future<void> init() async {
     // Request notification permissions for iOS and Android
-    await _firebaseMessaging.requestPermission(
+    _firebaseMessaging = FirebaseMessaging.instance;
+    await _firebaseMessaging!.requestPermission(
       alert: true,
       announcement: false,
       badge: true,
@@ -34,7 +35,8 @@ class NotificationService {
       requestSoundPermission: true,
     );
 
-    const InitializationSettings initializationSettings = InitializationSettings(
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsDarwin,
     );
@@ -50,8 +52,9 @@ class NotificationService {
     );
 
     // Request Android 13+ notification permission
-    final androidPlugin = _flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    final androidPlugin =
+        _flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
     if (androidPlugin != null) {
       final granted = await androidPlugin.requestNotificationsPermission();
       print('Notification permission granted: $granted');
@@ -89,7 +92,7 @@ class NotificationService {
 
   Future<String?> getFcmToken() async {
     try {
-      final token = await _firebaseMessaging.getToken();
+      final token = await _firebaseMessaging!.getToken();
       print('FCM Token: $token');
       return token;
     } catch (e) {
