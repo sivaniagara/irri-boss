@@ -15,6 +15,8 @@ import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/uti
 import 'features/controller_settings/presentaion/cubit/controller_tab_cubit.dart';
 import 'features/controller_settings/utils/controller_settings_routes.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
+import 'features/fault_msg/utils/faultmsg_routes.dart';
+import 'features/sendrev_msg/utils/senrev_routes.dart';
 import 'features/side_drawer/groups/utils/group_routes.dart';
 import 'features/auth/utils/auth_routes.dart';
 
@@ -88,9 +90,7 @@ class AppRouter {
           return AuthRoutes.verifyOtp;
         }
 
-        if (isLoggedIn &&
-            (location == AuthRoutes.login ||
-                location == AuthRoutes.verifyOtp)) {
+        if (isLoggedIn && (location == AuthRoutes.login || location == AuthRoutes.verifyOtp)) {
           if (authState.user.userDetails.userType == 2) {
             return DealerRoutes.dealerDashboard;
           } else if (authState.user.userDetails.userType == 1) {
@@ -120,8 +120,7 @@ class AppRouter {
           path: AuthRoutes.editProfile,
           builder: (context, state) {
             final authState = authBloc.state;
-            final initialData =
-                authState is Authenticated ? authState.user.userDetails : null;
+            final initialData = authState is Authenticated ? authState.user.userDetails : null;
             return UserProfileForm(
               key: const ValueKey('editProfile'),
               isEdit: true,
@@ -135,12 +134,9 @@ class AppRouter {
           builder: (context, state) {
             final authState = authBloc.state;
             final params = state.extra is Map ? state.extra as Map : null;
-            final verificationId = params?['verificationId'] ??
-                (authState is OtpSent ? authState.verificationId : '');
-            final phone = params?['phone'] ??
-                (authState is OtpSent ? authState.phone : '');
-            final countryCode = params?['countryCode'] ??
-                (authState is OtpSent ? authState.countryCode : '');
+            final verificationId = params?['verificationId'] ?? (authState is OtpSent ? authState.verificationId : '');
+            final phone = params?['phone'] ?? (authState is OtpSent ? authState.phone : '');
+            final countryCode = params?['countryCode'] ?? (authState is OtpSent ? authState.countryCode : '');
 
             if (verificationId.isEmpty || phone.isEmpty) {
               return const LoginPage();
@@ -162,24 +158,23 @@ class AppRouter {
               create: (context) => di.sl<DashboardBloc>()
                 ..add(FetchDashboardGroupsEvent(authData.id))
                 ..add(ResetDashboardSelectionEvent()),
-              child: DashboardPage(
-                  userId: authData.id, userType: authData.userType),
+              child: DashboardPage(userId: authData.id, userType: authData.userType),
             );
             return bloc;
           },
         ),
         GoRoute(
-            name: 'ctrlLivePage',
-            path: DashBoardRoutes.ctrlLivePage,
-            builder: (context, state) {
-              print('Building ctrlLivePage, AuthBloc state: ${authBloc.state}');
-              final selectedController = state.extra as LiveMessageEntity?;
-              return BlocProvider.value(
-                value: authBloc,
-                child: CtrlLivePage(selectedController: selectedController),
-              );
-            },
-            routes: [
+          name: 'ctrlLivePage',
+          path: DashBoardRoutes.ctrlLivePage,
+          builder: (context, state) {
+            print('Building ctrlLivePage, AuthBloc state: ${authBloc.state}');
+            final selectedController = state.extra as LiveMessageEntity?;
+            return BlocProvider.value(
+              value: authBloc,
+              child: CtrlLivePage(selectedController: selectedController),
+            );
+          },
+          routes: [
           ]
         ),
         ...pumpSettingsRoutes,
@@ -204,17 +199,9 @@ class AppRouter {
           path: RouteConstants.setSerialPage,
           builder: (context, state) {
             final params = state.extra as SetSerialParams;
-            return BlocProvider(
-              create: (_) => di.sl<SetSerialBloc>()
-                ..add(LoadSerialEvent(
-                  userId: params.userId,
-                  controllerId: params.controllerId,
-                )),
-              child: SerialSetCalibrationPage(
-                userId: params.userId,
-                controllerId: params.controllerId,
-                type: params.type,
-              ),
+            return BlocProvider(create: (_) => di.sl<SetSerialBloc>()
+                ..add(LoadSerialEvent(userId: params.userId,controllerId: params.controllerId,)),
+              child: SerialSetCalibrationPage(userId: params.userId,controllerId: params.controllerId, type: params.type,),
             );
           },
         ),
@@ -286,12 +273,9 @@ class AppRouter {
               builder: (context, state) {
                 final authData = _getAuthData();
                 final getSubUserUsecase = di.sl<GetSubUsersUsecase>();
-                final getSubUserDetailsUsecase =
-                    di.sl<GetSubUserDetailsUsecase>();
-                final updateSubUserDetailsUsecase =
-                    di.sl<UpdateSubUserDetailsUseCase>();
-                final getSubUserByPhoneUseCase =
-                    di.sl<GetSubUserByPhoneUsecase>();
+                final getSubUserDetailsUsecase = di.sl<GetSubUserDetailsUsecase>();
+                final updateSubUserDetailsUsecase = di.sl<UpdateSubUserDetailsUseCase>();
+                final getSubUserByPhoneUseCase = di.sl<GetSubUserByPhoneUsecase>();
                 return BlocProvider(
                   create: (context) => SubUsersBloc(
                     getSubUsersUsecase: getSubUserUsecase,
@@ -308,15 +292,15 @@ class AppRouter {
               path: SubUserRoutes.subUserDetails,
               builder: (context, state) {
                 final params = state.extra is Map ? state.extra as Map : null;
-                final SubUsersBloc existingBloc =
-                    params?['existingBloc'] as SubUsersBloc;
+                final SubUsersBloc existingBloc = params?['existingBloc'] as SubUsersBloc;
                 return BlocProvider.value(
                   value: existingBloc,
                   child: SubUserDetailsScreen(
                     subUserDetailsParams: GetSubUserDetailsParams(
                         userId: params?['userId'],
                         subUserCode: params?['subUserCode'],
-                        isNewSubUser: params?['isNewSubUser']),
+                        isNewSubUser: params?['isNewSubUser']
+                    ),
                   ),
                 );
               },
@@ -326,11 +310,7 @@ class AppRouter {
               path: RouteConstants.chat,
               builder: (context, state) => const Chat(),
             ),
-            _authRoute(
-              name: 'sendRevMsgPage',
-              path: RouteConstants.sendRevMsgPage,
-              builder: (context, state) => const Chat(),
-            ),
+
             GoRoute(
               path: DealerRoutes.dealerDashboard,
               builder: (context, state) => BlocProvider.value(
@@ -378,7 +358,10 @@ class AppRouter {
                 path: ControllerSettingsRoutes.program,
                 builder: (context, state) => ControllerProgram(),
               ),
-            ]),
+            ]
+        ),
+        ...sendRevPageRoutes,
+        ...FaultMsgPagesRoutes,
       ],
     );
   }
@@ -400,8 +383,7 @@ class AppRouter {
     );
   }
 
-  Widget _buildWithAuthBloc(Widget child) =>
-      BlocProvider.value(value: authBloc, child: child);
+  Widget _buildWithAuthBloc(Widget child) => BlocProvider.value(value: authBloc, child: child);
 
   GoRoute _authRoute({
     required String name,

@@ -10,6 +10,8 @@ import '../../features/controller_details/domain/repositories/controller_details
 import '../../features/controller_details/domain/usecase/controller_details_usercase.dart';
 import '../../features/controller_details/presentation/bloc/controller_details_bloc.dart';
 import '../../features/controller_details/presentation/bloc/controller_details_state.dart';
+import '../../features/fault_msg/di/faultmsg_di.dart';
+import '../../features/sendrev_msg/di/sendrev_di.dart';
 import '../../features/setserialsettings/data/datasources/setserial_datasource.dart';
 import '../../features/setserialsettings/domain/repositories/setserial_details_repo.dart';
 import '../../features/setserialsettings/domain/usecase/setserial_details_params.dart';
@@ -33,60 +35,48 @@ import '../theme/theme_provider.dart';
 
 final GetIt sl = GetIt.instance;
 
-Future<void> init(
-    {bool clear = false,
-    SharedPreferences? prefs,
-    http.Client? httpClient}) async {
+Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? httpClient}) async {
   if (clear) await reset();
 
   /// Ensure FlavorConfig was setup
   try {
     final _ = FlavorConfig.instance;
   } catch (e) {
-    throw StateError(
-        'FlavorConfig must be initialized before DI. Call FlavorConfig.setup(...) in main.');
+    throw StateError('FlavorConfig must be initialized before DI. Call FlavorConfig.setup(...) in main.');
   }
-
   /// Core services
   sl.registerLazySingleton(() => ThemeProvider());
-  sl.registerLazySingleton<NotificationService>(() => NotificationService());
+  sl.registerSingleton<NotificationService>(NotificationService());
   sl.registerLazySingleton<SomeService>(() => SomeService());
 
   /// External / third-party
   sl.registerLazySingleton<http.Client>(() => httpClient ?? http.Client());
-  sl.registerLazySingleton<ApiClient>(() => ApiClient(
-      baseUrl: FlavorConfig.instance.values.apiBaseUrl, client: sl()));
+  sl.registerLazySingleton<ApiClient>(() => ApiClient(baseUrl: FlavorConfig.instance.values.apiBaseUrl, client: sl()));
   final actualPrefs = prefs ?? await SharedPreferences.getInstance();
   sl.registerSingleton<SharedPreferences>(actualPrefs);
   sl.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(Connectivity()));
   sl.registerLazySingleton<MqttService>(
-    () => MqttService(
+        () => MqttService(
       broker: FlavorConfig.instance.values.broker,
       port: 1883,
-      clientIdentifier:
-          'flutter_client_${DateTime.now().millisecondsSinceEpoch}',
+      clientIdentifier: 'flutter_client_${DateTime.now().millisecondsSinceEpoch}',
       userName: FlavorConfig.instance.values.userName,
       password: FlavorConfig.instance.values.password,
     ),
   );
 
   /// Register MqttBloc after MqttService
-  sl.registerLazySingleton<MqttBloc>(
-      () => MqttBloc(mqttService: sl<MqttService>()));
-
+  sl.registerLazySingleton<MqttBloc>(() => MqttBloc(mqttService: sl<MqttService>()));
   /// Flavor-specific services
   registerFlavorDependencies(sl);
-
   /// Auth Dependencies
   initAuthDependencies();
-
   /// Dashboard feature
   initDashboardDependencies();
 
   /// App Drawer
   /// Groups Dependencies
   initGroupDependencies();
-
   /// Sub Users Dependencies
   initSubUsersDependencies();
 
@@ -96,7 +86,7 @@ Future<void> init(
   sl.registerFactory(() => ControllerTabCubit());
 
   sl.registerLazySingleton(
-    () => UpdateControllerUsecase(controllerRepo: sl()),
+        () => UpdateControllerUsecase(controllerRepo: sl()),
   );
 
   sl.registerLazySingleton<ControllerRemoteDataSource>(
@@ -119,6 +109,10 @@ Future<void> init(
       () => SetSerialParams(userId: sl(), controllerId: sl(), type: sl()));
   sl.registerFactory(() => LoadSerialUsecase(sl()));
   sl.registerFactory(() => LoadSerialEvent(userId: sl(), controllerId: sl()));
+
+  initSendRev();
+  initfaultmsg();
+
 }
 
 // Reset all
