@@ -19,30 +19,11 @@ final pumpSettingsRoutes = <GoRoute>[
     name: 'settingMenuList',
     builder: (context, state) {
       final params = state.extra as Map<String, dynamic>;
-
-      return MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (_) => di.sl<PumpSettingsMenuBloc>()
-              ..add(GetPumpSettingsMenuEvent(
-                userId: params['userId'],
-                subUserId: params['subUserId'],
-                controllerId: params['controllerId'],
-              )),
-          ),
-
-          // ADD THIS
-          BlocProvider(
-            create: (_) => di.sl<PumpSettingsCubit>(),
-          ),
-        ],
-        child: PumpSettingsMenuPage(
-          userId: params['userId'],
-          subUserId: params['subUserId'],
-          controllerId: params['controllerId'],
-        ),
+      return PumpSettingsMenuPage(
+        userId: params['userId'],
+        subUserId: params['subUserId'],
+        controllerId: params['controllerId'],
       );
-
     },
   ),
   GoRoute(
@@ -51,17 +32,14 @@ final pumpSettingsRoutes = <GoRoute>[
     builder: (context, state) {
       final params = state.extra as Map<String, dynamic>;
 
-      final PumpSettingsCubit cubit = params["cubit"];
-
-      cubit.loadSettings(
-        userId: params['userId'],
-        subUserId: params['subUserId'],
-        controllerId: params['controllerId'],
-        menuId: params['menuId'],
-      );
-
-      return BlocProvider.value(
-        value: cubit,
+      return BlocProvider(
+        create: (_) => di.sl<PumpSettingsCubit>()
+          ..loadSettings(
+            userId: params['userId'],
+            subUserId: params["subUserId"],
+            controllerId: params["controllerId"],
+            menuId: params["menuId"],
+          ),
         child: PumpSettingsPage(
           menuId: params['menuId'],
           userId: params['userId'],

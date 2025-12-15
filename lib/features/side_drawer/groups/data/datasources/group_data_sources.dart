@@ -96,7 +96,7 @@ class GroupDataSourcesImpl extends GroupDataSources {
       final response = await apiClient.delete(
         endpoint,
       );
-      print("response :: $response");
+      // print("response :: $response");
       if (response['code'] == 200) {
         return response['message'];
       } else {

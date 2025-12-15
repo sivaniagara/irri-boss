@@ -13,7 +13,7 @@ class SettingsMenuModel extends SettingsMenuEntity {
         menuSettingId: json["menuSettingId"],
         referenceId: json["referenceId"],
         menuItem: json["menuItem"],
-        templateName: json["templateName"]
+        templateName: json["templateName"] ?? "No name"
     );
   }
 }

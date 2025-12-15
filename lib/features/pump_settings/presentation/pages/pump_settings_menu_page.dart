@@ -85,7 +85,6 @@ class PumpSettingsMenuPage extends StatelessWidget {
           child: InkWell(
             onTap: () {
               context.push(PumpSettingsPageRoutes.pumpSettingsPage, extra: {
-                "cubit": context.read<PumpSettingsCubit>(),
                 'userId': userId,
                 'controllerId': controllerId,
                 'subUserId': subUserId,

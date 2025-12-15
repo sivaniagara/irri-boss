@@ -1,11 +1,13 @@
 class PumpSettingsUrls {
+  static const String settingReferenceId = "600";
+  static const String newSettings = "newSettings";
   /// Get methods
-  static const String getSettingsMenu = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/:referenceId/settings';
+  static const String getSettingsMenu = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/$settingReferenceId/settings';
   static const String getNotificationSettings = 'user/:userId/subuser/:subuserId/controller/:controllerId/message';
-  static const String getFinalMenu = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/:referenceId/settings/:menuId';
+  static const String getFinalMenu = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/$settingReferenceId/$newSettings/:menuId';
 
   /// Post methods
-  static const String addViewType4 = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/:referenceId/settings';
+  static const String addViewType4 = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/$settingReferenceId/$newSettings';
   static const String menuHide = 'user/:userId/subuser/:shareUserId/controller/:controllerId/menu/:menuId/hidemenu';
 
   /// Put methods
@@ -15,8 +17,8 @@ class PumpSettingsUrls {
 
 //New Menu Settings
 /*
-router.get('/api/v1/user/:userId/subuser/:subUserId/controller/:controllerId/menu/:referenceId/newSettings/:menuId', globalSetting.getNewMainMenuItems);
-router.post('/api/v1/user/:userId/subuser/:subUserId/controller/:controllerId/menu/:referenceId/newSettings', globalSetting.insertNewSettingData);
+router.get('/api/v1/user/:userId/subuser/:subUserId/controller/:controllerId/menu/$settingReferenceId/newSettings/:menuId', globalSetting.getNewMainMenuItems);
+router.post('/api/v1/user/:userId/subuser/:subUserId/controller/:controllerId/menu/$settingReferenceId/newSettings', globalSetting.insertNewSettingData);
 
 
 MenuID	ReferenceID	Name

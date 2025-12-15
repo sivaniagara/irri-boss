@@ -11,6 +11,7 @@ import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/enti
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/cubit/pump_settings_cubit.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/widgets/setting_list_tile.dart';
 
+import '../../../../core/di/injection.dart' as di;
 import '../../domain/entities/setting_widget_type.dart';
 import '../../domain/entities/template_json_entity.dart';
 import '../bloc/pump_settings_state.dart';
@@ -30,61 +31,70 @@ class PumpSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: Text(menuName ?? 'Pump Settings'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              GlassyAlertDialog.show(
-                context: context,
-                title: "Hide/Show Settings",
-                content: BlocProvider<PumpSettingsCubit>.value(
-                  value: context.read<PumpSettingsCubit>(),
-                  child: _HideShowSettingsDialog(),
-                ),
-                actions: [
-                  ActionButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text("OK"),
-                  ),
-                ],
-              );
-            },
-            icon: const Icon(Icons.hide_source),
+    return BlocProvider(
+        create: (_) => di.sl<PumpSettingsCubit>()
+          ..loadSettings(
+            userId: userId,
+            subUserId: subUserId,
+            controllerId: controllerId,
+            menuId: menuId,
           ),
-        ],
-      ),
-      body: GlassyWrapper(
-        child: NotificationListener<OverscrollIndicatorNotification>(
-          onNotification: (n) {
-            n.disallowIndicator();
-            return true;
-          },
-          child: BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
-            builder: (context, state) {
-              if (state is GetPumpSettingsInitial) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (state is GetPumpSettingsError) {
-                return Center(
-                  child: Retry(
-                    message: state.message,
-                    onPressed: () =>
-                        context.read<PumpSettingsCubit>().loadSettings(
-                          userId: userId,
-                          subUserId: subUserId,
-                          controllerId: controllerId,
-                          menuId: menuId,
-                        ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(menuName ?? 'Pump Settings'),
+          actions: [
+            IconButton(
+              onPressed: () {
+                GlassyAlertDialog.show(
+                  context: context,
+                  title: "Hide/Show Settings",
+                  content: BlocProvider<PumpSettingsCubit>.value(
+                    value: context.read<PumpSettingsCubit>(),
+                    child: _HideShowSettingsDialog(),
                   ),
+                  actions: [
+                    ActionButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text("OK"),
+                    ),
+                  ],
                 );
-              }
-              return _SettingsList(
-                menu: (state as GetPumpSettingsLoaded).settings,
-              );
+              },
+              icon: const Icon(Icons.hide_source),
+            ),
+          ],
+        ),
+        body: GlassyWrapper(
+          child: NotificationListener<OverscrollIndicatorNotification>(
+            onNotification: (n) {
+              n.disallowIndicator();
+              return true;
             },
+            child: BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
+              builder: (context, state) {
+                if (state is GetPumpSettingsInitial) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state is GetPumpSettingsError) {
+                  return Center(
+                    child: Retry(
+                      message: state.message,
+                      onPressed: () =>
+                          context.read<PumpSettingsCubit>().loadSettings(
+                            userId: userId,
+                            subUserId: subUserId,
+                            controllerId: controllerId,
+                            menuId: menuId,
+                          ),
+                    ),
+                  );
+                }
+                return _SettingsList(
+                  menu: (state as GetPumpSettingsLoaded).settings,
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -110,8 +120,7 @@ class _HideShowSettingsDialog extends StatelessWidget {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Text(section.sectionName,
-                      style: Theme.of(context).textTheme.titleMedium),
+                  child: Text(section.sectionName, style: Theme.of(context).textTheme.titleMedium),
                 ),
                 ...section.settings.map((setting) {
                   final settingIndex = section.settings.indexOf(setting);
@@ -288,12 +297,6 @@ class _SettingRow extends StatelessWidget {
     }
 
     if (newValue != null && newValue != setting.value) {
-      /* context.read<PumpSettingsCubit>().updateSettingValue(
-        newValue == "0" ? "1" : "0",
-        sectionIndex,
-        settingIndex,
-        isHiddenFlag: true,
-      );*/
       _onChanged(context)(newValue);
     }
   }

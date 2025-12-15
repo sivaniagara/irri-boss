@@ -5,15 +5,15 @@ import 'package:niagara_smart_drip_irrigation/features/pump_settings/data/models
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/menu_item_entity.dart';
 
 class MenuItemModel extends MenuItemEntity {
-  MenuItemModel({
+  const MenuItemModel({
     required super.menu,
     required super.template,
   });
 
-  factory MenuItemModel.fromJson(Map<String, dynamic> json, List<Map<String, dynamic>> staticJson) {
+  factory MenuItemModel.fromJson(Map<String, dynamic> json) {
     return MenuItemModel(
         menu: SettingsMenuModel.fromJson(json),
-        template: TemplateJsonModel.fromJson(jsonDecode(json['templateJson']), staticJson)
+        template: TemplateJsonModel.fromJson(jsonDecode(json['sendData']))
     );
   }
 }

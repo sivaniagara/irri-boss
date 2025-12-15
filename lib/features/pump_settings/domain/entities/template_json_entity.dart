@@ -3,24 +3,17 @@ import 'package:equatable/equatable.dart';
 import 'setting_widget_type.dart';
 
 class TemplateJsonEntity extends Equatable{
-  final String type;
-  final List<ParameterGroupEntity> groups;
   final List<SettingSectionEntity> sections;
 
   const TemplateJsonEntity({
-    required this.type,
-    required this.groups,
     required this.sections,
   });
 
   TemplateJsonEntity copyWith({
     String? type,
-    List<ParameterGroupEntity>? groups,
     List<SettingSectionEntity>? sections,
   }) {
     return TemplateJsonEntity(
-      type: type ?? this.type,
-      groups: groups ?? this.groups,
       sections: sections ?? this.sections,
     );
   }
@@ -37,60 +30,7 @@ class TemplateJsonEntity extends Equatable{
   }
 
   @override
-  List<Object?> get props => [type, groups, sections];
-}
-
-class ParameterGroupEntity {
-  final String groupName;
-  final List<ParameterItemEntity> items;
-
-  const ParameterGroupEntity({
-    required this.groupName,
-    required this.items,
-  });
-}
-
-class ParameterItemEntity {
-  // Common fields
-  final String? toggleType;
-  final String? toggleStatus;
-  final String? delayTime;
-  final String? onTime;
-  final String? offTime;
-  final String? timeValue;
-  final String? numberValue;
-  final String? fromValue;
-  final String? toValue;
-  final String? progNumber;
-
-  final String? phaseValue;
-  final String? voltageValue;
-  final String? voltageDifferenceValue;
-  final String? voltagePlaceHolder;
-  final String? differencePlaceHolder;
-
-  final String? phase2Value;
-  final String? phase3Value;
-
-  const ParameterItemEntity({
-    this.toggleType,
-    this.toggleStatus,
-    this.delayTime,
-    this.onTime,
-    this.offTime,
-    this.timeValue,
-    this.numberValue,
-    this.fromValue,
-    this.toValue,
-    this.progNumber,
-    this.phaseValue,
-    this.voltageValue,
-    this.voltageDifferenceValue,
-    this.voltagePlaceHolder,
-    this.differencePlaceHolder,
-    this.phase2Value,
-    this.phase3Value,
-  });
+  List<Object?> get props => [sections];
 }
 
 class SettingsEntity extends Equatable {
