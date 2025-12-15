@@ -67,7 +67,11 @@ class AppThemes {
       primary: primaryColor,
       secondary: secondaryColor,
     ),
+
     appBarTheme: const AppBarTheme(
+      iconTheme: IconThemeData(
+        color: Colors.black
+      ),
       backgroundColor: primaryColor,
       foregroundColor: Colors.white,
       elevation: 0,
@@ -82,7 +86,7 @@ class AppThemes {
       ),
     ),
     listTileTheme: ListTileThemeData(
-      textColor: Colors.white,
+      textColor: Colors.black,
       titleTextStyle: TextStyle(color: Colors.black, fontSize: 20)
     ),
     textTheme: TextTheme(
@@ -186,6 +190,10 @@ class AppThemes {
       }),
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     ),
+    dividerTheme: DividerThemeData(
+      color: const Color(0xff727272),
+      thickness: 1
+    )
 
   );
 

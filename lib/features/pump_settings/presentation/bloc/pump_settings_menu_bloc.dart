@@ -9,6 +9,7 @@ class PumpSettingsMenuBloc extends Bloc<PumpSettingsEvent, PumpSettingsState> {
   PumpSettingsMenuBloc({
     required this.getSettingsMenuUsecase
   }) : super(GetPumpSettingsMenuInitial()) {
+
     on<GetPumpSettingsMenuEvent>((event, emit) async{
       emit(GetPumpSettingsMenuInitial());
 

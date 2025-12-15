@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
+import 'package:niagara_smart_drip_irrigation/features/controller_settings/utils/controller_settings_routes.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/services/selected_controller_persistence.dart';
@@ -342,7 +343,7 @@ class DashboardPage extends StatelessWidget {
     bloc.add(SelectGroupEvent(groupId));
   }
 
-  static Widget _buildBody(dynamic selectedController) {
+  Widget _buildBody(dynamic selectedController) {
     return RefreshIndicator(
       onRefresh: () => _refreshLiveData(selectedController),
       child: LayoutBuilder(
@@ -361,7 +362,7 @@ class DashboardPage extends StatelessWidget {
     }
   }
 
-  static Widget _buildScaledContent(BuildContext context, BoxConstraints constraints, ControllerEntity controller) {
+  Widget _buildScaledContent(BuildContext context, BoxConstraints constraints, ControllerEntity controller) {
     final width = constraints.maxWidth;
     final modelCheck = ([1, 5].contains(controller.modelId)) ? 300 : 120;
     double scale(double size) => size * (width / modelCheck);
@@ -396,7 +397,8 @@ class DashboardPage extends StatelessWidget {
                   SizedBox(height: scale(8)),
                   GestureDetector(
                     onTap: () {
-                      context.push(DashBoardRoutes.ctrlLivePage, extra: controller.liveMessage);
+                      // context.push(DashBoardRoutes.ctrlLivePage, extra: controller.liveMessage);
+                      context.push('${DashBoardRoutes.dashboard}${ControllerSettingsRoutes.program}', extra: {"userId" : '$userId', "controllerId" : controller.userDeviceId.toString()});
                     },
                     child: RYBSection(
                       r: controller.liveMessage.rVoltage,

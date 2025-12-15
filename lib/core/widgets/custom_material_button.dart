@@ -11,7 +11,8 @@ class CustomMaterialButton extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       color: Theme.of(context).primaryColor,
         onPressed: onPressed,
-      child: Text(title, style: TextStyle(color: Colors.white),),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Text(title, style: TextStyle(color: Colors.white, fontSize: 20),),
     );
   }
 }

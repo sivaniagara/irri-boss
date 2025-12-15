@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/gradiant_background.dart';
 
-import '../../utils/controller_settings_routes.dart';
+import '../../../utils/controller_settings_routes.dart';
 import '../cubit/controller_tab_cubit.dart';
 import '../widgets/zone_list.dart';
 
@@ -51,23 +52,7 @@ class ControllerAppBar extends StatelessWidget {
           ),
         ),
       ),
-      body: Container(
-        padding: EdgeInsets.all(12),
-        height: double.infinity,
-        width: double.infinity,
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color(0xffC6DDFF),
-                Color(0xff67C8F1),
-                Color(0xff6DA8F5),
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            )
-        ),
-        child: child,
-      ), // child comes from active GoRoute
+      body: GradiantBackground(child: child), // child comes from active GoRoute
     );
   }
 

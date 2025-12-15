@@ -1,14 +1,14 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:niagara_smart_drip_irrigation/features/controller_settings/presentaion/pages/controller_app_bar.dart';
-import 'package:niagara_smart_drip_irrigation/features/controller_settings/presentaion/pages/controller_program.dart';
+import 'package:niagara_smart_drip_irrigation/features/controller_settings/program_list/presentation/pages/controller_app_bar.dart';
+import 'package:niagara_smart_drip_irrigation/features/controller_settings/program_list/presentation/pages/controller_program.dart';
+import 'package:niagara_smart_drip_irrigation/features/controller_settings/edit_zone/presentation/pages/edit_zone.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
-import 'features/controller_settings/presentaion/cubit/controller_tab_cubit.dart';
+import 'features/controller_settings/program_list/presentation/cubit/controller_tab_cubit.dart';
 import 'features/controller_settings/utils/controller_settings_routes.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
 import 'features/side_drawer/groups/utils/group_routes.dart';
@@ -59,8 +59,8 @@ class AppRouter {
 
   AppRouter({required this.authBloc}) {
     router = GoRouter(
-      // initialLocation: AuthRoutes.login,
-      initialLocation: ControllerSettingsRoutes.program,
+      initialLocation: AuthRoutes.login,
+      // initialLocation: ControllerSettingsRoutes.program,
       debugLogDiagnostics: true,
       refreshListenable: GoRouterRefreshStream(authBloc.stream),
       redirect: (context, state) {
@@ -150,6 +150,9 @@ class AppRouter {
             );
             return bloc;
           },
+          routes: [
+            ...controllerSettingGoRoutes,
+          ]
         ),
         GoRoute(
           name: 'ctrlLivePage',
@@ -278,42 +281,7 @@ class AppRouter {
             )
           ],
         ),
-        ShellRoute(
-            builder: (context, state, child){
-              return BlocProvider(
-                create: (context) => di.sl<ControllerTabCubit>(),
-                child: ControllerAppBar(child: child),
-              );
-            },
-            routes: [
-              GoRoute(
-                path: ControllerSettingsRoutes.controllerDetails,
-                builder: (context, state) => Container(
-                  height: double.infinity,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Color(0xffC6DDFF),
-                          Color(0xff67C8F1),
-                          Color(0xff6DA8F5),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      )
-                  ),
-                ),
-              ),
-              GoRoute(
-                path: ControllerSettingsRoutes.nodes,
-                builder: (context, state) => Center(child: Text('Nodes', style: TextStyle(color: Colors.black),),),
-              ),
-              GoRoute(
-                path: ControllerSettingsRoutes.program,
-                builder: (context, state) => ControllerProgram(),
-              ),
-            ]
-        ),
+
       ],
     );
   }
