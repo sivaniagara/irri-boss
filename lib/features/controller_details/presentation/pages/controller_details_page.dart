@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../core/di/injection.dart' as di;
+import '../../../sendrev_msg/presentation/pages/sendrevPage.dart';
 import '../../../setserialsettings/domain/usecase/setserial_details_params.dart';
 import '../../../setserialsettings/presentation/pages/setserial_page.dart';
 import '../../domain/usecase/controller_details_params.dart';
@@ -101,6 +102,7 @@ class ControllerDetailsPage extends StatelessWidget {
                       child: Text("Set Serial"),
                     ),
                   ),
+                  //
                   SizedBox(width: 20,),
                   GestureDetector(
                     onTap: () {

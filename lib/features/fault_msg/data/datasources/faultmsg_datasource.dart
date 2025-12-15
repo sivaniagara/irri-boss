@@ -3,36 +3,32 @@ import 'package:http/http.dart' as http;
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/services/api_client.dart';
 import '../../../../core/utils/api_urls.dart';
-import '../../utils/senrev_routes.dart';
-import '../models/sendrev_model.dart';
+import '../../utils/faultmsg_routes.dart';
+import '../models/faultmsg_model.dart';
 
 
-abstract class SendRevRemoteDataSource {
-  Future<SendrevModel> getSendReceiveMessages({
+abstract class faultmsgRemoteDataSource {
+  Future<FaultMsgModel> getFaultMessages({
     required int userId,
     required int subuserId,
     required int controllerId,
-    required String fromDate,
-    required String toDate,
-  });
+   });
 }
 
-class SendRevRemoteDataSourceImpl extends SendRevRemoteDataSource {
+class faultmsgRemoteDataSourceImpl extends faultmsgRemoteDataSource {
   final ApiClient apiClient;
 
-  SendRevRemoteDataSourceImpl({required this.apiClient});
+  faultmsgRemoteDataSourceImpl({required this.apiClient});
 
   @override
-  Future<SendrevModel> getSendReceiveMessages({
+  Future<FaultMsgModel> getFaultMessages({
     required int userId,
     required int subuserId,
     required int controllerId,
-    required String fromDate,
-    required String toDate,
-  }) async {
+   }) async {
     try {
       /// Validate required params
-      if (fromDate.isEmpty || toDate.isEmpty) {
+      if (userId == null) {
         throw ServerException(
           statusCode: 400,
           message: "Invalid parameters! One or more values missing.",
@@ -40,35 +36,29 @@ class SendRevRemoteDataSourceImpl extends SendRevRemoteDataSource {
       }
 
       /// Build endpoint URL
-      String endpoint = SendRevPageUrls.getSendRevMsgUrl
+      String endpoint = FaultMsgPageUrls.getFaultMsgMsgUrl
           .replaceAll(':userId', '$userId')
           .replaceAll(':subuserId', '$subuserId')
-          .replaceAll(':controllerId', '$controllerId')
-          .replaceAll(':fromDate', fromDate)
-          .replaceAll(':toDate', toDate);
+          .replaceAll(':controllerId', '$controllerId');
 
-
-      /// Make API call
+       /// Make API call
       final response = await apiClient.get(endpoint);
 
-
-      if (response == null) {
+       if (response == null) {
         throw ServerException(statusCode: 500, message: "Empty server response");
       }
-
-      /// Success Response
+       /// Success Response
       if (response["code"] == 200) {
-        return SendrevModel.fromJson(response);
+        return FaultMsgModel.fromJson(response);
       }
-
-
-      /// Error Response
+       /// Error Response
       throw ServerException(
         statusCode: response["code"],
-        message: response["message"] ?? "Unknown error in sendrev API",
+        message: response["message"] ?? "Unknown error in faultmsg API",
       );
     } catch (e) {
-        throw ServerException(statusCode: 500, message: e.toString());
+      print("❌ getSendReceiveMessages ERROR: ${e.toString()}");
+      throw ServerException(statusCode: 500, message: e.toString());
     }
   }
 }
