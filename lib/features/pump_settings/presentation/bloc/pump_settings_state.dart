@@ -27,9 +27,10 @@ class GetPumpSettingsInitial extends PumpSettingsState {}
 
 class GetPumpSettingsLoaded extends PumpSettingsState {
   final MenuItemEntity settings;
-  GetPumpSettingsLoaded({required this.settings});
+  final int version;
+  GetPumpSettingsLoaded({required this.settings, this.version = 0});
 
-  @override List<Object?> get props => [settings];
+  @override List<Object?> get props => [settings, version];
 }
 
 class GetPumpSettingsError extends PumpSettingsState {

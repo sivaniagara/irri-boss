@@ -21,7 +21,6 @@ class LoginPageListener {
         if (useOtp) {
           context.read<AuthBloc>().add(SendOtpEvent(phone: state.phone, countryCode: state.countryCode));
         } else {
-          final loginParams = LoginParams(phone: state.phone, password: cubit.state.passwordController.text);
           context.read<AuthBloc>().add(LoginWithPasswordEvent(phone: state.phone, password: cubit.state.passwordController.text));
         }
       } else {

@@ -9,7 +9,7 @@ class SettingTimePicker extends StatefulWidget {
   const SettingTimePicker({
     super.key,
     required this.initialTime,
-    this.showSeconds = true,
+    required this.showSeconds,
     required this.onTimeChanged,
   });
 

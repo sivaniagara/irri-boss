@@ -6,11 +6,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
-import 'package:niagara_smart_drip_irrigation/features/controller_settings/utils/controller_settings_routes.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/services/selected_controller_persistence.dart';
 import '../../../../core/utils/app_images.dart';
+import '../../../controller_details/domain/usecase/controller_details_params.dart';
+import '../../../controller_settings/utils/controller_settings_routes.dart';
 import '../../../side_drawer/groups/presentation/widgets/app_drawer.dart';
 
 import '../../utils/dashboard_routes.dart';
@@ -67,6 +68,26 @@ class DashboardPage extends StatelessWidget {
 
       final mqttBloc = di.sl.get<MqttBloc>();
       mqttBloc.setProcessingContext(context);
+
+      final router = GoRouter.of(context);
+
+      void pollingListener() {
+        final currentLocation = router.state.matchedLocation;
+
+        if (currentLocation == DashBoardRoutes.dashboard) {
+          // We are ON the dashboard → start/resume polling
+          bloc.add(StartPollingEvent());
+        } else {
+          // We are anywhere else (ctrlLivePage, settings, etc.) → stop polling
+          bloc.add(StopPollingEvent());
+        }
+      }
+
+      router.routerDelegate.removeListener(pollingListener);
+      router.routerDelegate.addListener(pollingListener);
+
+      // Initial check
+      pollingListener();
     });
   }
 
@@ -247,7 +268,7 @@ class DashboardPage extends StatelessWidget {
     return PreferredSize(
       preferredSize: Size(MediaQuery.of(context).size.width, 40),
       child: Container(
-        color: Theme.of(context).appBarTheme.backgroundColor ?? Theme.of(context).primaryColor, // Ensure visible background
+        color: Theme.of(context).appBarTheme.backgroundColor ?? Theme.of(context).primaryColor ?? Colors.blue, // Ensure visible background
         child: Row(
           children: [
             _buildGroupSelector(state, selectedGroup, bloc),
@@ -353,7 +374,7 @@ class DashboardPage extends StatelessWidget {
   }
 
   static Future<void> _refreshLiveData(dynamic selectedController) async {
-    final mqttBloc = di.sl<MqttBloc>();
+    final mqttBloc = di.sl.get<MqttBloc>();
     final deviceId = selectedController.deviceId;
     final publishMessage = jsonEncode(PublishMessageHelper.requestLive);
     mqttBloc.add(PublishMqttEvent(deviceId: deviceId, message: publishMessage));
@@ -374,74 +395,84 @@ class DashboardPage extends StatelessWidget {
           hasScrollBody: false,
           child: Padding(
             padding: EdgeInsets.all(scale(2)),
-            child: GlassCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
-                mainAxisAlignment: MainAxisAlignment.spaceAround, // Center vertically
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  SyncSection(
-                    liveSync: controller.livesyncTime,
-                    smsSync: controller.msgDesc,
-                    model: controller.modelId,
+            child: GestureDetector(
+              onTap: () {
+                context.pushNamed(
+                  'ctrlDetailsPage',
+                  extra: GetControllerDetailsParams(
+                    userId: controller.userId,
+                    controllerId: controller.userDeviceId,
                   ),
-                  SizedBox(height: scale(8)),
-                  GlassCard(
-                    child: CtrlDisplay(
-                      signal: controller.liveMessage.signal,
-                      battery: controller.liveMessage.batVolt,
-                      l1display:controller.liveMessage.liveDisplay1,
-                      l2display: controller.liveMessage.liveDisplay2,
-                    ),
-                  ),
-                  SizedBox(height: scale(8)),
-                  GestureDetector(
-                    onTap: () {
-                      // context.push(DashBoardRoutes.ctrlLivePage, extra: controller.liveMessage);
-                      context.push('${DashBoardRoutes.dashboard}${ControllerSettingsRoutes.program}', extra: {"userId" : '$userId', "controllerId" : controller.userDeviceId.toString()});
-                    },
-                    child: RYBSection(
-                      r: controller.liveMessage.rVoltage,
-                      y: controller.liveMessage.yVoltage,
-                      b: controller.liveMessage.bVoltage,
-                      c1: controller.liveMessage.rCurrent,
-                      c2: controller.liveMessage.yCurrent,
-                      c3: controller.liveMessage.bCurrent,
-                    ),
-                  ),
-                  SizedBox(height: scale(8)),
-                  MotorValveSection(
-                    motorOn: controller.liveMessage.motorOnOff,
-                    motorOn2: controller.liveMessage.valveOnOff,
-                    valveOn: controller.liveMessage.valveOnOff,
-                    model: controller.modelId,
-                  ),
-                  SizedBox(height: scale(8)),
-                  if ([1, 5].contains(controller.modelId)) ...[
-                    PressureSection(
-                      prsIn: controller.liveMessage.prsIn,
-                      prsOut: controller.liveMessage.prsOut,
-                      activeZone: controller.zoneNo,
-                      fertlizer: '',
+                );
+              },
+              child: GlassCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
+                  mainAxisAlignment: MainAxisAlignment.spaceAround, // Center vertically
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    SyncSection(
+                      liveSync: controller.livesyncTime,
+                      smsSync: controller.msgDesc,
+                      model: controller.modelId,
                     ),
                     SizedBox(height: scale(8)),
-                    TimerSection(
-                      setTime: controller.setFlow,
-                      remainingTime: controller.remFlow,
+                    GlassCard(
+                      child: CtrlDisplay(
+                        signal: controller.liveMessage.signal,
+                        battery: controller.liveMessage.batVolt,
+                        l1display:controller.liveMessage.liveDisplay1,
+                        l2display: controller.liveMessage.liveDisplay2,
+                      ),
                     ),
                     SizedBox(height: scale(8)),
+                    GestureDetector(
+                      onTap: () {
+                        context.push('${DashBoardRoutes.dashboard}${ControllerSettingsRoutes.program}', extra: {"userId" : '$userId', "controllerId" : controller.userDeviceId.toString()});
+                      },
+                      child: RYBSection(
+                        r: controller.liveMessage.rVoltage,
+                        y: controller.liveMessage.yVoltage,
+                        b: controller.liveMessage.bVoltage,
+                        c1: controller.liveMessage.rCurrent,
+                        c2: controller.liveMessage.yCurrent,
+                        c3: controller.liveMessage.bCurrent,
+                      ),
+                    ),
+                    SizedBox(height: scale(8)),
+                    MotorValveSection(
+                      motorOn: controller.liveMessage.motorOnOff,
+                      motorOn2: controller.liveMessage.valveOnOff,
+                      valveOn: controller.liveMessage.valveOnOff,
+                      model: controller.modelId,
+                    ),
+                    SizedBox(height: scale(8)),
+                    if ([1, 5].contains(controller.modelId)) ...[
+                      PressureSection(
+                        prsIn: controller.liveMessage.prsIn,
+                        prsOut: controller.liveMessage.prsOut,
+                        activeZone: controller.zoneNo,
+                        fertlizer: '',
+                      ),
+                      SizedBox(height: scale(8)),
+                      TimerSection(
+                        setTime: controller.setFlow,
+                        remainingTime: controller.remFlow,
+                      ),
+                      SizedBox(height: scale(8)),
+                    ],
+                    LatestMsgSection(
+                      msg: ([1, 5].contains(controller.modelId))
+                          ? controller.msgDesc
+                          : "${controller.msgDesc}\n${controller.ctrlLatestMsg}",
+                    ),
+                    SizedBox(height: scale(8)),
+                    ActionsSection(
+                      model: controller.modelId,
+                      data: {"userId" : controller.userId, "subUserId" : 0, "controllerId" : controller.userDeviceId},
+                    ),
                   ],
-                  LatestMsgSection(
-                    msg: ([1, 5].contains(controller.modelId))
-                        ? controller.msgDesc
-                        : "${controller.msgDesc}\n${controller.ctrlLatestMsg}",
-                  ),
-                  SizedBox(height: scale(8)),
-                  ActionsSection(
-                    model: controller.modelId,
-                    data: {"userId" : controller.userId, "subUserId" : 0, "controllerId" : controller.userDeviceId},
-                  ),
-                ],
+                ),
               ),
             ),
           ),

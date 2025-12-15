@@ -83,36 +83,36 @@ class MqttBloc extends Bloc<MqttEvent, MqttState> {
   }
 
   void _onSubscribe(SubscribeMqttEvent event, Emitter<MqttState> emit) {
-  if (kDebugMode) {
-    print("_onSubscribe called for deviceId: ${persistence.deviceId}");
-    print("_onSubscribe current state: ${state.runtimeType}");
+    if (kDebugMode) {
+      print("_onSubscribe called for deviceId: ${persistence.deviceId}");
+      print("_onSubscribe current state: ${state.runtimeType}");
+    }
+    if (mqttService.isConnected) {
+      if (_currentDeviceId == persistence.deviceId) {
+        if (kDebugMode) print('Already subscribed to ${persistence.deviceId} - skipping');
+        return;
+      }
+      if (_currentDeviceId != null) {
+        if (kDebugMode) print('Unsubscribing from old topic: tweet/$_currentDeviceId');
+        mqttService.unsubscribe(_currentDeviceId!);
+      }
+
+      mqttService.subscribe(persistence.deviceId!);
+      _currentDeviceId = persistence.deviceId;
+
+      if (kDebugMode) print('Subscribed to new topic: tweet/${persistence.deviceId}');
+
+      final publishMessage = jsonEncode(PublishMessageHelper.requestLive);
+      mqttService.publish(persistence.deviceId!, publishMessage);
+      // mqttService.publish(persistence.deviceId, publishMessage);
+      if (kDebugMode) print('Published message after subscribe: $publishMessage');
+    } else {
+      if (kDebugMode) print('Skipped subscribe; service not connected');
+      if (_retryAttempts < maxRetries) {
+        add(ConnectMqttEvent());
+      }
+    }
   }
-  if (mqttService.isConnected) {
-    if (_currentDeviceId == persistence.deviceId) {
-      if (kDebugMode) print('Already subscribed to ${persistence.deviceId} - skipping');
-      return;
-    }
-    if (_currentDeviceId != null) {
-      if (kDebugMode) print('Unsubscribing from old topic: tweet/$_currentDeviceId');
-      mqttService.unsubscribe(_currentDeviceId!);
-    }
-
-    mqttService.subscribe(persistence.deviceId!);
-    _currentDeviceId = persistence.deviceId;
-
-    if (kDebugMode) print('Subscribed to new topic: tweet/${persistence.deviceId}');
-
-    final publishMessage = jsonEncode(PublishMessageHelper.requestLive);
-    mqttService.publish(persistence.deviceId!, publishMessage);
-    // mqttService.publish(persistence.deviceId, publishMessage);
-    if (kDebugMode) print('Published message after subscribe: $publishMessage');
-  } else {
-    if (kDebugMode) print('Skipped subscribe; service not connected');
-    if (_retryAttempts < maxRetries) {
-      add(ConnectMqttEvent());
-    }
-  }
-}
 
   void _onPublish(PublishMqttEvent event, Emitter<MqttState> emit) {
     if (mqttService.isConnected) {

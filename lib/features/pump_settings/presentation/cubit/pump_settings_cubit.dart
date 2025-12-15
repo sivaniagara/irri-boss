@@ -8,6 +8,7 @@ import '../../../../core/di/injection.dart' as di;
 import '../../../mqtt/bloc/mqtt_event.dart';
 import '../../../mqtt/utils/mqtt_message_helper.dart';
 import '../../domain/usecsases/get_menu_items.dart';
+import '../../domain/usecsases/sms_payload_builder.dart';
 import '../bloc/pump_settings_state.dart';
 
 
@@ -22,6 +23,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     required int controllerId,
     required int menuId,
   }) async {
+    if (state is GetPumpSettingsLoaded) return;
     emit(GetPumpSettingsInitial());
 
     final result = await getPumpSettingsUsecase(GetPumpSettingsParams(
@@ -37,7 +39,8 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     );
   }
 
-  void updateSettingValue(String newValue, int sectionIndex, int settingIndex,) {
+  void updateSettingValue(String newValue, int sectionIndex, int settingIndex, {bool isHiddenFlag = false}) {
+    print('Hidden flag updated: section $sectionIndex, setting $settingIndex, newValue: $newValue');
     if (state is! GetPumpSettingsLoaded) return;
 
     final currentState = state as GetPumpSettingsLoaded;
@@ -48,7 +51,11 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     final targetSection = newSections[sectionIndex];
     final newSettings = List<SettingsEntity>.from(targetSection.settings);
 
-    newSettings[settingIndex] = newSettings[settingIndex].copyWith(value: newValue);
+    if(isHiddenFlag) {
+      newSettings[settingIndex] = newSettings[settingIndex].copyWith(hiddenFlag: newValue);
+    } else {
+      newSettings[settingIndex] = newSettings[settingIndex].copyWith(value: newValue);
+    }
 
     newSections[sectionIndex] = targetSection.copyWith(settings: newSettings);
 
@@ -56,6 +63,14 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     final newMenuItem = currentState.settings.copyWith(template: newTemplate);
 
     emit(GetPumpSettingsLoaded(settings: newMenuItem));
+  }
+
+  void sendCurrentSetting(int sectionIndex, int settingIndex) {
+    if (state is! GetPumpSettingsLoaded) return;
+    final setting = (state as GetPumpSettingsLoaded).settings.template.sections[sectionIndex].settings[settingIndex];
+
+    final payload = SmsPayloadBuilder.build(setting);
+    sendSetting(payload);
   }
 
   Future<void> sendSetting(String payload) async {

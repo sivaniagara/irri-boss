@@ -1,16 +1,25 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:niagara_smart_drip_irrigation/features/controller_settings/program_list/presentation/pages/controller_app_bar.dart';
-import 'package:niagara_smart_drip_irrigation/features/controller_settings/program_list/presentation/pages/controller_program.dart';
-import 'package:niagara_smart_drip_irrigation/features/controller_settings/edit_zone/presentation/pages/edit_zone.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/domain/entities/livemessage_entity.dart';
+import 'package:niagara_smart_drip_irrigation/features/setserialsettings/presentation/pages/setserial_page.dart';
+import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/domain/usecases/get_sub_user_details_usecase.dart';
+import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/presentation/pages/sub_user_details_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
+import 'features/controller_details/domain/usecase/controller_details_params.dart';
+import 'features/controller_details/presentation/bloc/controller_details_bloc.dart';
+import 'features/controller_details/presentation/bloc/controller_details_bloc_event.dart';
+import 'features/controller_details/presentation/pages/controller_details_page.dart';
 import 'features/controller_settings/program_list/presentation/cubit/controller_tab_cubit.dart';
 import 'features/controller_settings/utils/controller_settings_routes.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
+import 'features/setserialsettings/domain/usecase/setserial_details_params.dart';
+import 'features/setserialsettings/presentation/bloc/setserial_bloc.dart';
+import 'features/setserialsettings/presentation/bloc/setserial_bloc_event.dart';
 import 'features/side_drawer/groups/utils/group_routes.dart';
 import 'features/auth/utils/auth_routes.dart';
 
@@ -169,6 +178,35 @@ class AppRouter {
           ]
         ),
         ...pumpSettingsRoutes,
+        GoRoute(
+          name: 'ctrlDetailsPage',
+          path: RouteConstants.ctrlDetailsPage,
+          builder: (context, state) {
+            final params = state.extra as GetControllerDetailsParams;
+
+            return BlocProvider(
+              create: (_) => di.sl<ControllerDetailsBloc>()
+                ..add(GetControllerDetailsEvent(
+                  userId: params.userId,
+                  controllerId: params.controllerId,
+                )),
+              child: ControllerDetailsPage(params: params),
+            );
+          },
+        ),
+        GoRoute(
+          name: 'setSerialPage',
+          path: RouteConstants.setSerialPage,
+          builder: (context, state) {
+            final params = state.extra as SetSerialParams;
+            return BlocProvider(create: (_) => di.sl<SetSerialBloc>()
+                ..add(LoadSerialEvent(userId: params.userId,controllerId: params.controllerId,)),
+              child: SerialSetCalibrationPage(userId: params.userId,controllerId: params.controllerId, type: params.type,),
+            );
+          },
+        ),
+
+        //
         ShellRoute(
           builder: (context, state, child) {
             final location = state.matchedLocation;
@@ -272,6 +310,7 @@ class AppRouter {
               path: RouteConstants.chat,
               builder: (context, state) => const Chat(),
             ),
+
             GoRoute(
               path: DealerRoutes.dealerDashboard,
               builder: (context, state) => BlocProvider.value(

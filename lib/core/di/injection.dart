@@ -2,7 +2,22 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:niagara_smart_drip_irrigation/features/controller_settings/di/controller_Settings_di.dart';
+import 'package:niagara_smart_drip_irrigation/features/controller_details/data/datasources/controller_datasource.dart';
+import 'package:niagara_smart_drip_irrigation/features/setserialsettings/data/repositories/setserial_details_repositories.dart';
+import 'package:niagara_smart_drip_irrigation/features/setserialsettings/domain/usecase/setserial_usercase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../features/controller_details/data/repositories/controller_details_repositories.dart';
+import '../../features/controller_details/domain/repositories/controller_details_repo.dart';
+import '../../features/controller_details/domain/usecase/controller_details_usercase.dart';
+import '../../features/controller_details/presentation/bloc/controller_details_bloc.dart';
+import '../../features/controller_details/presentation/bloc/controller_details_state.dart';
+import '../../features/fault_msg/di/faultmsg_di.dart';
+import '../../features/sendrev_msg/di/sendrev_di.dart';
+import '../../features/setserialsettings/data/datasources/setserial_datasource.dart';
+import '../../features/setserialsettings/domain/repositories/setserial_details_repo.dart';
+import '../../features/setserialsettings/domain/usecase/setserial_details_params.dart';
+import '../../features/setserialsettings/presentation/bloc/setserial_bloc.dart';
+import '../../features/setserialsettings/presentation/bloc/setserial_bloc_event.dart';
 import '../../features/auth/di/auth.di.dart';
 import '../../features/controller_settings/program_list/presentation/cubit/controller_tab_cubit.dart';
 import '../../features/controller_settings/program_list/presentation/cubit/day_selection_cubit.dart';
@@ -72,6 +87,19 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
 
   /// Controller Setting Dependencies
   initControllerSettingDependencies();
+
+  sl.registerLazySingleton<SetSerialDataSource>(
+          () => SetSerialDataSourceImpl(apiClient: sl()));
+  sl.registerLazySingleton<SetSerialRepository>(
+          () => SetSerialRepositoryImpl(remoteDataSource: sl()));
+  sl.registerFactory(() => SetSerialBloc(sl()));
+  sl.registerFactory(
+          () => SetSerialParams(userId: sl(), controllerId: sl(), type: sl()));
+  sl.registerFactory(() => LoadSerialUsecase(sl()));
+  sl.registerFactory(() => LoadSerialEvent(userId: sl(), controllerId: sl()));
+
+  initSendRev();
+  initfaultmsg();
 }
 
 // Reset all

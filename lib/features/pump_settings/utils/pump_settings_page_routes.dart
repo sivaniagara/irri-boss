@@ -19,19 +19,10 @@ final pumpSettingsRoutes = <GoRoute>[
     name: 'settingMenuList',
     builder: (context, state) {
       final params = state.extra as Map<String, dynamic>;
-
-      return BlocProvider(
-        create: (_) => di.sl<PumpSettingsMenuBloc>()
-          ..add(GetPumpSettingsMenuEvent(
-            userId: params['userId'] as int,
-            subUserId: params['subUserId'] as int,
-            controllerId: params['controllerId'] as int,
-          )),
-        child: PumpSettingsMenuPage(
-          userId: params['userId'] as int,
-          subUserId: params['subUserId'] as int,
-          controllerId: params['controllerId'] as int,
-        ),
+      return PumpSettingsMenuPage(
+        userId: params['userId'],
+        subUserId: params['subUserId'],
+        controllerId: params['controllerId'],
       );
     },
   ),
@@ -44,19 +35,19 @@ final pumpSettingsRoutes = <GoRoute>[
       return BlocProvider(
         create: (_) => di.sl<PumpSettingsCubit>()
           ..loadSettings(
-            userId: params["userId"],
+            userId: params['userId'],
             subUserId: params["subUserId"],
             controllerId: params["controllerId"],
             menuId: params["menuId"],
           ),
         child: PumpSettingsPage(
-          menuId: params['menuId'] as int,
-          userId: params['userId'] as int,
-          subUserId: params['subUserId'] as int,
-          controllerId: params['controllerId'] as int,
+          menuId: params['menuId'],
+          userId: params['userId'],
+          subUserId: params['subUserId'],
+          controllerId: params['controllerId'],
           menuName: params['menuName'],
         ),
       );
-    },
+    }
   ),
 ];

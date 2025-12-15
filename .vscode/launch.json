@@ -1,0 +1,25 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run Niagara Flavor",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_niagara.dart",
+      "args": [
+        "--flavor", "niagara",
+        "--target", "lib/main_niagara.dart"
+      ]
+    },
+    {
+      "name": "Run Agritel Flavor",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_agritel.dart",
+      "args": [
+        "--flavor", "agritel",
+        "--target", "lib/main_agritel.dart"
+      ]
+    }
+  ]
+}
