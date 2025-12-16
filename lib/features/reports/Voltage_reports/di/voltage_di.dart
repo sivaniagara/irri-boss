@@ -8,7 +8,7 @@ import '../../../../core/di/injection.dart';
 import '../data/datasources/voltage_datasource.dart';
 import '../data/repositories/voltage_repositories.dart';
 
-void initVoltGraph() {
+/*void initVoltGraph() {
   // datasource
   sl.registerLazySingleton<VoltageRemoteDataSource>(
           () => VoltageGraphRepositoryImpl(dataSource: null));
@@ -24,4 +24,4 @@ void initVoltGraph() {
           () => VoltageGraphBloc(fetchvoltgraphdata: sl()));
 
   // external
-}
+}*/

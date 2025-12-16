@@ -12,7 +12,7 @@ class AppStyles {
       BoxShadow(
         color:AppThemes.shadowBlackColor,
         blurRadius: 8,
-        offset: const Offset(0, 6),
+        offset: const Offset(0, 8),
       ),
     ],
   );
