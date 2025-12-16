@@ -11,7 +11,6 @@ import '../../domain/usecsases/get_menu_items.dart';
 import '../../domain/usecsases/sms_payload_builder.dart';
 import '../bloc/pump_settings_state.dart';
 
-
 class PumpSettingsCubit extends Cubit<PumpSettingsState> {
   final GetPumpSettingsUsecase getPumpSettingsUsecase;
 

@@ -3,7 +3,7 @@ class PumpSettingsUrls {
   static const String newSettings = "newSettings";
   /// Get methods
   static const String getSettingsMenu = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/$settingReferenceId/settings';
-  static const String getNotificationSettings = 'user/:userId/subuser/:subuserId/controller/:controllerId/message';
+  static const String getNotificationSettings = 'user/:userId/subuser/:subuserId/controller/:controllerId/message'; //GET & PUT
   static const String getFinalMenu = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/$settingReferenceId/$newSettings/:menuId';
 
   /// Post methods
