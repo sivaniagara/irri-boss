@@ -11,6 +11,7 @@ import '../../features/controller_details/domain/usecase/controller_details_user
 import '../../features/controller_details/presentation/bloc/controller_details_bloc.dart';
 import '../../features/controller_details/presentation/bloc/controller_details_state.dart';
 import '../../features/fault_msg/di/faultmsg_di.dart';
+import '../../features/reports/Voltage_reports/di/voltage_di.dart';
 import '../../features/reports/reportMenu/di/report_di.dart';
 import '../../features/sendrev_msg/di/sendrev_di.dart';
 import '../../features/setserialsettings/data/datasources/setserial_datasource.dart';
@@ -106,6 +107,7 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initSendRev();
   initfaultmsg();
   initReportDependencies();
+  initVoltageGraph();
 
 }
 

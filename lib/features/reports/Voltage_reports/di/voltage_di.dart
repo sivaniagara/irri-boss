@@ -1,27 +1,34 @@
-import 'package:get_it/get_it.dart';
-import 'package:http/http.dart' as http;
-import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/domain/usecases/voltage_params.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/presentation/bloc/voltage_bloc.dart';
-import 'package:niagara_smart_drip_irrigation/features/sendrev_msg/domain/repositories/sendrev_repo.dart';
-
 import '../../../../core/di/injection.dart';
 import '../data/datasources/voltage_datasource.dart';
 import '../data/repositories/voltage_repositories.dart';
+import '../domain/repositories/voltage_repo.dart';
+import '../domain/usecases/fetchvoltagegraphdata.dart';
+import '../presentation/bloc/voltage_bloc.dart';
 
-/*void initVoltGraph() {
-  // datasource
+void initVoltageGraph() {
+
+  /// 🔹 DataSource
   sl.registerLazySingleton<VoltageRemoteDataSource>(
-          () => VoltageGraphRepositoryImpl(dataSource: null));
+        () => VoltageRemoteDataSourceImpl(
+      apiClient: sl(),
+    ),
+  );
 
-  // repository
-  sl.registerLazySingleton<SendrevRepository>(() => VoltageGraphRepositoryImpl(dataSource: sl(), ));
+  /// 🔹 Repository
+  sl.registerLazySingleton<VoltageGraphRepository>(
+        () => VoltageGraphRepositoryImpl(
+      dataSource: sl(),
+    ),
+  );
+//
+  /// 🔹 UseCase
+  sl.registerLazySingleton(
+        () => FetchVoltageGraphData( repository: sl(),),
+  );
 
-  // usecase
-  sl.registerLazySingleton(() => FetchVoltageGraphData(sl()));
-
-  // bloc
+  /// 🔹 Bloc
   sl.registerFactory(
-          () => VoltageGraphBloc(fetchvoltgraphdata: sl()));
-
-  // external
-}*/
+        () => VoltageGraphBloc(fetchVoltageGraphData: sl(),
+    ),
+  );
+}

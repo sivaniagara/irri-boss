@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/utils/voltage_routes.dart';
 
 import '../../../../core/theme/app_gradients.dart';
  import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
@@ -69,7 +71,7 @@ class ReportMenuPage extends StatelessWidget {
             title: 'Voltage',
             icon: Icons.flash_on,
             onTap: () {
-              // navigate to voltage report
+              context.push(VoltGraphPageRoutes.voltGraphPage,extra: params);
             },
           ),
           _reportCard(

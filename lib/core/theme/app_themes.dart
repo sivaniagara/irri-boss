@@ -196,7 +196,6 @@ class AppThemes {
     ),
 
   );
-
   // Dark Theme
   static final ThemeData _niagaraDarkTheme = ThemeData(
     brightness: Brightness.dark,

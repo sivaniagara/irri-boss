@@ -1,20 +1,35 @@
- 
-import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/domain/entities/voltage_entities.dart';
+import 'package:equatable/equatable.dart';
+import '../../domain/entities/voltage_entities.dart';
 
-abstract class VoltageGraphState {}
+abstract class VoltageGraphState extends Equatable {
+  const VoltageGraphState();
 
-class VoltageGraphInitial extends VoltageGraphState {}
-
-class VoltageGraphLoading extends VoltageGraphState {}
-
-class VoltageGraphLoaded extends VoltageGraphState {
-  final List<VoltageDatum> voltGraphData;
-
-  VoltageGraphLoaded(this.voltGraphData);
+  @override
+  List<Object?> get props => [];
 }
 
-class VoltageGraphError extends VoltageGraphState {
-  final String voltGraphData;
+/// Initial
+class VoltageGraphInitial extends VoltageGraphState {}
 
-  VoltageGraphError(this.voltGraphData);
+/// Loading
+class VoltageGraphLoading extends VoltageGraphState {}
+
+/// Success
+class VoltageGraphLoaded extends VoltageGraphState {
+  final VoltageGraphEntities data;
+
+  const VoltageGraphLoaded(this.data);
+
+  @override
+  List<Object?> get props => [data];
+}
+
+/// Error
+class VoltageGraphError extends VoltageGraphState {
+  final String message;
+
+  const VoltageGraphError(this.message);
+
+  @override
+  List<Object?> get props => [message];
 }

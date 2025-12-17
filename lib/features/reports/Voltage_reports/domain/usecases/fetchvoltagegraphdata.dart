@@ -1,13 +1,10 @@
-import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/domain/entities/voltage_entities.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/domain/repositories/voltage_repo.dart';
-
-
-
+import '../repositories/voltage_repo.dart';
+import '../entities/voltage_entities.dart';
 
 class FetchVoltageGraphData {
   final VoltageGraphRepository repository;
 
-  FetchVoltageGraphData(this.repository);
+  FetchVoltageGraphData({required this.repository});
 
   Future<VoltageGraphEntities> call({
     required int userId,
@@ -15,8 +12,8 @@ class FetchVoltageGraphData {
     required int controllerId,
     required String fromDate,
     required String toDate,
-  }) async {
-    return await repository.getGraphData(
+  }) {
+    return repository.getGraphData(
       userId: userId,
       subuserId: subuserId,
       controllerId: controllerId,

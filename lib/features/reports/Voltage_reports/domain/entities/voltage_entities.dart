@@ -1,55 +1,60 @@
-
-
 class VoltageGraphEntities {
-  int code;
-  String message;
-  List<VoltageDatum> data;
+  final int code;
+  final String message;
+  final List<VoltageDatumEntity> data;
 
   VoltageGraphEntities({
     required this.code,
     required this.message,
     required this.data,
   });
-
 }
 
-class VoltageDatum {
-  String date;
-  String time;
-  String r;
-  String y;
-  String b;
-  String ry;
-  String yb;
-  String br;
-  String c1;
-  String c2;
-  String c3;
-  String runTime;
-  String runFlow;
-  String lastDayRunTime;
-  String lastDayrunFlow;
-  String twoPhaseOnTime;
-  String twoPhaseLastDayOnTime;
-  String threePhaseOnTime;
-  String threePhaseLastDayOnTime;
-  String powerOffTime;
-  String lastDayPowerOffTime;
-  String totalPowerOnTime;
-  String totalPowerOffTime;
-  String wellLevel;
-  String wellPercentage;
-  String csq;
-  String battery1Volt;
-  String battery2Volt;
-  String battery3Volt;
-  String battery4Volt;
-  String solar1Volt;
-  String solar2Volt;
-  String solar3Volt;
-  String solar4Volt;
+class VoltageDatumEntity {
+  final String date;
+  final String time;
 
-  VoltageDatum({
+  final String r;
+  final String y;
+  final String b;
+  final String ry;
+  final String yb;
+  final String br;
+
+  final String c1;
+  final String c2;
+  final String c3;
+
+  final String runTime;
+  final String runFlow;
+  final String lastDayRunTime;
+  final String lastDayrunFlow;
+
+  final String twoPhaseOnTime;
+  final String twoPhaseLastDayOnTime;
+  final String threePhaseOnTime;
+  final String threePhaseLastDayOnTime;
+
+  final String powerOffTime;
+  final String lastDayPowerOffTime;
+  final String totalPowerOnTime;
+  final String totalPowerOffTime;
+
+  final String wellLevel;
+  final String wellPercentage;
+  final String csq;
+
+  final String battery1Volt;
+  final String battery2Volt;
+  final String battery3Volt;
+  final String battery4Volt;
+
+  final String solar1Volt;
+  final String solar2Volt;
+  final String solar3Volt;
+  final String solar4Volt;
+
+  VoltageDatumEntity({
     required this.date,
     required this.time,
     required this.r,
@@ -85,6 +90,4 @@ class VoltageDatum {
     required this.solar3Volt,
     required this.solar4Volt,
   });
-
 }
-
