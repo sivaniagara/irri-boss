@@ -49,7 +49,6 @@ class NotificationsPageCubit extends Cubit<NotificationsState> {
   Future<void> subscribeNotifications(int userId, int controllerId, int subuserId, Map<String, dynamic> body) async {
     emit(UpdateNotificationsLoading());
 
-    // print("body :: $body");
     final result = await subscribeNotificationsUsecase(
         SubscribeNotificationsParams(
             userId: userId,
@@ -64,6 +63,4 @@ class NotificationsPageCubit extends Cubit<NotificationsState> {
           (subscribe) => emit(UpdateNotificationsSuccess(message: subscribe)),
     );
   }
-
-//   {"msgCodeList":[{"msgCode":"1","checkStatus":"1"}
 }

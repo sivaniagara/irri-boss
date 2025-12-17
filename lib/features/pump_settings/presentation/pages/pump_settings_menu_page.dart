@@ -15,11 +15,14 @@ import '../bloc/pump_settings_menu_bloc.dart';
 
 class PumpSettingsMenuPage extends StatelessWidget {
   final int userId, subUserId, controllerId;
-  const PumpSettingsMenuPage(
-      {super.key,
-      required this.userId,
-      required this.subUserId,
-      required this.controllerId});
+  final String deviceId;
+  const PumpSettingsMenuPage({
+    super.key,
+    required this.userId,
+    required this.subUserId,
+    required this.controllerId,
+    required this.deviceId
+  });
 
   @override
   Widget build(BuildContext dialogContext) {
@@ -113,6 +116,7 @@ class PumpSettingsMenuPage extends StatelessWidget {
                   'userId': userId,
                   'controllerId': controllerId,
                   'subUserId': subUserId,
+                  'deviceId': deviceId
                 };
 
                 switch (item.menuSettingId) {

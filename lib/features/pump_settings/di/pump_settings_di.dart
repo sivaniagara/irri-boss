@@ -1,16 +1,16 @@
-import 'package:niagara_smart_drip_irrigation/features/pump_settings/data/datasources/pump_settings_datasources.dart';
-import 'package:niagara_smart_drip_irrigation/features/pump_settings/data/repositories/pump_settings_repository_impl.dart';
-import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/repositories/pump_settings_repository.dart';
-import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/usecsases/get_menu_items.dart';
-import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/usecsases/get_notifications_usecase.dart';
-import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/usecsases/get_settings_menu_usecase.dart';
-import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/usecsases/subscribe_notifications_usecase.dart';
-import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/bloc/pump_settings_menu_bloc.dart';
-import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/cubit/notifications_cubit.dart';
-import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/cubit/pump_settings_cubit.dart';
-
 import '../../../core/di/injection.dart';
-import '../../mqtt/utils/mqtt_message_helper.dart';
+import '../data/datasources/pump_settings_datasources.dart';
+import '../data/repositories/pump_settings_repository_impl.dart';
+import '../domain/repositories/pump_settings_repository.dart';
+import '../domain/usecsases/get_menu_items.dart';
+import '../domain/usecsases/get_notifications_usecase.dart';
+import '../domain/usecsases/get_settings_menu_usecase.dart';
+import '../domain/usecsases/subscribe_notifications_usecase.dart';
+import '../presentation/bloc/pump_settings_menu_bloc.dart';
+import '../presentation/cubit/notifications_cubit.dart';
+import '../presentation/cubit/pump_settings_cubit.dart';
+import '../presentation/cubit/view_pump_settings_cubit.dart';
+import '../utils/pump_settings_dispatcher.dart';
 
 void initPumpSettingsDependencies() {
   sl.registerLazySingleton<PumpSettingsDataSources>(() => PumpSettingsDataSourcesImpl(apiClient: sl()));
@@ -19,12 +19,13 @@ void initPumpSettingsDependencies() {
   sl.registerFactory(() => PumpSettingsMenuBloc(getSettingsMenuUsecase: sl()));
 
   sl.registerLazySingleton(() => GetPumpSettingsUsecase(pumpSettingsRepository: sl()));
-  // sl.registerFactory(() => PumpSettingsBloc(getPumpSettingsUsecase: sl()));
   sl.registerFactory(() => PumpSettingsCubit(getPumpSettingsUsecase: sl()));
 
   sl.registerLazySingleton(() => GetNotificationsUsecase(pumpSettingsRepository: sl()));
   sl.registerLazySingleton(() => SubscribeNotificationsUsecase(pumpSettingsRepository: sl()));
-  // sl.registerFactory(() => PumpSettingsBloc(getPumpSettingsUsecase: sl()));
   sl.registerFactory(() => NotificationsPageCubit(getNotificationsUsecase: sl(), subscribeNotificationsUsecase: sl()));
-  // sl.registerLazySingleton<MessageDispatcher>(() => DashboardMessageDispatcher(dashboardBloc: sl<DashboardBloc>()));
+
+  sl.registerFactory<ViewPumpSettingsCubit>(() => ViewPumpSettingsCubit(),);
+  sl.registerFactory<PumpSettingsDispatcher>(() => PumpSettingsDispatcher(sl<ViewPumpSettingsCubit>()),
+  );
 }

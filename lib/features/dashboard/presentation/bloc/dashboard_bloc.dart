@@ -2,15 +2,16 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/di/injection.dart' as di;
+import '../../../../core/di/injection.dart';
+import '../../../../core/services/mqtt/mqtt_manager.dart';
+import '../../../../core/services/mqtt/mqtt_message_helper.dart';
+import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/services/selected_controller_persistence.dart';
-import '../../../mqtt/mqtt_barrel.dart';
 import '../../dashboard.dart';
 
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   final FetchDashboardGroups fetchDashboardGroups;
   final FetchControllers fetchControllers;
-  final MqttBloc mqttBloc;
   Timer? _pollTimer;
   DateTime? _lastPollTime;
   bool _isPollingActive = false;
@@ -18,7 +19,6 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   DashboardBloc({
     required this.fetchDashboardGroups,
     required this.fetchControllers,
-    required this.mqttBloc,
   }) : super(DashboardInitial()) {
     on<FetchDashboardGroupsEvent>((event, emit) async {
       emit(DashboardLoading());
@@ -47,7 +47,9 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
               (controllers) {
             updatedControllers[event.groupId] = controllers;
             if (controllers.isNotEmpty) {
-              mqttBloc.add(SubscribeMqttEvent(controllers[0].deviceId));
+              sl<MqttManager>().subscribe(controllers[0].deviceId);
+              sl<MqttManager>().publish(controllers[0].deviceId, jsonEncode(PublishMessageHelper.requestLive));
+              // sl<MqttManager>.add(SubscribeMqttEvent(controllers[0].deviceId));
             }
             emit(DashboardGroupsLoaded(
               groups: currentState.groups,
@@ -76,14 +78,16 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       );
 
       final userId = group.userId;
-      final persistence = di.sl.get<SelectedControllerPersistence>();
+      final persistence = sl.get<SelectedControllerPersistence>();
 
       // Step 2: Check if controllers already loaded
       if (currentState.groupControllers.containsKey(event.groupId)) {
         final controllers = currentState.groupControllers[event.groupId]!;
 
         if (controllers.isNotEmpty) {
-          mqttBloc.add(SubscribeMqttEvent(controllers[0].deviceId));
+          sl<MqttManager>().subscribe(controllers[0].deviceId);
+          sl<MqttManager>().publish(controllers[0].deviceId, jsonEncode(PublishMessageHelper.requestLive));
+          // mqttBloc.add(SubscribeMqttEvent(controllers[0].deviceId));
           await persistence.save(controllers[0].deviceId, event.groupId);
         }
 
@@ -106,7 +110,9 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
           updatedControllers[event.groupId] = controllers;
 
           if (controllers.isNotEmpty) {
-            mqttBloc.add(SubscribeMqttEvent(controllers[0].deviceId));
+            sl<MqttManager>().subscribe(controllers[0].deviceId);
+            sl<MqttManager>().publish(controllers[0].deviceId, jsonEncode(PublishMessageHelper.requestLive));
+            // mqttBloc.add(SubscribeMqttEvent(controllers[0].deviceId));
             await persistence.save(controllers[0].deviceId, event.groupId);
           }
 
@@ -133,10 +139,12 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       final selectedController = controllers[event.controllerIndex];
 
       // Subscribe to MQTT
-      mqttBloc.add(SubscribeMqttEvent(selectedController.deviceId));
+      sl<MqttManager>().subscribe(selectedController.deviceId);
+      sl<MqttManager>().publish(selectedController.deviceId, jsonEncode(PublishMessageHelper.requestLive));
+      // mqttBloc.add(SubscribeMqttEvent(selectedController.deviceId));
 
       // Persist selection
-      final persistence = di.sl.get<SelectedControllerPersistence>();
+      final persistence = sl.get<SelectedControllerPersistence>();
       await persistence.save(selectedController.deviceId, groupId);
 
       // Update state
@@ -156,8 +164,8 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
     on<UpdateLiveMessageEvent>(_onUpdateLiveMessage);
 
-    on<StartPollingEvent>(_onStartPolling);
-    on<StopPollingEvent>(_onStopPolling);
+   /* on<StartPollingEvent>(_onStartPolling);
+    on<StopPollingEvent>(_onStopPolling);*/
   }
 
   void _onStartPolling(StartPollingEvent event, Emitter<DashboardState> emit) {
@@ -170,10 +178,10 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     _lastPollTime = DateTime.now();
 
     // Immediate first poll
-    _performPoll();
+    // _performPoll();
 
     _pollTimer = Timer.periodic(const Duration(seconds: 40), (timer) {
-      _performPoll();
+      // _performPoll();
     });
   }
 
@@ -195,13 +203,14 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
         final selectedIndex = currentState.selectedControllerIndex!;
         if (selectedIndex < controllers.length) {
           final deviceId = controllers[selectedIndex].deviceId;
-          if (mqttBloc.state is MqttConnected || mqttBloc.state is MqttMessagesState) {
+          if (sl<MqttManager>().mqttService.isConnected) {
             final publishMessage = jsonEncode(PublishMessageHelper.requestLive);
-            mqttBloc.add(PublishMqttEvent(deviceId: deviceId, message: publishMessage));
+            sl<MqttManager>().publish(deviceId, publishMessage);
+            // mqttBloc.add(PublishMqttEvent(deviceId: deviceId, message: publishMessage));
             _lastPollTime = DateTime.now();
             debugPrint('Bloc polled live for $deviceId at $_lastPollTime');
           } else {
-            debugPrint('Poll skipped: MQTT not ready (${mqttBloc.state.runtimeType})');
+            // debugPrint('Poll skipped: MQTT not ready (${mqttBloc.state.runtimeType})');
           }
         }
       }

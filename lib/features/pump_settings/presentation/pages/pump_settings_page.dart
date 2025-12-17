@@ -19,6 +19,7 @@ import '../bloc/pump_settings_state.dart';
 class PumpSettingsPage extends StatelessWidget {
   final int userId, subUserId, controllerId, menuId;
   final String? menuName;
+  final String deviceId;
 
   const PumpSettingsPage({
     super.key,
@@ -26,6 +27,7 @@ class PumpSettingsPage extends StatelessWidget {
     required this.subUserId,
     required this.controllerId,
     required this.menuId,
+    required this.deviceId,
     this.menuName,
   });
 
@@ -33,12 +35,7 @@ class PumpSettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
         create: (_) => di.sl<PumpSettingsCubit>()
-          ..loadSettings(
-            userId: userId,
-            subUserId: subUserId,
-            controllerId: controllerId,
-            menuId: menuId,
-          ),
+          ..loadSettings(userId: userId, subUserId: subUserId, controllerId: controllerId, menuId: menuId,),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
@@ -92,6 +89,7 @@ class PumpSettingsPage extends StatelessWidget {
                 }
                 return _SettingsList(
                   menu: (state as GetPumpSettingsLoaded).settings,
+                  deviceId: deviceId,
                 );
               },
             ),
@@ -149,8 +147,10 @@ class _HideShowSettingsDialog extends StatelessWidget {
 
 class _SettingsList extends StatelessWidget {
   final MenuItemEntity menu;
+  final String deviceId;
   const _SettingsList({
     required this.menu,
+    required this.deviceId,
   });
 
   @override
@@ -181,6 +181,7 @@ class _SettingsList extends StatelessWidget {
                             setting: section.settings[index],
                             sectionIndex: sectionIndex,
                             settingIndex: index,
+                            deviceId: deviceId,
                           );
                         },
                         separatorBuilder: (BuildContext context, int index) {
@@ -208,11 +209,13 @@ class _SettingRow extends StatelessWidget {
   final SettingsEntity setting;
   final int sectionIndex;
   final int settingIndex;
+  final String deviceId;
 
   const _SettingRow({
     required this.setting,
     required this.sectionIndex,
     required this.settingIndex,
+    required this.deviceId,
   });
 
   @override
@@ -228,7 +231,7 @@ class _SettingRow extends StatelessWidget {
           child: IconButton(
             padding: EdgeInsets.zero,
             icon: Icon(Icons.send, color: Theme.of(context).primaryColor),
-            onPressed: () => cubit.sendCurrentSetting(sectionIndex, settingIndex),
+            onPressed: () => cubit.sendCurrentSetting(sectionIndex, settingIndex, deviceId),
           ),
         ),
       ],
@@ -252,27 +255,22 @@ class _SettingRow extends StatelessWidget {
   Widget _buildTrailing(BuildContext context) {
     return switch (setting.widgetType) {
     // SettingWidgetType.text => Text(setting.value.isEmpty ? "-" : setting.value, style: Theme.of(context).textTheme.bodyMedium,),
-      SettingWidgetType.text =>
-          _TextInput(setting: setting, onChanged: _onChanged(context)),
+      SettingWidgetType.text => _TextInput(setting: setting, onChanged: _onChanged(context)),
       SettingWidgetType.toggle => Switch(
         value: setting.value == "ON",
-        onChanged: (_) =>
-            _onChanged(context)(setting.value == "ON" ? "OF" : "ON"),
+        onChanged: (_) => _onChanged(context)(setting.value == "ON" ? "OF" : "ON"),
       ),
       SettingWidgetType.time => Text(
           setting.value.isEmpty ? "00:00" : setting.value,
-          style: Theme.of(context).textTheme.bodyMedium),
+          style: Theme.of(context).textTheme.bodyMedium
+      ),
       _ => Text(setting.value, style: Theme.of(context).textTheme.bodyMedium),
     };
   }
 
   void Function(String newValue) _onChanged(BuildContext context) {
     return (String newValue) {
-      context.read<PumpSettingsCubit>().updateSettingValue(
-        newValue,
-        sectionIndex,
-        settingIndex,
-      );
+      context.read<PumpSettingsCubit>().updateSettingValue(newValue, sectionIndex, settingIndex,);
     };
   }
 

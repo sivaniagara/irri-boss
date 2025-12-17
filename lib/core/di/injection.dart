@@ -10,7 +10,11 @@ import '../../features/controller_details/domain/repositories/controller_details
 import '../../features/controller_details/domain/usecase/controller_details_usercase.dart';
 import '../../features/controller_details/presentation/bloc/controller_details_bloc.dart';
 import '../../features/controller_details/presentation/bloc/controller_details_state.dart';
+import '../../features/dashboard/utils/dashboard_dispatcher.dart';
 import '../../features/fault_msg/di/faultmsg_di.dart';
+import '../../features/pump_settings/utils/pump_settings_dispatcher.dart';
+import '../services/mqtt/app_message_dispatcher.dart';
+import '../services/mqtt/mqtt_message_helper.dart';
 import '../../features/sendrev_msg/di/sendrev_di.dart';
 import '../../features/setserialsettings/data/datasources/setserial_datasource.dart';
 import '../../features/setserialsettings/domain/repositories/setserial_details_repo.dart';
@@ -20,7 +24,6 @@ import '../../features/setserialsettings/presentation/bloc/setserial_bloc_event.
 import '../../features/auth/di/auth.di.dart';
 import '../../features/controller_settings/presentaion/cubit/controller_tab_cubit.dart';
 import '../../features/dashboard/di/dashboard_di.dart';
-import '../../features/mqtt/bloc/mqtt_bloc.dart';
 import '../../features/pump_settings/di/pump_settings_di.dart';
 import '../../features/side_drawer/groups/di/groups_di.dart';
 import '../../features/side_drawer/sub_users/di/sub_user_di.dart';
@@ -28,7 +31,8 @@ import '../flavor/flavor_config.dart';
 import '../flavor/flavor_di.dart';
 import '../services/api_client.dart';
 import '../services/get_credentials.dart';
-import '../services/mqtt_service.dart';
+import '../services/mqtt/mqtt_manager.dart';
+import '../services/mqtt/mqtt_service.dart';
 import '../services/network_info.dart';
 import '../services/notification_service.dart';
 import '../theme/theme_provider.dart';
@@ -65,23 +69,32 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
     ),
   );
 
-  /// Register MqttBloc after MqttService
-  sl.registerLazySingleton<MqttBloc>(() => MqttBloc(mqttService: sl<MqttService>()));
   /// Flavor-specific services
   registerFlavorDependencies(sl);
+
+  initDashboardDependencies();
+  initPumpSettingsDependencies();
+
+  sl.registerLazySingleton<AppMessageDispatcher>(
+        () => AppMessageDispatcher(
+      dashboard: sl<DashboardMessageDispatcher>(),
+      pumpSettings: sl<PumpSettingsDispatcher>(),
+    ),
+  );
+
+  sl.registerLazySingleton<MqttManager>(() => MqttManager(
+    mqttService: sl<MqttService>(),
+    dispatcher: sl<AppMessageDispatcher>(),
+  ));
+
   /// Auth Dependencies
   initAuthDependencies();
-  /// Dashboard feature
-  initDashboardDependencies();
 
   /// App Drawer
   /// Groups Dependencies
   initGroupDependencies();
   /// Sub Users Dependencies
   initSubUsersDependencies();
-
-  /// Pump Settings Dependencies
-  initPumpSettingsDependencies();
 
   sl.registerFactory(() => ControllerTabCubit());
 

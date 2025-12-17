@@ -1,7 +1,7 @@
-import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/pages/notifications_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/pages/pump_settings_page.dart';
+import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/pages/view_pump_settings_page.dart';
 
 import '../presentation/pages/pump_settings_menu_page.dart';
 
@@ -22,6 +22,7 @@ final pumpSettingsRoutes = <GoRoute>[
         userId: params['userId'],
         subUserId: params['subUserId'],
         controllerId: params['controllerId'],
+        deviceId: params['deviceId'],
       );
     },
   ),
@@ -37,6 +38,7 @@ final pumpSettingsRoutes = <GoRoute>[
         subUserId: params['subUserId'],
         controllerId: params['controllerId'],
         menuName: params['menuName'],
+        deviceId: params['deviceId'],
       );
     }
   ),
@@ -56,9 +58,9 @@ final pumpSettingsRoutes = <GoRoute>[
       path: PumpSettingsPageRoutes.viewSettingsPage,
       name: "viewSettingsPage",
       builder: (context, state) {
-
-        return Center(
-          child: Text("View Settings Page"),
+        final params = state.extra as Map<String, dynamic>;
+        return ViewPumpSettingsPage(
+          deviceId: params['deviceId'],
         );
       }
   ),

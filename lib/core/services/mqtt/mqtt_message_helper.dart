@@ -6,8 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import '../../dashboard/data/models/live_message_model.dart';
-import '../../dashboard/domain/entities/livemessage_entity.dart';
+import '../../../features/dashboard/data/models/live_message_model.dart';
+import '../../../features/dashboard/domain/entities/livemessage_entity.dart';
 
 class MqttMessageType {
   final String code;
@@ -51,28 +51,14 @@ class FaultSms {
   }
 }
 
-// Notification plugin instance (initialize in main.dart)
 final FlutterLocalNotificationsPlugin notifications = FlutterLocalNotificationsPlugin();
 
 abstract class MessageDispatcher {
-  void onLiveUpdate(String deviceId, LiveMessageEntity liveMessage);
-  void onFertilizerUpdate(String deviceId, String rawMessage);
-  void onScheduleUpdate(String deviceId, String rawMessage);
-  void onSmsNotification(String deviceId, String message, String description);
-}
-
-class NoOpDispatcher implements MessageDispatcher {
-  @override
   void onLiveUpdate(String deviceId, LiveMessageEntity liveMessage) {}
-
-  @override
   void onFertilizerUpdate(String deviceId, String rawMessage) {}
-
-  @override
   void onScheduleUpdate(String deviceId, String rawMessage) {}
-
-  @override
   void onSmsNotification(String deviceId, String message, String description) {}
+  void onPumpWaterPumpSettings(String deviceId, String message) {}
 }
 
 // MqttMessageHelper class (now pure: no DI, no context for UI)
@@ -122,6 +108,11 @@ class MqttMessageHelper {
     if (type == MqttMessageType.fertilizerLive) {
       await prefs.setString('FERTLIVEMSG_$qrCode', '$trimmedMsg,$cd,$ct');
       dispatcher.onFertilizerUpdate(qrCode, trimmedMsg);
+    }
+
+    if(type == MqttMessageType.waterPumpSettings) {
+      print("waterPumpSettings");
+      dispatcher.onPumpWaterPumpSettings(qrCode, trimmedMsg);
     }
 
     // Switch for type-specific storage (use type?.code)
@@ -233,10 +224,4 @@ class MqttMessageHelper {
     );
     await notifications.show(0, title, body, platformDetails, payload: payload);
   }
-}
-
-class PublishMessageHelper {
-  static const String key = "sentSms";
-  static const Map<String, dynamic> requestLive = {key: "#live"};
-  static Map<String, dynamic> settingsPayload(String value) => {key: value};
 }
