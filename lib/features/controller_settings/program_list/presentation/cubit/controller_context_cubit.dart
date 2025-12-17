@@ -1,0 +1,58 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+abstract class ControllerContextState{}
+
+class ControllerContextInitial extends ControllerContextState{}
+
+class ControllerContextLoaded extends ControllerContextState{
+  final String userId;
+  final String controllerId;
+  final String userType;
+  final String subUserId;
+  ControllerContextLoaded({
+    required this.userId,
+    required this.controllerId,
+    required this.userType,
+    required this.subUserId,
+  });
+}
+
+class ControllerContextCubit extends Cubit<ControllerContextState>{
+  ControllerContextCubit() : super(ControllerContextInitial());
+
+  void setContext({
+    required String userId,
+    required String controllerId,
+    required String userType,
+    required String subUserId,
+  }){
+    emit(
+        ControllerContextLoaded(
+            userId: userId,
+            controllerId: controllerId,
+            userType: userType,
+            subUserId: subUserId,
+        )
+    );
+    print('ControllerContextLoaded updayed....');
+  }
+
+  void updateController({
+    required String controllerId,
+  }) {
+    print("controllerId ==> $controllerId");
+    final currentState = state;
+
+    // ✅ SAFETY CHECK
+    if (currentState is ControllerContextLoaded) {
+      emit(
+        ControllerContextLoaded(
+          userId: currentState.userId,
+          controllerId: controllerId,
+          userType: currentState.userType,
+          subUserId: currentState.subUserId,
+        ),
+      );
+    }
+  }
+}

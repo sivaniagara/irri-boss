@@ -3,18 +3,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_material_button.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_outlined_button.dart';
-import 'package:niagara_smart_drip_irrigation/features/controller_settings/program_list/presentation/cubit/day_selection_cubit.dart';
+import 'package:niagara_smart_drip_irrigation/features/controller_settings/edit_zone/presentation/bloc/edit_zone_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/controller_settings/edit_zone/presentation/pages/edit_zone.dart';
+import 'package:niagara_smart_drip_irrigation/features/controller_settings/utils/controller_settings_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/dashboard.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_routes.dart';
 // Assuming your ZoneEntity is defined in a file like this. Adjust the import path if needed.
+import '../../domain/entities/program_and_zone_entity.dart';
 import '../../domain/entities/zone_entity.dart';
 import '../../../../../core/di/injection.dart' as di;
 
 class ZoneList extends StatelessWidget {
-  final List<ZoneEntity> zones;
+  final ProgramAndZoneEntity programEntity;
 
   const ZoneList({
     super.key,
-    required this.zones,
+    required this.programEntity,
   });
 
   @override
@@ -38,20 +42,12 @@ class ZoneList extends StatelessWidget {
           Expanded(
             child: ListView.builder(
               // 3. Use the length of the dynamic list.
-                itemCount: zones.length,
+                itemCount: programEntity.zones.length,
                 itemBuilder: (context, int index) {
                   // Get the specific zone for the current item.
-                  final zone = zones[index];
+                  final zone = programEntity.zones[index];
                   return ListTile(
                     onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => BlocProvider(
-                                create: (context) => di.sl<DaySelectionCubit>(),
-                                // Pass the selected zone to the EditZone screen
-                                child: EditZone(),
-                              )));
                     },
                     title: Text(
                       zone.zoneName,
@@ -84,7 +80,9 @@ class ZoneList extends StatelessWidget {
                     }),
                 CustomMaterialButton(
                     onPressed: () {
-
+                      context.push(
+                          '${DashBoardRoutes.dashboard}${ControllerSettingsRoutes.editZone.replaceAll(':programId', programEntity.programId.toString())}',
+                      );
                     },
                     title: 'Add Zone')
               ],

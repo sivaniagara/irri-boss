@@ -6,11 +6,12 @@ import '../../domain/entities/zone_nodes_entity.dart';
 
 abstract class ZoneConfigurationRemoteSource{
   Future<Map<String, dynamic>> getZoneConfiguration(Map<String, String> data);
+  Future<Map<String, dynamic>> submitZoneConfiguration(Map<String, String> data);
 }
 
 class ZoneConfigurationRemoteSourceImpl extends ZoneConfigurationRemoteSource{
   final ApiClient apiClient;
-  ZoneConfigurationRemoteSourceImpl(this.apiClient);
+  ZoneConfigurationRemoteSourceImpl({required this.apiClient});
 
   @override
   Future<Map<String, dynamic>> getZoneConfiguration(Map<String, String> data) async{
@@ -22,6 +23,12 @@ class ZoneConfigurationRemoteSourceImpl extends ZoneConfigurationRemoteSource{
       print('getZoneConfiguration error in data source impl : ${e.toString()}');
       rethrow;
     }
+  }
+
+  @override
+  Future<Map<String, dynamic>> submitZoneConfiguration(Map<String, String> data) {
+    // TODO: implement submitZoneConfiguration
+    throw UnimplementedError();
   }
 
 }

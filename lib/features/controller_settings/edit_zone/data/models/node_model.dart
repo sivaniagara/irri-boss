@@ -1,4 +1,4 @@
-import '../../domain/entities/zone_configuration_entity.dart';
+import '../../domain/entities/node_entity.dart';
 
 class NodeModel extends NodeEntity {
   NodeModel({
@@ -7,6 +7,7 @@ class NodeModel extends NodeEntity {
     required super.serialNo,
     required super.modelName,
     required super.categoryName,
+    required super.select,
   });
 
   factory NodeModel.fromJson(Map<String, dynamic> json) {
@@ -16,6 +17,18 @@ class NodeModel extends NodeEntity {
       serialNo: json['serialNo'] ?? '',
       modelName: json['modelName'] ?? '',
       categoryName: json['categoryName'] ?? '',
+      select: false
+    );
+  }
+
+  NodeEntity toEntity(){
+    return NodeEntity(
+        nodeId: nodeId,
+        qrCode: qrCode,
+        serialNo: serialNo,
+        modelName: modelName,
+        categoryName: categoryName,
+        select: select
     );
   }
 }

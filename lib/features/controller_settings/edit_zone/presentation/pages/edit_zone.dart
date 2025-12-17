@@ -2,15 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_material_button.dart';
+import 'package:niagara_smart_drip_irrigation/features/controller_settings/edit_zone/domain/entities/node_entity.dart';
+import 'package:niagara_smart_drip_irrigation/features/controller_settings/edit_zone/presentation/widgets/selectable_valve_list.dart';
 import 'package:niagara_smart_drip_irrigation/features/controller_settings/program_list/presentation/widgets/list_tile_card.dart';
 
 import '../../../../../core/widgets/custom_outlined_button.dart';
 import '../../../../../core/widgets/gradiant_background.dart';
-import '../../../program_list/presentation/cubit/day_selection_cubit.dart';
 import '../bloc/edit_zone_bloc.dart';
+
+enum NodeEntityMode{valve, moistureSensor, levelSensor}
+
 
 class EditZone extends StatelessWidget {
   const EditZone({super.key});
+
+
+  void showZoneBottomSheet(BuildContext context, List<NodeEntity> listOfNodeEntity) {
+    final editZoneBloc = context.read<EditZoneBloc>();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (bottomSheetContext) {
+        return BlocProvider.value(
+          value: editZoneBloc,
+          child: SelectableNodeList(nodeEntityMode: NodeEntityMode.valve,),
+        );
+      },
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -36,18 +59,19 @@ class EditZone extends StatelessWidget {
                       child: Column(
                         spacing: 10,
                         children: [
-                          zoneTitle(),
+                          zoneTitle(state),
                           Divider(),
                           description(),
                           Divider(),
-                          onTimeOffTime(),
-                          Divider(),
-                          daysSelection(),
+                          // onTimeOffTime(state),
+                          // Divider(),
+                          // daysSelection(),
                           const SizedBox(height: 10,),
                           ListTileCard(
                             title: 'Valve',
                             onTap: (){
-
+                              List<NodeEntity> listOfValveNodes = state.zoneNodes.valves;
+                              showZoneBottomSheet(context, listOfValveNodes);
                             },
                           ),
                           ListTileCard(
@@ -104,12 +128,12 @@ class EditZone extends StatelessWidget {
 
   }
 
-  Widget zoneTitle(){
+  Widget zoneTitle(EditZoneState state){
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         Text('Zone Name', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.black),),
-        Text('ZONE001', style:  TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: Colors.black),),
+        Text((state as EditZoneLoaded).zoneNodes.zoneNumber, style:  TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: Colors.black),),
       ],
     );
   }
@@ -130,36 +154,36 @@ class EditZone extends StatelessWidget {
     );
   }
 
-  Widget daysSelection(){
-    return BlocBuilder<DaySelectionCubit, DaySelectionState>(
-        builder: (context, state){
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ...['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day){
-                bool isSelected = state.selectedDays.contains(day);
-                return GestureDetector(
-                  onTap: (){
-                    context.read<DaySelectionCubit>().addAndRemove(day);
-                  },
-                  child: Container(
-                    width: 50,
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: isSelected ? Theme.of(context).primaryColor : Colors.white
-                    ),
-                    child: Center(
-                      child: Text(day, style: TextStyle(color: isSelected ? Colors.white : Colors.black),),
-                    ),
-                  ),
-                );
-              })
-            ],
-          );
-        }
-    );
-  }
+  // Widget daysSelection(){
+  //   return BlocBuilder<DaySelectionCubit, DaySelectionState>(
+  //       builder: (context, state){
+  //         return Row(
+  //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //           children: [
+  //             ...['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day){
+  //               bool isSelected = state.selectedDays.contains(day);
+  //               return GestureDetector(
+  //                 onTap: (){
+  //                   context.read<DaySelectionCubit>().addAndRemove(day);
+  //                 },
+  //                 child: Container(
+  //                   width: 50,
+  //                   padding: EdgeInsets.symmetric(vertical: 20),
+  //                   decoration: BoxDecoration(
+  //                       borderRadius: BorderRadius.circular(20),
+  //                       color: isSelected ? Theme.of(context).primaryColor : Colors.white
+  //                   ),
+  //                   child: Center(
+  //                     child: Text(day, style: TextStyle(color: isSelected ? Colors.white : Colors.black),),
+  //                   ),
+  //                 ),
+  //               );
+  //             })
+  //           ],
+  //         );
+  //       }
+  //   );
+  // }
 
   Widget timeWidget(String title, String value){
     return Row(
@@ -185,7 +209,7 @@ class EditZone extends StatelessWidget {
     );
   }
 
-  Widget onTimeOffTime(){
+  Widget onTimeOffTime(EditZoneState state){
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [

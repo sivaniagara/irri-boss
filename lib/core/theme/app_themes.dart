@@ -87,7 +87,8 @@ class AppThemes {
     ),
     listTileTheme: ListTileThemeData(
       textColor: Colors.black,
-      titleTextStyle: TextStyle(color: Colors.black, fontSize: 20)
+      titleTextStyle: TextStyle(color: Colors.black, fontSize: 20),
+
     ),
     textTheme: TextTheme(
       titleMedium: TextStyle(color: Colors.white),
@@ -193,7 +194,8 @@ class AppThemes {
     dividerTheme: DividerThemeData(
       color: const Color(0xff727272),
       thickness: 1
-    )
+    ),
+
 
   );
 

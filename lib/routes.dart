@@ -14,6 +14,7 @@ import 'features/controller_details/domain/usecase/controller_details_params.dar
 import 'features/controller_details/presentation/bloc/controller_details_bloc.dart';
 import 'features/controller_details/presentation/bloc/controller_details_bloc_event.dart';
 import 'features/controller_details/presentation/pages/controller_details_page.dart';
+import 'features/controller_settings/program_list/presentation/cubit/controller_context_cubit.dart';
 import 'features/controller_settings/program_list/presentation/cubit/controller_tab_cubit.dart';
 import 'features/controller_settings/utils/controller_settings_routes.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
@@ -151,18 +152,27 @@ class AppRouter {
           path: DashBoardRoutes.dashboard,
           builder: (context, state) {
             final authData = _getAuthData();
-            final bloc = BlocProvider(
-              create: (context) => di.sl<DashboardBloc>()
-                ..add(FetchDashboardGroupsEvent(authData.id))
-                ..add(ResetDashboardSelectionEvent()),
-              child: DashboardPage(userId: authData.id, userType: authData.userType),
+
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (_) => di.sl<DashboardBloc>()
+                    ..add(FetchDashboardGroupsEvent(authData.id))
+                    ..add(ResetDashboardSelectionEvent()),
+                ),
+
+              ],
+              child: DashboardPage(
+                userId: authData.id,
+                userType: authData.userType,
+              ),
             );
-            return bloc;
           },
           routes: [
             ...controllerSettingGoRoutes,
-          ]
+          ],
         ),
+
         GoRoute(
           name: 'ctrlLivePage',
           path: DashBoardRoutes.ctrlLivePage,

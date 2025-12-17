@@ -7,14 +7,15 @@ import '../repositories/zone_configuration_repository.dart';
 class GetZoneConfigurationParams {
   final String userId;
   final String controllerId;
-  GetZoneConfigurationParams({required this.userId, required  this.controllerId});
+  final String programId;
+  GetZoneConfigurationParams({required this.userId, required this.controllerId, required this.programId});
 }
 
 class GetZoneConfigurationUseCase
     extends UseCase<ZoneConfigurationEntity, GetZoneConfigurationParams> {
   final ZoneConfigurationRepository repository;
 
-  GetZoneConfigurationUseCase(this.repository);
+  GetZoneConfigurationUseCase({required this.repository});
 
   @override
   Future<Either<Failure, ZoneConfigurationEntity>> call(

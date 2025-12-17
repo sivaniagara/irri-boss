@@ -11,6 +11,7 @@ import '../../features/controller_details/domain/repositories/controller_details
 import '../../features/controller_details/domain/usecase/controller_details_usercase.dart';
 import '../../features/controller_details/presentation/bloc/controller_details_bloc.dart';
 import '../../features/controller_details/presentation/bloc/controller_details_state.dart';
+import '../../features/controller_settings/program_list/presentation/cubit/controller_context_cubit.dart';
 import '../../features/fault_msg/di/faultmsg_di.dart';
 import '../../features/sendrev_msg/di/sendrev_di.dart';
 import '../../features/setserialsettings/data/datasources/setserial_datasource.dart';
@@ -20,7 +21,6 @@ import '../../features/setserialsettings/presentation/bloc/setserial_bloc.dart';
 import '../../features/setserialsettings/presentation/bloc/setserial_bloc_event.dart';
 import '../../features/auth/di/auth.di.dart';
 import '../../features/controller_settings/program_list/presentation/cubit/controller_tab_cubit.dart';
-import '../../features/controller_settings/program_list/presentation/cubit/day_selection_cubit.dart';
 import '../../features/dashboard/di/dashboard_di.dart';
 import '../../features/mqtt/bloc/mqtt_bloc.dart';
 import '../../features/pump_settings/di/pump_settings_di.dart';
@@ -67,6 +67,9 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
     ),
   );
 
+  /// Register this for access userId and controllerId for all pages
+  sl.registerFactory(() => ControllerContextCubit());
+
   /// Register MqttBloc after MqttService
   sl.registerLazySingleton<MqttBloc>(() => MqttBloc(mqttService: sl<MqttService>()));
   /// Flavor-specific services
@@ -88,6 +91,10 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   /// Controller Setting Dependencies
   initControllerSettingDependencies();
 
+  sl.registerLazySingleton<ControllerRemoteDataSource>(() => ControllerRemoteDataSourceImpl(apiClient: sl()));
+  sl.registerLazySingleton<ControllerRepo>(() => ControllerRepoImpl(remoteDataSource: sl()));
+  sl.registerLazySingleton(() => GetControllerDetailsUsecase(controllerRepo: sl()));
+  sl.registerFactory(() => ControllerDetailsBloc(getControllerDetails: sl(), updateController: sl(),));
   sl.registerLazySingleton<SetSerialDataSource>(
           () => SetSerialDataSourceImpl(apiClient: sl()));
   sl.registerLazySingleton<SetSerialRepository>(

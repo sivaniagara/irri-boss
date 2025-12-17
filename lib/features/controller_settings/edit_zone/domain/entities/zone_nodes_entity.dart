@@ -1,4 +1,4 @@
-import 'zone_configuration_entity.dart';
+import 'node_entity.dart';
 
 class ZoneConfigurationEntity {
   final String zoneNumber;
@@ -12,4 +12,17 @@ class ZoneConfigurationEntity {
     required this.moistureSensors,
     required this.levelSensors,
   });
+
+  ZoneConfigurationEntity copyWith({
+    List<NodeEntity>? valves,
+    List<NodeEntity>? moistureSensors,
+    List<NodeEntity>? levelSensors,
+  }) {
+    return ZoneConfigurationEntity(
+      zoneNumber: zoneNumber,
+      valves: valves ?? this.valves,
+      moistureSensors: moistureSensors ?? this.moistureSensors,
+      levelSensors: levelSensors ?? this.levelSensors,
+    );
+  }
 }

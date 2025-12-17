@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/controller_settings/program_list/domain/entities/zone_entity.dart';
 import '../../../../../routes.dart';
+import '../../domain/entities/program_and_zone_entity.dart';
 import '../bloc/program_bloc.dart';
 import '../widgets/zone_list.dart';
 
@@ -31,7 +32,7 @@ class ControllerProgram extends StatelessWidget {
                 ),
                 child: ListTile(
                   onTap: () {
-                    showZoneBottomSheet(context, program.zones);
+                    showZoneBottomSheet(context, program);
                   },
                   title: Text(
                     program.programName,
@@ -58,7 +59,7 @@ class ControllerProgram extends StatelessWidget {
     );
   }
 
-  void showZoneBottomSheet(BuildContext context, List<ZoneEntity> zones) {
+  void showZoneBottomSheet(BuildContext context, ProgramAndZoneEntity programEntity) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -66,7 +67,7 @@ class ControllerProgram extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => ZoneList(zones: zones),
+      builder: (_) => ZoneList(programEntity: programEntity,),
     );
   }
 }
