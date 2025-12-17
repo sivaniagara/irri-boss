@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/utils/voltage_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/reportMenu/power_reports/utils/Power_routes.dart';
 
 import '../../../../core/theme/app_gradients.dart';
  import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
@@ -75,9 +76,11 @@ class ReportMenuPage extends StatelessWidget {
             },
           ),
           _reportCard(
-            title: 'Standalone',
-            icon: Icons.touch_app,
-            onTap: () {},
+            title: 'Power Graph',
+            icon: Icons.power,
+            onTap: () {
+              context.push(PowerGraphPageRoutes.PowerGraphPage,extra: params);
+            },
           ),
           _reportCard(
             title: 'Standalone',
