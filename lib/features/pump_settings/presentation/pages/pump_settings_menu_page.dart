@@ -11,6 +11,7 @@ import '../../presentation/bloc/pump_settings_state.dart';
 
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/widgets/retry.dart';
+import '../../utils/pump_settings_images.dart';
 import '../bloc/pump_settings_menu_bloc.dart';
 
 class PumpSettingsMenuPage extends StatelessWidget {
@@ -149,10 +150,13 @@ class PumpSettingsMenuPage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
+                  CircleAvatar(
+                    child: Image.asset(PumpSettingsImages.getByIndex(index)),
+                  ),
+                  /*Icon(
                     Icons.settings,
                     size: 25.0,
-                  ),
+                  ),*/
                   const SizedBox(height: 8),
                   Text(
                     item.menuItem,
