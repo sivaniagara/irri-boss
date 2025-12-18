@@ -61,6 +61,9 @@ final pumpSettingsRoutes = <GoRoute>[
         final params = state.extra as Map<String, dynamic>;
         return ViewPumpSettingsPage(
           deviceId: params['deviceId'],
+          userId: params['userId'],
+          subuserId: params['subUserId'],
+          controllerId: params['controllerId'],
         );
       }
   ),

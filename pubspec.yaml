@@ -93,6 +93,7 @@ flutter:
   assets:
     - assets/images/common/niagara/
     - assets/images/common/
+    - assets/images/pump_menu_icons
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

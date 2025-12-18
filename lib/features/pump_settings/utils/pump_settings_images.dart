@@ -1,15 +1,15 @@
 class PumpSettingsImages {
-  static const String img1 = "assets/images/pump_menu_icons/communication_config.png";
+  static const String img1 = "assets/images/pump_menu_icons/delay_settings.png";
   static const String img2 = "assets/images/pump_menu_icons/current_settings.png";
-  static const String img3 = "assets/images/pump_menu_icons/delay_settings.png";
-  static const String img4 = "assets/images/pump_menu_icons/notification_settings.png";
-  static const String img5 = "assets/images/pump_menu_icons/number.png";
-  static const String img6 = "assets/images/pump_menu_icons/other_settings.png";
-  static const String img7 = "assets/images/pump_menu_icons/pump_view_settings.png";
-  static const String img8 = "assets/images/pump_menu_icons/sms_settings.png";
-  static const String img9 = "assets/images/pump_menu_icons/status_check.png";
-  static const String img10 = "assets/images/pump_menu_icons/sump_settings.png";
-  static const String img11 = "assets/images/pump_menu_icons/timer_settings.png";
-  static const String img12 = "assets/images/pump_menu_icons/view_settings.png";
-  static const String img13 = "assets/images/pump_menu_icons/voltage_settings.png";
+  static const String img3 = "assets/images/pump_menu_icons/voltage_settings.png";
+  static const String img4 = "assets/images/pump_menu_icons/timer_settings.png";
+  static const String img5 = "assets/images/pump_menu_icons/sms_settings.png";
+  static const String img6 = "assets/images/pump_menu_icons/communication_config.png";
+  static const String img7 = "assets/images/pump_menu_icons/status_check.png";
+  static const String img8 = "assets/images/pump_menu_icons/number.png";
+  static const String img9 = "assets/images/pump_menu_icons/view_settings.png";
+  static const String img10 = "assets/images/pump_menu_icons/other_settings.png";
+  static const String img11 = "assets/images/pump_menu_icons/sump_settings.png";
+  static const String img12 = "assets/images/pump_menu_icons/notification_settings.png";
+  static const String img13 = "assets/images/pump_menu_icons/pump_view_settings.png";
 }
