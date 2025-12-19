@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_material_button.dart';
 
-void showLimitationAlert({required BuildContext context, required String message}){
+void showErrorAlert({required BuildContext context, required String message}){
   showDialog(
       context: context,
       builder: (context){
@@ -22,6 +22,34 @@ void showLimitationAlert({required BuildContext context, required String message
           actions: [
             CustomMaterialButton(
                 onPressed: ()=> context.pop(),
+                title: 'Ok'
+            )
+          ],
+        );
+      }
+  );
+}
+
+void showSuccessAlert({required BuildContext context, required String message, void Function()? onPressed}){
+  showDialog(
+      context: context,
+      builder: (context){
+        return AlertDialog(
+          content: Column(
+            spacing: 20,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.green,
+                child: Icon(Icons.check, size: 33, color: Colors.white,),
+              ),
+              Text(message, style: TextStyle(color: Colors.black, fontSize: 16),)
+            ],
+          ),
+          actions: [
+            CustomMaterialButton(
+                onPressed: onPressed ?? ()=> context.pop(),
                 title: 'Ok'
             )
           ],

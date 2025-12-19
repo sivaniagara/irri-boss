@@ -42,7 +42,7 @@ class _SelectableNodeListState extends State<SelectableNodeList> {
     return BlocListener<EditZoneBloc, EditZoneState>(
         listener: (context, state){
           if (state is EditValveLimitExceeded) {
-            showLimitationAlert(context: context, message: 'Maximum 4 valve should be able to select per zone.');
+            showErrorAlert(context: context, message: 'Maximum 4 valve should be able to select per zone.');
           }
         },
       child: BlocBuilder<EditZoneBloc, EditZoneState>(
@@ -91,11 +91,7 @@ class _SelectableNodeListState extends State<SelectableNodeList> {
 
                             // 🚫 Max 4 rule
                             if (!node.select && selectedCount >= 4) {
-                              showLimitationAlert(
-                                context: context,
-                                message:
-                                'Maximum 4 valve should be able to select per zone.',
-                              );
+                              showErrorAlert(context: context, message: 'Maximum 4 valve should be able to select per zone.');
                               return;
                             }
 

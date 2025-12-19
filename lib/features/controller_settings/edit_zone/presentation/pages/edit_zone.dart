@@ -1,20 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/alert_dialog.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_material_button.dart';
 import 'package:niagara_smart_drip_irrigation/features/controller_settings/edit_zone/domain/entities/node_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/controller_settings/edit_zone/presentation/widgets/selectable_valve_list.dart';
+import 'package:niagara_smart_drip_irrigation/features/controller_settings/program_list/presentation/bloc/program_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/controller_settings/program_list/presentation/widgets/list_tile_card.dart';
+import 'package:niagara_smart_drip_irrigation/features/controller_settings/utils/controller_settings_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_routes.dart';
 
+import '../../../../../core/widgets/app_alerts.dart';
 import '../../../../../core/widgets/custom_outlined_button.dart';
 import '../../../../../core/widgets/gradiant_background.dart';
 import '../bloc/edit_zone_bloc.dart';
 
 enum NodeEntityMode{valve, moistureSensor, levelSensor}
 
+enum ZoneSubmissionStatus {
+  idle,
+  loading,
+  success,
+  failure,
+}
 
-class EditZone extends StatelessWidget {
-  const EditZone({super.key});
+
+class EditZonePage extends StatelessWidget {
+  const EditZonePage({super.key});
 
 
   void showZoneBottomSheet(BuildContext context, List<NodeEntity> listOfNodeEntity) {
@@ -37,93 +49,114 @@ class EditZone extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<EditZoneBloc, EditZoneState>(
-        builder: (context, state){
-          if(state is EditZoneLoading){
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state is EditZoneError) {
-            return Center(child: Text(state.message));
-          }
-          if(state is EditZoneLoaded){
-            return Scaffold(
-              appBar: AppBar(
-                title: const Text('EDIT / REST ZONE', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),),
-                centerTitle: true,
-                backgroundColor: const Color(0xffC6DDFF),
-              ),
-              body: GradiantBackground(
-                child: Column(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        spacing: 10,
-                        children: [
-                          zoneTitle(state),
-                          Divider(),
-                          description(),
-                          Divider(),
-                          // onTimeOffTime(state),
-                          // Divider(),
-                          // daysSelection(),
-                          const SizedBox(height: 10,),
-                          ListTileCard(
-                            title: 'Valve',
-                            onTap: (){
-                              List<NodeEntity> listOfValveNodes = state.zoneNodes.valves;
-                              showZoneBottomSheet(context, listOfValveNodes);
-                            },
-                          ),
-                          ListTileCard(
-                            title: 'Moisture Sensor',
-                            onTap: (){
-
-                            },
-                          ),
-                          ListTileCard(
-                            title: 'Level Sensor',
-                            onTap: (){
-
-                            },
-                          ),
-
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.105,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          CustomOutlinedButton(
-                              title: 'Cancel',
-                              onPressed: (){
-                                context.pop();
-                              }
-                          ),
-                          CustomOutlinedButton(
-                              onPressed: (){
-
-                              },
-                              title: 'Rest Zone'
-                          ),
-                          CustomMaterialButton(
-                              onPressed: (){
-
-                              },
-                              title: 'Submit'
-                          ),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ),
+    return BlocListener<EditZoneBloc, EditZoneState>(
+        listener: (context, state){
+          if(state is EditZoneLoaded && state.submissionStatus == ZoneSubmissionStatus.loading){
+            showGradientLoadingDialog(context);
+          }else if(state is EditZoneLoaded && state.submissionStatus == ZoneSubmissionStatus.failure){
+            context.pop();
+            showErrorAlert(context: context, message: state.message!);
+          }else if(state is EditZoneLoaded && state.submissionStatus == ZoneSubmissionStatus.success){
+            context.pop();
+            showSuccessAlert(
+                context: context,
+                message: state.message!,
+                onPressed: (){
+                  context.pop();
+                  context.pop();
+                  context.read<ProgramBloc>().add(FetchPrograms(userId: state.userId, controllerId: state.controllerId));
+                }
             );
           }
-          return SizedBox();
+        },
+      child: BlocBuilder<EditZoneBloc, EditZoneState>(
+          builder: (context, state){
+            if(state is EditZoneLoading){
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (state is EditZoneError) {
+              return Material(child: Center(child: Text(state.message, style: TextStyle(color: Colors.black),)));
+            }
+            if(state is EditZoneLoaded){
+              return Scaffold(
+                appBar: AppBar(
+                  title: const Text('EDIT / REST ZONE', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),),
+                  centerTitle: true,
+                  backgroundColor: const Color(0xffC6DDFF),
+                ),
+                body: GradiantBackground(
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          spacing: 10,
+                          children: [
+                            zoneTitle(state),
+                            Divider(),
+                            description(),
+                            Divider(),
+                            // onTimeOffTime(state),
+                            // Divider(),
+                            // daysSelection(),
+                            const SizedBox(height: 10,),
+                            ListTileCard(
+                              title: 'Valve',
+                              onTap: (){
+                                List<NodeEntity> listOfValveNodes = state.zoneNodes.valves;
+                                showZoneBottomSheet(context, listOfValveNodes);
+                              },
+                            ),
+                            ListTileCard(
+                              title: 'Moisture Sensor',
+                              onTap: (){
 
-        }
+                              },
+                            ),
+                            ListTileCard(
+                              title: 'Level Sensor',
+                              onTap: (){
+
+                              },
+                            ),
+
+                          ],
+                        ),
+                      ),
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.105,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            CustomOutlinedButton(
+                                title: 'Cancel',
+                                onPressed: (){
+                                  context.pop();
+                                }
+                            ),
+                            CustomOutlinedButton(
+                                onPressed: (){
+
+                                },
+                                title: 'Rest Zone'
+                            ),
+                            CustomMaterialButton(
+                                onPressed: (){
+                                  context.read<EditZoneBloc>().add(SubmitZone());
+                                },
+                                title: 'Submit'
+                            ),
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              );
+            }
+            return SizedBox();
+
+          }
+      )
     );
 
   }

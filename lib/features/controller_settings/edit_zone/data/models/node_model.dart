@@ -10,16 +10,28 @@ class NodeModel extends NodeEntity {
     required super.select,
   });
 
-  factory NodeModel.fromJson(Map<String, dynamic> json) {
+  factory NodeModel.fromJson(Map<String, dynamic> json, [bool active = false]) {
     return NodeModel(
       nodeId: json['nodeId'],
       qrCode: json['QRCode'] ?? '',
       serialNo: json['serialNo'] ?? '',
       modelName: json['modelName'] ?? '',
       categoryName: json['categoryName'] ?? '',
-      select: false
+      select: active
     );
   }
+
+  factory NodeModel.fromEntity(NodeEntity nodeEntity) {
+    return NodeModel(
+        nodeId: nodeEntity.nodeId,
+        qrCode: nodeEntity.qrCode,
+        serialNo: nodeEntity.serialNo,
+        modelName: nodeEntity.modelName,
+        categoryName: nodeEntity.categoryName,
+        select: nodeEntity.select,
+    );
+  }
+
 
   NodeEntity toEntity(){
     return NodeEntity(

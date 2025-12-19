@@ -9,8 +9,16 @@ class ProgramLoading extends ProgramState {}
 
 class ProgramLoaded extends ProgramState {
   final List<ProgramAndZoneEntity> programs;
+  ZoneDeleteStatus zoneDeleteStatus;
 
-  ProgramLoaded(this.programs);
+  ProgramLoaded({
+    required this.programs,
+    this.zoneDeleteStatus = ZoneDeleteStatus.initial,
+  });
+
+  ProgramLoaded copyWith({ZoneDeleteStatus? status}){
+    return ProgramLoaded(programs: programs, zoneDeleteStatus : status ?? zoneDeleteStatus,);
+  }
 }
 
 class ProgramError extends ProgramState {

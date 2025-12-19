@@ -1,9 +1,9 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:niagara_smart_drip_irrigation/features/controller_settings/edit_zone/presentation/bloc/edit_zone_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/controller_settings/edit_zone/presentation/pages/edit_zone.dart';
 import '../../../core/di/injection.dart' as di;
+import '../edit_zone/presentation/bloc/edit_zone_bloc.dart';
 import '../program_list/presentation/bloc/program_bloc.dart';
 import '../program_list/presentation/cubit/controller_context_cubit.dart';
 import '../program_list/presentation/cubit/controller_tab_cubit.dart';
@@ -15,7 +15,7 @@ class ControllerSettingsRoutes {
   static const String controllerDetails = "$controllerSettings/controllerDetails";
   static const String nodes = "$controllerSettings/nodesDetails";
   static const String program = "$controllerSettings/programDetails";
-  static const String editZone = "/editZone/:programId";
+  static const String editZone = "/editZone/:programId/:zoneSerialNo";
 }
 
 final controllerSettingGoRoutes = [
@@ -56,11 +56,7 @@ final controllerSettingGoRoutes = [
         GoRoute(
           path: ControllerSettingsRoutes.program,
           builder: (context, state) {
-            final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
-            return BlocProvider(
-              create: (context)=> di.sl<ProgramBloc>()..add(FetchPrograms(userId: controllerContext.userId, controllerId: controllerContext.controllerId)),
-              child: ControllerProgram(),
-            );
+            return ControllerProgram();
           },
           routes: [
 
@@ -73,9 +69,23 @@ final controllerSettingGoRoutes = [
       builder: (context, state){
         final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
         final progId = state.pathParameters['programId']!;
-        return BlocProvider(
-          create: (context)=> di.sl<EditZoneBloc>()..add(AddZone(userId: controllerContext.userId, controllerId: controllerContext.controllerId, programId: progId)),
-          child: EditZone(),
+        final zoneSerialNo = state.pathParameters['zoneSerialNo'];
+        print("zoneSerialNo => ${zoneSerialNo}");
+
+        late EditZoneEvent editZoneEvent;
+        if(zoneSerialNo == null){
+          editZoneEvent = AddZone(userId: controllerContext.userId, controllerId: controllerContext.controllerId, programId: progId);
+        }else{
+          editZoneEvent = EditZone(userId: controllerContext.userId, controllerId: controllerContext.controllerId, programId: progId, zoneSerialNo: zoneSerialNo);
+        }
+        return MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (context)=> di.sl<EditZoneBloc>()..add(editZoneEvent),
+              ),
+              BlocProvider.value(value: context.read<ProgramBloc>())
+            ],
+            child: EditZonePage()
         );
       }
   )

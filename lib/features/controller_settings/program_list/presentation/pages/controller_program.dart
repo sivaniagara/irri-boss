@@ -4,11 +4,51 @@ import 'package:niagara_smart_drip_irrigation/features/controller_settings/progr
 import '../../../../../routes.dart';
 import '../../domain/entities/program_and_zone_entity.dart';
 import '../bloc/program_bloc.dart';
+import '../cubit/controller_context_cubit.dart';
 import '../widgets/zone_list.dart';
 
 
-class ControllerProgram extends StatelessWidget {
+enum ZoneDeleteStatus{initial, loading, success, failure}
+
+extension ZoneDeleteStatusExtension on ZoneDeleteStatus {
+  String get message {
+    switch (this) {
+      case ZoneDeleteStatus.initial:
+        return '';
+      case ZoneDeleteStatus.loading:
+        return 'Deleting zone...';
+      case ZoneDeleteStatus.success:
+        return 'Zone deleted successfully';
+      case ZoneDeleteStatus.failure:
+        return 'Failed to delete zone';
+    }
+  }
+}
+
+
+class ControllerProgram extends StatefulWidget {
   const ControllerProgram({super.key});
+
+  @override
+  State<ControllerProgram> createState() => _ControllerProgramState();
+}
+
+class _ControllerProgramState extends State<ControllerProgram> {
+
+  @override
+  void initState() {
+    super.initState();
+
+    final controllerContext =
+    context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+
+    context.read<ProgramBloc>().add(
+      FetchPrograms(
+        userId: controllerContext.userId,
+        controllerId: controllerContext.controllerId,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +72,7 @@ class ControllerProgram extends StatelessWidget {
                 ),
                 child: ListTile(
                   onTap: () {
-                    showZoneBottomSheet(context, program);
+                    showZoneBottomSheet(context, program.programId);
                   },
                   title: Text(
                     program.programName,
@@ -59,7 +99,7 @@ class ControllerProgram extends StatelessWidget {
     );
   }
 
-  void showZoneBottomSheet(BuildContext context, ProgramAndZoneEntity programEntity) {
+  void showZoneBottomSheet(BuildContext context, int programId) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -67,8 +107,11 @@ class ControllerProgram extends StatelessWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (_) => ZoneList(programEntity: programEntity,),
+      builder: (_) {
+        return ZoneList(programId: programId);
+      },
     );
   }
+
 }
 

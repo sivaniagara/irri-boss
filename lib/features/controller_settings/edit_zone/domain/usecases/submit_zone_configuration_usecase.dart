@@ -9,21 +9,24 @@ import '../repositories/zone_configuration_repository.dart';
 class SubmitZoneConfigurationParams{
   final String userId;
   final String controllerId;
+  final String programId;
   final ZoneConfigurationEntity zoneNodes;
 
   SubmitZoneConfigurationParams({
     required this.userId,
     required this.controllerId,
+    required this.programId,
     required this.zoneNodes,
   });
 }
 
-class SubmitZoneConfigurationUsecase extends UseCase<Success, SubmitZoneConfigurationParams>{
-  final ZoneConfigurationRepository zoneConfigurationRepository;
-  SubmitZoneConfigurationUsecase({required this.zoneConfigurationRepository});
+class SubmitZoneConfigurationUsecase extends UseCase<Unit, SubmitZoneConfigurationParams>{
+  final ZoneConfigurationRepository repository;
+  SubmitZoneConfigurationUsecase({required this.repository});
 
   @override
-  Future<Either<Failure, Success>> call(SubmitZoneConfigurationParams params) async{
-    return zoneConfigurationRepository.submitZoneConfiguration(params);
+  Future<Either<Failure, Unit>> call(SubmitZoneConfigurationParams params) async{
+    print('SubmitZoneConfigurationUsecase called.....');
+    return repository.submitZoneConfiguration(params);
   }
 }

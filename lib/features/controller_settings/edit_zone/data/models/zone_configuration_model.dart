@@ -14,12 +14,6 @@ class ZoneConfigurationModel{
   });
 
   factory ZoneConfigurationModel.fromJson(Map<String, dynamic> json) {
-    List<NodeModel> parseNodes(List list) {
-      return list
-          .map<NodeModel>((e) => NodeModel.fromJson(e))
-          .toList();
-    }
-
     return ZoneConfigurationModel(
       zoneNumber: json['zoneNumber'] ?? '',
       valves: parseNodes(json['Valves']?[0]['nodeList'] ?? []),
@@ -30,10 +24,43 @@ class ZoneConfigurationModel{
     );
   }
 
+
+  static List<NodeModel> parseNodes(List list, [bool active = false]) {
+    return list
+        .map<NodeModel>((e) => NodeModel.fromJson(e, active))
+        .toList();
+  }
+
+  factory ZoneConfigurationModel.fromJsonWhileEdit(Map<String, dynamic> json) {
+
+    List<NodeModel>  getMappedAndUnMappedNode(
+        {required String nodeName, required Map<String, dynamic> json}){
+      List<NodeModel> mappedAndUnMappedNode = [
+        ...parseNodes(json['mappedNodes'][nodeName]?[0]['nodeList'], true),
+        ...parseNodes(json['unMappedNodes'][nodeName]?[0]['nodeList']),
+      ];
+      mappedAndUnMappedNode.sort((a, b) {
+        final int sa = int.tryParse(a.serialNo) ?? 0;
+        final int sb = int.tryParse(b.serialNo) ?? 0;
+        return sa.compareTo(sb);
+      });
+      return mappedAndUnMappedNode;
+    }
+
+    return ZoneConfigurationModel(
+      zoneNumber: json['zoneNumber'] ?? '',
+      valves: parseNodes(getMappedAndUnMappedNode(nodeName: 'Valves', json : json)),
+      moistureSensors:
+      parseNodes(getMappedAndUnMappedNode(nodeName: 'Moisture sensors', json : json)),
+      levelSensors:
+      parseNodes(getMappedAndUnMappedNode(nodeName: 'Level sensors', json : json)),
+    );
+  }
+
   factory ZoneConfigurationModel.fromEntity(ZoneConfigurationEntity entity) {
     List<NodeModel> parseNodes(List list) {
       return list
-          .map<NodeModel>((e) => NodeModel.fromJson(e))
+          .map<NodeModel>((e) => NodeModel.fromEntity(e))
           .toList();
     }
     return ZoneConfigurationModel(
@@ -63,12 +90,12 @@ class ZoneConfigurationModel{
     String moistureSerialNoInZone = selectedMoisture.map((valve) => valve.serialNo).join(',');
     String levelSerialNoInZone = selectedLevel.map((valve) => valve.serialNo).join(',');
     return {
-      "moistureSensor" : moistureSensors.map((e) => {"nodeId" : e.nodeId}).toList(),
+      "moistureSensor" : selectedMoisture.map((e) => {"nodeId" : e.nodeId}).toList(),
       "sensorSms" : "IDZLMSETP$programId$moistureSerialNoInZone,$levelSerialNoInZone",
       "zoneNumber" : zoneNumber.split('ZONE')[1],
-      "valves" : valves.map((e) => {"nodeId" : e.nodeId}).toList(),
+      "valves" : selectedValves.map((e) => {"nodeId" : e.nodeId}).toList(),
       "valveSms": "IDZONESELP$programId$valveSerialNoInZone",
-      "levelSensor": levelSensors.map((e) => {"nodeId" : e.nodeId}).toList(),
+      "levelSensor": selectedLevel.map((e) => {"nodeId" : e.nodeId}).toList(),
     };
   }
 }

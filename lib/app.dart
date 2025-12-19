@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:firebase_core/firebase_core.dart';
+import 'package:niagara_smart_drip_irrigation/features/controller_settings/program_list/presentation/bloc/program_bloc.dart';
 import 'features/controller_settings/program_list/presentation/cubit/controller_context_cubit.dart';
 import 'firebase_options.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -47,6 +48,7 @@ Future<void> appMain() async {
       MultiBlocProvider(
         providers: [
           BlocProvider(create: (_) => di.sl<ControllerContextCubit>()),
+          BlocProvider(create: (_) => di.sl<ProgramBloc>()),
         ],
         child: RootApp(authBloc: authBloc),
       ),

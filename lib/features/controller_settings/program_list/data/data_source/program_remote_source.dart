@@ -6,6 +6,7 @@ import '../../../../../core/services/api_client.dart';
 
 abstract class ProgramRemoteSource {
   Future<Map<String, dynamic>> getPrograms(Map<String, String> data);
+  Future<Map<String, dynamic>> deleteZone(Map<String, String> urlData);
 }
 
 
@@ -17,11 +18,23 @@ class ProgramRemoteSourceImplements extends ProgramRemoteSource{
   Future<Map<String, dynamic>> getPrograms(Map<String, String> data) async{
     try{
       print('ProgramRemoteSourceImplements');
-      String endpoint = buildUrl(ControllerSettingsUrls.getProgram, data);
-      final response = await apiClient.get(endpoint);
+      String endPoint = buildUrl(ControllerSettingsUrls.getProgram, data);
+      final response = await apiClient.get(endPoint);
       print('getPrograms => $response');
       return response;
     }catch (e){
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> deleteZone(Map<String, String> urlData)async{
+    try{
+      String endPoint = buildUrl(ControllerSettingsUrls.deleteZone, urlData);
+      final response = await apiClient.delete(endPoint);
+      print('delete zone => $response');
+      return response;
+    }catch(e){
       rethrow;
     }
   }

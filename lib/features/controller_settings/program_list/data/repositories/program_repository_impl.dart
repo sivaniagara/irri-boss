@@ -1,4 +1,6 @@
 import 'package:dartz/dartz.dart';
+import 'package:niagara_smart_drip_irrigation/core/error/success.dart';
+import 'package:niagara_smart_drip_irrigation/features/controller_settings/program_list/domain/usecases/delete_zone_usecase.dart';
 
 import '../../../../../core/error/failures.dart';
 import '../../domain/repositories/program_repository.dart';
@@ -25,6 +27,19 @@ class ProgramRepositoryImpl implements ProgramRepository {
     } catch (e) {
       return Left(ServerFailure('getPrograms Fetching Failure: $e'));
     }
+  }
 
+  @override
+  Future<Either<Failure, Unit>> deleteZone(DeleteZoneParams params) async{
+    try {
+      final response = await programRemoteSource.deleteZone({'userId' : params.userId, 'controllerId' : params.controllerId, 'programId' : params.programId, 'zoneSerialNo' : params.zoneSerialNo});
+      if(response['code'] == 200){
+        return Right(unit);
+      }else{
+        return Left(ServerFailure(response['message']));
+      }
+    } catch (e) {
+      return Left(ServerFailure('getPrograms Fetching Failure: $e'));
+    }
   }
 }
