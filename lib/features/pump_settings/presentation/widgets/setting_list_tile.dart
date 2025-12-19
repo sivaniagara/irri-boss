@@ -79,7 +79,7 @@ class SettingListTile extends StatelessWidget {
       trailing: IntrinsicWidth(child: trailingWidget),
       onTap: onTap,
       minTileHeight: 45,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       minVerticalPadding: 0,
     );

@@ -63,9 +63,17 @@ class AppThemes {
     primaryColor: primaryColor,
     primaryColorLight: Color(0xff6DA8F5),
     iconTheme: IconThemeData(color: Colors.white),
-    colorScheme: ColorScheme.light(
+    colorScheme: ColorScheme.fromSeed(
       primary: primaryColor,
       secondary: secondaryColor,
+      surface: Colors.white,
+      background: primarySwatch.shade50,
+      error: Colors.red,
+      onSecondary: Colors.white,
+      onSurface: Colors.black,
+      onBackground: primaryColor.withOpacity(0.1),
+      onError: Colors.white,
+      seedColor: primaryColor,
     ),
     appBarTheme: const AppBarTheme(
       backgroundColor: primaryColor,
@@ -82,28 +90,25 @@ class AppThemes {
       ),
     ),
     listTileTheme: ListTileThemeData(
-      textColor: Colors.white,
+      // textColor: Colors.white,
       // titleTextStyle: TextStyle(color: Colors.black, fontSize: 20)
     ),
     textTheme: TextTheme(
-      titleMedium: TextStyle(color: Colors.white),
+     /* titleMedium: TextStyle(color: Colors.white),
       titleSmall: TextStyle(color: Colors.white),
       titleLarge: TextStyle(color: Colors.white),
       bodySmall: TextStyle(color: Colors.white),
       bodyLarge: TextStyle(color: Colors.white),
-      bodyMedium: TextStyle(color: Colors.white),
+      bodyMedium: TextStyle(color: Colors.white),*/
     ),
     inputDecorationTheme: InputDecorationTheme(
       border: UnderlineInputBorder(
-        borderSide: BorderSide(color: Colors.white),
         borderRadius: BorderRadius.circular(0),
       ),
       enabledBorder: UnderlineInputBorder(
-        borderSide: BorderSide(color: Colors.white),
         borderRadius: BorderRadius.circular(0),
       ),
       focusedBorder: UnderlineInputBorder(
-        borderSide: BorderSide(color: Colors.white, width: 2.0),
         borderRadius: BorderRadius.circular(0),
       ),
       errorBorder: UnderlineInputBorder(
@@ -118,11 +123,8 @@ class AppThemes {
         borderSide: BorderSide(color: Colors.white.withOpacity(0.5)),
         borderRadius: BorderRadius.circular(0),
       ),
-      hintStyle: TextStyle(color: Colors.white54),
-      labelStyle: TextStyle(color: Colors.white54),
-      iconColor: Colors.white,
     ),
-    checkboxTheme: CheckboxThemeData(
+    /*checkboxTheme: CheckboxThemeData(
       fillColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
         if (states.contains(WidgetState.selected)) {
           return Colors.white;
@@ -185,7 +187,7 @@ class AppThemes {
         return Colors.white54;
       }),
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    ),
+    ),*/
 
   );
 
@@ -196,11 +198,11 @@ class AppThemes {
       primary: primaryColor,
       secondary: secondaryColor,
     ),
-    appBarTheme: const AppBarTheme(
+    /*appBarTheme: const AppBarTheme(
       backgroundColor: primaryColor,
       foregroundColor: Colors.white,
       elevation: 0,
-    ),
+    ),*/
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: primaryColor,

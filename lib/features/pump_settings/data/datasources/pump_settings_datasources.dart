@@ -118,7 +118,7 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
           _baseParams(userId: userId, controllerId: controllerId, subuserId: 0),
       );
 
-      final response = await apiClient.post(endPoint, body: body);
+      final response = await apiClient.put(endPoint, body: body);
 
       return handleApiResponse<String>(
         response,

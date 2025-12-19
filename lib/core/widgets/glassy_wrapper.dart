@@ -18,8 +18,11 @@ class GlassyWrapper extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomRight,
               colors: [
-                Theme.of(dialogContext).colorScheme.primaryContainer,
-                Colors.black87,
+                Color(0xffC6DDFF),
+                Color(0xff67C8F1),
+                Color(0xff6DA8F5),
+              /*  Theme.of(dialogContext).colorScheme.primaryContainer,
+                Colors.black87,*/
               ],
             ),
           ),

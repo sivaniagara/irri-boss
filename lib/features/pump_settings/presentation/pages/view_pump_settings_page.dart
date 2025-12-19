@@ -340,7 +340,7 @@ class _ViewPumpSettingsView extends StatelessWidget {
                                       sectionTitle,
                                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.white70,
+                                        color: Colors.black87,
                                       ),
                                     ),
                                   ),
@@ -376,8 +376,10 @@ class _ViewPumpSettingsView extends StatelessWidget {
 
     if(data['TT'].contains(";")) {
       return GlassCard(
-        margin: EdgeInsets.zero,
+        margin: EdgeInsets.symmetric(vertical: 4),
         padding: EdgeInsets.zero,
+        blur: 0,
+        opacity: 1,
         child: Column(
           children: [
             for(int i = 0; i < data['TT'].split(';').length; i++)
@@ -393,6 +395,8 @@ class _ViewPumpSettingsView extends StatelessWidget {
     return GlassCard(
       margin: EdgeInsets.symmetric(vertical: 3),
       padding: EdgeInsets.zero,
+      blur: 0,
+      opacity: 1,
       child: SettingListTile(
         title: data['TT'],
         trailing: trailing,

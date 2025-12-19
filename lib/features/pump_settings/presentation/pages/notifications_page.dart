@@ -113,6 +113,8 @@ class NotificationsPage extends StatelessWidget {
                                   children: [
                                     GlassCard(
                                       margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                                      blur: 0,
+                                      opacity: 1,
                                       padding: EdgeInsets.zero,
                                       child: CheckboxListTile(
                                         title: Text(notification.msgDesc),

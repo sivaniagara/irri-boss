@@ -111,6 +111,9 @@ class PumpSettingsMenuPage extends StatelessWidget {
         itemBuilder: (BuildContext context, int index) {
           final item = settingMenuList[index];
           return GlassCard(
+            opacity: 1,
+            blur: 0,
+            padding: EdgeInsetsGeometry.symmetric(horizontal: 8, vertical: 10),
             child: InkWell(
               onTap: () {
                 final commonExtra = {
@@ -148,20 +151,29 @@ class PumpSettingsMenuPage extends StatelessWidget {
               },
               borderRadius: BorderRadius.circular(12.0),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   CircleAvatar(
-                    child: Image.asset(PumpSettingsImages.getByIndex(index)),
+                    radius: 30,
+                    backgroundColor: Theme.of(context).primaryColor.withAlpha(50),
+                    child: Image.asset(PumpSettingsImages.getByIndex(index+1)),
                   ),
                   /*Icon(
                     Icons.settings,
                     size: 25.0,
                   ),*/
                   const SizedBox(height: 8),
-                  Text(
-                    item.menuItem,
-                    style: Theme.of(context).textTheme.titleSmall,
-                    textAlign: TextAlign.center,
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          item.menuItem,
+                          style: Theme.of(context).textTheme.titleSmall,
+                        ),
+                      ),
+                      Icon(Icons.navigate_next, color: Theme.of(context).primaryColor,)
+                    ],
                   ),
                 ],
               ),
@@ -170,7 +182,7 @@ class PumpSettingsMenuPage extends StatelessWidget {
         },
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
-          childAspectRatio: 0.7,
+          childAspectRatio: 0.8,
           crossAxisSpacing: 12,
           mainAxisSpacing: 12,
         ),

@@ -170,6 +170,8 @@ class _SettingsList extends StatelessWidget {
               GlassCard(
                 margin: EdgeInsetsGeometry.symmetric(horizontal: 0),
                 padding: EdgeInsetsGeometry.symmetric(horizontal: 5),
+                opacity: 1,
+                blur: 0,
                 child: Builder(
                   builder: (context) {
                     return ListView.separated(
@@ -187,7 +189,7 @@ class _SettingsList extends StatelessWidget {
                         separatorBuilder: (BuildContext context, int index) {
                           if (section.settings[index].widgetType != SettingWidgetType.multiText) {
                             if(section.settings[index].hiddenFlag == "0" && section.settings.where((e) => e.hiddenFlag == "1").length != index) return SizedBox();
-                            return Divider(color: Colors.white54);
+                            return Divider(color: Theme.of(context).primaryColor.withOpacity(0.7));
                           } else {
                             return Container();
                           }
@@ -227,7 +229,8 @@ class _SettingRow extends StatelessWidget {
         Expanded(child: _buildInput(context)),
         const SizedBox(width: 8),
         CircleAvatar(
-          backgroundColor: Colors.white,
+          radius: 22,
+          // backgroundColor: Colors.white,
           child: IconButton(
             padding: EdgeInsets.zero,
             icon: Icon(Icons.send, color: Theme.of(context).primaryColor),
@@ -312,9 +315,6 @@ class _PhoneInput extends StatelessWidget {
       child: IntlPhoneField(
         initialValue: setting.value,
         initialCountryCode: 'IN',
-        style: const TextStyle(color: Colors.white),
-        dropdownTextStyle: const TextStyle(color: Colors.white),
-        dropdownIcon: const Icon(Icons.arrow_drop_down, color: Colors.white),
         onChanged: (phone) => onChanged(phone.completeNumber),
       ),
     );
@@ -335,7 +335,8 @@ class _TextInput extends StatelessWidget {
         keyboardType: TextInputType.number,
         decoration: InputDecoration(
             labelText: setting.title,
-            contentPadding: EdgeInsetsGeometry.symmetric(horizontal: 10)),
+            contentPadding: EdgeInsetsGeometry.symmetric(horizontal: 10)
+        ),
         onChanged: onChanged,
       ),
     );
