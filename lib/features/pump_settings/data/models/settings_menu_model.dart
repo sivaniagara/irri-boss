@@ -16,4 +16,22 @@ class SettingsMenuModel extends SettingsMenuEntity {
         templateName: json["templateName"] ?? "No name"
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "menuSettingId": menuSettingId,
+      "referenceId": referenceId,
+      "menuItem": menuItem,
+      "templateName": templateName,
+    };
+  }
+
+  factory SettingsMenuModel.fromEntity(SettingsMenuEntity entity) {
+    return SettingsMenuModel(
+      menuSettingId: entity.menuSettingId,
+      referenceId: entity.referenceId,
+      menuItem: entity.menuItem,
+      templateName: entity.templateName,
+    );
+  }
 }

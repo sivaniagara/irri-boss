@@ -49,13 +49,11 @@ class ViewPumpSettingsCubit extends Cubit<ViewPumpSettingsState> {
   ViewPumpSettingsCubit() : super(const ViewPumpSettingsState());
 
   Timer? _timeoutTimer;
-  bool _isExpectingResponse = false; // Track if we're waiting for device response
+  bool _isExpectingResponse = false;
 
   void requestSettings(String deviceId, int userId, int subuserId, int controllerId) {
-    // Cancel any previous timeout
     _timeoutTimer?.cancel();
 
-    // Mark that we're now expecting a response
     _isExpectingResponse = true;
 
     emit(state.copyWith(
@@ -64,7 +62,6 @@ class ViewPumpSettingsCubit extends Cubit<ViewPumpSettingsState> {
       settingsJson: null,
     ));
 
-    // Start new timeout
     _timeoutTimer = Timer(const Duration(seconds: 20), () {
       if (_isExpectingResponse && !isClosed) {
         _isExpectingResponse = false;
@@ -75,7 +72,6 @@ class ViewPumpSettingsCubit extends Cubit<ViewPumpSettingsState> {
       }
     });
 
-    // Publish MQTT request
     sl<MqttManager>().publish(
       deviceId,
       jsonEncode(PublishMessageHelper.pumpViewSettingsRequest),
@@ -83,7 +79,7 @@ class ViewPumpSettingsCubit extends Cubit<ViewPumpSettingsState> {
   }
 
   void onSettingsReceived(String jsonMessage) {
-    if (!_isExpectingResponse) return; // Ignore stale responses
+    if (!_isExpectingResponse) return;
 
     _timeoutTimer?.cancel();
     _isExpectingResponse = false;
@@ -153,24 +149,3 @@ class ViewPumpSettingsCubit extends Cubit<ViewPumpSettingsState> {
     return super.close();
   }
 }
-
-/*Future<List<dynamic>> getSettingLabels(int userId, int subuserId, int controllerId) async {
-    final endPoint = buildUrl(
-      PumpSettingsUrls.getSettingsMenu,
-      {
-        "userId": userId,
-        "subuserId": subuserId,
-        "controllerId": controllerId,
-      },
-    );
-
-    final response = await sl<ApiClient>().get(endPoint);
-
-    return handleListResponse(
-      response,
-      fromJson: (json) => json,
-    ).fold(
-          (failure) => throw ServerException(message: failure.message),
-          (list) => list,
-    );
-  }*/

@@ -31,7 +31,7 @@ class ViewPumpSettingsPage extends StatelessWidget {
         final cubit = ViewPumpSettingsCubit();
         final dispatcher = PumpSettingsDispatcher(cubit);
         di.sl<AppMessageDispatcher>().pumpSettings = dispatcher;
-
+        cubit.requestSettings(deviceId, userId, subuserId, controllerId);
         cubit.loadSettingLabels(userId, subuserId, controllerId);
 
         return cubit;

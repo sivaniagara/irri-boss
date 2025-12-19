@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/action_button.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/alert_dialog.dart';
@@ -8,6 +9,7 @@ import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/retry.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/time_picker_service.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/menu_item_entity.dart';
+import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/setting_widget_type.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/cubit/pump_settings_cubit.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/widgets/setting_list_tile.dart';
 
@@ -34,8 +36,13 @@ class PumpSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        create: (_) => di.sl<PumpSettingsCubit>()
-          ..loadSettings(userId: userId, subUserId: subUserId, controllerId: controllerId, menuId: menuId,),
+      create: (_) => di.sl<PumpSettingsCubit>()
+        ..loadSettings(
+          userId: userId,
+          subUserId: subUserId,
+          controllerId: controllerId,
+          menuId: menuId,
+        ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
@@ -63,12 +70,46 @@ class PumpSettingsPage extends StatelessWidget {
           ],
         ),
         body: GlassyWrapper(
-          child: NotificationListener<OverscrollIndicatorNotification>(
-            onNotification: (n) {
-              n.disallowIndicator();
-              return true;
+          child: BlocListener<PumpSettingsCubit, PumpSettingsState>(
+            listenWhen: (previous, current) => current is SettingsSendStartedState
+                || current is SettingsSendSuccessState
+                || current is SettingsFailureState,
+            listener: (context, state) {
+              if (state is SettingsSendStartedState) {
+                Fluttertoast.showToast(
+                  msg: "Sending...",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.BOTTOM,
+                  backgroundColor: Colors.grey[800],
+                  textColor: Colors.white,
+                  fontSize: 16.0,
+                );
+              } else if (state is SettingsSendSuccessState) {
+                Fluttertoast.showToast(
+                  msg: state.message,
+                  toastLength: Toast.LENGTH_LONG,
+                  gravity: ToastGravity.BOTTOM,
+                  backgroundColor: Colors.green,
+                  textColor: Colors.white,
+                  fontSize: 16.0,
+                );
+              } else if (state is SettingsFailureState) {
+                Fluttertoast.showToast(
+                  msg: state.message,
+                  toastLength: Toast.LENGTH_LONG,
+                  gravity: ToastGravity.BOTTOM,
+                  backgroundColor: Colors.red,
+                  textColor: Colors.white,
+                  fontSize: 16.0,
+                );
+              }
             },
             child: BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
+              buildWhen: (previous, current) {
+                return current is GetPumpSettingsInitial ||
+                    current is GetPumpSettingsError ||
+                    current is GetPumpSettingsLoaded;
+              },
               builder: (context, state) {
                 if (state is GetPumpSettingsInitial) {
                   return const Center(child: CircularProgressIndicator());
@@ -77,19 +118,24 @@ class PumpSettingsPage extends StatelessWidget {
                   return Center(
                     child: Retry(
                       message: state.message,
-                      onPressed: () =>
-                          context.read<PumpSettingsCubit>().loadSettings(
-                            userId: userId,
-                            subUserId: subUserId,
-                            controllerId: controllerId,
-                            menuId: menuId,
-                          ),
+                      onPressed: () => context.read<PumpSettingsCubit>()
+                          .loadSettings(
+                          userId: userId,
+                          subUserId: subUserId,
+                          controllerId: controllerId,
+                          menuId: menuId
+                      ),
                     ),
                   );
                 }
+                // Now safe to cast - only loaded state reaches here
+                final loadedState = state as GetPumpSettingsLoaded;
                 return _SettingsList(
-                  menu: (state as GetPumpSettingsLoaded).settings,
+                  menu: loadedState.settings,
                   deviceId: deviceId,
+                  userId: userId,
+                  controllerId: controllerId,
+                  subUserId: subUserId,
                 );
               },
             ),
@@ -130,6 +176,7 @@ class _HideShowSettingsDialog extends StatelessWidget {
                         newValue == true ? "1" : "0",
                         sectionIndex,
                         settingIndex,
+                        menu,
                         isHiddenFlag: true,
                       );
                     },
@@ -146,11 +193,15 @@ class _HideShowSettingsDialog extends StatelessWidget {
 }
 
 class _SettingsList extends StatelessWidget {
+  final int userId, subUserId, controllerId;
   final MenuItemEntity menu;
   final String deviceId;
   const _SettingsList({
     required this.menu,
     required this.deviceId,
+    required this.userId,
+    required this.subUserId,
+    required this.controllerId,
   });
 
   @override
@@ -180,10 +231,13 @@ class _SettingsList extends StatelessWidget {
                         itemBuilder: (BuildContext context, int index) {
                           if(section.settings[index].hiddenFlag == "0") return SizedBox();
                           return _SettingRow(
-                            setting: section.settings[index],
+                            menuItemEntity: menu,
                             sectionIndex: sectionIndex,
                             settingIndex: index,
                             deviceId: deviceId,
+                            userId: userId,
+                            subUserId: subUserId,
+                            controllerId: controllerId,
                           );
                         },
                         separatorBuilder: (BuildContext context, int index) {
@@ -208,16 +262,20 @@ class _SettingsList extends StatelessWidget {
 }
 
 class _SettingRow extends StatelessWidget {
-  final SettingsEntity setting;
+  final int userId, subUserId, controllerId;
+  final MenuItemEntity menuItemEntity;
   final int sectionIndex;
   final int settingIndex;
   final String deviceId;
 
   const _SettingRow({
-    required this.setting,
+    required this.menuItemEntity,
     required this.sectionIndex,
     required this.settingIndex,
     required this.deviceId,
+    required this.userId,
+    required this.subUserId,
+    required this.controllerId,
   });
 
   @override
@@ -233,8 +291,21 @@ class _SettingRow extends StatelessWidget {
           // backgroundColor: Colors.white,
           child: IconButton(
             padding: EdgeInsets.zero,
-            icon: Icon(Icons.send, color: Theme.of(context).primaryColor),
-            onPressed: () => cubit.sendCurrentSetting(sectionIndex, settingIndex, deviceId),
+            icon: context.watch<PumpSettingsCubit>().state is SettingsSendStartedState
+                ? Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(),
+                )
+                : Icon(Icons.send, color: Theme.of(context).primaryColor),
+            onPressed: () => cubit.sendCurrentSetting(
+                sectionIndex,
+                settingIndex,
+                deviceId,
+                userId,
+                subUserId,
+                controllerId,
+                menuItemEntity
+            ),
           ),
         ),
       ],
@@ -242,6 +313,7 @@ class _SettingRow extends StatelessWidget {
   }
 
   Widget _buildInput(BuildContext context) {
+    final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
     return switch (setting.widgetType) {
       SettingWidgetType.phone => _PhoneInput(setting: setting, onChanged: _onChanged(context)),
       SettingWidgetType.multiTime => _MultiTimeInput(setting: setting, onChanged: _onChanged(context)),
@@ -256,6 +328,7 @@ class _SettingRow extends StatelessWidget {
   }
 
   Widget _buildTrailing(BuildContext context) {
+    final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
     return switch (setting.widgetType) {
     // SettingWidgetType.text => Text(setting.value.isEmpty ? "-" : setting.value, style: Theme.of(context).textTheme.bodyMedium,),
       SettingWidgetType.text => _TextInput(setting: setting, onChanged: _onChanged(context)),
@@ -273,13 +346,13 @@ class _SettingRow extends StatelessWidget {
 
   void Function(String newValue) _onChanged(BuildContext context) {
     return (String newValue) {
-      context.read<PumpSettingsCubit>().updateSettingValue(newValue, sectionIndex, settingIndex,);
+      context.read<PumpSettingsCubit>().updateSettingValue(newValue, sectionIndex, settingIndex, menuItemEntity);
     };
   }
 
   void _handleTap(BuildContext context) async {
     String? newValue;
-
+    final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
     switch (setting.widgetType) {
       case SettingWidgetType.toggle:
         newValue = setting.value == "OF" ? "ON" : "OF";

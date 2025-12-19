@@ -9,6 +9,7 @@ class PumpSettingsUrls {
   /// Post methods
   static const String addViewType4 = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/$settingReferenceId/$newSettings';
   static const String menuHide = 'user/:userId/subuser/:shareUserId/controller/:controllerId/menu/:menuId/hidemenu';
+  static const String updateTemplate = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/$settingReferenceId/$newSettings';
 
   /// Put methods
   static const String menuUnHide = 'user/:userId/subuser/:shareUserId/controller/:controllerId/menu/:menuId/hidemenu';

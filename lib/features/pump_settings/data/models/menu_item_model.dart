@@ -16,4 +16,21 @@ class MenuItemModel extends MenuItemEntity {
         template: TemplateJsonModel.fromJson(jsonDecode(json['sendData']))
     );
   }
+
+  Map<String, dynamic> toJson() {
+    final settingsMenuModel = menu as SettingsMenuModel;
+    final templateJsonModel = template as TemplateJsonModel;
+
+    return {
+      ...settingsMenuModel.toJson(),
+      'sendData': jsonEncode(templateJsonModel.toJson()),
+    };
+  }
+
+  factory MenuItemModel.fromEntity(MenuItemEntity entity) {
+    return MenuItemModel(
+      menu: SettingsMenuModel.fromEntity(entity.menu),
+      template: TemplateJsonModel.fromEntity(entity.template),
+    );
+  }
 }

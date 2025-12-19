@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:niagara_smart_drip_irrigation/core/utils/api_urls.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/data/models/notifications_model.dart';
+import 'package:niagara_smart_drip_irrigation/features/pump_settings/data/models/template_json_model.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/notifications_entity.dart';
 
 import '../../domain/entities/menu_item_entity.dart';
@@ -20,6 +22,7 @@ abstract class PumpSettingsDataSources {
   Future<MenuItemEntity> getPumpSettings(int userId, int subuserId, int controllerId, int menuId);
   Future<List<NotificationsEntity>> getNotifications(int userId, int subuserId, int controllerId);
   Future<String> subscribeNotifications(int userId, int subuserId, int controllerId, Map<String, dynamic> body);
+  Future<String> sendPumpSettings(int userId, int subUserId, int controllerId, MenuItemEntity menuItem, String sentSms);
 }
 
 class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
@@ -133,6 +136,43 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
     } catch (e, s) {
       log('subscribeNotifications error :: $e');
       log('subscribeNotifications stacktrace :: $s');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String> sendPumpSettings(int userId, int subUserId, int controllerId, MenuItemEntity menuItem, String sentSms) async {
+    try {
+      final endPoint = buildUrl(
+          PumpSettingsUrls.updateTemplate,
+          _baseParams(userId: userId, controllerId: controllerId, subuserId: 0),
+      );
+      final TemplateJsonModel templateJsonModel = TemplateJsonModel.fromEntity(menuItem.template);
+      final Map<String, dynamic> template = templateJsonModel.toJson();
+
+      final Map<String, dynamic> body = {
+        "sendData": jsonEncode(template),
+        "receivedData": "",
+        "menuSettingId": menuItem.menu.menuSettingId,
+        "sentSms": sentSms
+      };
+      print("body :: $body");
+
+      final response = await apiClient.post(endPoint, body: body);
+
+      return handleApiResponse(
+          response,
+          parser: (dynamic data) {
+            return data;
+          },
+          returnMessageOnNoData: true
+      ).fold(
+            (failure) => throw ServerException(message: failure.message),
+            (message) => message,
+      );
+    } catch (e, s) {
+      log('sendPumpSettings error :: $e');
+      log('sendPumpSettings stacktrace :: $s');
       rethrow;
     }
   }

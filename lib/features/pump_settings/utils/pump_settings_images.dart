@@ -12,6 +12,7 @@ class PumpSettingsImages {
   static const String img11 = "assets/images/pump_menu_icons/sump_settings.png";
   static const String img12 = "assets/images/pump_menu_icons/notification_settings.png";
   static const String img13 = "assets/images/pump_menu_icons/pump_view_settings.png";
+  static const String img14 = "assets/images/pump_menu_icons/pump_view_settings.png";
 
   static String getByIndex(int index) {
     switch (index) {
@@ -41,8 +42,10 @@ class PumpSettingsImages {
         return img12;
       case 13:
         return img13;
+      case 0:
+        return img14;
       default:
-        return img1; // fallback
+        return img1;
     }
   }
 }
