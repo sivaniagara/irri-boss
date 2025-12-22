@@ -94,12 +94,12 @@ class AppThemes {
       titleTextStyle: TextStyle(color: Colors.black, fontSize: 20)
     ),
     textTheme: TextTheme(
-      titleMedium: TextStyle(color: Colors.white),
-      titleSmall: TextStyle(color: Colors.white),
-      titleLarge: TextStyle(color: Colors.white),
-      bodySmall: TextStyle(color: Colors.white),
-      bodyLarge: TextStyle(color: Colors.white),
-      bodyMedium: TextStyle(color: Colors.white),
+      titleMedium: TextStyle(color: Colors.black),
+      titleSmall: TextStyle(color: Colors.black),
+      titleLarge: TextStyle(color: Colors.black),
+      bodySmall: TextStyle(color: Colors.black),
+      bodyLarge: TextStyle(color: Colors.black),
+      bodyMedium: TextStyle(color: Colors.black),
     ),
     inputDecorationTheme: InputDecorationTheme(
       border: UnderlineInputBorder(

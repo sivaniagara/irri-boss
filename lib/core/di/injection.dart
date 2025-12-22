@@ -11,9 +11,11 @@ import '../../features/controller_details/domain/usecase/controller_details_user
 import '../../features/controller_details/presentation/bloc/controller_details_bloc.dart';
 import '../../features/controller_details/presentation/bloc/controller_details_state.dart';
 import '../../features/fault_msg/di/faultmsg_di.dart';
+import '../../features/report_downloader/di/report_download_injection.dart';
+import '../../features/reports/Motor_cyclic_reports/di/motor_cyclic_di.dart';
 import '../../features/reports/Voltage_reports/di/voltage_di.dart';
+import '../../features/reports/power_reports/di/power_di.dart';
 import '../../features/reports/reportMenu/di/report_di.dart';
-import '../../features/reports/reportMenu/power_reports/di/power_di.dart';
 import '../../features/sendrev_msg/di/sendrev_di.dart';
 import '../../features/setserialsettings/data/datasources/setserial_datasource.dart';
 import '../../features/setserialsettings/domain/repositories/setserial_details_repo.dart';
@@ -110,6 +112,8 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initReportDependencies();
   initVoltageGraph();
   initPowerGraph();
+  initMotorCyclic();
+  initReportDownloadDependencies();
 
 }
 

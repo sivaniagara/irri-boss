@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../../core/theme/app_gradients.dart';
 import '../../../../../core/utils/common_date_picker.dart';
 import '../bloc/voltage_bloc.dart';
 import '../bloc/voltage_bloc_event.dart';
@@ -26,40 +27,44 @@ class VoltageGraphPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF6FF),
-      appBar: _appBar(context),
-      body: BlocBuilder<VoltageGraphBloc, VoltageGraphState>(
-        builder: (context, state) {
-          if (state is VoltageGraphLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
+       appBar: _appBar(context),
+      body:Container(
+        decoration: BoxDecoration(
+          gradient: AppGradients.commonGradient,
+        ),
+        child: BlocBuilder<VoltageGraphBloc, VoltageGraphState>(
+          builder: (context, state) {
+            if (state is VoltageGraphLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-          if (state is VoltageGraphError) {
-            return Center(child: Text(state.message,style: TextStyle(color: Colors.black),));
-          }
+            if (state is VoltageGraphError) {
+              return Center(child: Text(state.message,style: TextStyle(color: Colors.black),));
+            }
 
-          if (state is VoltageGraphLoaded) {
-            final data = state.data.data;
+            if (state is VoltageGraphLoaded) {
+              final data = state.data.data;
 
-            return ListView(
-              padding: const EdgeInsets.all(8),
-              children: [
-                _graphCard(data),
+              return ListView(
+                padding: const EdgeInsets.all(8),
+                children: [
+                  _graphCard(data),
 
-                const SizedBox(height: 12),
-                _totalPowerCard(
-                  data.isNotEmpty
-                      ? data.last.totalPowerOnTime
-                      : "0:00",
-                ),
-                 const SizedBox(height: 12),
-                ...data.map((e) => _dataCard(e)).toList(),
-              ],
-            );
-          }
+                  const SizedBox(height: 12),
+                  _totalPowerCard(
+                    data.isNotEmpty
+                        ? data.last.totalPowerOnTime
+                        : "0:00",
+                  ),
+                   const SizedBox(height: 12),
+                  ...data.map((e) => _dataCard(e)).toList(),
+                ],
+              );
+            }
 
-          return const SizedBox();
-        },
+            return const SizedBox();
+          },
+        ),
       ),
     );
   }
@@ -107,11 +112,6 @@ class VoltageGraphPage extends StatelessWidget {
       ],
     );
   }
-
-
-
-
-
 
 
   /// 🔹 TOTAL POWER

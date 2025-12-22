@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/domain/entities/livemessage_entity.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/setserialsettings/presentation/pages/setserial_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/domain/usecases/get_sub_user_details_usecase.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/presentation/pages/sub_user_details_page.dart';
@@ -16,8 +17,9 @@ import 'features/controller_settings/presentaion/cubit/controller_tab_cubit.dart
 import 'features/controller_settings/utils/controller_settings_routes.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
 import 'features/fault_msg/utils/faultmsg_routes.dart';
+import 'features/report_downloader/utils/report_downloaderRoute.dart';
 import 'features/reports/Voltage_reports/utils/voltage_routes.dart';
-import 'features/reports/reportMenu/power_reports/utils/Power_routes.dart';
+import 'features/reports/power_reports/utils/Power_routes.dart';
 import 'features/reports/reportMenu/utils/report_routes.dart';
 import 'features/sendrev_msg/utils/senrev_routes.dart';
 import 'features/side_drawer/groups/utils/group_routes.dart';
@@ -381,6 +383,8 @@ class AppRouter {
         ReportPageRoutes.route,
         ...voltGraphRoutes,
         ...PowerGraphRoutes,
+        ...ReportDownloadRoutes,
+        ...MotorCyclicRoutes,
       ],
     );
   }

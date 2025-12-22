@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/utils/voltage_routes.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/reportMenu/power_reports/utils/Power_routes.dart';
 
 import '../../../../core/theme/app_gradients.dart';
  import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
 
 import '../../../../core/theme/app_styles.dart';
+import '../../power_reports/utils/Power_routes.dart';
 
 class ReportMenuPage extends StatelessWidget {
    final Map<String, dynamic> params;
@@ -83,9 +84,11 @@ class ReportMenuPage extends StatelessWidget {
             },
           ),
           _reportCard(
-            title: 'Standalone',
+            title: 'Motor Cyclic',
             icon: Icons.touch_app,
-            onTap: () {},
+            onTap: () {
+              context.push(MotorCyclicPageRoutes.MotorCyclicpage,extra: params);
+            },
           ),
           _reportCard(
             title: 'Zone Duration',
