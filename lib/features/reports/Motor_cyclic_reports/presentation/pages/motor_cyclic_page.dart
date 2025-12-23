@@ -49,8 +49,25 @@ class MotorCyclicPage extends StatelessWidget {
 
         actions: [
           // 🔹 GRID / LIST TOGGLE
+          // BlocBuilder<MotorCyclicViewCubit, MotorCyclicViewState>(
+          //   builder: (_, viewState) {
+          //     return IconButton(
+          //       icon: Icon(
+          //         viewState.viewMode == MotorCyclicViewMode.zoneStatus
+          //             ? Icons.list_alt_outlined
+          //             : Icons.grid_view_outlined,
+          //         color: Colors.black,
+          //       ),
+          //       onPressed: () {
+          //         context
+          //             .read<MotorCyclicViewCubit>()
+          //             .toggleView();
+          //       },
+          //     );
+          //   },
+          // ),
           BlocBuilder<MotorCyclicViewCubit, MotorCyclicViewState>(
-            builder: (_, viewState) {
+            builder: (context, viewState) {
               return IconButton(
                 icon: Icon(
                   viewState.viewMode == MotorCyclicViewMode.zoneStatus
@@ -59,36 +76,57 @@ class MotorCyclicPage extends StatelessWidget {
                   color: Colors.black,
                 ),
                 onPressed: () {
-                  context
-                      .read<MotorCyclicViewCubit>()
-                      .toggleView();
+                  final viewCubit =
+                  context.read<MotorCyclicViewCubit>();
+                  final currentMode = viewCubit.state.viewMode;
+
+                  viewCubit.toggleView();
+
+                  // 🔹 When switching TO ZONE STATUS → reload with TODAY
+                  if (currentMode !=
+                      MotorCyclicViewMode.zoneStatus) {
+                    final today = _today();
+                    context.read<MotorCyclicBloc>().add(
+                      FetchMotorCyclicEvent(
+                        userId: userId,
+                        subuserId: subuserId,
+                        controllerId: controllerId,
+                        fromDate: today,
+                        toDate: today,
+                      ),
+                    );
+                  }
                 },
               );
             },
           ),
 
-          // 🔹 DATE PICKER
-          IconButton(
-            icon: const Icon(Icons.calendar_today,
-                color: Colors.black),
-            onPressed: () async {
-              final result = await pickReportDate(
-                context: context,
-                allowRange: true,
-              );
-              if (result == null) return;
+          BlocBuilder<MotorCyclicViewCubit, MotorCyclicViewState>(
+            builder: (_, viewState) {
+              return IconButton(
+                icon: const Icon(Icons.calendar_today,
+                    color: Colors.black),
+                onPressed: () async {
+                  final result = await pickReportDate(
+                    context: context,
+                    allowRange: viewState.viewMode == MotorCyclicViewMode.zoneStatus ? false :true,
+                  );
+                  if (result == null) return;
 
-              context.read<MotorCyclicBloc>().add(
-                FetchMotorCyclicEvent(
-                  userId: userId,
-                  subuserId: subuserId,
-                  controllerId: controllerId,
-                  fromDate: result.fromDate,
-                  toDate: result.toDate,
-                ),
-              );
+                  context.read<MotorCyclicBloc>().add(
+                    FetchMotorCyclicEvent(
+                      userId: userId,
+                      subuserId: subuserId,
+                      controllerId: controllerId,
+                      fromDate: result.fromDate,
+                      toDate: result.toDate,
+                    ),
+                  );
+                },
+              ) ;
             },
           ),
+          // 🔹 DATE PICKER
         ],
       ),
 
@@ -114,7 +152,7 @@ class MotorCyclicPage extends StatelessWidget {
           }
 
           if (state is MotorCyclicError) {
-            return Center(child: Text(state.message));
+            return Center(child: Image.asset("assets/images/common/nodata.png",width: 160,height: 160,),);
           }
 
           if (state is MotorCyclicLoaded) {
@@ -133,9 +171,15 @@ class MotorCyclicPage extends StatelessWidget {
             );
           }
 
-          return const SizedBox();
+          return Center(child: Image.asset("assets/images/common/nodata.png",width: 60,height: 60,),);
         },
       ),
     );
+  }
+  String _today() {
+    final now = DateTime.now();
+    return "${now.year}-"
+        "${now.month.toString().padLeft(2, '0')}-"
+        "${now.day.toString().padLeft(2, '0')}";
   }
 }

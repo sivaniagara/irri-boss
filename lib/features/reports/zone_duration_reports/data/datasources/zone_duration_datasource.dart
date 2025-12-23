@@ -1,14 +1,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/zone_duration_reports/data/models/zone_duration_model.dart';
 
 
 import '../../../../../../core/error/exceptions.dart';
 import '../../../../../../core/services/api_client.dart';
-import '../models/motor_cyclic_model.dart';
+import '../../utils/zone_duration_routes.dart';
 
-abstract class MotorCyclicRemoteDataSource {
-  Future<MotoCyclicModel> MotorCyclicData({
+abstract class ZoneDurationRemoteDataSource {
+  Future<ZoneDurationModel> ZoneDurationData({
     required int userId,
     required int subuserId,
     required int controllerId,
@@ -17,13 +18,13 @@ abstract class MotorCyclicRemoteDataSource {
   });
 }
 
-class MotorCyclicRemoteDataSourceImpl extends MotorCyclicRemoteDataSource {
+class ZoneDurationRemoteDataSourceImpl extends ZoneDurationRemoteDataSource {
   final ApiClient apiClient;
 
-  MotorCyclicRemoteDataSourceImpl({required this.apiClient});
+  ZoneDurationRemoteDataSourceImpl({required this.apiClient});
 
   @override
-  Future<MotoCyclicModel> MotorCyclicData({
+  Future<ZoneDurationModel> ZoneDurationData({
     required int userId,
     required int subuserId,
     required int controllerId,
@@ -40,7 +41,7 @@ class MotorCyclicRemoteDataSourceImpl extends MotorCyclicRemoteDataSource {
       }
 
       /// Build endpoint URL
-      String endpoint = MotorCyclicPageUrls.getMotorCyclicUrl
+      String endpoint = ZoneDurationPageUrls.getZoneDurationUrl
           .replaceAll(':userId', '$userId')
           .replaceAll(':subuserId', '$subuserId')
           .replaceAll(':controllerId', '$controllerId')
@@ -57,7 +58,7 @@ class MotorCyclicRemoteDataSourceImpl extends MotorCyclicRemoteDataSource {
 
       /// Success Response
       if (response["code"] == 200) {
-        return MotoCyclicModel.fromJson(response);
+        return ZoneDurationModel.fromJson(response);
       }
 
       /// Error Response

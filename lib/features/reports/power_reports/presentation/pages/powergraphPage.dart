@@ -99,7 +99,7 @@ class PowerGraphPage extends StatelessWidget {
                 ],
               );
             }
-            return const SizedBox();
+            return Center(child: Image.asset("assets/images/common/nodata.png",width: 60,height: 60,),);
           },
         ),
       ),

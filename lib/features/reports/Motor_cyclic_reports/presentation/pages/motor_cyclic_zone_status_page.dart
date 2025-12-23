@@ -16,10 +16,17 @@ class MotorCyclicZoneStatusView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<MotorCyclicViewCubit, MotorCyclicViewState>(
       builder: (context, viewState) {
-        final selectedProgramIndex =
-            viewState.selectedProgramIndex;
+        final selectedProgramIndex = viewState.selectedProgramIndex;
 
-        final program = data.data[selectedProgramIndex];
+        // 🔹 Convert dropdown index → program number (1–6)
+        final selectedProgramNo =
+        (selectedProgramIndex + 1).toString();
+
+        // 🔹 Get ALL records of selected program
+        final allZones = data.data
+            .where((e) => e.program == selectedProgramNo)
+            .expand((e) => e.zoneList)
+            .toList();
 
         return Column(
           children: [
@@ -33,25 +40,28 @@ class MotorCyclicZoneStatusView extends StatelessWidget {
                   border: OutlineInputBorder(),
                 ),
                 items: List.generate(
-                  data.data.length,
-                      (index) => DropdownMenuItem(
+                  6,
+                      (index) => DropdownMenuItem<int>(
                     value: index,
-                    child: Text(
-                      "Program ${data.data[index].program}",
-                    ),
+                    child: Text('Program ${index + 1}'),
                   ),
                 ),
                 onChanged: (value) {
-                  context
-                      .read<MotorCyclicViewCubit>()
-                      .selectProgram(value!);
+                  if (value != null) {
+                    context
+                        .read<MotorCyclicViewCubit>()
+                        .selectProgram(value);
+                  }
                 },
               ),
             ),
-
-            // 🔹 ZONE GRID
+             // 🔹 ZONE GRID
             Expanded(
-              child: GridView.builder(
+              child: allZones.isEmpty
+                  ?  Center(
+                child: Image.asset("assets/images/common/nodata.png",width: 60,height: 60,),
+              )
+                  : GridView.builder(
                 padding: const EdgeInsets.all(12),
                 gridDelegate:
                 const SliverGridDelegateWithFixedCrossAxisCount(
@@ -60,10 +70,17 @@ class MotorCyclicZoneStatusView extends StatelessWidget {
                   crossAxisSpacing: 12,
                   childAspectRatio: 0.75,
                 ),
-                itemCount: program.zoneList.length,
+                itemCount: allZones.length,
                 itemBuilder: (context, index) {
-                  return ZoneStatusCard(
-                    program.zoneList[index],
+                  return Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Colors.grey,
+                        width: 1.5,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ZoneStatusCard(allZones[index]),
                   );
                 },
               ),

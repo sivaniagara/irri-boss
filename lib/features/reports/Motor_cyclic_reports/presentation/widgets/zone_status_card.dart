@@ -38,11 +38,7 @@ class ZoneStatusCard extends StatelessWidget {
           const SizedBox(height: 8),
 
           // 🔹 VALVE ICON
-          const Icon(
-            Icons.water_drop,
-            size: 36,
-            color: Colors.green,
-          ),
+          Image.asset("assets/images/common/valve_zone.png",width: 60,height: 60,),
 
           const SizedBox(height: 6),
 

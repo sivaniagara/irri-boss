@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/utils/voltage_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
 
 import '../../../../core/theme/app_gradients.dart';
  import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
@@ -93,7 +94,9 @@ class ReportMenuPage extends StatelessWidget {
           _reportCard(
             title: 'Zone Duration',
             icon: Icons.timer,
-            onTap: () {},
+            onTap: () {
+              context.push(ZoneDurationPageRoutes.ZoneDurationpage,extra: params);
+            },
           ),
           _reportCard(
             title: 'Standalone',
