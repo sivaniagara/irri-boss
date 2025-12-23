@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:firebase_core/firebase_core.dart';
-import 'package:niagara_smart_drip_irrigation/features/controller_settings/program_list/presentation/bloc/program_bloc.dart';
-import 'features/controller_settings/program_list/presentation/cubit/controller_context_cubit.dart';
+import 'package:niagara_smart_drip_irrigation/features/program_settings/presentation/bloc/program_bloc.dart';
+import 'features/dashboard/presentation/cubit/controller_context_cubit.dart';
+import 'features/mapping_and_unmapping_nodes/presentation/bloc/mapping_and_unmapping_nodes_bloc.dart';
 import 'firebase_options.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/mqtt/bloc/mqtt_bloc.dart';
@@ -49,6 +50,8 @@ Future<void> appMain() async {
         providers: [
           BlocProvider(create: (_) => di.sl<ControllerContextCubit>()),
           BlocProvider(create: (_) => di.sl<ProgramBloc>()),
+          BlocProvider(create: (_) => di.sl<ProgramBloc>()),
+          BlocProvider(create: (_)=> di.sl<MappingAndUnmappingNodesBloc>()),
         ],
         child: RootApp(authBloc: authBloc),
       ),

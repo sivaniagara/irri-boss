@@ -14,10 +14,12 @@ import 'features/controller_details/domain/usecase/controller_details_params.dar
 import 'features/controller_details/presentation/bloc/controller_details_bloc.dart';
 import 'features/controller_details/presentation/bloc/controller_details_bloc_event.dart';
 import 'features/controller_details/presentation/pages/controller_details_page.dart';
-import 'features/controller_settings/program_list/presentation/cubit/controller_context_cubit.dart';
-import 'features/controller_settings/program_list/presentation/cubit/controller_tab_cubit.dart';
+import 'features/dashboard/presentation/cubit/controller_context_cubit.dart';
+import 'features/controller_settings/presentation/cubit/controller_tab_cubit.dart';
 import 'features/controller_settings/utils/controller_settings_routes.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
+import 'features/mapping_and_unmapping_nodes/utils/mapping_and_unmapping_nodes_routes.dart';
+import 'features/program_settings/utils/program_settings_routes.dart';
 import 'features/setserialsettings/domain/usecase/setserial_details_params.dart';
 import 'features/setserialsettings/presentation/bloc/setserial_bloc.dart';
 import 'features/setserialsettings/presentation/bloc/setserial_bloc_event.dart';
@@ -170,6 +172,8 @@ class AppRouter {
           },
           routes: [
             ...controllerSettingGoRoutes,
+            ...programSettingsGoRoutes,
+            // ...mappingAndUnmappingNodesGoRoutes
           ],
         ),
 

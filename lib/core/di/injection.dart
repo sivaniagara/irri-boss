@@ -1,7 +1,6 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
-import 'package:niagara_smart_drip_irrigation/features/controller_settings/di/controller_Settings_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/controller_details/data/datasources/controller_datasource.dart';
 import 'package:niagara_smart_drip_irrigation/features/setserialsettings/data/repositories/setserial_details_repositories.dart';
 import 'package:niagara_smart_drip_irrigation/features/setserialsettings/domain/usecase/setserial_usercase.dart';
@@ -11,8 +10,10 @@ import '../../features/controller_details/domain/repositories/controller_details
 import '../../features/controller_details/domain/usecase/controller_details_usercase.dart';
 import '../../features/controller_details/presentation/bloc/controller_details_bloc.dart';
 import '../../features/controller_details/presentation/bloc/controller_details_state.dart';
-import '../../features/controller_settings/program_list/presentation/cubit/controller_context_cubit.dart';
+import '../../features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../features/fault_msg/di/faultmsg_di.dart';
+import '../../features/mapping_and_unmapping_nodes/di/mapping_and_unmapping_node_di.dart';
+import '../../features/program_settings/di/program_settings_di.dart';
 import '../../features/sendrev_msg/di/sendrev_di.dart';
 import '../../features/setserialsettings/data/datasources/setserial_datasource.dart';
 import '../../features/setserialsettings/domain/repositories/setserial_details_repo.dart';
@@ -20,7 +21,7 @@ import '../../features/setserialsettings/domain/usecase/setserial_details_params
 import '../../features/setserialsettings/presentation/bloc/setserial_bloc.dart';
 import '../../features/setserialsettings/presentation/bloc/setserial_bloc_event.dart';
 import '../../features/auth/di/auth.di.dart';
-import '../../features/controller_settings/program_list/presentation/cubit/controller_tab_cubit.dart';
+import '../../features/controller_settings/presentation/cubit/controller_tab_cubit.dart';
 import '../../features/dashboard/di/dashboard_di.dart';
 import '../../features/mqtt/bloc/mqtt_bloc.dart';
 import '../../features/pump_settings/di/pump_settings_di.dart';
@@ -88,8 +89,14 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   /// Pump Settings Dependencies
   initPumpSettingsDependencies();
 
-  /// Controller Setting Dependencies
-  initControllerSettingDependencies();
+  /// controller setting tab Dependencies
+  sl.registerFactory(() => ControllerTabCubit());
+
+  /// Program Setting Dependencies
+  initProgramSettingDependencies();
+
+  /// Mapping and Unmapping Nodes Dependencies
+  initMappingAndUnmappingNodeDependencies();
 
   sl.registerLazySingleton<ControllerRemoteDataSource>(() => ControllerRemoteDataSourceImpl(apiClient: sl()));
   sl.registerLazySingleton<ControllerRepo>(() => ControllerRepoImpl(remoteDataSource: sl()));

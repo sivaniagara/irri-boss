@@ -7,13 +7,14 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/auth.dart';
-import 'package:niagara_smart_drip_irrigation/features/controller_settings/program_list/presentation/cubit/controller_context_cubit.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/services/selected_controller_persistence.dart';
 import '../../../../core/utils/app_images.dart';
 import '../../../controller_details/domain/usecase/controller_details_params.dart';
 import '../../../controller_settings/utils/controller_settings_routes.dart';
+import '../../../program_settings/utils/program_settings_routes.dart';
 import '../../../side_drawer/groups/presentation/widgets/app_drawer.dart';
 
 import '../../utils/dashboard_routes.dart';
@@ -457,7 +458,7 @@ class DashboardPage extends StatelessWidget {
                     SizedBox(height: scale(8)),
                     GestureDetector(
                       onTap: () {
-                        context.push('${DashBoardRoutes.dashboard}${ControllerSettingsRoutes.program}', extra: {"userId" : '$userId', "controllerId" : controller.userDeviceId.toString()});
+                        context.push('${DashBoardRoutes.dashboard}${ProgramSettingsRoutes.program}', extra: {"userId" : '$userId', "controllerId" : controller.userDeviceId.toString()});
                       },
                       child: RYBSection(
                         r: controller.liveMessage.rVoltage,

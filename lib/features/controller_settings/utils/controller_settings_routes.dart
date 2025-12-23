@@ -1,28 +1,27 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:niagara_smart_drip_irrigation/features/controller_settings/edit_zone/presentation/pages/edit_zone.dart';
+import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/presentation/pages/mapping_and_unmapping_page.dart';
+import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/utils/mapping_and_unmapping_nodes_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/edit_zone/presentation/pages/edit_zone_page.dart';
 import '../../../core/di/injection.dart' as di;
-import '../edit_zone/presentation/bloc/edit_zone_bloc.dart';
-import '../program_list/presentation/bloc/program_bloc.dart';
-import '../program_list/presentation/cubit/controller_context_cubit.dart';
-import '../program_list/presentation/cubit/controller_tab_cubit.dart';
-import '../program_list/presentation/pages/controller_app_bar.dart';
-import '../program_list/presentation/pages/controller_program.dart';
+import '../../mapping_and_unmapping_nodes/presentation/bloc/mapping_and_unmapping_nodes_bloc.dart';
+import '../../program_settings/sub_module/edit_zone/presentation/bloc/edit_zone_bloc.dart';
+import '../../program_settings/presentation/bloc/program_bloc.dart';
+import '../../dashboard/presentation/cubit/controller_context_cubit.dart';
+import '../../program_settings/utils/program_settings_routes.dart';
+import '../presentation/cubit/controller_tab_cubit.dart';
+import '../presentation/pages/controller_app_bar.dart';
+import '../../program_settings/presentation/pages/controller_program.dart';
 
 class ControllerSettingsRoutes {
   static const String controllerSettings = "/controllerSettings";
   static const String controllerDetails = "$controllerSettings/controllerDetails";
-  static const String nodes = "$controllerSettings/nodesDetails";
-  static const String program = "$controllerSettings/programDetails";
-  static const String editZone = "/editZone/:programId/:zoneSerialNo";
 }
 
 final controllerSettingGoRoutes = [
   ShellRoute(
       builder: (context, state, child){
-        Map<String, dynamic> params = state.extra as Map<String, dynamic>;
-        print("params : $params");
         return MultiBlocProvider(
             providers: [
               BlocProvider(create: (context) => di.sl<ControllerTabCubit>()),
@@ -50,11 +49,21 @@ final controllerSettingGoRoutes = [
           ),
         ),
         GoRoute(
-          path: ControllerSettingsRoutes.nodes,
-          builder: (context, state) => Center(child: Text('Nodes', style: TextStyle(color: Colors.black),),),
+            path: MappingAndUnmappingNodesRoutes.nodes,
+            builder: (context, state){
+              final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
+              return MultiBlocProvider(
+                  providers: [
+                    BlocProvider(
+                      create: (context)=> di.sl<MappingAndUnmappingNodesBloc>()..add(FetchMappingAndUnmappingEvent(userId: controllerContext.userId, controllerId: controllerContext.controllerId)),
+                    ),
+                  ],
+                  child: MappingAndUnmappingPage()
+              );
+            }
         ),
         GoRoute(
-          path: ControllerSettingsRoutes.program,
+          path: ProgramSettingsRoutes.program,
           builder: (context, state) {
             return ControllerProgram();
           },
@@ -64,29 +73,4 @@ final controllerSettingGoRoutes = [
         ),
       ]
   ),
-  GoRoute(
-      path: ControllerSettingsRoutes.editZone,
-      builder: (context, state){
-        final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
-        final progId = state.pathParameters['programId']!;
-        final zoneSerialNo = state.pathParameters['zoneSerialNo'];
-        print("zoneSerialNo => ${zoneSerialNo}");
-
-        late EditZoneEvent editZoneEvent;
-        if(zoneSerialNo == null){
-          editZoneEvent = AddZone(userId: controllerContext.userId, controllerId: controllerContext.controllerId, programId: progId);
-        }else{
-          editZoneEvent = EditZone(userId: controllerContext.userId, controllerId: controllerContext.controllerId, programId: progId, zoneSerialNo: zoneSerialNo);
-        }
-        return MultiBlocProvider(
-            providers: [
-              BlocProvider(
-                create: (context)=> di.sl<EditZoneBloc>()..add(editZoneEvent),
-              ),
-              BlocProvider.value(value: context.read<ProgramBloc>())
-            ],
-            child: EditZonePage()
-        );
-      }
-  )
 ];
