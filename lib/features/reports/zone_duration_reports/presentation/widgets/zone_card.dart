@@ -1,7 +1,6 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import '../../domain/entities/zone_duration_entities.dart';
 
 Widget zoneCardDuration(ZoneDurationDatumEntity zone) {
@@ -53,6 +52,43 @@ Widget zoneCardDuration(ZoneDurationDatumEntity zone) {
               _infoPair("Prs IN", zone.pressureIn, "Prs OUT", zone.pressureOut),
               _infoPair("Duration", zone.duration, "Flow Lit", zone.flow),
               _infoPair("Well Level", zone.wellLevel, "Percentage", "${zone.wellPercentage}%",),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: Row(
+                  children: [
+                    const Text("VRB  ", style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text(zone.vrb),
+
+                    const SizedBox(width: 12),
+
+                    const Text("CR  "),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      color: Colors.red.shade200,
+                      child: Text(zone.c1, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+
+                    const SizedBox(width: 8),
+
+                    const Text("CY  "),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      color: Colors.yellow.shade200,
+                      child: Text(zone.c2, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+
+                    const SizedBox(width: 8),
+
+                    const Text("CB  "),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      color: Colors.blue.shade200,
+                      child: Text(zone.c3, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              )
+
             ],
           ),
         ),
