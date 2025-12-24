@@ -23,6 +23,24 @@ class GetPumpSettingsMenuError extends PumpSettingsState {
   @override List<Object?> get props => [message];
 }
 
+class UpdatingMenuStatus extends PumpSettingsState {}
+
+class UpdateMenuStatusSuccess extends PumpSettingsState {
+  final String message;
+  UpdateMenuStatusSuccess({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class UpdateMenuStatusFailure extends PumpSettingsState {
+  final String message;
+  UpdateMenuStatusFailure({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
 class GetPumpSettingsInitial extends PumpSettingsState {}
 
 class GetPumpSettingsLoaded extends PumpSettingsState {
@@ -48,6 +66,13 @@ class UpdatePumpSettingValueStarted extends PumpSettingsState {
 }
 
 class SettingsSendStartedState extends PumpSettingsState {}
+
+class SettingSendingState extends PumpSettingsState {
+  final int sectionIndex;
+  final int settingIndex;
+
+  SettingSendingState(this.sectionIndex, this.settingIndex);
+}
 
 class SettingsSendSuccessState extends PumpSettingsState {
   final String message;

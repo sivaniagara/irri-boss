@@ -1,4 +1,5 @@
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/usecsases/send_settings_usecase.dart';
+import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/usecsases/update_menu_status.dart';
 
 import '../../../core/di/injection.dart';
 import '../data/datasources/pump_settings_datasources.dart';
@@ -18,7 +19,8 @@ void initPumpSettingsDependencies() {
   sl.registerLazySingleton<PumpSettingsDataSources>(() => PumpSettingsDataSourcesImpl(apiClient: sl()));
   sl.registerLazySingleton<PumpSettingsRepository>(() => PumpSettingsRepositoryImpl(pumpSettingsDataSources: sl()));
   sl.registerLazySingleton(() => GetPumpSettingsMenuUsecase(pumpSettingsRepository: sl()));
-  sl.registerFactory(() => PumpSettingsMenuBloc(getSettingsMenuUsecase: sl()));
+  sl.registerLazySingleton(() => UpdateMenuStatusUsecase(pumpSettingsRepository: sl()));
+  sl.registerFactory(() => PumpSettingsMenuBloc(getSettingsMenuUsecase: sl(), updateMenuStatusUsecase: sl()));
 
   sl.registerLazySingleton(() => GetPumpSettingsUsecase(pumpSettingsRepository: sl()));
   sl.registerLazySingleton(() => SendPumpSettingsUsecase(pumpSettingsRepository: sl()));

@@ -69,19 +69,34 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       int userId,
       int subUserId,
       int controllerId,
-      MenuItemEntity menuItemEntity
-      ) async{
-    final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
+      MenuItemEntity menuItemEntity,
+      ) async {
+    emit(SettingSendingState(sectionIndex, settingIndex));
 
+    final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
     final payload = SmsPayloadBuilder.build(setting);
-    await sendSetting(payload, deviceId);
-    await sendSettings(
+
+    try {
+      final publishMessage = jsonEncode(PublishMessageHelper.settingsPayload(payload));
+      di.sl.get<MqttManager>().publish(deviceId, publishMessage);
+      final result = await sendPumpSettingsUsecase(SendPumpSettingsParams(
         userId: userId,
-        controllerId: controllerId,
         subUserId: subUserId,
+        controllerId: controllerId,
+        menuId: menuItemEntity.menu.menuSettingId,
         menuItemEntity: menuItemEntity,
-        sentSms: payload
-    );
+        sentSms: payload,
+      ));
+
+      result.fold(
+            (failure) => emit(SettingsFailureState(message: "${setting.title} sending ${failure.message}")),
+            (message) => emit(SettingsSendSuccessState(message: "${setting.title} sent $message")),
+      );
+    } catch (e) {
+      emit(SettingsFailureState(message: "Failed to send setting: ${e.toString()}"));
+    } finally {
+      emit(GetPumpSettingsLoaded(settings: menuItemEntity));
+    }
   }
 
   Future<void> sendSetting(String payload, String deviceId) async {
@@ -89,7 +104,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     di.sl.get<MqttManager>().publish(deviceId, publishMessage);
   }
 
-  Future<void> sendSettings({
+  Future<void> updateHiddenFlags({
     required int userId,
     required int subUserId,
     required int controllerId,
@@ -113,6 +128,8 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       );
     } catch (e) {
       emit(SettingsFailureState(message: "Failed to send settings to device: ${e.toString()}"));
+    } finally {
+      emit(GetPumpSettingsLoaded(settings: menuItemEntity));
     }
   }
 }

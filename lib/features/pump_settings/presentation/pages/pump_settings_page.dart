@@ -14,7 +14,6 @@ import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentatio
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/widgets/setting_list_tile.dart';
 
 import '../../../../core/di/injection.dart' as di;
-import '../../domain/entities/setting_widget_type.dart';
 import '../../domain/entities/template_json_entity.dart';
 import '../bloc/pump_settings_state.dart';
 
@@ -48,24 +47,37 @@ class PumpSettingsPage extends StatelessWidget {
         appBar: AppBar(
           title: Text(menuName ?? 'Pump Settings'),
           actions: [
-            IconButton(
-              onPressed: () {
-                GlassyAlertDialog.show(
-                  context: context,
-                  title: "Hide/Show Settings",
-                  content: BlocProvider<PumpSettingsCubit>.value(
-                    value: context.read<PumpSettingsCubit>(),
-                    child: _HideShowSettingsDialog(),
-                  ),
-                  actions: [
-                    ActionButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text("OK"),
+            Builder(
+              builder: (appBarContext) => IconButton(
+                onPressed: () {
+                  final cubit = appBarContext.read<PumpSettingsCubit>();
+                  GlassyAlertDialog.show(
+                    context: context,
+                    title: "Hide/Show Settings",
+                    content: BlocProvider<PumpSettingsCubit>.value(
+                      value: cubit,
+                      child: _HideShowSettingsDialog(),
                     ),
-                  ],
-                );
-              },
-              icon: const Icon(Icons.hide_source),
+                    actions: [
+                      ActionButton(
+                        onPressed: () {
+                          cubit.updateHiddenFlags(
+                              userId: userId,
+                              subUserId: subUserId,
+                              controllerId: controllerId,
+                              menuItemEntity: (cubit.state as GetPumpSettingsLoaded).settings,
+                              sentSms: "Hidden flag updated"
+                          );
+                          Navigator.of(appBarContext).pop();
+                        },
+                        isPrimary: true,
+                        child: const Text("OK"),
+                      ),
+                    ],
+                  );
+                },
+                icon: const Icon(Icons.hide_source),
+              ),
             ),
           ],
         ),
@@ -78,20 +90,16 @@ class PumpSettingsPage extends StatelessWidget {
               if (state is SettingsSendStartedState) {
                 Fluttertoast.showToast(
                   msg: "Sending...",
-                  toastLength: Toast.LENGTH_SHORT,
+                  toastLength: Toast.LENGTH_LONG,
                   gravity: ToastGravity.BOTTOM,
                   backgroundColor: Colors.grey[800],
-                  textColor: Colors.white,
-                  fontSize: 16.0,
                 );
               } else if (state is SettingsSendSuccessState) {
                 Fluttertoast.showToast(
                   msg: state.message,
                   toastLength: Toast.LENGTH_LONG,
                   gravity: ToastGravity.BOTTOM,
-                  backgroundColor: Colors.green,
-                  textColor: Colors.white,
-                  fontSize: 16.0,
+                  backgroundColor: Theme.of(context).primaryColor,
                 );
               } else if (state is SettingsFailureState) {
                 Fluttertoast.showToast(
@@ -99,13 +107,13 @@ class PumpSettingsPage extends StatelessWidget {
                   toastLength: Toast.LENGTH_LONG,
                   gravity: ToastGravity.BOTTOM,
                   backgroundColor: Colors.red,
-                  textColor: Colors.white,
-                  fontSize: 16.0,
                 );
               }
             },
             child: BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
               buildWhen: (previous, current) {
+                // print("previous :: $previous");
+                // print("current :: $current");
                 return current is GetPumpSettingsInitial ||
                     current is GetPumpSettingsError ||
                     current is GetPumpSettingsLoaded;
@@ -150,6 +158,9 @@ class _HideShowSettingsDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
+      buildWhen: (previous, current) {
+        return current is GetPumpSettingsLoaded;
+      },
       builder: (context, state) {
         if (state is! GetPumpSettingsLoaded) {
           return const Center(child: CircularProgressIndicator());
@@ -182,7 +193,7 @@ class _HideShowSettingsDialog extends StatelessWidget {
                     },
                   );
                 }),
-                const Divider(),
+                Divider(color: Theme.of(context).primaryColor,),
               ],
             );
           },
@@ -210,6 +221,7 @@ class _SettingsList extends StatelessWidget {
       itemCount: menu.template.sections.length,
       itemBuilder: (context, sectionIndex) {
         final section = menu.template.sections[sectionIndex];
+        if(section.settings.every((e) => e.hiddenFlag == "0")) return SizedBox();
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           child: Column(
@@ -242,7 +254,7 @@ class _SettingsList extends StatelessWidget {
                         },
                         separatorBuilder: (BuildContext context, int index) {
                           if (section.settings[index].widgetType != SettingWidgetType.multiText) {
-                            if(section.settings[index].hiddenFlag == "0" && section.settings.where((e) => e.hiddenFlag == "1").length != index) return SizedBox();
+                            if(section.settings[index].hiddenFlag == "0") return SizedBox();
                             return Divider(color: Theme.of(context).primaryColor.withOpacity(0.7));
                           } else {
                             return Container();
@@ -488,9 +500,9 @@ class _MultiTextInput extends StatelessWidget {
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
                     decoration: InputDecoration(
-                        contentPadding: EdgeInsetsGeometry.symmetric(
-                            horizontal: 10, vertical: 0),
-                        isDense: true),
+                        contentPadding: EdgeInsetsGeometry.symmetric(horizontal: 10, vertical: 0),
+                        isDense: true
+                    ),
                     onChanged: (newValue) async {
                       final newValues = [...values]..[i] = newValue;
                       onChanged(newValues.join(';'));

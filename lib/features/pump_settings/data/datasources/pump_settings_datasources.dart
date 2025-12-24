@@ -23,6 +23,7 @@ abstract class PumpSettingsDataSources {
   Future<List<NotificationsEntity>> getNotifications(int userId, int subuserId, int controllerId);
   Future<String> subscribeNotifications(int userId, int subuserId, int controllerId, Map<String, dynamic> body);
   Future<String> sendPumpSettings(int userId, int subUserId, int controllerId, MenuItemEntity menuItem, String sentSms);
+  Future<String> updateMenuStatus(int userId, int subUserId, int controllerId, SettingsMenuEntity menu);
 }
 
 class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
@@ -51,10 +52,8 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
           _baseParams(userId: userId, controllerId: controllerId, subuserId: 0)
       );
       final response = await apiClient.get(endPoint);
-      return handleListResponse<SettingsMenuModel>(
-        response,
-        fromJson: (json) => SettingsMenuModel.fromJson(json),
-      ).fold(
+      return handleListResponse<SettingsMenuModel>(response, fromJson: (json) => SettingsMenuModel.fromJson(json))
+          .fold(
             (failure) => throw ServerException(message: failure.message),
             (groups) => groups.cast<SettingsMenuEntity>(),
       );
@@ -73,12 +72,8 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
 
       final response = await apiClient.get(endPoint);
 
-      return handleApiResponse<MenuItemEntity>(
-        response,
-        parser: (dynamic data) {
-          return MenuItemModel.fromJson(data[0]);
-        },
-      ).fold(
+      return handleApiResponse<MenuItemEntity>(response, parser: (dynamic data) => MenuItemModel.fromJson(data[0]))
+          .fold(
             (failure) => throw ServerException(message: failure.message),
             (menuItem) => menuItem,
       );
@@ -99,10 +94,8 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
 
       final response = await apiClient.get(endPoint);
 
-      return handleListResponse<NotificationsModel>(
-        response,
-        fromJson: (json) => NotificationsModel.fromJson(json),
-      ).fold(
+      return handleListResponse<NotificationsModel>(response, fromJson: (json) => NotificationsModel.fromJson(json))
+          .fold(
             (failure) => throw ServerException(message: failure.message),
             (notifications) => notifications.cast<NotificationsModel>(),
       );
@@ -123,13 +116,8 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
 
       final response = await apiClient.put(endPoint, body: body);
 
-      return handleApiResponse<String>(
-        response,
-        parser: (dynamic data) {
-          return data;
-        },
-        returnMessageOnNoData: true
-      ).fold(
+      return handleApiResponse<String>(response, parser: (dynamic data) => data, returnMessageOnNoData: true)
+          .fold(
             (failure) => throw ServerException(message: failure.message),
             (result) => result,
       );
@@ -156,17 +144,42 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
         "menuSettingId": menuItem.menu.menuSettingId,
         "sentSms": sentSms
       };
-      print("body :: $body");
 
       final response = await apiClient.post(endPoint, body: body);
 
-      return handleApiResponse(
-          response,
-          parser: (dynamic data) {
-            return data;
-          },
-          returnMessageOnNoData: true
-      ).fold(
+      return handleApiResponse(response, parser: (dynamic data) => data, returnMessageOnNoData: true)
+          .fold(
+            (failure) => throw ServerException(message: failure.message),
+            (message) => message,
+      );
+    } catch (e, s) {
+      log('sendPumpSettings error :: $e');
+      log('sendPumpSettings stacktrace :: $s');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String> updateMenuStatus(int userId, int subUserId, int controllerId, SettingsMenuEntity menu) async{
+    try {
+      final endPoint = buildUrl(
+        PumpSettingsUrls.getSettingsMenu,
+        _baseParams(userId: userId, controllerId: controllerId, subuserId: 0),
+      );
+      final SettingsMenuModel menuListToJson = SettingsMenuModel.fromEntity(menu);
+      final Map<String, dynamic> template = menuListToJson.toJson();
+
+      final Map<String, dynamic> body = {
+        "menuSettingId": 502,
+        "sendData": jsonEncode(template),
+        "receivedData": "",
+        "sentSms":"",
+      };
+
+      final response = await apiClient.post(endPoint, body: body);
+
+      return handleApiResponse(response, parser: (dynamic data) => data, returnMessageOnNoData: true)
+          .fold(
             (failure) => throw ServerException(message: failure.message),
             (message) => message,
       );

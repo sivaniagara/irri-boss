@@ -59,4 +59,14 @@ class PumpSettingsRepositoryImpl implements PumpSettingsRepository {
       return Left(ServerFailure('Notifications Fetching Failure: $e'));
     }
   }
+
+  @override
+  Future<Either<Failure, String>> updateMenuStatus(int userId, int subUserId, int controllerId, SettingsMenuEntity menuList) async{
+    try {
+      final response = await pumpSettingsDataSources.updateMenuStatus(userId, subUserId, controllerId, menuList);
+      return Right(response);
+    } catch (e) {
+      return Left(ServerFailure('Notifications Fetching Failure: $e'));
+    }
+  }
 }
