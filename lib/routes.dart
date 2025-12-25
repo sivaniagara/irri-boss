@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/domain/entities/livemessage_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/utils/standalone_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/tdyvalvestatus_reports/utils/tdy_valve_status_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/setserialsettings/presentation/pages/setserial_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/domain/usecases/get_sub_user_details_usecase.dart';
@@ -387,6 +389,8 @@ class AppRouter {
         ...ReportDownloadRoutes,
         ...MotorCyclicRoutes,
         ...ZoneDurationRoutes,
+        ...StandaloneRoutes,
+        ...TdyValveStatusRoutes,
       ],
     );
   }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/utils/voltage_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/utils/standalone_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/tdyvalvestatus_reports/utils/tdy_valve_status_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
 
 import '../../../../core/theme/app_gradients.dart';
@@ -101,12 +103,16 @@ class ReportMenuPage extends StatelessWidget {
           _reportCard(
             title: 'Standalone',
             icon: Icons.touch_app,
-            onTap: () {},
+            onTap: () {
+              context.push(StandalonePageRoutes.Standalonepage,extra: params);
+            },
           ),
           _reportCard(
             title: 'Today Zone',
-            icon: Icons.watch_later,
-            onTap: () {},
+            icon: Icons.today,
+            onTap: () {
+               context.push(TdyValveStatusPageRoutes.TdyValveStatuspage,extra: params);
+            },
           ),
           _reportCard(
             title: 'Zone Duration',

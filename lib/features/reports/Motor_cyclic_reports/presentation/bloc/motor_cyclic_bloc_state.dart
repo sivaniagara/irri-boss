@@ -17,15 +17,6 @@ class MotorCyclicInitial extends MotorCyclicState {}
 /// Loading
 class MotorCyclicLoading extends MotorCyclicState {}
 
-/// Success
-// class PowerGraphLoaded extends PowerGraphState {
-//   final PowerGraphEntity data;
-//
-//   const PowerGraphLoaded(this.data);
-//
-//   @override
-//   List<Object?> get props => [data];
-// }
 
 /// Error
 class MotorCyclicError extends MotorCyclicState {

@@ -88,7 +88,6 @@ Widget zoneCardDuration(ZoneDurationDatumEntity zone) {
                   ],
                 ),
               )
-
             ],
           ),
         ),
