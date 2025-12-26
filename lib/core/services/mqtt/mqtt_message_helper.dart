@@ -59,9 +59,10 @@ abstract class MessageDispatcher {
   void onScheduleUpdate(String deviceId, String rawMessage) {}
   void onSmsNotification(String deviceId, String message, String description) {}
   void onPumpWaterPumpSettings(String deviceId, String message) {}
+  void onScheduleOne(String deviceId, Map<String, dynamic> message) {}
+  void onScheduleTwo(String deviceId, Map<String, dynamic> message) {}
 }
 
-// MqttMessageHelper class (now pure: no DI, no context for UI)
 class MqttMessageHelper {
   static Future<void> processMessage(
     String mqttMsg, {
@@ -115,8 +116,18 @@ class MqttMessageHelper {
       dispatcher.onPumpWaterPumpSettings(qrCode, trimmedMsg);
     }
 
+    if(type == MqttMessageType.scheduleOne) {
+      print("schedule one");
+      dispatcher.onScheduleOne(qrCode, jsonDecode(mqttMsg));
+    }
+
+    if(type == MqttMessageType.scheduleTwo) {
+      print("schedule Two");
+      dispatcher.onScheduleTwo(qrCode, jsonDecode(mqttMsg));
+    }
+
     // Switch for type-specific storage (use type?.code)
-    if (type != null) {
+    /*if (type != null) {
       switch (type.code) {
         case 'LD04':
           await prefs.setString('PUMPLIVEMSG_$qrCode', '$cl,$trimmedMsg$cd,$ct,');
@@ -126,7 +137,7 @@ class MqttMessageHelper {
           break;
         case 'V01':
           await prefs.setString('SCHEDULE_MSG_ONE_$qrCode', '$trimmedMsg,$cd,$ct');
-          dispatcher.onScheduleUpdate(qrCode, trimmedMsg);
+          dispatcher.onScheduleOne(qrCode, jsonDecode(mqttMsg));
           break;
         case 'V02':
           // Handle sub-cases for V02 as before
@@ -160,7 +171,7 @@ class MqttMessageHelper {
         default:
           break;
       }
-    }
+    }*/
 
     // Process msgCode for description
     msgCode = msgCode.length >= 3 ? msgCode.substring(0, 3) : msgCode;

@@ -2,6 +2,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:niagara_smart_drip_irrigation/features/controller_details/data/datasources/controller_datasource.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/program_preview_dispatcher.dart';
 import 'package:niagara_smart_drip_irrigation/features/setserialsettings/data/repositories/setserial_details_repositories.dart';
 import 'package:niagara_smart_drip_irrigation/features/setserialsettings/domain/usecase/setserial_usercase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -79,6 +80,7 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
         () => AppMessageDispatcher(
       dashboard: sl<DashboardMessageDispatcher>(),
       pumpSettings: sl<PumpSettingsDispatcher>(),
+      programViewDispatcher: sl<ProgramPreviewDispatcher>(),
     ),
   );
 

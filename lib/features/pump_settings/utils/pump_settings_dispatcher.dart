@@ -1,5 +1,3 @@
-// pump_settings_dispatcher.dart
-
 import '../../../core/services/mqtt/mqtt_message_helper.dart';
 import '../presentation/cubit/view_pump_settings_cubit.dart';
 

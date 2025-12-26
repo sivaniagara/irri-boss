@@ -7,8 +7,9 @@ class SyncSection extends StatelessWidget {
   final String liveSync;
   final String smsSync;
   final int model;
+  final String deviceId;
 
-  const SyncSection({super.key, required this.liveSync, required this.smsSync, required this.model});
+  const SyncSection({super.key, required this.liveSync, required this.smsSync, required this.model, required this.deviceId});
 
   @override
   Widget build(BuildContext dialogContext) {
@@ -22,7 +23,7 @@ class SyncSection extends StatelessWidget {
             Text(liveSync, style: const TextStyle(fontSize: 12,color: Colors.white)),
           ],
         ),
-        ([1, 5].contains(model)) ? ProgramButton(programTitle: 'Program 1') : Container(),
+        ([1, 5].contains(model)) ? ProgramButton(programTitle: 'Program 1', deviceId: deviceId,) : Container(),
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -38,10 +39,12 @@ class SyncSection extends StatelessWidget {
 
 class ProgramButton extends StatelessWidget {
   final String programTitle;
+  final String deviceId;
 
   const ProgramButton({
     super.key,
     required this.programTitle,
+    required this.deviceId,
   });
 
   @override
@@ -51,7 +54,10 @@ class ProgramButton extends StatelessWidget {
       margin: const EdgeInsets.all(0),
       child: TextButton.icon(
         onPressed: () {
-          dialogContext.push(DashBoardRoutes.programPreview);
+          dialogContext.push(
+              DashBoardRoutes.programPreview,
+              extra: deviceId
+          );
         },
         icon: const Icon(Icons.remove_red_eye, color: Colors.white),
         label: Text(

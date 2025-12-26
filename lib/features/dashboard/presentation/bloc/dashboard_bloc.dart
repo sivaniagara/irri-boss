@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/services/mqtt/mqtt_manager.dart';
-import '../../../../core/services/mqtt/mqtt_message_helper.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/services/selected_controller_persistence.dart';
 import '../../dashboard.dart';
@@ -13,8 +11,6 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   final FetchDashboardGroups fetchDashboardGroups;
   final FetchControllers fetchControllers;
   Timer? _pollTimer;
-  DateTime? _lastPollTime;
-  bool _isPollingActive = false;
 
   DashboardBloc({
     required this.fetchDashboardGroups,
@@ -141,7 +137,6 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       // Subscribe to MQTT
       sl<MqttManager>().subscribe(selectedController.deviceId);
       sl<MqttManager>().publish(selectedController.deviceId, jsonEncode(PublishMessageHelper.requestLive));
-      // mqttBloc.add(SubscribeMqttEvent(selectedController.deviceId));
 
       // Persist selection
       final persistence = sl.get<SelectedControllerPersistence>();
@@ -163,65 +158,11 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     });
 
     on<UpdateLiveMessageEvent>(_onUpdateLiveMessage);
-
-   /* on<StartPollingEvent>(_onStartPolling);
-    on<StopPollingEvent>(_onStopPolling);*/
-  }
-
-  void _onStartPolling(StartPollingEvent event, Emitter<DashboardState> emit) {
-    if (_isPollingActive) {
-      debugPrint('Polling already active - skipping start');
-      return;
-    }
-    _stopPolling(); // Clean any partial
-    _isPollingActive = true;
-    _lastPollTime = DateTime.now();
-
-    // Immediate first poll
-    // _performPoll();
-
-    _pollTimer = Timer.periodic(const Duration(seconds: 40), (timer) {
-      // _performPoll();
-    });
-  }
-
-  void _onStopPolling(StopPollingEvent event, Emitter<DashboardState> emit) {
-    _stopPolling();
-  }
-
-  void _performPoll() {
-    if (_lastPollTime != null && DateTime.now().difference(_lastPollTime!).inMilliseconds < 10000) {
-      final seconds = DateTime.now().difference(_lastPollTime!).inSeconds;
-      debugPrint('Poll throttled: too soon since last (${seconds}s)');
-      return;
-    }
-
-    if (state is DashboardGroupsLoaded) {
-      final currentState = state as DashboardGroupsLoaded;
-      if (currentState.selectedControllerIndex != null && currentState.selectedGroupId != null) {
-        final controllers = currentState.groupControllers[currentState.selectedGroupId!] ?? [];
-        final selectedIndex = currentState.selectedControllerIndex!;
-        if (selectedIndex < controllers.length) {
-          final deviceId = controllers[selectedIndex].deviceId;
-          if (sl<MqttManager>().mqttService.isConnected) {
-            final publishMessage = jsonEncode(PublishMessageHelper.requestLive);
-            sl<MqttManager>().publish(deviceId, publishMessage);
-            // mqttBloc.add(PublishMqttEvent(deviceId: deviceId, message: publishMessage));
-            _lastPollTime = DateTime.now();
-            debugPrint('Bloc polled live for $deviceId at $_lastPollTime');
-          } else {
-            // debugPrint('Poll skipped: MQTT not ready (${mqttBloc.state.runtimeType})');
-          }
-        }
-      }
-    }
   }
 
   void _stopPolling() {
     _pollTimer?.cancel();
     _pollTimer = null;
-    _isPollingActive = false;
-    _lastPollTime = null;
   }
 
   Future<void> _onUpdateLiveMessage(UpdateLiveMessageEvent event, Emitter<DashboardState> emit) async {
@@ -231,16 +172,14 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     final updatedGroupControllers = Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
     bool updated = false;
 
-    // Iterate over all groups' controllers to find the matching deviceId
     for (final entry in updatedGroupControllers.entries) {
       final groupId = entry.key;
       final controllers = entry.value;
-      final updatedControllersList = <ControllerEntity>[]; // Renamed for clarity
+      final updatedControllersList = <ControllerEntity>[];
       bool groupUpdated = false;
 
       for (final ctrl in controllers) {
         if (ctrl.deviceId == event.deviceId) {
-          // Cast to ControllerModel assuming it implements ControllerEntity and has copyWith
           final model = ctrl as ControllerModel;
           final updatedCtrl = model.copyWith(liveMessage: event.liveMessage);
           updatedControllersList.add(updatedCtrl);

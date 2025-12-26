@@ -1,3 +1,5 @@
+import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/program_preview_dispatcher.dart';
+
 import '../../../core/di/injection.dart';
 import '../../../core/services/selected_controller_persistence.dart';
 import '../../../core/services/mqtt/mqtt_message_helper.dart';
@@ -22,4 +24,5 @@ void initDashboardDependencies() {
   );
 
   sl.registerLazySingleton<DashboardMessageDispatcher>(() => DashboardMessageDispatcher(dashboardBloc: sl<DashboardBloc>()),);
+  sl.registerLazySingleton<ProgramPreviewDispatcher>(() => ProgramPreviewDispatcher());
 }

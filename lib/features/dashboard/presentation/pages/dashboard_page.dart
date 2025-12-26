@@ -417,6 +417,7 @@ class DashboardPage extends StatelessWidget {
                       liveSync: controller.livesyncTime,
                       smsSync: controller.msgDesc,
                       model: controller.modelId,
+                      deviceId: controller.deviceId,
                     ),
                     SizedBox(height: scale(8)),
                     GlassCard(
