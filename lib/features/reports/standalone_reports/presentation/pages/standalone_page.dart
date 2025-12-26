@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/presentation/pages/standalone_status_page.dart';
 
 import '../../../../../core/utils/common_date_picker.dart';
+import '../../../../../core/widgets/no_data.dart';
 import '../../../../report_downloader/utils/report_downloaderRoute.dart';
 import '../../utils/standalone_routes.dart';
 import '../bloc/standalone_bloc.dart';
@@ -84,14 +85,14 @@ class StandalonePage extends StatelessWidget {
           }
 
           if (state is StandaloneError) {
-            return Center(child: Image.asset("assets/images/common/nodata.png",width: 160,height: 160,),);
+            return noData;
           }
 
           if (state is StandaloneLoaded) {
             return StandaloneZoneStatusView(
               data: state.data,);
            }
-           return Center(child: Image.asset("assets/images/common/nodata.png",width: 60,height: 60,),);
+           return noData;
         },
       ),
     );

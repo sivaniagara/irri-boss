@@ -2,7 +2,6 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/domain/entities/motor_cyclic_entities.dart';
 
 Widget infoRow(String title, String value,IconData vIcon) {
   return Padding(
@@ -29,7 +28,7 @@ Widget infoRow(String title, String value,IconData vIcon) {
   );
 }
 
-Widget zoneCard(int index, dynamic zone,) {
+Widget zoneCard(int index, dynamic zone) {
   return Container(
     margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     decoration: BoxDecoration(
@@ -63,6 +62,19 @@ Widget zoneCard(int index, dynamic zone,) {
   );
 }
 
+Widget _zon1eRow(
+    String t1, String v1, String t2, String v2) {
+  return Padding(
+    padding: const EdgeInsets.all(8),
+    child: Row(
+      children: [
+        Expanded(child: Text("$t1  $v1")),
+        if (t2.isNotEmpty)
+          Expanded(child: Text("$t2  $v2")),
+      ],
+    ),
+  );
+}
 
 Widget _zoneRow(
     String t1,

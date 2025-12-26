@@ -3,107 +3,100 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/tdyvalvestatus_reports/presentation/pages/tdy_valve_status_graph.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_reports/presentation/pages/zone_cyclic_graph.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_reports/presentation/pages/zone_cyclic_reports.dart';
 
 import '../../../../../core/utils/common_date_picker.dart';
 import '../../../../../core/widgets/no_data.dart';
 import '../../../../report_downloader/utils/report_downloaderRoute.dart';
-import '../../utils/tdy_valve_status_routes.dart';
-import '../bloc/tdy_valve_mode.dart';
- import '../bloc/tdy_valve_status_bloc.dart';
-import '../bloc/tdy_valve_status_bloc_event.dart';
-import '../bloc/tdy_valve_status_bloc_state.dart';
-import '../widgets/tdy_valve_status_card.dart';
+import '../../domain/entities/zone_cyclic_entities.dart';
+import '../bloc/zone_cyclic_bloc.dart';
+import '../bloc/zone_cyclic_bloc_event.dart';
+import '../bloc/zone_cyclic_bloc_state.dart';
+import '../bloc/zone_cyclic_mode.dart';
 
-
-
-class TdyValveStatusPage extends StatelessWidget {
+class ZoneCyclicPage extends StatelessWidget {
   final int userId;
   final int subuserId;
   final int controllerId;
   final String fromDate;
+  final String toDate;
 
-  const TdyValveStatusPage({
+  const ZoneCyclicPage({
     super.key,
     required this.userId,
     required this.subuserId,
     required this.controllerId,
     required this.fromDate,
-    required String program,
+    required this.toDate,
   });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Today Valve Status"),
+        title: const Text("Zone Cyclic Status"),
         actions: [
-
           /// 🔹 Toggle View (Cubit → View State)
-          BlocBuilder<TdyValveStatusCubit, TdyValveViewState>(
+          BlocBuilder<ZoneCyclicCubit, TdyValveViewState>(
             builder: (context, viewState) {
               return IconButton(
                 icon: Icon(
-                  viewState.viewMode == TdyValveStatusViewMode.zoneStatus
+                  viewState.viewMode == ZoneCyclicViewMode.zoneStatus
                       ? Icons.bar_chart
                       : Icons.list_alt,
                 ),
                 onPressed: () {
-                  context.read<TdyValveStatusCubit>().toggleView();
-
+                  context.read<ZoneCyclicCubit>().toggleView();
                   final program =
                   (viewState.selectedProgramIndex + 1).toString();
-                  context.read<TdyValveStatusBloc>().add(
-                    FetchTdyValveStatusEvent(
+                  context.read<ZoneCyclicBloc>().add(
+                    FetchZoneCyclicEvent(
                       userId: userId,
                       subuserId: subuserId,
                       controllerId: controllerId,
                       fromDate: fromDate,
-                      program: program,
+                      toDate: viewState.viewMode == ZoneCyclicViewMode.zoneStatus ? toDate : fromDate,
                     ),
                   );
                 },
               );
             },
           ),
+          BlocBuilder<ZoneCyclicCubit, TdyValveViewState>(
+            builder: (_, viewState) {
+              return IconButton(
+                icon: const Icon(Icons.calendar_today,
+                    color: Colors.black),
+                onPressed: () async {
+                  final result = await pickReportDate(
+                    context: context,
+                    allowRange: viewState.viewMode == ZoneCyclicViewMode.zoneStatus ? true :false,
+                  );
+                  if (result == null) return;
 
-          /// 🔹 Date Picker
-          IconButton(
-            icon: const Icon(Icons.calendar_today),
-            onPressed: () async {
-              final result = await pickReportDate(
-                context: context,
-                allowRange: false,
-              );
-              if (result == null) return;
-
-              final viewState =
-                  context.read<TdyValveStatusCubit>().state;
-
-              final program =
-              (viewState.selectedProgramIndex + 1).toString();
-
-              context.read<TdyValveStatusBloc>().add(
-                FetchTdyValveStatusEvent(
-                  userId: userId,
-                  subuserId: subuserId,
-                  controllerId: controllerId,
-                  fromDate: result.fromDate,
-                  program: program,
-                ),
-              );
+                  context.read<ZoneCyclicBloc>().add(
+                    FetchZoneCyclicEvent(
+                      userId: userId,
+                      subuserId: subuserId,
+                      controllerId: controllerId,
+                      fromDate: result.fromDate,
+                      toDate: result.toDate,
+                    ),
+                  );
+                },
+              ) ;
             },
           ),
-        ],
+         ],
       ),
-
-      /// 🔹 BODY → Bloc State (API)
-      body: BlocBuilder<TdyValveStatusBloc, TdyValveStatusState>(
+       /// 🔹 BODY → Bloc State (API)
+      body: BlocBuilder<ZoneCyclicBloc, ZoneCyclicState>(
         builder: (context, state) {
-          if (state is TdyValveStatusLoading) {
+          if (state is ZoneCyclicLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-           if (state is TdyValveStatusError) {
+           if (state is ZoneCyclicError) {
 
             return Column(
               children: [
@@ -113,38 +106,48 @@ class TdyValveStatusPage extends StatelessWidget {
             );
           }
 
-
-
-          if (state is TdyValveStatusLoaded) {
+          if (state is ZoneCyclicLoaded) {
             return Column(
               children: [
                 _programDropdown(context),
                 const SizedBox(height: 12),
 
-                BlocBuilder<TdyValveStatusCubit, TdyValveViewState>(
+                BlocBuilder<ZoneCyclicCubit, TdyValveViewState>(
           builder: (context, viewState) {
-            print("viewState.viewMode${viewState.viewMode}");
-            print("TdyValveStatusViewMode${TdyValveStatusViewMode.zoneStatus}");
-          return viewState.viewMode == TdyValveStatusViewMode.zoneStatus ? ZoneStatusCardTdyValveStatus(state.data) : TdyZoneStatusGraph(zones: state.data) ;
+            final selectedProgram = (viewState.selectedProgramIndex + 1).toString();
+
+
+            final matchingPrograms = state.data.data
+                .where((e) => e.program == selectedProgram)
+                .toList();
+
+            final selectedProgramZones =
+            matchingPrograms.isNotEmpty ? matchingPrograms.first.zoneList : <ZoneCyclicDetailEntity>[];
+
+
+
+            print("viewState.viewMode${selectedProgramZones.toString()}");
+            print("viewState.viewMode${selectedProgramZones.map((e) => e.toString())}");
+          return viewState.viewMode == ZoneCyclicViewMode.zoneStatus ? ZoneCyclicPageReport(data: state.data) : ZoneCyclicGraph(
+            zoneList: selectedProgramZones,
+            totalFlow: state.data.totalFlow,
+          ); ;
           },
           ),
                ],
             );
           }
-
           return noData;
         },
       ),
     );
   }
-
-
-  // 🔹 PROGRAM DROPDOWN
+   // 🔹 PROGRAM DROPDOWN
   Widget _programDropdown(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: DropdownButtonFormField<int>(
-        value: context.watch<TdyValveStatusCubit>().state.selectedProgramIndex,
+        value: context.watch<ZoneCyclicCubit>().state.selectedProgramIndex,
         decoration: const InputDecoration(
           labelText: "Select Program",
           border: OutlineInputBorder(),
@@ -159,26 +162,25 @@ class TdyValveStatusPage extends StatelessWidget {
         onChanged: (index) {
           if (index == null) return;
 
-          final cubit = context.read<TdyValveStatusCubit>();
+          final cubit = context.read<ZoneCyclicCubit>();
           cubit.selectProgram(index);
 
           final program = (index + 1).toString();
 
-          context.read<TdyValveStatusBloc>().add(
-            FetchTdyValveStatusEvent(
+          context.read<ZoneCyclicBloc>().add(
+            FetchZoneCyclicEvent(
               userId: userId,
               subuserId: subuserId,
               controllerId: controllerId,
               fromDate: fromDate,
-              program: program,
+              toDate: toDate,
             ),
           );
         },
       ),
     );
   }
-
-  // 🔹 ZONE CARD
+   // 🔹 ZONE CARD
   Widget _zoneCard(dynamic item) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),

@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/no_data.dart';
 import '../../../../../core/theme/app_gradients.dart';
 import '../../../../../core/utils/common_date_picker.dart';
 import '../bloc/voltage_bloc.dart';
@@ -62,7 +63,7 @@ class VoltageGraphPage extends StatelessWidget {
               );
             }
 
-            return Center(child: Image.asset("assets/images/common/nodata.png",width: 60,height: 60,),);
+            return noData;
           },
         ),
       ),

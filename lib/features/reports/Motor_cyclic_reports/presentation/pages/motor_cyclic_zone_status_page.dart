@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/no_data.dart';
 import '../../domain/entities/motor_cyclic_entities.dart';
 import '../bloc/motor_cyclic_mode.dart';
 import '../widgets/zone_status_card.dart';
@@ -58,9 +59,7 @@ class MotorCyclicZoneStatusView extends StatelessWidget {
              // 🔹 ZONE GRID
             Expanded(
               child: allZones.isEmpty
-                  ?  Center(
-                child: Image.asset("assets/images/common/nodata.png",width: 60,height: 60,),
-              )
+                  ?  noData
                   : GridView.builder(
                 padding: const EdgeInsets.all(12),
                 gridDelegate:

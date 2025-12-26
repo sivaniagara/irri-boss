@@ -2,9 +2,9 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/domain/entities/motor_cyclic_entities.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_reports/domain/entities/zone_cyclic_entities.dart';
 
-Widget infoRow(String title, String value,IconData vIcon) {
+Widget zoneinfoRow(String title, String value,IconData vIcon) {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
     child: Row(
@@ -29,7 +29,7 @@ Widget infoRow(String title, String value,IconData vIcon) {
   );
 }
 
-Widget zoneCard(int index, dynamic zone,) {
+Widget zonecyclicCard(int index, dynamic zone, List<ZoneProgramEntity> data,) {
   return Container(
     margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     decoration: BoxDecoration(
@@ -45,20 +45,34 @@ Widget zoneCard(int index, dynamic zone,) {
           width: double.infinity,
           padding: const EdgeInsets.all(8),
           color: Colors.grey.shade300,
-          child: Text(
-            "ZONE ${index.toString().padLeft(3, '0')}",
-            style: const TextStyle(
-              color: Colors.blue,
-              fontWeight: FontWeight.bold,
-            ),
+          child: Row(
+            children: [
+              Text(
+                "Program ${data[0].program}",
+                style: const TextStyle(
+                  color: Colors.blue,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                "ZONE ${index.toString().padLeft(3, '0')}",
+                style: const TextStyle(
+                  color: Colors.blue,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
         ),
 
+
          _zoneRow("On Time:", zone.onTime, "Off Time:", zone.offTime),
-        _zoneRow("Duration:", zone.duration, "Flow:", "${zone.flow} Lts"),
-        _zoneRow("EC:", zone.ec, "pH:", zone.ph),
-        _zoneRow("Pressure In:", zone.pressureIn,"Pressure Out:", zone.pressureOut),
-      ],
+        _zoneRow("Set Flow", zone.flow, "Run Flow", zone.flow),
+        _zoneRow("Set Time", zone.duration, "Run Time", zone.duration),
+        _zoneRow("Pressure In", zone.pressureIn, "Pressure Out", zone.pressureOut),
+        _zoneRow("Well Level", zone.wellLevel, "Percentage %", zone.wellPercentage),
+        _zoneRow("Ec", "0.00", "pH", zone.ph),
+        ],
     ),
   );
 }

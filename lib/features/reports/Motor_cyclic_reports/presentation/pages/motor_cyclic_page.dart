@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/no_data.dart';
 
 import '../../../../../core/utils/common_date_picker.dart';
  import '../../../../report_downloader/utils/report_downloaderRoute.dart';
@@ -152,7 +153,7 @@ class MotorCyclicPage extends StatelessWidget {
           }
 
           if (state is MotorCyclicError) {
-            return Center(child: Image.asset("assets/images/common/nodata.png",width: 160,height: 160,),);
+            return noData;
           }
 
           if (state is MotorCyclicLoaded) {
@@ -171,7 +172,7 @@ class MotorCyclicPage extends StatelessWidget {
             );
           }
 
-          return Center(child: Image.asset("assets/images/common/nodata.png",width: 60,height: 60,),);
+          return noData;
         },
       ),
     );

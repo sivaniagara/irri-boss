@@ -19,6 +19,7 @@ import '../../features/reports/Voltage_reports/di/voltage_di.dart';
 import '../../features/reports/power_reports/di/power_di.dart';
 import '../../features/reports/reportMenu/di/report_di.dart';
 import '../../features/reports/zone_duration_reports/di/zone_duration_di.dart';
+import '../../features/reports/zonecyclic_reports/di/zone_cyclic_di.dart';
 import '../../features/sendrev_msg/di/sendrev_di.dart';
 import '../../features/setserialsettings/data/datasources/setserial_datasource.dart';
 import '../../features/setserialsettings/domain/repositories/setserial_details_repo.dart';
@@ -120,6 +121,7 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initZoneDuration();
   initStandalone();
   initTdyValveStatus();
+  initZoneCyclic();
 
 }
 

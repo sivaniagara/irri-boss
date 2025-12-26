@@ -5,6 +5,7 @@ import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/u
 import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/utils/standalone_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/tdyvalvestatus_reports/utils/tdy_valve_status_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
 
 import '../../../../core/theme/app_gradients.dart';
  import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
@@ -88,7 +89,7 @@ class ReportMenuPage extends StatelessWidget {
           ),
           _reportCard(
             title: 'Motor Cyclic',
-            icon: Icons.touch_app,
+            icon: Icons.event_repeat_sharp,
             onTap: () {
               context.push(MotorCyclicPageRoutes.MotorCyclicpage,extra: params);
             },
@@ -115,9 +116,11 @@ class ReportMenuPage extends StatelessWidget {
             },
           ),
           _reportCard(
-            title: 'Zone Duration',
-            icon: Icons.timer,
-            onTap: () {},
+            title: 'Zone Cyclic',
+            icon: Icons.query_builder_sharp,
+            onTap: () {
+              context.push(ZoneCyclicPageRoutes.ZoneCyclicpage,extra: params);
+            },
           ),
           _reportCard(
             title: 'Zone Duration',

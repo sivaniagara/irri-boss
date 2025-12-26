@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/no_data.dart';
 
 import '../../domain/entities/standalone_entities.dart';
 import '../widgets/standalone_status_card.dart';
@@ -20,9 +21,7 @@ class StandaloneZoneStatusView extends StatelessWidget {
           children: [
               Expanded(
               child: allZones.isEmpty
-                  ?  Center(
-                child: Image.asset("assets/images/common/nodata.png",width: 60,height: 60,),
-              )
+                  ?  noData
                   : GridView.builder(
                 padding: const EdgeInsets.all(12),
                 gridDelegate:

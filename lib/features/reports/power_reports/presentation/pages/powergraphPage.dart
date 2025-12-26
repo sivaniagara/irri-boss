@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/no_data.dart';
 import '../../../../../../core/theme/app_gradients.dart';
 import '../../../../report_downloader/utils/report_downloaderRoute.dart';
 import '../../utils/Power_routes.dart';
@@ -99,7 +100,7 @@ class PowerGraphPage extends StatelessWidget {
                 ],
               );
             }
-            return Center(child: Image.asset("assets/images/common/nodata.png",width: 60,height: 60,),);
+            return noData;
           },
         ),
       ),

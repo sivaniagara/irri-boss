@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/no_data.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/zone_duration_reports/presentation/pages/zone_duration_view.dart';
 
 import '../../../../../core/utils/common_date_picker.dart';
@@ -97,7 +98,7 @@ class ZoneDurationPage extends StatelessWidget {
             return  ZoneDurationPageReport(data: state.data);
           }
 
-          return Center(child: Image.asset("assets/images/common/nodata.png",width: 60,height: 60,),);
+          return noData;
         },
       ),
     );

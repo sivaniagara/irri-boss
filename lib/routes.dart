@@ -8,6 +8,7 @@ import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_repo
 import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/utils/standalone_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/tdyvalvestatus_reports/utils/tdy_valve_status_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/setserialsettings/presentation/pages/setserial_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/domain/usecases/get_sub_user_details_usecase.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/presentation/pages/sub_user_details_page.dart';
@@ -391,6 +392,7 @@ class AppRouter {
         ...ZoneDurationRoutes,
         ...StandaloneRoutes,
         ...TdyValveStatusRoutes,
+        ...ZoneCyclicRoutes,
       ],
     );
   }
