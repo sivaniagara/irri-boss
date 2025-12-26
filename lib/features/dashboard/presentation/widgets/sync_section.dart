@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_routes.dart';
 
 class SyncSection extends StatelessWidget {
   final String liveSync;
@@ -49,9 +51,7 @@ class ProgramButton extends StatelessWidget {
       margin: const EdgeInsets.all(0),
       child: TextButton.icon(
         onPressed: () {
-          ScaffoldMessenger.of(dialogContext).showSnackBar(
-            SnackBar(content: Text('$programTitle clicked!')),
-          );
+          dialogContext.push(DashBoardRoutes.programPreview);
         },
         icon: const Icon(Icons.remove_red_eye, color: Colors.white),
         label: Text(

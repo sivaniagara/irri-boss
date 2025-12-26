@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/domain/entities/livemessage_entity.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/program_preview.dart';
 import 'package:niagara_smart_drip_irrigation/features/setserialsettings/presentation/pages/setserial_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/domain/usecases/get_sub_user_details_usecase.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/presentation/pages/sub_user_details_page.dart';
@@ -176,6 +177,13 @@ class AppRouter {
           },
           routes: [
           ]
+        ),
+        GoRoute(
+            name: 'programPreview',
+            path: DashBoardRoutes.programPreview,
+            builder: (context, state) {
+              return ProgramPreview();
+            },
         ),
         ...pumpSettingsRoutes,
         GoRoute(
