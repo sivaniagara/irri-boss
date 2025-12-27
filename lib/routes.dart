@@ -8,30 +8,29 @@ import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pa
 import 'package:niagara_smart_drip_irrigation/features/setserialsettings/presentation/pages/setserial_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/domain/usecases/get_sub_user_details_usecase.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/presentation/pages/sub_user_details_page.dart';
-import 'package:niagara_smart_drip_irrigation/features/controller_settings/presentaion/pages/controller_app_bar.dart';
-import 'package:niagara_smart_drip_irrigation/features/controller_settings/presentaion/pages/controller_program.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
-import 'features/controller_settings/presentaion/cubit/controller_tab_cubit.dart';
+import 'features/controller_details/domain/usecase/controller_details_params.dart';
+import 'features/controller_details/presentation/bloc/controller_details_bloc.dart';
+import 'features/controller_details/presentation/bloc/controller_details_bloc_event.dart';
+import 'features/controller_details/presentation/pages/controller_details_page.dart';
+import 'features/dashboard/presentation/cubit/controller_context_cubit.dart';
+import 'features/controller_settings/presentation/cubit/controller_tab_cubit.dart';
 import 'features/controller_settings/utils/controller_settings_routes.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
-import 'features/fault_msg/utils/faultmsg_routes.dart';
-import 'features/sendrev_msg/utils/senrev_routes.dart';
+import 'features/mapping_and_unmapping_nodes/utils/mapping_and_unmapping_nodes_routes.dart';
+import 'features/program_settings/utils/program_settings_routes.dart';
+import 'features/setserialsettings/domain/usecase/setserial_details_params.dart';
+import 'features/setserialsettings/presentation/bloc/setserial_bloc.dart';
+import 'features/setserialsettings/presentation/bloc/setserial_bloc_event.dart';
 import 'features/side_drawer/groups/utils/group_routes.dart';
 import 'features/auth/utils/auth_routes.dart';
 
 import 'core/di/injection.dart' as di;
 import 'core/utils/route_constants.dart';
 import 'core/widgets/glassy_wrapper.dart';
-import 'features/controller_details/domain/usecase/controller_details_params.dart';
-import 'features/controller_details/presentation/bloc/controller_details_bloc.dart';
-import 'features/controller_details/presentation/bloc/controller_details_bloc_event.dart';
-import 'features/controller_details/presentation/pages/controller_details_page.dart';
 import 'features/dealer_dashboard/presentation/pages/dealer_dashboard_page.dart';
-import 'features/setserialsettings/domain/usecase/setserial_details_params.dart';
-import 'features/setserialsettings/presentation/bloc/setserial_bloc.dart';
-import 'features/setserialsettings/presentation/bloc/setserial_bloc_event.dart';
 import 'features/side_drawer/groups/presentation/pages/chat.dart';
 import 'features/side_drawer/groups/presentation/widgets/app_drawer.dart';
 import 'features/auth/auth.dart';
@@ -54,7 +53,7 @@ class GoRouterRefreshStream extends ChangeNotifier {
   }
 }
 
-Widget pageSlider(context, animation, secondaryAnimation, child) {
+Widget pageSlider(context, animation, secondaryAnimation, child){
   const begin = Offset(2.0, 0.0);
   const end = Offset.zero;
   const curve = Curves.easeInOut;
@@ -74,6 +73,7 @@ class AppRouter {
   AppRouter({required this.authBloc}) {
     router = GoRouter(
       initialLocation: AuthRoutes.login,
+      // initialLocation: ControllerSettingsRoutes.program,
       debugLogDiagnostics: true,
       refreshListenable: GoRouterRefreshStream(authBloc.stream),
       redirect: (context, state) {
@@ -155,15 +155,29 @@ class AppRouter {
           path: DashBoardRoutes.dashboard,
           builder: (context, state) {
             final authData = _getAuthData();
-            final bloc = BlocProvider(
-              create: (context) => di.sl<DashboardBloc>()
-                ..add(FetchDashboardGroupsEvent(authData.id))
-                ..add(ResetDashboardSelectionEvent()),
-              child: DashboardPage(userId: authData.id, userType: authData.userType),
+
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (_) => di.sl<DashboardBloc>()
+                    ..add(FetchDashboardGroupsEvent(authData.id))
+                    ..add(ResetDashboardSelectionEvent()),
+                ),
+
+              ],
+              child: DashboardPage(
+                userId: authData.id,
+                userType: authData.userType,
+              ),
             );
-            return bloc;
           },
+          routes: [
+            ...controllerSettingGoRoutes,
+            ...programSettingsGoRoutes,
+            // ...mappingAndUnmappingNodesGoRoutes
+          ],
         ),
+
         GoRoute(
           name: 'ctrlLivePage',
           path: DashBoardRoutes.ctrlLivePage,
@@ -329,48 +343,7 @@ class AppRouter {
             )
           ],
         ),
-        ShellRoute(
-            builder: (context, state, child) {
-              return BlocProvider(
-                create: (context) => di.sl<ControllerTabCubit>(),
-                child: ControllerAppBar(child: child),
-              );
-            },
-            routes: [
-              GoRoute(
-                path: ControllerSettingsRoutes.controllerDetails,
-                builder: (context, state) => Container(
-                  height: double.infinity,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                    colors: [
-                      Color(0xffC6DDFF),
-                      Color(0xff67C8F1),
-                      Color(0xff6DA8F5),
-                    ],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  )),
-                ),
-              ),
-              GoRoute(
-                path: ControllerSettingsRoutes.nodes,
-                builder: (context, state) => Center(
-                  child: Text(
-                    'Nodes',
-                    style: TextStyle(color: Colors.black),
-                  ),
-                ),
-              ),
-              GoRoute(
-                path: ControllerSettingsRoutes.program,
-                builder: (context, state) => ControllerProgram(),
-              ),
-            ]
-        ),
-        ...sendRevPageRoutes,
-        ...FaultMsgPagesRoutes,
+
       ],
     );
   }

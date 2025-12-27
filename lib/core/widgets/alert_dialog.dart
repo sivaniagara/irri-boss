@@ -118,3 +118,133 @@ class GlassyAlertDialog extends StatelessWidget {
     );
   }
 }
+
+void showLoadingDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) {
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.9),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 20,
+                offset: Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                height: 60,
+                width: 60,
+                child: CircularProgressIndicator(
+                  strokeWidth: 5,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Submitting Zone...',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold, color: Colors.black),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Please wait a moment',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.black),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+void showMinimalLoadingDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        content: Row(
+          children: const [
+            SizedBox(
+              height: 30,
+              width: 30,
+              child: CircularProgressIndicator(strokeWidth: 3),
+            ),
+            SizedBox(width: 20),
+            Expanded(
+              child: Text(
+                'Saving configuration...',
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+void showGradientLoadingDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) {
+      return Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ShaderMask(
+                shaderCallback: (bounds) {
+                  return LinearGradient(
+                    colors: [
+                      Theme.of(context).primaryColor,
+                      Colors.lightBlueAccent,
+                      Theme.of(context).primaryColorLight,
+                    ],
+                  ).createShader(bounds);
+                },
+                child: const CircularProgressIndicator(
+                  strokeWidth: 6,
+                  valueColor:
+                  AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Processing...',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
+

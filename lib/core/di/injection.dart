@@ -12,10 +12,13 @@ import '../../features/controller_details/domain/usecase/controller_details_user
 import '../../features/controller_details/presentation/bloc/controller_details_bloc.dart';
 import '../../features/controller_details/presentation/bloc/controller_details_state.dart';
 import '../../features/dashboard/utils/dashboard_dispatcher.dart';
+import '../../features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../features/fault_msg/di/faultmsg_di.dart';
 import '../../features/pump_settings/utils/pump_settings_dispatcher.dart';
 import '../services/mqtt/app_message_dispatcher.dart';
 import '../services/mqtt/mqtt_message_helper.dart';
+import '../../features/mapping_and_unmapping_nodes/di/mapping_and_unmapping_node_di.dart';
+import '../../features/program_settings/di/program_settings_di.dart';
 import '../../features/sendrev_msg/di/sendrev_di.dart';
 import '../../features/setserialsettings/data/datasources/setserial_datasource.dart';
 import '../../features/setserialsettings/domain/repositories/setserial_details_repo.dart';
@@ -23,7 +26,7 @@ import '../../features/setserialsettings/domain/usecase/setserial_details_params
 import '../../features/setserialsettings/presentation/bloc/setserial_bloc.dart';
 import '../../features/setserialsettings/presentation/bloc/setserial_bloc_event.dart';
 import '../../features/auth/di/auth.di.dart';
-import '../../features/controller_settings/presentaion/cubit/controller_tab_cubit.dart';
+import '../../features/controller_settings/presentation/cubit/controller_tab_cubit.dart';
 import '../../features/dashboard/di/dashboard_di.dart';
 import '../../features/pump_settings/di/pump_settings_di.dart';
 import '../../features/side_drawer/groups/di/groups_di.dart';
@@ -74,7 +77,6 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   registerFlavorDependencies(sl);
 
   initDashboardDependencies();
-  initPumpSettingsDependencies();
 
   sl.registerLazySingleton<AppMessageDispatcher>(
         () => AppMessageDispatcher(
@@ -98,36 +100,34 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   /// Sub Users Dependencies
   initSubUsersDependencies();
 
+  /// Pump Settings Dependencies
+  initPumpSettingsDependencies();
+
+  /// controller setting tab Dependencies
   sl.registerFactory(() => ControllerTabCubit());
 
-  sl.registerLazySingleton(
-        () => UpdateControllerUsecase(controllerRepo: sl()),
-  );
+  /// Program Setting Dependencies
+  initProgramSettingDependencies();
 
-  sl.registerLazySingleton<ControllerRemoteDataSource>(
-      () => ControllerRemoteDataSourceImpl(apiClient: sl()));
-  sl.registerLazySingleton<ControllerRepo>(
-      () => ControllerRepoImpl(remoteDataSource: sl()));
-  sl.registerLazySingleton(
-      () => GetControllerDetailsUsecase(controllerRepo: sl()));
-  sl.registerFactory(() => ControllerDetailsBloc(
-        getControllerDetails: sl(),
-        updateController: sl(),
-      ));
+  /// Mapping and Unmapping Nodes Dependencies
+  initMappingAndUnmappingNodeDependencies();
 
+  sl.registerLazySingleton<ControllerRemoteDataSource>(() => ControllerRemoteDataSourceImpl(apiClient: sl()));
+  sl.registerLazySingleton<ControllerRepo>(() => ControllerRepoImpl(remoteDataSource: sl()));
+  sl.registerLazySingleton(() => GetControllerDetailsUsecase(controllerRepo: sl()));
+  sl.registerFactory(() => ControllerDetailsBloc(getControllerDetails: sl(), updateController: sl(),));
   sl.registerLazySingleton<SetSerialDataSource>(
-      () => SetSerialDataSourceImpl(apiClient: sl()));
+          () => SetSerialDataSourceImpl(apiClient: sl()));
   sl.registerLazySingleton<SetSerialRepository>(
-      () => SetSerialRepositoryImpl(remoteDataSource: sl()));
+          () => SetSerialRepositoryImpl(remoteDataSource: sl()));
   sl.registerFactory(() => SetSerialBloc(sl()));
   sl.registerFactory(
-      () => SetSerialParams(userId: sl(), controllerId: sl(), type: sl()));
+          () => SetSerialParams(userId: sl(), controllerId: sl(), type: sl()));
   sl.registerFactory(() => LoadSerialUsecase(sl()));
   sl.registerFactory(() => LoadSerialEvent(userId: sl(), controllerId: sl()));
 
   initSendRev();
   initfaultmsg();
-
 }
 
 // Reset all

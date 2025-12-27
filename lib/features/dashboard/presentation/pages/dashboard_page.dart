@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_manager.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
+import 'package:niagara_smart_drip_irrigation/features/auth/auth.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/services/mqtt/mqtt_message_helper.dart';
@@ -14,6 +16,8 @@ import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/services/selected_controller_persistence.dart';
 import '../../../../core/utils/app_images.dart';
 import '../../../controller_details/domain/usecase/controller_details_params.dart';
+import '../../../controller_settings/utils/controller_settings_routes.dart';
+import '../../../program_settings/utils/program_settings_routes.dart';
 import '../../../side_drawer/groups/presentation/widgets/app_drawer.dart';
 
 import '../../utils/dashboard_routes.dart';
@@ -176,19 +180,34 @@ class DashboardPage extends StatelessWidget {
 
     final (selectedGroup, selectedController, controllers) = _getSelectedGroupAndController(state);
 
-    return GlassyWrapper(
-      child: NotificationListener<OverscrollIndicatorNotification>(
-        onNotification: (notification) {
-          notification.disallowIndicator();
-          return true;
+    return BlocListener<DashboardBloc, DashboardState>(
+        listener: (BuildContext context, state){
+          final registerDetailsEntity = context.read<AuthBloc>().state as Authenticated;
+          if (state is DashboardGroupsLoaded && state.groupControllers.isNotEmpty && (context.read<ControllerContextCubit>().state is! ControllerContextLoaded)) {
+            final controller = state.groupControllers[state.groupControllers.keys.first]!.first; // or selected one
+            context.read<ControllerContextCubit>().setContext(
+              userId: registerDetailsEntity.user.userDetails.id.toString(),
+              controllerId: controller.userDeviceId.toString(),
+              userType: registerDetailsEntity.user.userDetails.userType.toString(),
+              subUserId: '0',
+            );
+
+          }
         },
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: _buildAppBar(selectedGroup, selectedController, controllers, state, bloc, context),
-          drawer: userType == 1 ? const AppDrawer() : null,
-          body: selectedController == null
-              ? const Center(child: CircularProgressIndicator())
-              : _buildBody(selectedController),
+      child: GlassyWrapper(
+        child: NotificationListener<OverscrollIndicatorNotification>(
+          onNotification: (notification) {
+            notification.disallowIndicator();
+            return true;
+          },
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: _buildAppBar(selectedGroup, selectedController, controllers, state, bloc, context),
+            drawer: userType == 1 ? const AppDrawer() : null,
+            body: selectedController == null
+                ? const Center(child: CircularProgressIndicator())
+                : _buildBody(selectedController),
+          ),
         ),
       ),
     );
@@ -275,7 +294,7 @@ class DashboardPage extends StatelessWidget {
           children: [
             _buildGroupSelector(state, selectedGroup, bloc),
             if (state.groups.length > 1) const _Divider(),
-            _buildControllerSelector(selectedController, controllers, bloc),
+            _buildControllerSelector(selectedController, controllers, bloc, context),
           ],
         ),
       ),
@@ -316,7 +335,7 @@ class DashboardPage extends StatelessWidget {
     );
   }
 
-  Widget _buildControllerSelector(ControllerEntity? selectedController, List<ControllerEntity> controllers, DashboardBloc bloc) {
+  Widget _buildControllerSelector(ControllerEntity? selectedController, List<ControllerEntity> controllers, DashboardBloc bloc, BuildContext context) {
     if (controllers.isEmpty) return const SizedBox.shrink();
 
     if (controllers.length > 1) {
@@ -333,7 +352,19 @@ class DashboardPage extends StatelessWidget {
               const Icon(Icons.arrow_drop_down, color: Colors.white),
             ],
           ),
-          onSelected: (index) => bloc.add(SelectControllerEvent(index)),
+
+          onSelected: (index){
+            bloc.add(SelectControllerEvent(index));
+            for(var index = 0;index < controllers.length;index++){
+              print('index => $index    controllerId : ${controllers[index].userDeviceId}');
+            }
+            print('index => $index');
+            print('controllers[index].userDeviceId.toString() => ${controllers[index].userDeviceId.toString()}');
+            context.read<ControllerContextCubit>()
+                .updateController(
+                controllerId: controllers[index].userDeviceId.toString(),
+            );
+          },
           itemBuilder: (context) => controllers.isNotEmpty
               ? controllers.asMap().entries.map((entry) => PopupMenuItem<int>(
             value: entry.key,
@@ -366,7 +397,7 @@ class DashboardPage extends StatelessWidget {
     bloc.add(SelectGroupEvent(groupId));
   }
 
-  static Widget _buildBody(dynamic selectedController) {
+  Widget _buildBody(dynamic selectedController) {
     return RefreshIndicator(
       onRefresh: () => _refreshLiveData(selectedController),
       child: LayoutBuilder(
@@ -385,7 +416,7 @@ class DashboardPage extends StatelessWidget {
     }
   }
 
-  static Widget _buildScaledContent(BuildContext context, BoxConstraints constraints, ControllerEntity controller) {
+  Widget _buildScaledContent(BuildContext context, BoxConstraints constraints, ControllerEntity controller) {
     final width = constraints.maxWidth;
     final modelCheck = ([1, 5].contains(controller.modelId)) ? 300 : 120;
     double scale(double size) => size * (width / modelCheck);
@@ -431,7 +462,7 @@ class DashboardPage extends StatelessWidget {
                     SizedBox(height: scale(8)),
                     GestureDetector(
                       onTap: () {
-                        context.push(DashBoardRoutes.ctrlLivePage, extra: controller.liveMessage);
+                        context.push('${DashBoardRoutes.dashboard}${ProgramSettingsRoutes.program}', extra: {"userId" : '$userId', "controllerId" : controller.userDeviceId.toString()});
                       },
                       child: RYBSection(
                         r: controller.liveMessage.rVoltage,

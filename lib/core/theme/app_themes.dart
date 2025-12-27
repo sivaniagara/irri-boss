@@ -76,6 +76,9 @@ class AppThemes {
       seedColor: primaryColor,
     ),
     appBarTheme: const AppBarTheme(
+      iconTheme: IconThemeData(
+        color: Colors.black
+      ),
       backgroundColor: primaryColor,
       foregroundColor: Colors.white,
       elevation: 0,
@@ -188,6 +191,11 @@ class AppThemes {
       }),
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     ),*/
+    dividerTheme: DividerThemeData(
+      color: const Color(0xff727272),
+      thickness: 1
+    ),
+
 
   );
 

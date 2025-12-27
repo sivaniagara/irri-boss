@@ -2,7 +2,6 @@ import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/program_p
 
 import '../../../core/di/injection.dart';
 import '../../../core/services/selected_controller_persistence.dart';
-import '../../../core/services/mqtt/mqtt_message_helper.dart';
 import '../utils/dashboard_dispatcher.dart';
 import '../dashboard.dart';
 
