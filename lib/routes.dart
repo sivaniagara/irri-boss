@@ -20,11 +20,11 @@ import 'features/controller_details/domain/usecase/controller_details_params.dar
 import 'features/controller_details/presentation/bloc/controller_details_bloc.dart';
 import 'features/controller_details/presentation/bloc/controller_details_bloc_event.dart';
 import 'features/controller_details/presentation/pages/controller_details_page.dart';
-import 'features/controller_settings/presentation/pages/controller_app_bar.dart';
 import 'features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'features/controller_settings/presentation/cubit/controller_tab_cubit.dart';
 import 'features/controller_settings/utils/controller_settings_routes.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
+import 'features/irrigation_settings/utils/irrigation_settings_routes.dart';
 import 'features/fault_msg/utils/faultmsg_routes.dart';
 import 'features/program_settings/presentation/pages/controller_program.dart';
 import 'features/report_downloader/utils/report_downloaderRoute.dart';
@@ -187,7 +187,7 @@ class AppRouter {
           routes: [
             ...controllerSettingGoRoutes,
             ...programSettingsGoRoutes,
-            // ...mappingAndUnmappingNodesGoRoutes
+            ...irrigationSettingGoRoutes,
           ],
         ),
 
@@ -356,53 +356,7 @@ class AppRouter {
             )
           ],
         ),
-        ShellRoute(
-            builder: (context, state, child){
-              return BlocProvider(
-                create: (context) => di.sl<ControllerTabCubit>(),
-                child: ControllerAppBar(child: child),
-              );
-            },
-            routes: [
-              GoRoute(
-                path: ControllerSettingsRoutes.controllerDetails,
-                builder: (context, state) => Container(
-                  height: double.infinity,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Color(0xffC6DDFF),
-                          Color(0xff67C8F1),
-                          Color(0xff6DA8F5),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      )
-                  ),
-                ),
-              ),
-              GoRoute(
-                path: ControllerSettingsRoutes.nodes,
-                builder: (context, state) => Center(child: Text('Nodes', style: TextStyle(color: Colors.black),),),
-              ),
-              GoRoute(
-                path: ControllerSettingsRoutes.program,
-                builder: (context, state) => ControllerProgram(),
-              ),
-            ]
-        ),
-        ...sendRevPageRoutes,
-        ...FaultMsgPagesRoutes,
-        ReportPageRoutes.route,
-        ...voltGraphRoutes,
-        ...PowerGraphRoutes,
-        ...ReportDownloadRoutes,
-        ...MotorCyclicRoutes,
-        ...ZoneDurationRoutes,
-        ...StandaloneRoutes,
-        ...TdyValveStatusRoutes,
-        ...ZoneCyclicRoutes,
+
       ],
     );
   }

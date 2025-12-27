@@ -20,6 +20,7 @@ import '../../features/pump_settings/utils/pump_settings_dispatcher.dart';
 import '../services/mqtt/app_message_dispatcher.dart';
 import '../services/mqtt/mqtt_message_helper.dart';
 import '../../features/mapping_and_unmapping_nodes/di/mapping_and_unmapping_node_di.dart';
+import '../../features/progam_zone_set/presentation/cubit/program_tab_cubit.dart';
 import '../../features/program_settings/di/program_settings_di.dart';
 import '../../features/report_downloader/di/report_download_injection.dart';
 import '../../features/reports/Motor_cyclic_reports/di/motor_cyclic_di.dart';
@@ -40,6 +41,7 @@ import '../../features/dashboard/di/dashboard_di.dart';
 import '../../features/pump_settings/di/pump_settings_di.dart';
 import '../../features/side_drawer/groups/di/groups_di.dart';
 import '../../features/side_drawer/sub_users/di/sub_user_di.dart';
+import '../../features/water_fertilizer_settings/di/water_fertilizer_settings_di.dart';
 import '../flavor/flavor_config.dart';
 import '../flavor/flavor_di.dart';
 import '../services/api_client.dart';
@@ -120,6 +122,12 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
 
   /// Mapping and Unmapping Nodes Dependencies
   initMappingAndUnmappingNodeDependencies();
+
+  /// program tab Dependencies
+  sl.registerFactory(() => ProgramTabCubit());
+
+  /// water fertilizer setting dependencies
+  initWaterFertilizerSettingsDependencies();
 
   sl.registerLazySingleton<ControllerRemoteDataSource>(() => ControllerRemoteDataSourceImpl(apiClient: sl()));
   sl.registerLazySingleton<ControllerRepo>(() => ControllerRepoImpl(remoteDataSource: sl()));

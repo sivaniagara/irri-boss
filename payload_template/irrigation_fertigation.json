@@ -1,0 +1,30 @@
+{
+  "name" : "Program 1",
+  "zones" : [
+    {
+      "zoneName" : "",
+      "node" : [
+        {"nodeId" :  ""},
+        {"nodeId" :  ""}
+      ],
+      "method": 1,
+      "irrigationTimeValue": "00:00",
+      "irrigationQuantityValue": "0",
+      "fertilizer1TimeValue": "00:00",
+      "fertilizer1QuantityValue" : "0",
+      "fertilizer2TimeValue": "00:00",
+      "fertilizer2QuantityValue" : "0",
+      "fertilizer3TimeValue": "00:00",
+      "fertilizer3QuantityValue" : "0",
+      "fertilizer4TimeValue": "00:00",
+      "fertilizer4QuantityValue" : "0",
+      "fertilizer5TimeValue": "00:00",
+      "fertilizer5QuantityValue" : "0",
+      "fertilizer6TimeValue": "00:00",
+      "fertilizer6QuantityValue" : "0",
+      "prePostMethod": 1,
+      "prePostTimeValue": "00:00",
+      "prePostQuantityValue": "0"
+    }
+  ]
+}

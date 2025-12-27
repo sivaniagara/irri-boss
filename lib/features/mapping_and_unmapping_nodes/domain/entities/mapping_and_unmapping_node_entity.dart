@@ -6,4 +6,14 @@ class MappingAndUnmappingNodeEntity{
   final List<UnmappedCategoryEntity> listOfUnmappedCategoryEntity;
   final List<MappedNodeEntity> listOfMappedNodeEntity;
   MappingAndUnmappingNodeEntity({required this.listOfMappedNodeEntity, required this.listOfUnmappedCategoryEntity});
+
+  MappingAndUnmappingNodeEntity copyWith({
+    List<UnmappedCategoryEntity>? listOfUnmapped,
+    List<MappedNodeEntity>? listOfMapped,
+  }){
+    return MappingAndUnmappingNodeEntity(
+        listOfUnmappedCategoryEntity: listOfUnmapped ?? listOfUnmappedCategoryEntity,
+      listOfMappedNodeEntity: listOfMapped ?? listOfMappedNodeEntity,
+    );
+  }
 }

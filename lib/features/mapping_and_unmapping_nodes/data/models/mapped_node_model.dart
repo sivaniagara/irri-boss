@@ -26,4 +26,21 @@ class MappedNodeModel extends MappedNodeEntity {
       dateManufacture: json['dateManufacture'],
     );
   }
+
+  factory MappedNodeModel.fromEntity(MappedNodeEntity entity){
+    return MappedNodeModel(
+        nodeId: entity.nodeId,
+        categoryId: entity.categoryId,
+        controllerId: entity.controllerId,
+        qrCode: entity.qrCode,
+        serialNo: entity.serialNo,
+        categoryName: entity.categoryName,
+        modelName: entity.modelName,
+        dateManufacture: entity.dateManufacture
+    );
+  }
+
+  String deleteMappedNodePayload(){
+    return 'IDSET$serialNo,000,000,000';
+  }
 }
