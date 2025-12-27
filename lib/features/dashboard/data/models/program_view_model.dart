@@ -152,4 +152,10 @@ class ZoneViewModel {
         pump4: parts[9]
     );
   }
+
+  @override
+  String toString() {
+    // TODO: implement toString
+    return "$zoneNumber;$irrigationTime;$irrigationFlow;$activeValves;$fertigationTimes;$fertigationFlows;$pump1;$pump2;$pump3;$pump4";
+  }
 }

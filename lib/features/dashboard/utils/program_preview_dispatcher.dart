@@ -8,7 +8,7 @@ class ProgramPreviewDispatcher extends MessageDispatcher {
 
   @override
   void onScheduleOne(String deviceId, Map<String, dynamic> message) {
-    print("onProgramReceived :: $message");
+    // print("onProgramReceived :: $message");
     onProgramReceived?.call(deviceId, message);
   }
 
