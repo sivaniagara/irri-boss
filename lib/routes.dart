@@ -18,6 +18,7 @@ import 'features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'features/controller_settings/presentation/cubit/controller_tab_cubit.dart';
 import 'features/controller_settings/utils/controller_settings_routes.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
+import 'features/irrigation_settings/utils/irrigation_settings_routes.dart';
 import 'features/mapping_and_unmapping_nodes/utils/mapping_and_unmapping_nodes_routes.dart';
 import 'features/program_settings/utils/program_settings_routes.dart';
 import 'features/setserialsettings/domain/usecase/setserial_details_params.dart';
@@ -173,7 +174,7 @@ class AppRouter {
           routes: [
             ...controllerSettingGoRoutes,
             ...programSettingsGoRoutes,
-            // ...mappingAndUnmappingNodesGoRoutes
+            ...irrigationSettingGoRoutes,
           ],
         ),
 

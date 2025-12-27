@@ -1,0 +1,17 @@
+enum IrrigationSettingsEnum{
+  irrigationFertigation,
+  dripCommonSettings,
+  programCommonSettings,
+  adjustPercentage,
+  changeFrom,
+  backwash,
+  pumpChangeOver,
+  sump,
+  moistureAndLevel,
+  pumpConfiguration,
+  valveFlow,
+  dayCountRtc,
+  alarm,
+  ecAndPh,
+  greenHouse,
+}

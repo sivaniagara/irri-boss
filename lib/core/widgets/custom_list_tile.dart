@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 
 class CustomListTile extends StatelessWidget {
   void Function()? onTap;
+  IconData? iconData;
   final String title;
   CustomListTile({
     super.key,
+    this.iconData,
     required this.onTap,
     required this.title
   });
@@ -25,8 +27,8 @@ class CustomListTile extends StatelessWidget {
               .listTileTheme
               .titleTextStyle,
         ),
-        trailing: const Icon(
-          Icons.keyboard_arrow_down,
+        trailing: Icon(
+          iconData ?? Icons.keyboard_arrow_down,
           size: 32,
         ),
       ),

@@ -1,0 +1,9 @@
+{
+  "template" : [
+    {"sNo" :  1, "widgetTypeId" : 1, "widgetTypeName": "Text Field", "dataType" : "int"},
+    {"sNo" :  2, "widgetTypeId" : 1, "widgetTypeName": "Text Field", "dataType" : "double"},
+    {"sNo" :  3, "widgetTypeId" : 2, "widgetTypeName": "Switch", "dataType" : "bool"},
+    {"sNo" :  4, "widgetTypeId" : 3, "widgetTypeName": "Timer", "dataType" : "string"},
+    {"sNo" :  5, "widgetTypeId" : 4, "widgetTypeName": "Dropdown", "dataType" : "string"}
+  ]
+}
