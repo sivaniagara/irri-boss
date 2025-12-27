@@ -16,7 +16,6 @@ import '../presentation/pages/sendrevPage.dart';
 abstract class SendRevPageRoutes {
   static const String sendRevMsgPage = '/sendRevMsgPage';
 }
-
 /// API URL Pattern
 class SendRevPageUrls {
   static const String getSendRevMsgUrl =

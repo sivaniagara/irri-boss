@@ -36,7 +36,7 @@ import 'features/auth/auth.dart';
 import 'features/dashboard/dashboard.dart';
 import 'features/side_drawer/sub_users/sub_users_barrel.dart';
 import 'features/side_drawer/groups/groups_barrel.dart';
-
+import 'package:niagara_smart_drip_irrigation/features/standalone_settings/utils/standalone_routes.dart';
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream stream) {
     notifyListeners();
@@ -161,6 +161,7 @@ class AppRouter {
                   create: (_) => di.sl<DashboardBloc>()
                     ..add(FetchDashboardGroupsEvent(authData.id))
                     ..add(ResetDashboardSelectionEvent()),
+
                 ),
 
               ],
@@ -173,6 +174,7 @@ class AppRouter {
           routes: [
             ...controllerSettingGoRoutes,
             ...programSettingsGoRoutes,
+            ...standaloneRoutes,
             // ...mappingAndUnmappingNodesGoRoutes
           ],
         ),
