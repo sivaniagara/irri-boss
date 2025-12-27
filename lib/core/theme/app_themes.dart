@@ -39,6 +39,14 @@ class AppThemes {
   static const Color primaryColor = Color(0xFF016DB5);
   static const Color secondaryColor = Color(0xFF00AFF0);
 
+
+
+  static const Color appWhiteColor = Colors.white;
+  static const Color gradientTopColor = Color(0xFFE6F0FF);
+  static const Color gradientMidColor = Color(0xFF67C8F1);
+  static const Color gradientBottomColor = Color(0xFF6DA8F5);
+  static  Color shadowBlackColor = Colors.black.withValues(alpha: 0.12);
+
   // Create a custom swatch for primary color
   static const MaterialColor primarySwatch = MaterialColor(
     0xFF0F8AD0,
@@ -198,7 +206,6 @@ class AppThemes {
 
 
   );
-
   // Dark Theme
   static final ThemeData _niagaraDarkTheme = ThemeData(
     brightness: Brightness.dark,

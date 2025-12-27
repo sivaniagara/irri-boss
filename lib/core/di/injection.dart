@@ -3,6 +3,8 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:niagara_smart_drip_irrigation/features/controller_details/data/datasources/controller_datasource.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/program_preview_dispatcher.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/di/standalone_di.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/tdyvalvestatus_reports/di/tdy_valve_status_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/setserialsettings/data/repositories/setserial_details_repositories.dart';
 import 'package:niagara_smart_drip_irrigation/features/setserialsettings/domain/usecase/setserial_usercase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,6 +21,13 @@ import '../services/mqtt/app_message_dispatcher.dart';
 import '../services/mqtt/mqtt_message_helper.dart';
 import '../../features/mapping_and_unmapping_nodes/di/mapping_and_unmapping_node_di.dart';
 import '../../features/program_settings/di/program_settings_di.dart';
+import '../../features/report_downloader/di/report_download_injection.dart';
+import '../../features/reports/Motor_cyclic_reports/di/motor_cyclic_di.dart';
+import '../../features/reports/Voltage_reports/di/voltage_di.dart';
+import '../../features/reports/power_reports/di/power_di.dart';
+import '../../features/reports/reportMenu/di/report_di.dart';
+import '../../features/reports/zone_duration_reports/di/zone_duration_di.dart';
+import '../../features/reports/zonecyclic_reports/di/zone_cyclic_di.dart';
 import '../../features/sendrev_msg/di/sendrev_di.dart';
 import '../../features/setserialsettings/data/datasources/setserial_datasource.dart';
 import '../../features/setserialsettings/domain/repositories/setserial_details_repo.dart';
@@ -128,6 +137,16 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
 
   initSendRev();
   initfaultmsg();
+  initReportDependencies();
+  initVoltageGraph();
+  initPowerGraph();
+  initMotorCyclic();
+  initReportDownloadDependencies();
+  initZoneDuration();
+  initStandalone();
+  initTdyValveStatus();
+  initZoneCyclic();
+
 }
 
 // Reset all

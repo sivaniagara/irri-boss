@@ -5,6 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/domain/entities/livemessage_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/program_preview_page.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/utils/standalone_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/tdyvalvestatus_reports/utils/tdy_valve_status_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/setserialsettings/presentation/pages/setserial_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/domain/usecases/get_sub_user_details_usecase.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/presentation/pages/sub_user_details_page.dart';
@@ -15,10 +20,18 @@ import 'features/controller_details/domain/usecase/controller_details_params.dar
 import 'features/controller_details/presentation/bloc/controller_details_bloc.dart';
 import 'features/controller_details/presentation/bloc/controller_details_bloc_event.dart';
 import 'features/controller_details/presentation/pages/controller_details_page.dart';
+import 'features/controller_settings/presentation/pages/controller_app_bar.dart';
 import 'features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'features/controller_settings/presentation/cubit/controller_tab_cubit.dart';
 import 'features/controller_settings/utils/controller_settings_routes.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
+import 'features/fault_msg/utils/faultmsg_routes.dart';
+import 'features/program_settings/presentation/pages/controller_program.dart';
+import 'features/report_downloader/utils/report_downloaderRoute.dart';
+import 'features/reports/Voltage_reports/utils/voltage_routes.dart';
+import 'features/reports/power_reports/utils/Power_routes.dart';
+import 'features/reports/reportMenu/utils/report_routes.dart';
+import 'features/sendrev_msg/utils/senrev_routes.dart';
 import 'features/mapping_and_unmapping_nodes/utils/mapping_and_unmapping_nodes_routes.dart';
 import 'features/program_settings/utils/program_settings_routes.dart';
 import 'features/setserialsettings/domain/usecase/setserial_details_params.dart';
@@ -343,7 +356,53 @@ class AppRouter {
             )
           ],
         ),
-
+        ShellRoute(
+            builder: (context, state, child){
+              return BlocProvider(
+                create: (context) => di.sl<ControllerTabCubit>(),
+                child: ControllerAppBar(child: child),
+              );
+            },
+            routes: [
+              GoRoute(
+                path: ControllerSettingsRoutes.controllerDetails,
+                builder: (context, state) => Container(
+                  height: double.infinity,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color(0xffC6DDFF),
+                          Color(0xff67C8F1),
+                          Color(0xff6DA8F5),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      )
+                  ),
+                ),
+              ),
+              GoRoute(
+                path: ControllerSettingsRoutes.nodes,
+                builder: (context, state) => Center(child: Text('Nodes', style: TextStyle(color: Colors.black),),),
+              ),
+              GoRoute(
+                path: ControllerSettingsRoutes.program,
+                builder: (context, state) => ControllerProgram(),
+              ),
+            ]
+        ),
+        ...sendRevPageRoutes,
+        ...FaultMsgPagesRoutes,
+        ReportPageRoutes.route,
+        ...voltGraphRoutes,
+        ...PowerGraphRoutes,
+        ...ReportDownloadRoutes,
+        ...MotorCyclicRoutes,
+        ...ZoneDurationRoutes,
+        ...StandaloneRoutes,
+        ...TdyValveStatusRoutes,
+        ...ZoneCyclicRoutes,
       ],
     );
   }
