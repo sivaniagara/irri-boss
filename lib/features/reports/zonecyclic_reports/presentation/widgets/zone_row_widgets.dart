@@ -29,11 +29,11 @@ Widget zoneinfoRow(String title, String value,IconData vIcon) {
   );
 }
 
-Widget zonecyclicCard(int index, dynamic zone, List<ZoneProgramEntity> data,) {
+Widget zonecyclicCard(int index, dynamic zone, List<ZoneProgramEntity> data,String Program) {
   return Container(
     margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     decoration: BoxDecoration(
-      color: Colors.grey.shade200,
+      color: Colors.grey.shade50,
       borderRadius: BorderRadius.circular(8),
       border: Border.all(color: Colors.grey.shade400),
     ),
@@ -46,9 +46,10 @@ Widget zonecyclicCard(int index, dynamic zone, List<ZoneProgramEntity> data,) {
           padding: const EdgeInsets.all(8),
           color: Colors.grey.shade300,
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Program ${data[0].program}",
+                "Program $Program",
                 style: const TextStyle(
                   color: Colors.blue,
                   fontWeight: FontWeight.bold,

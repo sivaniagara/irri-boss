@@ -109,8 +109,12 @@ class ZoneCyclicPage extends StatelessWidget {
           if (state is ZoneCyclicLoaded) {
             return Column(
               children: [
-                _programDropdown(context),
-                const SizedBox(height: 12),
+                BlocBuilder<ZoneCyclicCubit, TdyValveViewState>(
+                  builder: (context, viewState) {
+                    return   viewState.viewMode == ZoneCyclicViewMode.zoneStatus ? SizedBox() : _programDropdown(context);
+                  },
+                ),
+                 const SizedBox(height: 12),
 
                 BlocBuilder<ZoneCyclicCubit, TdyValveViewState>(
           builder: (context, viewState) {
@@ -125,13 +129,10 @@ class ZoneCyclicPage extends StatelessWidget {
             matchingPrograms.isNotEmpty ? matchingPrograms.first.zoneList : <ZoneCyclicDetailEntity>[];
 
 
-
-            print("viewState.viewMode${selectedProgramZones.toString()}");
-            print("viewState.viewMode${selectedProgramZones.map((e) => e.toString())}");
-          return viewState.viewMode == ZoneCyclicViewMode.zoneStatus ? ZoneCyclicPageReport(data: state.data) : ZoneCyclicGraph(
+            return viewState.viewMode == ZoneCyclicViewMode.zoneStatus ? ZoneCyclicPageReport(data: state.data) : ZoneCyclicGraph(
             zoneList: selectedProgramZones,
             totalFlow: state.data.totalFlow,
-          ); ;
+          );
           },
           ),
                ],

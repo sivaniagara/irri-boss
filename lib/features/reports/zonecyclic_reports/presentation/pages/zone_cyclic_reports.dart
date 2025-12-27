@@ -28,6 +28,7 @@ class ZoneCyclicPageReport extends StatelessWidget {
           ZoneCyclicProgramCalculator.programTotalFlow(program);
 
           return Card(
+            color: Colors.blue.shade50,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
               side: BorderSide(color: Colors.blue,width: 0.5)
@@ -71,7 +72,7 @@ class ZoneCyclicPageReport extends StatelessWidget {
                     final i = entry.key + 1;
                     final zone = entry.value;
 
-                    return zonecyclicCard(i, zone,data.data);
+                    return zonecyclicCard(i, zone,data.data,data.data[index].program);
                   },
                 ),
 

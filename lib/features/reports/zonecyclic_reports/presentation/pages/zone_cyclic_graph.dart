@@ -120,7 +120,7 @@ class ZoneCyclicGraph extends StatelessWidget {
      return zoneList.isEmpty ? noData : Expanded(
       child: Column(
         children: [
-          Expanded(
+           Expanded(
             child: Row(
               children: [
                 const Padding(
