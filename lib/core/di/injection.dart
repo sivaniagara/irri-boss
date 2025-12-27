@@ -83,7 +83,8 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
       password: FlavorConfig.instance.values.password,
     ),
   );
-
+  /// Register this for access userId and controllerId for all pages
+  sl.registerFactory(() => ControllerContextCubit());
   /// Flavor-specific services
   registerFlavorDependencies(sl);
 
@@ -154,7 +155,6 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initStandalone();
   initTdyValveStatus();
   initZoneCyclic();
-
 }
 
 // Reset all
