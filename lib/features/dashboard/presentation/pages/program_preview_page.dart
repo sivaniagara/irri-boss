@@ -386,8 +386,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> {
               ),
               if(isBoolean || booleanValue != null)
                 Align(
-                    alignment: AlignmentGeometry.bottomRight,
-                    child: Switch(value: booleanValue ?? value == "1", onChanged: (newValue){})
+                     child: Switch(value: booleanValue ?? value == "1", onChanged: (newValue){})
                 )
             ],
           ),
