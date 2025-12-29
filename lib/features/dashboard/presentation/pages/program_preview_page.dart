@@ -234,10 +234,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> {
                         _buildInfoCard(label: "Drip Cyclic Restart", value: _program!.dripCycRst, isBoolean: true),
                         _buildInfoCard(label: "Drip Restart Timer", value: _program!.dripCycRstTime),
                         _buildInfoCard(label: "Zone Cyclic Restart", value: _program!.zoneCycRst, isBoolean: true),
-                        _buildInfoCard(
-                            label: "Start from",
-                            value: "Program:- ${_program!.programStartNumber.split(":")[0]} , Zone:- ${_program!.programStartNumber.split(":")[1]}"
-                        ),
+                        _buildInfoCard(label: "Start from", value: "Program:- ${_program!.programStartNumber.split(":")[0]} , Zone:- ${_program!.programStartNumber.split(":")[1]}"),
                         _buildInfoCard(label: "Sump", value: _program!.sumpStatus, isBoolean: true),
                         _buildInfoCard(label: "Drip Sump Restart", value: _program!.dripSumpStatus, isBoolean: true),
                         _buildInfoCard(label: "Day count RTC", value: _program!.dayCountRtcTimer),

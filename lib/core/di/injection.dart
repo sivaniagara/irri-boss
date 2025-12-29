@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:niagara_smart_drip_irrigation/features/controller_details/data/datasources/controller_datasource.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/program_preview_dispatcher.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/flow_graph_reports/di/flow_graph_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/di/standalone_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/tdyvalvestatus_reports/di/tdy_valve_status_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/setserialsettings/data/repositories/setserial_details_repositories.dart';
@@ -155,6 +156,7 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initStandalone();
   initTdyValveStatus();
   initZoneCyclic();
+  initFlowGraph();
 }
 
 // Reset all

@@ -1,5 +1,3 @@
-import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/domain/entities/motor_cyclic_entities.dart';
-
 import '../../domain/entities/tdy_valve_status_entities.dart';
 import '../../domain/repositories/tdy_valve_status_repo.dart';
 import '../datasources/tdy_valve_status_datasource.dart';
@@ -29,12 +27,9 @@ Future<TdyValveStatusEntity> getTdyValveStatusData({
     return TdyValveStatusEntity(code: model.code,
         message: model.message,
         data: model.data.map((s) {
-      return  TdyValveStatusDatumEntity(zone: s.zone, duration: s.duration, litres: s.litres, zonePlace: s.zonePlace,totalFlow: s.totalFlow);
-        }).toList(), totalFlow: model.totalFlow,
-         );
-
+        return  TdyValveStatusDatumEntity(zone: s.zone, duration: s.duration, litres: s.litres, zonePlace: s.zonePlace,totalFlow: s.totalFlow);
+        }).toList(),
+        totalFlow: model.totalFlow,
+    );
   }
-
-
-
 }

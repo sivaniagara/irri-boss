@@ -20,15 +20,13 @@ import 'features/controller_details/domain/usecase/controller_details_params.dar
 import 'features/controller_details/presentation/bloc/controller_details_bloc.dart';
 import 'features/controller_details/presentation/bloc/controller_details_bloc_event.dart';
 import 'features/controller_details/presentation/pages/controller_details_page.dart';
-import 'features/dashboard/presentation/cubit/controller_context_cubit.dart';
-import 'features/controller_settings/presentation/cubit/controller_tab_cubit.dart';
 import 'features/controller_settings/utils/controller_settings_routes.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
 import 'features/irrigation_settings/utils/irrigation_settings_routes.dart';
 import 'features/fault_msg/utils/faultmsg_routes.dart';
-import 'features/program_settings/presentation/pages/controller_program.dart';
 import 'features/report_downloader/utils/report_downloaderRoute.dart';
 import 'features/reports/Voltage_reports/utils/voltage_routes.dart';
+import 'features/reports/flow_graph_reports/utils/flow_graph_routes.dart';
 import 'features/reports/power_reports/utils/Power_routes.dart';
 import 'features/reports/reportMenu/utils/report_routes.dart';
 import 'features/sendrev_msg/utils/senrev_routes.dart';
@@ -188,6 +186,7 @@ class AppRouter {
             ...controllerSettingGoRoutes,
             ...programSettingsGoRoutes,
             ...irrigationSettingGoRoutes,
+
           ],
         ),
 
@@ -241,7 +240,6 @@ class AppRouter {
             );
           },
         ),
-
         //
         ShellRoute(
           builder: (context, state, child) {
@@ -356,6 +354,18 @@ class AppRouter {
             )
           ],
         ),
+        ...reportPageRoutes,
+        ...sendRevPageRoutes,
+        ...FaultMsgPagesRoutes,
+        ...voltGraphRoutes,
+        ...PowerGraphRoutes,
+        ...ReportDownloadRoutes,
+        ...MotorCyclicRoutes,
+        ...ZoneDurationRoutes,
+        ...StandaloneRoutes,
+        ...TdyValveStatusRoutes,
+        ...ZoneCyclicRoutes,
+        ...FlowGraphRoutes,
 
       ],
     );

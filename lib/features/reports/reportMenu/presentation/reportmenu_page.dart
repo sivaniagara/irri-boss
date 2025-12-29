@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/utils/voltage_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/flow_graph_reports/utils/flow_graph_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/utils/standalone_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/tdyvalvestatus_reports/utils/tdy_valve_status_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
@@ -123,17 +124,19 @@ class ReportMenuPage extends StatelessWidget {
             },
           ),
           _reportCard(
-            title: 'Zone Duration',
+            title: 'Flow Graph',
+            icon: Icons.water_outlined,
+            onTap: () {
+              context.push(FlowGraphPageRoutes.FlowGraphPage,extra: params);
+            },
+          ),
+          _reportCard(
+            title: 'Fertilizer',
             icon: Icons.timer,
             onTap: () {},
           ),
           _reportCard(
-            title: 'Zone Duration',
-            icon: Icons.timer,
-            onTap: () {},
-          ),
-          _reportCard(
-            title: 'Fertilizer Live',
+            title: 'Moisture',
             icon: Icons.agriculture,
             onTap: () {},
           ),
@@ -143,7 +146,7 @@ class ReportMenuPage extends StatelessWidget {
             onTap: () {},
           ),
           _reportCard(
-            title: 'Fertilizer Live',
+            title: 'Green House',
             icon: Icons.agriculture,
             onTap: () {},
           ),

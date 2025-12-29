@@ -29,20 +29,15 @@ final ZoneCyclicRoutes = <GoRoute>[
       /// Safe param extraction
       final params = state.extra as Map<String, dynamic>? ?? {};
 
-      // final int userId = params['userId'] ?? 0;
-      // final int subuserId = params['subuserId'] ?? 0;
-      // final int controllerId = params['controllerId'] ?? 0;
-      // final String fromDate = params['fromDate'] ??
-      //     DateFormat('yyyy-MM-dd').format(DateTime.now());
-      // final String toDate = params['toDate'] ??
-      //     DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final int userId = params['userId'] ?? 0;
+      final int subuserId = params['subuserId'] ?? 0;
+      final int controllerId = params['controllerId'] ?? 0;
+      final String fromDate = params['fromDate'] ??
+          DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final String toDate = params['toDate'] ??
+          DateFormat('yyyy-MM-dd').format(DateTime.now());
 
 
-        final int userId = 2411;
-      final int subuserId = 0;
-      final int controllerId = 4985;
-      final String fromDate = '2025-12-24';
-      final String toDate = '2025-12-24';
 
      return  MultiBlocProvider(
       providers: [
