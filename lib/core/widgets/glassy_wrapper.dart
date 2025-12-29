@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_themes.dart';
+
 class GlassyWrapper extends StatelessWidget {
   final Widget? child;
 
@@ -18,9 +20,12 @@ class GlassyWrapper extends StatelessWidget {
               begin: Alignment.topCenter,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xffC6DDFF),
-                Color(0xff67C8F1),
-                Color(0xff6DA8F5),
+                // Color(0xffC6DDFF),
+                // Color(0xff67C8F1),
+                // Color(0xff6DA8F5),
+                AppThemes.gradientTopColor,
+                AppThemes.gradientMidColor,
+                AppThemes.gradientBottomColor,
               /*  Theme.of(dialogContext).colorScheme.primaryContainer,
                 Colors.black87,*/
               ],

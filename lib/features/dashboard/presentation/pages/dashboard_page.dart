@@ -446,7 +446,7 @@ class DashboardPage extends StatelessWidget {
                   children: [
                     SyncSection(
                       liveSync: controller.livesyncTime,
-                      smsSync: controller.msgDesc,
+                      smsSync: controller.livesyncTime,
                       model: controller.modelId,
                       deviceId: controller.deviceId,
                     ),
