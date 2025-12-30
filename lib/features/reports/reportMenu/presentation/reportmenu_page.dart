@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/utils/voltage_routes.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/flow_graph_reports/utils/flow_graph_routes.dart';
+ import 'package:niagara_smart_drip_irrigation/features/reports/flow_graph_reports/utils/flow_graph_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/utils/standalone_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/tdyvalvestatus_reports/utils/tdy_valve_status_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
@@ -12,7 +12,7 @@ import '../../../../core/theme/app_gradients.dart';
  import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
 
 import '../../../../core/theme/app_styles.dart';
-import '../../power_reports/utils/Power_routes.dart';
+ import '../../power_reports/utils/Power_routes.dart';
 
 class ReportMenuPage extends StatelessWidget {
    final Map<String, dynamic> params;
@@ -127,7 +127,7 @@ class ReportMenuPage extends StatelessWidget {
             title: 'Flow Graph',
             icon: Icons.water_outlined,
             onTap: () {
-              context.push(FlowGraphPageRoutes.FlowGraphPage,extra: params);
+              context.push(FlowGraphPageRoutes.FlowGraphpage,extra: params);
             },
           ),
           _reportCard(
