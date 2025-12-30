@@ -16,6 +16,8 @@ class StandalonePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controllerId = data['controllerId']?.toString() ?? '';
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -85,7 +87,6 @@ class StandalonePage extends StatelessWidget {
                       child: GestureDetector(
                         onTap: () {
                           final userId = data['userId']?.toString() ?? '';
-                          final controllerId = data['controllerId']?.toString() ?? '';
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -144,7 +145,6 @@ class StandalonePage extends StatelessWidget {
                           : (state as StandaloneSuccess).data;
 
                       final userId = data['userId']?.toString() ?? '';
-                      final controllerId = data['controllerId']?.toString() ?? '';
 
                       return ListView(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -182,6 +182,8 @@ class StandalonePage extends StatelessWidget {
                                            SendStandaloneConfigEvent(
                                              userId: userId,
                                              controllerId: controllerId,
+                                             menuId: "2",
+                                             settingsId: "59",
                                              successMessage: "Standalone sented successfully",
                                            ),
                                          );
@@ -225,6 +227,8 @@ class StandalonePage extends StatelessWidget {
                                      SendStandaloneConfigEvent(
                                        userId: userId,
                                        controllerId: controllerId,
+                                       menuId: "2",
+                                       settingsId: "59",
                                        successMessage: "Standalone data sented successfully",
                                      ),
                                    );
@@ -260,6 +264,8 @@ class StandalonePage extends StatelessWidget {
                                        SendStandaloneConfigEvent(
                                          userId: userId,
                                          controllerId: controllerId,
+                                         menuId: "2",
+                                         settingsId: "59",
                                          successMessage: "Drip standalone sented successfully",
                                        ),
                                      );
@@ -303,7 +309,14 @@ class StandalonePage extends StatelessWidget {
                       child: SizedBox(
                         height: 55,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            context.read<StandaloneBloc>().add(
+                              ViewStandaloneEvent(
+                                controllerId: controllerId,
+                                successMessage: "message deliverd",
+                              ),
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF0288D1),
                             elevation: 4,
@@ -338,7 +351,7 @@ class StandalonePage extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             decoration: BoxDecoration(
-              color: isError ? Colors.red.withValues(alpha: 0.9) : const Color(0xFF2E7D32).withValues(alpha: 0.9),
+              color: isError ? Colors.red.withValues(alpha: 0.9) : Colors.greenAccent,
               borderRadius: BorderRadius.circular(25),
             ),
             child: Text(

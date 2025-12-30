@@ -10,13 +10,19 @@ class SendStandaloneConfig {
     required String userId,
     required int subuserId,
     required String controllerId,
+    required String menuId,
+    required String settingsId,
     required StandaloneEntity config,
+    required String sentSms,
   }) async {
     return await repository.sendStandaloneConfig(
       userId: userId,
       subuserId: subuserId,
       controllerId: controllerId,
+      menuId: menuId,
+      settingsId: settingsId,
       config: config,
+      sentSms: sentSms,
     );
   }
 }

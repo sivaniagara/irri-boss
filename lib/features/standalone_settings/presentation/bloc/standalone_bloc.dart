@@ -51,7 +51,8 @@ class StandaloneBloc extends Bloc<StandaloneEvent, StandaloneState> {
           )
         ));
       } catch (e) {
-        emit(StandaloneError("Failed to fetch data: ${e.toString()}"));
+        // Updated: Show user-friendly message instead of raw error/URLs
+        emit(StandaloneError("Unable to load settings. Please check your connection and try again."));
       }
     });
 
@@ -157,22 +158,27 @@ class StandaloneBloc extends Bloc<StandaloneEvent, StandaloneState> {
             : (state as StandaloneSuccess).data;
 
          try {
-           for (var zone in currentStateData.zones) {
+           String sentSms = "";
+           if (currentStateData.zones.isNotEmpty) {
+             final zone = currentStateData.zones[0];
              final statusStr = zone.status ? "ON" : "OFF";
              final timeParts = zone.time.split(':');
              final hours = timeParts.isNotEmpty ? timeParts[0].padLeft(2, '0') : "00";
              final minutes = timeParts.length > 1 ? timeParts[1].padLeft(2, '0') : "00";
-             
              final zoneNumPadded = zone.zoneNumber.padLeft(3, '0');
-             
+             sentSms = "STZ,$zoneNumPadded,$statusStr,$hours,$minutes";
+           }
+
+           for (var zone in currentStateData.zones) {
+             final statusStr = zone.status ? "ON" : "OFF";
+             final timeParts = zone.time.split(':');
+             final hours = timeParts.length > 0 ? timeParts[0].padLeft(2, '0') : "00";
+             final minutes = timeParts.length > 1 ? timeParts[1].padLeft(2, '0') : "00";
+             final zoneNumPadded = zone.zoneNumber.padLeft(3, '0');
              final mqttPayload = json.encode({
                "sentSms": "STZ,$zoneNumPadded,$statusStr,$hours,$minutes"
              });
-
-             await publishMqttCommand(
-               deviceId: event.controllerId,
-               command: mqttPayload,
-             );
+             await publishMqttCommand(deviceId: event.controllerId, command: mqttPayload);
            }
 
            try {
@@ -180,19 +186,48 @@ class StandaloneBloc extends Bloc<StandaloneEvent, StandaloneState> {
                userId: event.userId,
                subuserId: 0,
                controllerId: event.controllerId,
+               menuId: event.menuId,
+               settingsId: event.settingsId,
                config: currentStateData,
+               sentSms: sentSms,
              );
            } catch (apiError) {
-             if (kDebugMode) print("API Update failed (using MQTT primary): $apiError");
+             if (kDebugMode) print("API Update failed: $apiError");
            }
 
            emit(StandaloneSuccess(event.successMessage, currentStateData));
 
          } catch (e) {
            if (kDebugMode) print("Error in SEND event: $e");
-           emit(StandaloneError("Failed to send config: ${e.toString()}"));
+           // Updated: User friendly error message
+           emit(StandaloneError("Failed to update settings. Please try again."));
          }
        }
+    });
+
+    on<ViewStandaloneEvent>((event, emit) async {
+      if (state is StandaloneLoaded || state is StandaloneSuccess) {
+        final currentStateData = (state is StandaloneLoaded) 
+            ? (state as StandaloneLoaded).data 
+            : (state as StandaloneSuccess).data;
+
+        try {
+          final statusMsg = "STANDALONE:${currentStateData.settingValue},DRIP:${currentStateData.dripSettingValue}";
+          final mqttPayload = json.encode({
+            "sentSms": statusMsg
+          });
+
+          await publishMqttCommand(
+            deviceId: event.controllerId,
+            command: mqttPayload,
+          );
+
+          emit(StandaloneSuccess(event.successMessage, currentStateData));
+        } catch (e) {
+          if (kDebugMode) print("Error in VIEW event: $e");
+          emit(StandaloneError("Unable to fetch status at this time."));
+        }
+      }
     });
   }
 }

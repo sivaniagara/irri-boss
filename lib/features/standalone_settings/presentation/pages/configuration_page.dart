@@ -13,6 +13,8 @@ class ConfigurationPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controllerId = data['controllerId']?.toString() ?? '';
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -122,7 +124,6 @@ class ConfigurationPage extends StatelessWidget {
                           : (state as StandaloneSuccess).data;
 
                       final userId = data['userId']?.toString() ?? '';
-                      final controllerId = data['controllerId']?.toString() ?? '';
 
                       return ListView(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -160,6 +161,8 @@ class ConfigurationPage extends StatelessWidget {
                                            SendStandaloneConfigEvent(
                                              userId: userId,
                                              controllerId: controllerId,
+                                             menuId: "94",
+                                             settingsId: "500",
                                              successMessage: "Config data sented successfully",
                                            ),
                                          );
@@ -203,6 +206,8 @@ class ConfigurationPage extends StatelessWidget {
                                      SendStandaloneConfigEvent(
                                        userId: userId,
                                        controllerId: controllerId,
+                                       menuId: "94",
+                                       settingsId: "500",
                                        successMessage: "Config data sented successfully",
                                      ),
                                    );
@@ -256,7 +261,14 @@ class ConfigurationPage extends StatelessWidget {
                       child: SizedBox(
                         height: 55,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            context.read<StandaloneBloc>().add(
+                              ViewStandaloneEvent(
+                                controllerId: controllerId,
+                                successMessage: "message deliverd",
+                              ),
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF0288D1),
                             elevation: 4,
@@ -291,8 +303,8 @@ class ConfigurationPage extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             decoration: BoxDecoration(
-              color: isError ? Colors.red.withValues(alpha: 0.9) : const Color(0xFF2E7D32).withValues(alpha: 0.9),
-              borderRadius: BorderRadius.circular(25),
+              color: isError ? Colors.red.withValues(alpha: 0.9) : Colors.greenAccent,
+                 borderRadius: BorderRadius.circular(25),
             ),
             child: Text(
               message,

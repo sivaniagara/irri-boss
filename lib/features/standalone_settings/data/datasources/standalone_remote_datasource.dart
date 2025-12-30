@@ -17,7 +17,10 @@ abstract class StandaloneRemoteDataSource {
     required String userId,
     required int subuserId,
     required String controllerId,
+    required String menuId,
+    required String settingsId,
     required StandaloneEntity config,
+    required String sentSms,
   });
 
   Future<void> publishMqttCommand({
@@ -79,26 +82,42 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
     required String userId,
     required int subuserId,
     required String controllerId,
+    required String menuId,
+    required String settingsId,
     required StandaloneEntity config,
+    required String sentSms,
   }) async {
-    final url = 'http://3.1.62.165:8080/api/v1/user/$userId/subuser/$subuserId/controller/$controllerId/standalone/config';
+    // Exact URL from sample: user/%@/subuser/0/controller/%d/menu/59/settings
+    final url = 'http://3.1.62.165:8080/api/v1/user/$userId/subuser/$subuserId/controller/$controllerId/menu/$settingsId/settings';
     
+    final body = {
+      "menuSettingId": settingsId,
+      "receivedData": "",
+      "sentSms": sentSms,
+      "sendData": {
+        "type": "21",
+        "zoneList": config.zones.map((z) => {
+          "zoneNumber": "ZONE ${z.zoneNumber.padLeft(3, '0')}",
+          "status": z.status ? "1" : "0",
+          "time": z.time
+        }).toList(),
+        "toggleStatus": config.settingValue,
+        "driptoggleStatus": config.dripSettingValue
+      }
+    };
+
     try {
       final response = await client.post(
         Uri.parse(url),
-        body: json.encode({
-          'setting_value': config.settingValue,
-          'zones': config.zones.map((z) => {
-            'zone_number': z.zoneNumber,
-            'status': z.status ? 1 : 0,
-            'time': z.time,
-          }).toList(),
-        }),
-        headers: {'Content-Type': 'application/json'},
+        body: json.encode(body),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to send configuration');
+        throw Exception('Failed to send configuration (Code: ${response.statusCode}): ${response.body}');
       }
     } catch (e) {
       throw Exception('Failed to connect to the server: $e');

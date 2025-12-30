@@ -43,10 +43,24 @@ class ToggleDripStandalone extends StandaloneEvent {
 class SendStandaloneConfigEvent extends StandaloneEvent {
   final String userId;
   final String controllerId;
+  final String menuId;
+  final String settingsId;
   final String successMessage;
 
   SendStandaloneConfigEvent({
     required this.userId, 
+    required this.controllerId,
+    required this.menuId,
+    required this.settingsId,
+    required this.successMessage,
+  });
+}
+
+class ViewStandaloneEvent extends StandaloneEvent {
+  final String controllerId;
+  final String successMessage;
+
+  ViewStandaloneEvent({
     required this.controllerId,
     required this.successMessage,
   });

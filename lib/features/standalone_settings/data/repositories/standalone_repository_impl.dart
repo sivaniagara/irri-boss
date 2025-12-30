@@ -34,14 +34,20 @@ class StandaloneRepositoryImpl implements StandaloneRepository {
     required String userId,
     required int subuserId,
     required String controllerId,
+    required String menuId,
+    required String settingsId,
     required StandaloneEntity config,
+    required String sentSms,
   }) async {
     try {
       await remoteDataSource.sendStandaloneConfig(
         userId: userId,
         subuserId: subuserId,
         controllerId: controllerId,
+        menuId: menuId,
+        settingsId: settingsId,
         config: config,
+        sentSms: sentSms,
       );
     } catch (e) {
       rethrow;
