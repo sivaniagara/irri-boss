@@ -16,4 +16,13 @@ class ZoneSetModel extends ZoneSetEntity{
     );
   }
 
+  factory ZoneSetModel.fromEntity(ZoneSetEntity entity){
+    return ZoneSetModel(
+        zoneSetName: entity.zoneSetName,
+        listOfZoneWaterFertilizer: entity.listOfZoneWaterFertilizer.map<ZoneWaterFertilizerModel>((zoneData){
+          return ZoneWaterFertilizerModel.fromEntity(entity: zoneData);
+        }).toList()
+    );
+  }
+
 }

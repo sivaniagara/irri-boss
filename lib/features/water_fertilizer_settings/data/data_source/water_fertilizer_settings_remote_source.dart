@@ -5,6 +5,7 @@ import '../../utils/water_fertilizer_settings_url.dart';
 abstract class WaterFertilizerSettingsRemoteSource{
   Future<Map<String, dynamic>> fetchProgramZoneSets({required Map<String, String> urlData});
   Future<Map<String, dynamic>> fetchZoneSetSettings({required Map<String, String> urlData});
+  Future<Map<String, dynamic>> updateZoneSetSettings({required Map<String, String> urlData, required dynamic bodyData});
 }
 
 class WaterFertilizerSettingsRemoteSourceImpl extends WaterFertilizerSettingsRemoteSource{
@@ -30,6 +31,18 @@ class WaterFertilizerSettingsRemoteSourceImpl extends WaterFertilizerSettingsRem
       String endPoint = buildUrl(WaterFertilizerSettingsUrl.zoneSet, urlData);
       final response = await apiClient.get(endPoint);
       print('fetchZoneSetSettings response  => $response');
+      return response;
+    }catch (e){
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> updateZoneSetSettings({required Map<String, String> urlData, required dynamic bodyData}) async{
+    try{
+      String endPoint = buildUrl(WaterFertilizerSettingsUrl.updateZoneSet, urlData);
+      final response = await apiClient.post(endPoint, body: bodyData);
+      print('updateZoneSetSettings response  => $response');
       return response;
     }catch (e){
       rethrow;

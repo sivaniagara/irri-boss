@@ -2,6 +2,7 @@ import 'package:niagara_smart_drip_irrigation/features/water_fertilizer_settings
 
 class ZoneWaterFertilizerModel extends ZoneWaterFertilizerEntity{
   ZoneWaterFertilizerModel({
+    required super.zoneNumber,
     required super.time,
     required super.liters,
     required super.ch1Time,
@@ -25,6 +26,7 @@ class ZoneWaterFertilizerModel extends ZoneWaterFertilizerEntity{
 
   factory ZoneWaterFertilizerModel.fromJson({required Map<String, dynamic> zoneData}){
     return ZoneWaterFertilizerModel(
+        zoneNumber: zoneData['zoneNumber'].toString(),
         time: zoneData['Time'].toString(),
         liters: zoneData['Liters'].toString(),
         ch1Time: zoneData['Time1'].toString(),
@@ -43,6 +45,30 @@ class ZoneWaterFertilizerModel extends ZoneWaterFertilizerEntity{
         preLiters: zoneData['preFlow'].toString(),
         postTime: zoneData['postTime'].toString(),
         postLiters: zoneData['postFlow'].toString()
+    );
+  }
+
+  factory ZoneWaterFertilizerModel.fromEntity({required ZoneWaterFertilizerEntity entity}){
+    return ZoneWaterFertilizerModel(
+        zoneNumber: entity.zoneNumber,
+        time: entity.time,
+        liters: entity.liters,
+        ch1Time: entity.ch1Time,
+        ch2Time: entity.ch2Time,
+        ch3Time: entity.ch3Time,
+        ch4Time: entity.ch4Time,
+        ch5Time: entity.ch5Time,
+        ch6Time: entity.ch6Time,
+        ch1Liters: entity.ch1Liters,
+        ch2Liters: entity.ch2Liters,
+        ch3Liters: entity.ch3Liters,
+        ch4Liters: entity.ch4Liters,
+        ch5Liters: entity.ch5Liters,
+        ch6Liters: entity.ch6Liters,
+        preTime: entity.preTime,
+        preLiters: entity.preLiters,
+        postTime: entity.postTime,
+        postLiters: entity.postLiters
     );
   }
 

@@ -21,7 +21,10 @@ final programTabRoutesGoRoutes = [
       builder: (context, state, child){
         return MultiBlocProvider(
             providers: [
-              BlocProvider(create: (context) => di.sl<ProgramTabCubit>()),
+              BlocProvider.value(value: context.read<ProgramTabCubit>()),
+              BlocProvider(
+                create: (context)=> di.sl<WaterFertilizerSettingBloc>()
+              )
             ],
             child: ProgramAppBar(child: child)
         );
@@ -37,16 +40,7 @@ GoRoute getProgram(String appRouteString){
   return GoRoute(
       path: appRouteString,
       builder: (context, state){
-        final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
-        final programId = state.pathParameters['programId'];
-        return MultiBlocProvider(
-            providers: [
-              BlocProvider(
-                create: (context)=> di.sl<WaterFertilizerSettingBloc>()..add(FetchProgramZoneSetEvent(userId: controllerContext.userId, controllerId: controllerContext.controllerId, subUserId: controllerContext.subUserId, programId: programId!)),
-              ),
-            ],
-            child: ListOfZoneSet()
-        );
+        return ListOfZoneSet();
       }
   );
 }

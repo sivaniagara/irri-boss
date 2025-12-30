@@ -1,5 +1,6 @@
 
 import 'package:niagara_smart_drip_irrigation/features/water_fertilizer_settings/domain/usecases/fetch_program_zone_sets_usecase.dart';
+import 'package:niagara_smart_drip_irrigation/features/water_fertilizer_settings/domain/usecases/update_zone_set_setting_usecase.dart';
 import 'package:niagara_smart_drip_irrigation/features/water_fertilizer_settings/presentation/bloc/water_fertilizer_setting_bloc.dart';
 
 import '../../../core/di/injection.dart';
@@ -12,9 +13,11 @@ void initWaterFertilizerSettingsDependencies()async{
   sl.registerFactory(() => WaterFertilizerSettingBloc(
       fetchProgramZoneSetsUsecase: sl(),
     fetchZoneSetSettingUsecase: sl(),
+    updateZoneSetSettingUsecase: sl(),
   ));
   sl.registerLazySingleton(()=> FetchProgramZoneSetsUsecase(repository: sl()));
   sl.registerLazySingleton(()=> FetchZoneSetSettingUsecase(repository: sl()));
+  sl.registerLazySingleton(()=> UpdateZoneSetSettingUsecase(repository: sl()));
   sl.registerLazySingleton<WaterFertilizerSettingsRepository>(()=> WaterFertilizerSettingsRepositoryImpl(remoteSource: sl()));
   sl.registerLazySingleton<WaterFertilizerSettingsRemoteSource>(()=> WaterFertilizerSettingsRemoteSourceImpl(apiClient: sl()));
 }

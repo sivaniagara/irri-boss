@@ -5,7 +5,9 @@ import 'package:niagara_smart_drip_irrigation/core/widgets/gradiant_background.d
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/utils/irrigation_settings_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/progam_zone_set/presentation/enums/program_tab_enum.dart';
+import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../../program_settings/utils/program_settings_routes.dart';
+import '../../../water_fertilizer_settings/presentation/bloc/water_fertilizer_setting_bloc.dart';
 import '../../../water_fertilizer_settings/utils/water_fertilizer_settings_routes.dart';
 import '../cubit/program_tab_cubit.dart';
 
@@ -52,26 +54,16 @@ class ProgramAppBar extends StatelessWidget {
     return Expanded(
       child: GestureDetector(
         onTap: () {
-          switch (tab) {
-            case ProgramTabEnum.p1:
-              context.go('${DashBoardRoutes.dashboard}${IrrigationSettingsRoutes.irrigationSettings}${WaterFertilizerSettingsRoutes.program.replaceAll(':programId', '1')}');
-              break;
-            case ProgramTabEnum.p2:
-              context.go('${DashBoardRoutes.dashboard}${IrrigationSettingsRoutes.irrigationSettings}${WaterFertilizerSettingsRoutes.program.replaceAll(':programId', '2')}');
-              break;
-            case ProgramTabEnum.p3:
-              context.go('${DashBoardRoutes.dashboard}${IrrigationSettingsRoutes.irrigationSettings}${WaterFertilizerSettingsRoutes.program.replaceAll(':programId', '3')}');
-              break;
-            case ProgramTabEnum.p4:
-              context.go('${DashBoardRoutes.dashboard}${IrrigationSettingsRoutes.irrigationSettings}${WaterFertilizerSettingsRoutes.program.replaceAll(':programId', '4')}');
-              break;
-            case ProgramTabEnum.p5:
-              context.go('${DashBoardRoutes.dashboard}${IrrigationSettingsRoutes.irrigationSettings}${WaterFertilizerSettingsRoutes.program.replaceAll(':programId', '5')}');
-              break;
-            case ProgramTabEnum.p6:
-              context.go('${DashBoardRoutes.dashboard}${IrrigationSettingsRoutes.irrigationSettings}${WaterFertilizerSettingsRoutes.program.replaceAll(':programId', '6')}');
-              break;
-          }
+          context.read<ProgramTabCubit>().changeTab(tab);
+          print("context.read<ProgramTabCubit>() ==> ${context.read<ProgramTabCubit>().state.tab.id()}");
+          final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
+          context.read<WaterFertilizerSettingBloc>().add(FetchProgramZoneSetEvent(
+              userId: controllerContext.userId,
+              controllerId: controllerContext.controllerId,
+              subUserId: controllerContext.subUserId,
+              programId: tab.id()
+          ));
+          context.go('${DashBoardRoutes.dashboard}${IrrigationSettingsRoutes.irrigationSettings}${WaterFertilizerSettingsRoutes.program.replaceAll(':programId', tab.id())}');
         },
         child: Container(
           padding: EdgeInsets.symmetric(vertical: 10, horizontal: 5),

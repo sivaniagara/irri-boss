@@ -9,12 +9,14 @@ class FetchZoneSetSettingParams{
   final String userId;
   final String controllerId;
   final String subUserId;
+  final String programId;
   final String programSettingNo;
   final String zoneSetId;
   FetchZoneSetSettingParams({
     required this.userId,
     required this.controllerId,
     required this.subUserId,
+    required this.programId,
     required this.programSettingNo,
     required this.zoneSetId,
   });

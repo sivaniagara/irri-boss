@@ -17,4 +17,21 @@ extension ProgramTabEnumExtension on ProgramTabEnum{
         return 'P 6';
     }
   }
+
+  String id(){
+    switch (this){
+      case ProgramTabEnum.p1:
+        return '1';
+      case ProgramTabEnum.p2:
+        return '2';
+      case ProgramTabEnum.p3:
+        return '3';
+      case ProgramTabEnum.p4:
+        return '4';
+      case ProgramTabEnum.p5:
+        return '5';
+      case ProgramTabEnum.p6:
+        return '6';
+    }
+  }
 }
