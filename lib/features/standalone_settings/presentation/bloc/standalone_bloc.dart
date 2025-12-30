@@ -207,9 +207,12 @@ class StandaloneBloc extends Bloc<StandaloneEvent, StandaloneState> {
 
     on<ViewStandaloneEvent>((event, emit) async {
       if (state is StandaloneLoaded || state is StandaloneSuccess) {
-        final currentStateData = (state is StandaloneLoaded) 
-            ? (state as StandaloneLoaded).data 
-            : (state as StandaloneSuccess).data;
+        final StandaloneEntity currentStateData;
+        if ((state is StandaloneLoaded)) {
+          currentStateData = (state as StandaloneLoaded).data;
+        } else {
+          currentStateData = (state as StandaloneSuccess).data;
+        }
 
         try {
           final statusMsg = "STANDALONE:${currentStateData.settingValue},DRIP:${currentStateData.dripSettingValue}";

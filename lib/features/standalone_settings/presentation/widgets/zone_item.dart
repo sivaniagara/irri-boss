@@ -25,48 +25,51 @@ class ZoneItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            flex: 3,
+            flex: 5,
             child: Text(
               "ZONE ${zone.zoneNumber.padLeft(3, '0')}",
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
           ),
-          GestureDetector(
-            onTap: () async {
-              final TimeOfDay? picked = await showTimePicker(
-                context: context,
-                initialTime: _parseTime(zone.time),
-                builder: (context, child) {
-                  return MediaQuery(
-                    data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-                    child: child!,
-                  );
-                },
-              );
-              if (picked != null) {
-                final String formattedTime = 
-                    "${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}";
-                context.read<StandaloneBloc>().add(UpdateZoneTime(index, formattedTime));
-              }
-            },
-            child: Container(
-              width: 110,
-              height: 40,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey.shade400, width: 1.5),
-                borderRadius: BorderRadius.circular(8),
-                color: Colors.white,
-              ),
-              child: Text(
-                displayTime,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold, 
-                  fontSize: 16,
-                  letterSpacing: 1.2,
+          Expanded(
+            flex: 4,
+            child: GestureDetector(
+              onTap: () async {
+                final TimeOfDay? picked = await showTimePicker(
+                  context: context,
+                  initialTime: _parseTime(zone.time),
+                  builder: (context, child) {
+                    return MediaQuery(
+                      data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+                      child: child!,
+                    );
+                  },
+                );
+                if (picked != null) {
+                  final String formattedTime = 
+                      "${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}";
+                  context.read<StandaloneBloc>().add(UpdateZoneTime(index, formattedTime));
+                }
+              },
+              child: Container(
+                height: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade400, width: 1.5),
+                  borderRadius: BorderRadius.circular(8),
+                  color: Colors.white,
+                ),
+                child: Text(
+                  displayTime,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold, 
+                    fontSize: 16,
+                    letterSpacing: 1.2,
+                  ),
                 ),
               ),
             ),
@@ -105,10 +108,10 @@ class _PillToggle extends StatelessWidget {
     return GestureDetector(
       onTap: () => onChanged(!value),
       child: Container(
-        width: 65,
-        height: 30,
+        width: 70,
+        height: 32,
         decoration: BoxDecoration(
-          color: value ? const Color(0xFF2E7D32) : Colors.grey[400],
+          color: value ? const Color(0xFF2E7D32) : Colors.redAccent[400],
           borderRadius: BorderRadius.circular(15),
         ),
         child: Padding(
