@@ -6,7 +6,25 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
+import 'core/di/injection.dart';
+import 'features/controller_details/domain/usecase/controller_details_params.dart';
+import 'features/controller_details/presentation/bloc/controller_details_bloc.dart';
+import 'features/controller_details/presentation/bloc/controller_details_bloc_event.dart';
+import 'features/controller_details/presentation/pages/controller_details_page.dart';
+import 'features/controller_settings/utils/controller_settings_routes.dart';
+import 'features/dashboard/domain/entities/livemessage_entity.dart';
+import 'features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'features/dashboard/presentation/bloc/dashboard_event.dart';
+import 'features/dashboard/presentation/pages/controller_live_page.dart';
+import 'features/dashboard/presentation/pages/dashboard_page.dart';
+import 'features/dashboard/presentation/pages/program_preview_page.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
+import 'features/irrigation_settings/utils/irrigation_settings_routes.dart';
+import 'features/program_settings/utils/program_settings_routes.dart';
+import 'features/setserialsettings/domain/usecase/setserial_details_params.dart';
+import 'features/setserialsettings/presentation/bloc/setserial_bloc.dart';
+import 'features/setserialsettings/presentation/bloc/setserial_bloc_event.dart';
+import 'features/setserialsettings/presentation/pages/setserial_page.dart';
 import 'features/side_drawer/groups/utils/group_routes.dart';
 import 'features/auth/utils/auth_routes.dart';
 
@@ -88,8 +106,82 @@ class AppRouter {
         return null;
       },
       routes: [
-        ...authRoutes,
-        ...dashboardRoutes,
+        GoRoute(
+          name: 'dashboard',
+          path: DashBoardRoutes.dashboard,
+          builder: (context, state) {
+            final authData = _getAuthData();
+
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                  create: (_) => sl<DashboardBloc>()
+                    ..add(FetchDashboardGroupsEvent(authData.id))
+                    ..add(ResetDashboardSelectionEvent()),
+                ),
+
+              ],
+              child: DashboardPage(
+                userId: authData.id,
+                userType: authData.userType,
+              ),
+            );
+          },
+          routes: [
+            ...controllerSettingGoRoutes,
+            ...programSettingsGoRoutes,
+            ...irrigationSettingGoRoutes,
+          ],
+        ),
+        GoRoute(
+            name: 'ctrlLivePage',
+            path: DashBoardRoutes.ctrlLivePage,
+            builder: (context, state) {
+              print('Building ctrlLivePage, AuthBloc state: ${sl.get<AuthBloc>().state}');
+              final selectedController = state.extra as LiveMessageEntity?;
+              return BlocProvider.value(
+                value: sl.get<AuthBloc>(),
+                child: CtrlLivePage(selectedController: selectedController),
+              );
+            },
+            routes: [
+            ]
+        ),
+        GoRoute(
+          name: 'programPreview',
+          path: DashBoardRoutes.programPreview,
+          builder: (context, state) {
+            final String deviceId = state.extra as String;
+            return ProgramPreviewPage(deviceId: deviceId,);
+          },
+        ),
+        GoRoute(
+          name: 'ctrlDetailsPage',
+          path: RouteConstants.ctrlDetailsPage,
+          builder: (context, state) {
+            final params = state.extra as GetControllerDetailsParams;
+
+            return BlocProvider(
+              create: (_) => sl<ControllerDetailsBloc>()
+                ..add(GetControllerDetailsEvent(
+                  userId: params.userId,
+                  controllerId: params.controllerId,
+                )),
+              child: ControllerDetailsPage(params: params),
+            );
+          },
+        ),
+        GoRoute(
+          name: 'setSerialPage',
+          path: RouteConstants.setSerialPage,
+          builder: (context, state) {
+            final params = state.extra as SetSerialParams;
+            return BlocProvider(create: (_) => sl<SetSerialBloc>()
+              ..add(LoadSerialEvent(userId: params.userId,controllerId: params.controllerId,)),
+              child: SerialSetCalibrationPage(userId: params.userId,controllerId: params.controllerId, type: params.type,),
+            );
+          },
+        ),
         ...pumpSettingsRoutes,
         ShellRoute(
           builder: (context, state, child) {
