@@ -1,34 +1,25 @@
 enum SettingWidgetType {
-  text,      // 1
-  toggle,    // 2
-  time,      // 3
-  multiTime, // 4
-  fullText,  // 5
-  phone,     // 6
-  multiText, // 7
-  unknown;
+  text(1),
+  toggle(2),
+  time(3),
+  multiTime(4),
+  fullText(5),
+  phone(6),
+  multiText(7)
+  ;
 
-  factory SettingWidgetType.fromInt(int value) {
-    // Simple and fast lookup (recommended)
-    switch (value) {
-      case 1:
-        return text;
-      case 2:
-        return toggle;
-      case 3:
-        return time;
-      case 4:
-        return multiTime;
-      case 5:
-        return fullText;
-      case 6:
-        return phone;
-      case 7:
-        return multiText;
-      default:
-        return unknown;
-    }
+  final int value;
+
+  const SettingWidgetType(this.value);
+
+  // Convert enum → int
+  int toInt() => value;
+
+  // Convert int → enum (used in fromJson)
+  static SettingWidgetType fromInt(int val) {
+    return SettingWidgetType.values.firstWhere(
+          (e) => e.value == val,
+      orElse: () => SettingWidgetType.text, // default fallback
+    );
   }
-
-  int get serverValue => index + 1;
 }

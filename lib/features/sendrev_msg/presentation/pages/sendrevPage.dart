@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import '../../../../core/utils/common_date_picker.dart';
 import '../../data/models/sendrev_model.dart';
 import '../../domain/usecases/sendrevmsgParams.dart';
 import '../bloc/sendrev_bloc.dart';
@@ -16,41 +17,68 @@ class SendRevPage extends StatelessWidget {
     super.key,
     required this.params,
   });
-   Future<void> _selectDate(BuildContext context) async {
-     final selectedDate = await showDatePicker(
-       context: context,
-       initialDate: DateTime.now(),
-       firstDate: DateTime(2020),
-       lastDate: DateTime.now(),
-     );
+   // Future<void> _selectDate(BuildContext context) async {
+   //   final selectedDate = await showDatePicker(
+   //     context: context,
+   //     initialDate: DateTime.now(),
+   //     firstDate: DateTime(2020),
+   //     lastDate: DateTime.now(),
+   //   );
+   //
+   //   if (selectedDate != null) {
+   //     final formattedDate =
+   //     DateFormat('yyyy-MM-dd').format(selectedDate);
+   //
+   //     context.read<SendrevBloc>().add(
+   //       LoadMessagesEvent(
+   //         userId: params["userId"],
+   //         subuserId: params["subuserId"] ?? 0,
+   //         controllerId: params["controllerId"],
+   //         fromDate: formattedDate,
+   //         toDate: formattedDate, // same date load
+   //       ),
+   //     );
+   //   }
+   // }
 
-     if (selectedDate != null) {
-       final formattedDate =
-       DateFormat('yyyy-MM-dd').format(selectedDate);
 
-       context.read<SendrevBloc>().add(
-         LoadMessagesEvent(
-           userId: params["userId"],
-           subuserId: params["subuserId"] ?? 0,
-           controllerId: params["controllerId"],
-           fromDate: formattedDate,
-           toDate: formattedDate, // same date load
-         ),
-       );
-     }
-   }
+
+
+
   @override
   Widget build(BuildContext context) {
 
 
     return Scaffold(
       appBar: AppBar(title: const Text("Send and Receive"),
-        actions: [
-        IconButton(
-          icon: const Icon(Icons.calendar_today),
-          onPressed: () => _selectDate(context),
-        ),
-      ],),
+          actions: [
+            Row(
+              children: [
+                // Text('${params['fromDate']}', style: const TextStyle(color: Colors.white)),
+                IconButton(
+                  icon: const Icon(Icons.calendar_today, color: Colors.white),
+                  onPressed: () async {
+                    final result = await pickReportDate(
+                      context: context,
+                      allowRange: false,
+                    );
+
+                    if (result == null) return;
+
+                    context.read<SendrevBloc>().add(
+                      LoadMessagesEvent(
+                          userId: params["userId"],
+                          subuserId: params["subuserId"] ?? 0,
+                          controllerId: params["controllerId"],
+                          fromDate: result.fromDate,
+                          toDate: result.toDate,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],),
       body: BlocBuilder<SendrevBloc, SendrevState>(
         builder: (context, state) {
           if (state is SendrevLoading) {

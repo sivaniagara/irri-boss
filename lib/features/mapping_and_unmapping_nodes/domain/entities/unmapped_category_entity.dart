@@ -13,12 +13,13 @@ class UnmappedCategoryEntity {
     required this.nodes,
   });
 
-  UnmappedCategoryEntity copyWith(){
+  UnmappedCategoryEntity copyWith(
+      {List<UnmappedCategoryNodeEntity>? updateNodes}){
     return UnmappedCategoryEntity(
         categoryId: categoryId,
         categoryName: categoryName,
         count: count,
-        nodes: nodes.map((e) => e.copyWith()).toList()
+        nodes: updateNodes ?? nodes.map((e) => e.copyWith()).toList()
     );
   }
 

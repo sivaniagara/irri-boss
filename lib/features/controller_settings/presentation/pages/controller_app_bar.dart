@@ -9,21 +9,8 @@ import '../../../program_settings/utils/program_settings_routes.dart';
 import '../../utils/controller_settings_routes.dart';
 import '../cubit/controller_tab_cubit.dart';
 import '../../../program_settings/presentation/widgets/zone_list.dart';
+import '../enums/controller_tab.dart';
 
-enum ControllerTab {details, nodes, programs}
-
-extension ControllerTabExtension on ControllerTab{
-  String title(){
-    switch (this){
-      case ControllerTab.details:
-        return 'Controller';
-      case ControllerTab.nodes:
-        return 'Nodes';
-      case ControllerTab.programs:
-        return 'Programs';
-      }
-  }
-}
 
 class ControllerAppBar extends StatelessWidget {
   final Widget child;

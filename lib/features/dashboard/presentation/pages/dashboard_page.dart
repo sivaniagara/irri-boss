@@ -4,12 +4,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_manager.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/auth.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart' as di;
+import '../../../../core/services/mqtt/mqtt_message_helper.dart';
+import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/services/selected_controller_persistence.dart';
 import '../../../../core/utils/app_images.dart';
 import '../../../controller_details/domain/usecase/controller_details_params.dart';
@@ -26,7 +29,7 @@ import '../widgets/pressure_section.dart';
 import '../widgets/ryb_section.dart';
 import '../widgets/sync_section.dart';
 import '../widgets/timer_section.dart';
-import '../../../mqtt/mqtt_barrel.dart';
+// import '../../../mqtt/mqtt_barrel.dart';
 import '../../dashboard.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -67,10 +70,10 @@ class DashboardPage extends StatelessWidget {
       });
 
       await Future.delayed(const Duration(seconds: 5));
-      if (!bloc.isClosed) bloc.add(StartPollingEvent());
+      // if (!bloc.isClosed) bloc.add(StartPollingEvent());
 
-      final mqttBloc = di.sl.get<MqttBloc>();
-      mqttBloc.setProcessingContext(context);
+    /*  final mqttBloc = di.sl.get<MqttBloc>();
+      mqttBloc.setProcessingContext(context);*/
 
       final router = GoRouter.of(context);
 
@@ -79,10 +82,10 @@ class DashboardPage extends StatelessWidget {
 
         if (currentLocation == DashBoardRoutes.dashboard) {
           // We are ON the dashboard → start/resume polling
-          bloc.add(StartPollingEvent());
+          // bloc.add(StartPollingEvent());
         } else {
           // We are anywhere else (ctrlLivePage, settings, etc.) → stop polling
-          bloc.add(StopPollingEvent());
+          // bloc.add(StopPollingEvent());
         }
       }
 
@@ -404,10 +407,10 @@ class DashboardPage extends StatelessWidget {
   }
 
   static Future<void> _refreshLiveData(dynamic selectedController) async {
-    final mqttBloc = di.sl.get<MqttBloc>();
+    final mqttManager = di.sl.get<MqttManager>();
     final deviceId = selectedController.deviceId;
     final publishMessage = jsonEncode(PublishMessageHelper.requestLive);
-    mqttBloc.add(PublishMqttEvent(deviceId: deviceId, message: publishMessage));
+    mqttManager.publish(deviceId, publishMessage);
     if (kDebugMode) {
       print("Live message from server : ${selectedController.liveMessage}");
     }
@@ -443,8 +446,9 @@ class DashboardPage extends StatelessWidget {
                   children: [
                     SyncSection(
                       liveSync: controller.livesyncTime,
-                      smsSync: controller.msgDesc,
+                      smsSync: controller.livesyncTime,
                       model: controller.modelId,
+                      deviceId: controller.deviceId,
                     ),
                     SizedBox(height: scale(8)),
                     GlassCard(
@@ -499,7 +503,7 @@ class DashboardPage extends StatelessWidget {
                     SizedBox(height: scale(8)),
                     ActionsSection(
                       model: controller.modelId,
-                      data: {"userId" : controller.userId, "subUserId" : 0, "controllerId" : controller.userDeviceId},
+                      data: {"userId" : controller.userId, "subUserId" : 0, "controllerId" : controller.userDeviceId, "deviceId": controller.deviceId},
                     ),
                   ],
                 ),

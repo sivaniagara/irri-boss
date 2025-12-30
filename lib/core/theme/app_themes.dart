@@ -39,6 +39,14 @@ class AppThemes {
   static const Color primaryColor = Color(0xFF016DB5);
   static const Color secondaryColor = Color(0xFF00AFF0);
 
+
+
+  static const Color appWhiteColor = Colors.white;
+  static const Color gradientTopColor = Color(0xFFE6F0FF);
+  static const Color gradientMidColor = Color(0xFF67C8F1);
+  static const Color gradientBottomColor = Color(0xFF6DA8F5);
+  static  Color shadowBlackColor = Colors.black.withValues(alpha: 0.12);
+
   // Create a custom swatch for primary color
   static const MaterialColor primarySwatch = MaterialColor(
     0xFF0F8AD0,
@@ -63,11 +71,18 @@ class AppThemes {
     primaryColor: primaryColor,
     primaryColorLight: Color(0xff6DA8F5),
     iconTheme: IconThemeData(color: Colors.white),
-    colorScheme: ColorScheme.light(
+    colorScheme: ColorScheme.fromSeed(
       primary: primaryColor,
       secondary: secondaryColor,
+      surface: Colors.white,
+      background: primarySwatch.shade50,
+      error: Colors.red,
+      onSecondary: Colors.white,
+      onSurface: Colors.black,
+      onBackground: primaryColor.withOpacity(0.1),
+      onError: Colors.white,
+      seedColor: primaryColor,
     ),
-
     appBarTheme: const AppBarTheme(
       iconTheme: IconThemeData(
         color: Colors.black
@@ -86,49 +101,41 @@ class AppThemes {
       ),
     ),
     listTileTheme: ListTileThemeData(
-      textColor: Colors.black,
-      titleTextStyle: TextStyle(color: Colors.black, fontSize: 20),
-
-
+      // textColor: Colors.white,
+      // titleTextStyle: TextStyle(color: Colors.black, fontSize: 20)
     ),
     textTheme: TextTheme(
-      titleMedium: TextStyle(color: Colors.black),
-      titleSmall: TextStyle(color: Colors.black),
-      titleLarge: TextStyle(color: Colors.black),
-      bodySmall: TextStyle(color: Colors.black),
-      bodyLarge: TextStyle(color: Colors.black),
-      bodyMedium: TextStyle(color: Colors.black),
+     /* titleMedium: TextStyle(color: Colors.white),
+      titleSmall: TextStyle(color: Colors.white),
+      titleLarge: TextStyle(color: Colors.white),
+      bodySmall: TextStyle(color: Colors.white),
+      bodyLarge: TextStyle(color: Colors.white),
+      bodyMedium: TextStyle(color: Colors.white),*/
     ),
     inputDecorationTheme: InputDecorationTheme(
       border: UnderlineInputBorder(
-        borderSide: BorderSide(color: Colors.white),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
       ),
       enabledBorder: UnderlineInputBorder(
-        borderSide: BorderSide(color: Colors.white),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
       ),
       focusedBorder: UnderlineInputBorder(
-        borderSide: BorderSide(color: Colors.white, width: 2.0),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
       ),
       errorBorder: UnderlineInputBorder(
         borderSide: BorderSide(color: Colors.redAccent),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
       ),
       focusedErrorBorder: UnderlineInputBorder(
         borderSide: BorderSide(color: Colors.redAccent, width: 2.0),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
       ),
       disabledBorder: UnderlineInputBorder(
         borderSide: BorderSide(color: Colors.white.withOpacity(0.5)),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(0),
       ),
-      hintStyle: TextStyle(color: Colors.white54),
-      labelStyle: TextStyle(color: Colors.white54),
-      iconColor: Colors.white,
     ),
-    checkboxTheme: CheckboxThemeData(
+    /*checkboxTheme: CheckboxThemeData(
       fillColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
         if (states.contains(WidgetState.selected)) {
           return Colors.white;
@@ -191,7 +198,7 @@ class AppThemes {
         return Colors.white54;
       }),
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    ),
+    ),*/
     dividerTheme: DividerThemeData(
       color: const Color(0xff727272),
       thickness: 1
@@ -199,7 +206,6 @@ class AppThemes {
 
 
   );
-
   // Dark Theme
   static final ThemeData _niagaraDarkTheme = ThemeData(
     brightness: Brightness.dark,
@@ -207,11 +213,11 @@ class AppThemes {
       primary: primaryColor,
       secondary: secondaryColor,
     ),
-    appBarTheme: const AppBarTheme(
+    /*appBarTheme: const AppBarTheme(
       backgroundColor: primaryColor,
       foregroundColor: Colors.white,
       elevation: 0,
-    ),
+    ),*/
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: primaryColor,

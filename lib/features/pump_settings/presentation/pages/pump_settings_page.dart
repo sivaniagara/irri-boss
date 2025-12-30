@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/action_button.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/alert_dialog.dart';
@@ -8,17 +9,18 @@ import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/retry.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/time_picker_service.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/menu_item_entity.dart';
+import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/setting_widget_type.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/cubit/pump_settings_cubit.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/widgets/setting_list_tile.dart';
 
 import '../../../../core/di/injection.dart' as di;
-import '../../domain/entities/setting_widget_type.dart';
 import '../../domain/entities/template_json_entity.dart';
 import '../bloc/pump_settings_state.dart';
 
 class PumpSettingsPage extends StatelessWidget {
   final int userId, subUserId, controllerId, menuId;
   final String? menuName;
+  final String deviceId;
 
   const PumpSettingsPage({
     super.key,
@@ -26,52 +28,96 @@ class PumpSettingsPage extends StatelessWidget {
     required this.subUserId,
     required this.controllerId,
     required this.menuId,
+    required this.deviceId,
     this.menuName,
   });
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        create: (_) => di.sl<PumpSettingsCubit>()
-          ..loadSettings(
-            userId: userId,
-            subUserId: subUserId,
-            controllerId: controllerId,
-            menuId: menuId,
-          ),
+      create: (_) => di.sl<PumpSettingsCubit>()
+        ..loadSettings(
+          userId: userId,
+          subUserId: subUserId,
+          controllerId: controllerId,
+          menuId: menuId,
+        ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           title: Text(menuName ?? 'Pump Settings'),
           actions: [
-            IconButton(
-              onPressed: () {
-                GlassyAlertDialog.show(
-                  context: context,
-                  title: "Hide/Show Settings",
-                  content: BlocProvider<PumpSettingsCubit>.value(
-                    value: context.read<PumpSettingsCubit>(),
-                    child: _HideShowSettingsDialog(),
-                  ),
-                  actions: [
-                    ActionButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text("OK"),
+            Builder(
+              builder: (appBarContext) => IconButton(
+                onPressed: () {
+                  final cubit = appBarContext.read<PumpSettingsCubit>();
+                  GlassyAlertDialog.show(
+                    context: context,
+                    title: "Hide/Show Settings",
+                    content: BlocProvider<PumpSettingsCubit>.value(
+                      value: cubit,
+                      child: _HideShowSettingsDialog(),
                     ),
-                  ],
-                );
-              },
-              icon: const Icon(Icons.hide_source),
+                    actions: [
+                      ActionButton(
+                        onPressed: () {
+                          cubit.updateHiddenFlags(
+                              userId: userId,
+                              subUserId: subUserId,
+                              controllerId: controllerId,
+                              menuItemEntity: (cubit.state as GetPumpSettingsLoaded).settings,
+                              sentSms: "Hidden flag updated"
+                          );
+                          Navigator.of(appBarContext).pop();
+                        },
+                        isPrimary: true,
+                        child: const Text("OK"),
+                      ),
+                    ],
+                  );
+                },
+                icon: const Icon(Icons.hide_source),
+              ),
             ),
           ],
         ),
         body: GlassyWrapper(
-          child: NotificationListener<OverscrollIndicatorNotification>(
-            onNotification: (n) {
-              n.disallowIndicator();
-              return true;
+          child: BlocListener<PumpSettingsCubit, PumpSettingsState>(
+            listenWhen: (previous, current) => current is SettingsSendStartedState
+                || current is SettingsSendSuccessState
+                || current is SettingsFailureState,
+            listener: (context, state) {
+              if (state is SettingsSendStartedState) {
+                Fluttertoast.showToast(
+                  msg: "Sending...",
+                  toastLength: Toast.LENGTH_LONG,
+                  gravity: ToastGravity.BOTTOM,
+                  backgroundColor: Colors.grey[800],
+                );
+              } else if (state is SettingsSendSuccessState) {
+                Fluttertoast.showToast(
+                  msg: state.message,
+                  toastLength: Toast.LENGTH_LONG,
+                  gravity: ToastGravity.BOTTOM,
+                  backgroundColor: Theme.of(context).primaryColor,
+                );
+              } else if (state is SettingsFailureState) {
+                Fluttertoast.showToast(
+                  msg: state.message,
+                  toastLength: Toast.LENGTH_LONG,
+                  gravity: ToastGravity.BOTTOM,
+                  backgroundColor: Colors.red,
+                );
+              }
             },
             child: BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
+              buildWhen: (previous, current) {
+                // print("previous :: $previous");
+                // print("current :: $current");
+                return current is GetPumpSettingsInitial ||
+                    current is GetPumpSettingsError ||
+                    current is GetPumpSettingsLoaded;
+              },
               builder: (context, state) {
                 if (state is GetPumpSettingsInitial) {
                   return const Center(child: CircularProgressIndicator());
@@ -80,18 +126,24 @@ class PumpSettingsPage extends StatelessWidget {
                   return Center(
                     child: Retry(
                       message: state.message,
-                      onPressed: () =>
-                          context.read<PumpSettingsCubit>().loadSettings(
-                            userId: userId,
-                            subUserId: subUserId,
-                            controllerId: controllerId,
-                            menuId: menuId,
-                          ),
+                      onPressed: () => context.read<PumpSettingsCubit>()
+                          .loadSettings(
+                          userId: userId,
+                          subUserId: subUserId,
+                          controllerId: controllerId,
+                          menuId: menuId
+                      ),
                     ),
                   );
                 }
+                // Now safe to cast - only loaded state reaches here
+                final loadedState = state as GetPumpSettingsLoaded;
                 return _SettingsList(
-                  menu: (state as GetPumpSettingsLoaded).settings,
+                  menu: loadedState.settings,
+                  deviceId: deviceId,
+                  userId: userId,
+                  controllerId: controllerId,
+                  subUserId: subUserId,
                 );
               },
             ),
@@ -106,6 +158,9 @@ class _HideShowSettingsDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
+      buildWhen: (previous, current) {
+        return current is GetPumpSettingsLoaded;
+      },
       builder: (context, state) {
         if (state is! GetPumpSettingsLoaded) {
           return const Center(child: CircularProgressIndicator());
@@ -132,12 +187,13 @@ class _HideShowSettingsDialog extends StatelessWidget {
                         newValue == true ? "1" : "0",
                         sectionIndex,
                         settingIndex,
+                        menu,
                         isHiddenFlag: true,
                       );
                     },
                   );
                 }),
-                const Divider(),
+                Divider(color: Theme.of(context).primaryColor,),
               ],
             );
           },
@@ -148,9 +204,15 @@ class _HideShowSettingsDialog extends StatelessWidget {
 }
 
 class _SettingsList extends StatelessWidget {
+  final int userId, subUserId, controllerId;
   final MenuItemEntity menu;
+  final String deviceId;
   const _SettingsList({
     required this.menu,
+    required this.deviceId,
+    required this.userId,
+    required this.subUserId,
+    required this.controllerId,
   });
 
   @override
@@ -159,6 +221,7 @@ class _SettingsList extends StatelessWidget {
       itemCount: menu.template.sections.length,
       itemBuilder: (context, sectionIndex) {
         final section = menu.template.sections[sectionIndex];
+        if(section.settings.every((e) => e.hiddenFlag == "0")) return SizedBox();
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           child: Column(
@@ -170,6 +233,8 @@ class _SettingsList extends StatelessWidget {
               GlassCard(
                 margin: EdgeInsetsGeometry.symmetric(horizontal: 0),
                 padding: EdgeInsetsGeometry.symmetric(horizontal: 5),
+                opacity: 1,
+                blur: 0,
                 child: Builder(
                   builder: (context) {
                     return ListView.separated(
@@ -178,15 +243,19 @@ class _SettingsList extends StatelessWidget {
                         itemBuilder: (BuildContext context, int index) {
                           if(section.settings[index].hiddenFlag == "0") return SizedBox();
                           return _SettingRow(
-                            setting: section.settings[index],
+                            menuItemEntity: menu,
                             sectionIndex: sectionIndex,
                             settingIndex: index,
+                            deviceId: deviceId,
+                            userId: userId,
+                            subUserId: subUserId,
+                            controllerId: controllerId,
                           );
                         },
                         separatorBuilder: (BuildContext context, int index) {
                           if (section.settings[index].widgetType != SettingWidgetType.multiText) {
-                            if(section.settings[index].hiddenFlag == "0" && section.settings.where((e) => e.hiddenFlag == "1").length != index) return SizedBox();
-                            return Divider(color: Colors.white54);
+                            if(section.settings[index].hiddenFlag == "0") return SizedBox();
+                            return Divider(color: Theme.of(context).primaryColor.withOpacity(0.7));
                           } else {
                             return Container();
                           }
@@ -205,14 +274,20 @@ class _SettingsList extends StatelessWidget {
 }
 
 class _SettingRow extends StatelessWidget {
-  final SettingsEntity setting;
+  final int userId, subUserId, controllerId;
+  final MenuItemEntity menuItemEntity;
   final int sectionIndex;
   final int settingIndex;
+  final String deviceId;
 
   const _SettingRow({
-    required this.setting,
+    required this.menuItemEntity,
     required this.sectionIndex,
     required this.settingIndex,
+    required this.deviceId,
+    required this.userId,
+    required this.subUserId,
+    required this.controllerId,
   });
 
   @override
@@ -224,11 +299,25 @@ class _SettingRow extends StatelessWidget {
         Expanded(child: _buildInput(context)),
         const SizedBox(width: 8),
         CircleAvatar(
-          backgroundColor: Colors.white,
+          radius: 22,
+          // backgroundColor: Colors.white,
           child: IconButton(
             padding: EdgeInsets.zero,
-            icon: Icon(Icons.send, color: Theme.of(context).primaryColor),
-            onPressed: () => cubit.sendCurrentSetting(sectionIndex, settingIndex),
+            icon: context.watch<PumpSettingsCubit>().state is SettingsSendStartedState
+                ? Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(),
+                )
+                : Icon(Icons.send, color: Theme.of(context).primaryColor),
+            onPressed: () => cubit.sendCurrentSetting(
+                sectionIndex,
+                settingIndex,
+                deviceId,
+                userId,
+                subUserId,
+                controllerId,
+                menuItemEntity
+            ),
           ),
         ),
       ],
@@ -236,6 +325,7 @@ class _SettingRow extends StatelessWidget {
   }
 
   Widget _buildInput(BuildContext context) {
+    final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
     return switch (setting.widgetType) {
       SettingWidgetType.phone => _PhoneInput(setting: setting, onChanged: _onChanged(context)),
       SettingWidgetType.multiTime => _MultiTimeInput(setting: setting, onChanged: _onChanged(context)),
@@ -250,35 +340,31 @@ class _SettingRow extends StatelessWidget {
   }
 
   Widget _buildTrailing(BuildContext context) {
+    final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
     return switch (setting.widgetType) {
     // SettingWidgetType.text => Text(setting.value.isEmpty ? "-" : setting.value, style: Theme.of(context).textTheme.bodyMedium,),
-      SettingWidgetType.text =>
-          _TextInput(setting: setting, onChanged: _onChanged(context)),
+      SettingWidgetType.text => _TextInput(setting: setting, onChanged: _onChanged(context)),
       SettingWidgetType.toggle => Switch(
         value: setting.value == "ON",
-        onChanged: (_) =>
-            _onChanged(context)(setting.value == "ON" ? "OF" : "ON"),
+        onChanged: (_) => _onChanged(context)(setting.value == "ON" ? "OF" : "ON"),
       ),
       SettingWidgetType.time => Text(
           setting.value.isEmpty ? "00:00" : setting.value,
-          style: Theme.of(context).textTheme.bodyMedium),
+          style: Theme.of(context).textTheme.bodyMedium
+      ),
       _ => Text(setting.value, style: Theme.of(context).textTheme.bodyMedium),
     };
   }
 
   void Function(String newValue) _onChanged(BuildContext context) {
     return (String newValue) {
-      context.read<PumpSettingsCubit>().updateSettingValue(
-        newValue,
-        sectionIndex,
-        settingIndex,
-      );
+      context.read<PumpSettingsCubit>().updateSettingValue(newValue, sectionIndex, settingIndex, menuItemEntity);
     };
   }
 
   void _handleTap(BuildContext context) async {
     String? newValue;
-
+    final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
     switch (setting.widgetType) {
       case SettingWidgetType.toggle:
         newValue = setting.value == "OF" ? "ON" : "OF";
@@ -314,9 +400,6 @@ class _PhoneInput extends StatelessWidget {
       child: IntlPhoneField(
         initialValue: setting.value,
         initialCountryCode: 'IN',
-        style: const TextStyle(color: Colors.white),
-        dropdownTextStyle: const TextStyle(color: Colors.white),
-        dropdownIcon: const Icon(Icons.arrow_drop_down, color: Colors.white),
         onChanged: (phone) => onChanged(phone.completeNumber),
       ),
     );
@@ -337,7 +420,8 @@ class _TextInput extends StatelessWidget {
         keyboardType: TextInputType.number,
         decoration: InputDecoration(
             labelText: setting.title,
-            contentPadding: EdgeInsetsGeometry.symmetric(horizontal: 10)),
+            contentPadding: EdgeInsetsGeometry.symmetric(horizontal: 10)
+        ),
         onChanged: onChanged,
       ),
     );
@@ -416,9 +500,9 @@ class _MultiTextInput extends StatelessWidget {
                     keyboardType: TextInputType.number,
                     textAlign: TextAlign.center,
                     decoration: InputDecoration(
-                        contentPadding: EdgeInsetsGeometry.symmetric(
-                            horizontal: 10, vertical: 0),
-                        isDense: true),
+                        contentPadding: EdgeInsetsGeometry.symmetric(horizontal: 10, vertical: 0),
+                        isDense: true
+                    ),
                     onChanged: (newValue) async {
                       final newValues = [...values]..[i] = newValue;
                       onChanged(newValues.join(';'));

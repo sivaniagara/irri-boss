@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 import 'package:niagara_smart_drip_irrigation/features/fault_msg/utils/faultmsg_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/utils/irrigation_settings_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/reportMenu/utils/report_routes.dart';
 
 import '../../../sendrev_msg/utils/senrev_routes.dart';
-import '../../../standalone_settings/utils/standalone_routes.dart';
+import '../../utils/dashboard_routes.dart';
 
 class ActionsSection extends StatelessWidget {
   final int model;
@@ -31,17 +33,16 @@ class ActionsSection extends StatelessWidget {
             child: MenuButton(
               icon: Icons.insert_chart,
               title: "Report",
-              onTap: () {},
-            ),
+              onTap: () {
+                dialogContext.push(ReportPageRoutes.reportMenu, extra: data);
+              },
+             ),
           ),
           Expanded(
             child: MenuButton(
               icon: Icons.touch_app,
               title: "Stand\nalone",
-              onTap: () {
-                dialogContext.push(StandaloneRoutes.standalone,extra: data);
-
-              },
+              onTap: () {},
             ),
           ),
           Expanded(
@@ -66,7 +67,9 @@ class ActionsSection extends StatelessWidget {
             child: MenuButton(
               icon: Icons.settings,
               title: "Irrigation\nSettings",
-              onTap: () {},
+              onTap: () {
+                dialogContext.push('${DashBoardRoutes.dashboard}${IrrigationSettingsRoutes.irrigationSettings}');
+              },
             ),
           ),
         ],
@@ -87,7 +90,9 @@ class ActionsSection extends StatelessWidget {
             child: MenuButton(
               icon: Icons.insert_chart,
               title: "Power\nGraph",
-              onTap: () {},
+              onTap: () {
+                dialogContext.push(ReportPageRoutes.reportMenu, extra: data);
+              },
             ),
           ),
           Expanded(

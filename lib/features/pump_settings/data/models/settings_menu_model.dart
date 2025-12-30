@@ -5,6 +5,7 @@ class SettingsMenuModel extends SettingsMenuEntity {
     required super.menuSettingId,
     required super.referenceId,
     required super.menuItem,
+    required super.hiddenFlag,
     required super.templateName
   });
 
@@ -12,8 +13,25 @@ class SettingsMenuModel extends SettingsMenuEntity {
     return SettingsMenuModel(
         menuSettingId: json["menuSettingId"],
         referenceId: json["referenceId"],
+        hiddenFlag: json["hiddenFlag"] ?? 0,
         menuItem: json["menuItem"],
         templateName: json["templateName"] ?? "No name"
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "toggleStatus": hiddenFlag
+    };
+  }
+
+  factory SettingsMenuModel.fromEntity(SettingsMenuEntity entity) {
+    return SettingsMenuModel(
+      menuSettingId: entity.menuSettingId,
+      referenceId: entity.referenceId,
+      hiddenFlag: entity.hiddenFlag,
+      menuItem: entity.menuItem,
+      templateName: entity.templateName,
     );
   }
 }
