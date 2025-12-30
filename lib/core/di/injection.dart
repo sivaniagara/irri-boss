@@ -134,6 +134,7 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   sl.registerLazySingleton<ControllerRemoteDataSource>(() => ControllerRemoteDataSourceImpl(apiClient: sl()));
   sl.registerLazySingleton<ControllerRepo>(() => ControllerRepoImpl(remoteDataSource: sl()));
   sl.registerLazySingleton(() => GetControllerDetailsUsecase(controllerRepo: sl()));
+  sl.registerLazySingleton(() => UpdateControllerUsecase(controllerRepo: sl()));
   sl.registerFactory(() => ControllerDetailsBloc(getControllerDetails: sl(), updateController: sl(),));
   sl.registerLazySingleton<SetSerialDataSource>(
           () => SetSerialDataSourceImpl(apiClient: sl()));

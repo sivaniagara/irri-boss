@@ -479,6 +479,11 @@ class DashboardPage extends StatelessWidget {
                       motorOn2: controller.liveMessage.valveOnOff,
                       valveOn: controller.liveMessage.valveOnOff,
                       model: controller.modelId,
+                      userData: {
+                        "userId": userId,
+                        "controllerId": controller.userDeviceId,
+                        "subuserId": 0
+                      },
                     ),
                     SizedBox(height: scale(8)),
                     if ([1, 5].contains(controller.modelId)) ...[

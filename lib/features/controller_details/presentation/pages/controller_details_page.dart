@@ -28,17 +28,10 @@ class ControllerDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => di.sl<ControllerDetailsBloc>()
-        ..add(GetControllerDetailsEvent(
-          userId: params.userId,
-          controllerId: params.controllerId,
-        )),
-      child: BlocBuilder<ControllerDetailsBloc, ControllerDetailsState>(
-        builder: (context, state) {
-          return _buildBody(context, state);
-        },
-      ),
+    return BlocBuilder<ControllerDetailsBloc, ControllerDetailsState>(
+      builder: (context, state) {
+        return _buildBody(context, state);
+      },
     );
   }
 

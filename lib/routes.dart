@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/node_status_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
@@ -212,13 +213,21 @@ class AppRouter {
           },
         ),
         GoRoute(
+          name: 'nodeStatus',
+          path: DashBoardRoutes.nodeStatus,
+          builder: (context, state) {
+            final data = state.extra as Map<String, dynamic>;
+            return NodeStatusPage(userId: data['userId'], controllerId: data['controllerId'], subuserId: data['subuserId'],);
+          },
+        ),
+        GoRoute(
           name: 'ctrlDetailsPage',
           path: RouteConstants.ctrlDetailsPage,
           builder: (context, state) {
             final params = state.extra as GetControllerDetailsParams;
 
             return BlocProvider(
-              create: (_) => sl<ControllerDetailsBloc>()
+              create: (_) => di.sl<ControllerDetailsBloc>()
                 ..add(GetControllerDetailsEvent(
                   userId: params.userId,
                   controllerId: params.controllerId,
@@ -238,7 +247,6 @@ class AppRouter {
             );
           },
         ),
-        ...pumpSettingsRoutes,
         ShellRoute(
           builder: (context, state, child) {
             final location = state.matchedLocation;
@@ -351,6 +359,7 @@ class AppRouter {
             )
           ],
         ),
+        ...pumpSettingsRoutes,
         ...reportPageRoutes,
         ...sendRevPageRoutes,
         ...FaultMsgPagesRoutes,
