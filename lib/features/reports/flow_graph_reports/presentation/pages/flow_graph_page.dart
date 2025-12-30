@@ -98,10 +98,7 @@ class FlowGraphPage extends StatelessWidget {
                 /// SUMMARY
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.blue),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
+                  decoration: BoxDecoration(gradient: AppGradients.commonGradient,) ,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -119,15 +116,17 @@ class FlowGraphPage extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 12),
-
                 /// TABLE
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Column(
-                    children: [
-                      tableHeader(),
-                      ...list.map(tableRow),
-                    ],
+                Container(
+                  decoration: BoxDecoration(gradient: AppGradients.commonGradient,) ,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Column(
+                      children: [
+                        tableHeader(),
+                        ...list.map(tableRow),
+                      ],
+                    ),
                   ),
                 ),
               ],
