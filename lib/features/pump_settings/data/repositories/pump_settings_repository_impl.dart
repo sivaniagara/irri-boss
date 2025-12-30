@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/menu_item_entity.dart';
+import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/notifications_entity.dart';
 import '../../data/datasources/pump_settings_datasources.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/entities/settings_menu_entity.dart';
@@ -25,8 +26,47 @@ class PumpSettingsRepositoryImpl implements PumpSettingsRepository {
       final menuItems = await pumpSettingsDataSources.getPumpSettings(userId, subUserId, controllerId, menuId);
       return Right(menuItems);
     } catch (e, s) {
-      print('getPumpSettings stack trace :: $s');
       return Left(ServerFailure('Pump settings Fetching Failure: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<NotificationsEntity>>> getNotifications(int userId, int subUserId, int controllerId) async{
+    try {
+      final notifications = await pumpSettingsDataSources.getNotifications(userId, subUserId, controllerId);
+      return Right(notifications);
+    } catch (e) {
+      return Left(ServerFailure('Notifications Fetching Failure: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> subscribeNotifications(int userId, int subUserId, int controllerId, Map<String, dynamic> body) async{
+    try {
+      final notifications = await pumpSettingsDataSources.subscribeNotifications(userId, subUserId, controllerId, body);
+      return Right(notifications);
+    } catch (e) {
+      return Left(ServerFailure('Notifications Fetching Failure: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> sendPumpSettings(int userId, int subUserId, int controllerId, MenuItemEntity menuItem, String sentSms) async{
+    try {
+      final response = await pumpSettingsDataSources.sendPumpSettings(userId, subUserId, controllerId, menuItem, sentSms);
+      return Right(response);
+    } catch (e) {
+      return Left(ServerFailure('Notifications Fetching Failure: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> updateMenuStatus(int userId, int subUserId, int controllerId, SettingsMenuEntity menuList) async{
+    try {
+      final response = await pumpSettingsDataSources.updateMenuStatus(userId, subUserId, controllerId, menuList);
+      return Right(response);
+    } catch (e) {
+      return Left(ServerFailure('Notifications Fetching Failure: $e'));
     }
   }
 }

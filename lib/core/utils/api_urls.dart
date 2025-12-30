@@ -223,10 +223,10 @@ class ApiUrls {
 }
 
 // Simple utility function for basic replacement.
-String buildUrl(String urlTemplate, Map<String, String> params) {
+String buildUrl(String urlTemplate, Map<String, dynamic> params) {
   String url = urlTemplate;
   for (final entry in params.entries) {
-    url = url.replaceAll(':${entry.key}', entry.value);
+    url = url.replaceAll(':${entry.key}', '${entry.value}');
   }
   return url;
 }

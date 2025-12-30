@@ -3,27 +3,40 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:niagara_smart_drip_irrigation/features/dashboard/domain/entities/livemessage_entity.dart';
-import 'package:niagara_smart_drip_irrigation/features/setserialsettings/presentation/pages/setserial_page.dart';
-import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/domain/usecases/get_sub_user_details_usecase.dart';
-import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/presentation/pages/sub_user_details_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
+import 'core/di/injection.dart';
 import 'features/controller_details/domain/usecase/controller_details_params.dart';
 import 'features/controller_details/presentation/bloc/controller_details_bloc.dart';
 import 'features/controller_details/presentation/bloc/controller_details_bloc_event.dart';
 import 'features/controller_details/presentation/pages/controller_details_page.dart';
-import 'features/dashboard/presentation/cubit/controller_context_cubit.dart';
-import 'features/controller_settings/presentation/cubit/controller_tab_cubit.dart';
 import 'features/controller_settings/utils/controller_settings_routes.dart';
+import 'features/dashboard/domain/entities/livemessage_entity.dart';
+import 'features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'features/dashboard/presentation/bloc/dashboard_event.dart';
+import 'features/dashboard/presentation/pages/controller_live_page.dart';
+import 'features/dashboard/presentation/pages/dashboard_page.dart';
+import 'features/dashboard/presentation/pages/program_preview_page.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
 import 'features/irrigation_settings/utils/irrigation_settings_routes.dart';
-import 'features/mapping_and_unmapping_nodes/utils/mapping_and_unmapping_nodes_routes.dart';
+import 'features/fault_msg/utils/faultmsg_routes.dart';
+import 'features/report_downloader/utils/report_downloaderRoute.dart';
+import 'features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
+import 'features/reports/Voltage_reports/utils/voltage_routes.dart';
+import 'features/reports/flow_graph_reports/utils/flow_graph_routes.dart';
+import 'features/reports/power_reports/utils/Power_routes.dart';
+import 'features/reports/reportMenu/utils/report_routes.dart';
+import 'features/reports/standalone_reports/utils/standalone_routes.dart';
+import 'features/reports/tdyvalvestatus_reports/utils/tdy_valve_status_routes.dart';
+import 'features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
+import 'features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
+import 'features/sendrev_msg/utils/senrev_routes.dart';
 import 'features/program_settings/utils/program_settings_routes.dart';
 import 'features/setserialsettings/domain/usecase/setserial_details_params.dart';
 import 'features/setserialsettings/presentation/bloc/setserial_bloc.dart';
 import 'features/setserialsettings/presentation/bloc/setserial_bloc_event.dart';
+import 'features/setserialsettings/presentation/pages/setserial_page.dart';
 import 'features/side_drawer/groups/utils/group_routes.dart';
 import 'features/auth/utils/auth_routes.dart';
 
@@ -34,7 +47,6 @@ import 'features/dealer_dashboard/presentation/pages/dealer_dashboard_page.dart'
 import 'features/side_drawer/groups/presentation/pages/chat.dart';
 import 'features/side_drawer/groups/presentation/widgets/app_drawer.dart';
 import 'features/auth/auth.dart';
-import 'features/dashboard/dashboard.dart';
 import 'features/side_drawer/sub_users/sub_users_barrel.dart';
 import 'features/side_drawer/groups/groups_barrel.dart';
 
@@ -177,22 +189,28 @@ class AppRouter {
             ...irrigationSettingGoRoutes,
           ],
         ),
-
         GoRoute(
-          name: 'ctrlLivePage',
-          path: DashBoardRoutes.ctrlLivePage,
-          builder: (context, state) {
-            print('Building ctrlLivePage, AuthBloc state: ${authBloc.state}');
-            final selectedController = state.extra as LiveMessageEntity?;
-            return BlocProvider.value(
-              value: authBloc,
-              child: CtrlLivePage(selectedController: selectedController),
-            );
-          },
-          routes: [
-          ]
+            name: 'ctrlLivePage',
+            path: DashBoardRoutes.ctrlLivePage,
+            builder: (context, state) {
+              print('Building ctrlLivePage, AuthBloc state: ${sl.get<AuthBloc>().state}');
+              final selectedController = state.extra as LiveMessageEntity?;
+              return BlocProvider.value(
+                value: sl.get<AuthBloc>(),
+                child: CtrlLivePage(selectedController: selectedController),
+              );
+            },
+            routes: [
+            ]
         ),
-        ...pumpSettingsRoutes,
+        GoRoute(
+          name: 'programPreview',
+          path: DashBoardRoutes.programPreview,
+          builder: (context, state) {
+            final String deviceId = state.extra as String;
+            return ProgramPreviewPage(deviceId: deviceId,);
+          },
+        ),
         GoRoute(
           name: 'ctrlDetailsPage',
           path: RouteConstants.ctrlDetailsPage,
@@ -200,7 +218,7 @@ class AppRouter {
             final params = state.extra as GetControllerDetailsParams;
 
             return BlocProvider(
-              create: (_) => di.sl<ControllerDetailsBloc>()
+              create: (_) => sl<ControllerDetailsBloc>()
                 ..add(GetControllerDetailsEvent(
                   userId: params.userId,
                   controllerId: params.controllerId,
@@ -214,14 +232,13 @@ class AppRouter {
           path: RouteConstants.setSerialPage,
           builder: (context, state) {
             final params = state.extra as SetSerialParams;
-            return BlocProvider(create: (_) => di.sl<SetSerialBloc>()
-                ..add(LoadSerialEvent(userId: params.userId,controllerId: params.controllerId,)),
+            return BlocProvider(create: (_) => sl<SetSerialBloc>()
+              ..add(LoadSerialEvent(userId: params.userId,controllerId: params.controllerId,)),
               child: SerialSetCalibrationPage(userId: params.userId,controllerId: params.controllerId, type: params.type,),
             );
           },
         ),
-
-        //
+        ...pumpSettingsRoutes,
         ShellRoute(
           builder: (context, state, child) {
             final location = state.matchedLocation;
@@ -325,7 +342,6 @@ class AppRouter {
               path: RouteConstants.chat,
               builder: (context, state) => const Chat(),
             ),
-
             GoRoute(
               path: DealerRoutes.dealerDashboard,
               builder: (context, state) => BlocProvider.value(
@@ -335,7 +351,18 @@ class AppRouter {
             )
           ],
         ),
-
+        ...reportPageRoutes,
+        ...sendRevPageRoutes,
+        ...FaultMsgPagesRoutes,
+        ...voltGraphRoutes,
+        ...PowerGraphRoutes,
+        ...ReportDownloadRoutes,
+        ...MotorCyclicRoutes,
+        ...ZoneDurationRoutes,
+        ...StandaloneRoutes,
+        ...TdyValveStatusRoutes,
+        ...ZoneCyclicRoutes,
+        ...FlowGraphRoutes,
       ],
     );
   }

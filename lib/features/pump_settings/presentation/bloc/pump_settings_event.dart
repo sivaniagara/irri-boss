@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../../domain/entities/settings_menu_entity.dart';
 import '../../domain/entities/template_json_entity.dart';
 
 class PumpSettingsEvent extends Equatable {
@@ -39,4 +40,19 @@ class SettingsSendEvent extends PumpSettingsEvent {
 
   @override
   List<Object?> get props => [value];
+}
+
+class UpdateHiddenFlagsEvent extends PumpSettingsEvent {
+  final int userId, controllerId, subUserId;
+  final SettingsMenuEntity settingsMenuEntity;
+
+  UpdateHiddenFlagsEvent({
+    required this.userId,
+    required this.controllerId,
+    required this.subUserId,
+    required this.settingsMenuEntity
+  });
+
+  @override
+  List<Object?> get props => [userId, controllerId, subUserId, settingsMenuEntity];
 }

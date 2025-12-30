@@ -5,14 +5,31 @@ import '../../domain/entities/setting_widget_type.dart';
 
 class TemplateJsonModel extends TemplateJsonEntity {
   const TemplateJsonModel({
-    required super.sections
+    required super.sections,
   });
 
   factory TemplateJsonModel.fromJson(Map<String, dynamic> json) {
-    final sections = json['setting'];
+    final sections = json['setting'] as List<dynamic>;
 
     return TemplateJsonModel(
-      sections: sections.map<SettingSectionEntity>((sectionJson) => SettingsSectionModel.fromJson(sectionJson)).toList()
+      sections: sections
+          .map<SettingSectionEntity>((sectionJson) => SettingsSectionModel.fromJson(sectionJson))
+          .toList(),
+    );
+  }
+
+  // ADD THIS
+  Map<String, dynamic> toJson() {
+    return {
+      "setting": sections.map((section) => (section as SettingsSectionModel).toJson()).toList(),
+    };
+  }
+
+  factory TemplateJsonModel.fromEntity(TemplateJsonEntity entity) {
+    return TemplateJsonModel(
+      sections: entity.sections
+          .map((section) => SettingsSectionModel.fromEntity(section))
+          .toList(),
     );
   }
 }
@@ -38,10 +55,21 @@ class SettingsModel extends SettingsEntity {
     );
   }
 
+  factory SettingsModel.fromEntity(SettingsEntity entity) {
+    return SettingsModel(
+      serialNumber: entity.serialNumber,
+      widgetType: entity.widgetType,
+      value: entity.value,
+      smsFormat: entity.smsFormat,
+      title: entity.title,
+      hiddenFlag: entity.hiddenFlag,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       "SN" : serialNumber,
-      "WT" : widgetType,
+      "WT": widgetType.toInt(),
       "VAL" : value,
       "SF" : smsFormat,
       "TT" : title,
@@ -54,16 +82,16 @@ class SettingsSectionModel extends SettingSectionEntity {
   const SettingsSectionModel({
     required super.typeId,
     required super.sectionName,
-    required super.settings
+    required super.settings,
   });
 
   factory SettingsSectionModel.fromJson(Map<String, dynamic> json) {
     return SettingsSectionModel(
-        typeId: json["TID"],
-        sectionName: json["NAME"],
-        settings: (json["SETS"] as List<dynamic>)
-            .map((e) => SettingsModel.fromJson(e as Map<String, dynamic>))
-            .toList()
+      typeId: json["TID"] as int,
+      sectionName: json["NAME"] as String,
+      settings: (json["SETS"] as List<dynamic>)
+          .map((e) => SettingsModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -71,7 +99,17 @@ class SettingsSectionModel extends SettingSectionEntity {
     return {
       "TID": typeId,
       "NAME": sectionName,
-      "SETS": settings
+      "SETS": settings.map((setting) => (setting as SettingsModel).toJson()).toList(),
     };
+  }
+
+  factory SettingsSectionModel.fromEntity(SettingSectionEntity entity) {
+    return SettingsSectionModel(
+      typeId: entity.typeId,
+      sectionName: entity.sectionName,
+      settings: entity.settings
+          .map((setting) => SettingsModel.fromEntity(setting))
+          .toList(),
+    );
   }
 }

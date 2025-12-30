@@ -7,7 +7,7 @@ import 'features/mapping_and_unmapping_nodes/presentation/bloc/mapping_and_unmap
 import 'features/progam_zone_set/presentation/cubit/program_tab_cubit.dart';
 import 'firebase_options.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:niagara_smart_drip_irrigation/features/mqtt/bloc/mqtt_bloc.dart';
+// import 'package:niagara_smart_drip_irrigation/features/mqtt/bloc/mqtt_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'core/di/injection.dart' as di;
@@ -72,13 +72,13 @@ class RootApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider.value(value: _themeProvider),
         BlocProvider<AuthBloc>.value(value: authBloc),
-        BlocProvider<MqttBloc>(
+       /* BlocProvider<MqttBloc>(
           lazy: false,
           create: (context) {
             final bloc = di.sl<MqttBloc>();
             return bloc;
           },
-        ),
+        ),*/
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {

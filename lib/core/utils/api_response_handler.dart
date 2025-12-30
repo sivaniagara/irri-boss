@@ -29,7 +29,7 @@ Either<Failure, T> handleApiResponse<T>(
     Map<String, dynamic> response, {
       required T Function(dynamic data) parser,
       List<int> successCodes = const [200, 201],
-      bool returnEmptyOn201 = true,
+      bool returnMessageOnNoData = true,
     }) {
   try {
     final code = response['code'] as int?;
@@ -43,11 +43,16 @@ Either<Failure, T> handleApiResponse<T>(
     final apiCode = ApiCode.fromInt(code);
 
     if (successCodes.contains(code)) {
-      if (returnEmptyOn201 && code == 201 && data == null) {
-        return Right(parser(null));
-      }
       if (data == null) {
-        return Right(null as T);
+        if (returnMessageOnNoData) {
+          if (message is T) {
+            return Right(message as T);
+          } else {
+            return Right(parser(null));
+          }
+        } else {
+          return Right(parser(null));
+        }
       }
       final parsed = parser(data);
       return Right(parsed);

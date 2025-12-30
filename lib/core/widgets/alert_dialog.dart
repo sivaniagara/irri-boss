@@ -47,7 +47,7 @@ class GlassyAlertDialog extends StatelessWidget {
         child: Container(
           constraints: const BoxConstraints(maxWidth: 400, maxHeight: 500),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(20.0),
             border: Border.all(
               color: Colors.white.withOpacity(0.4),
