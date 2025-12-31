@@ -51,4 +51,45 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
       rethrow;
     }
   }
+
+  Future<void> motorOnOff({
+    required int userId,
+    required int controllerId,
+    required int subUserId,
+    required String status,
+    String? status2,
+    required bool dualPump,
+  }) async {
+    try {
+
+       final motorSms = status == "1" ? "MOTORON" : "MTROF";
+      final motor2Sms = status == "1" ? "MOTOR1ON" : "MTROF";
+      final sendsmsName = "${dualPump ? motor2Sms : motorSms}";
+       final payload = {
+        "status": status,
+        "sentSms": sendsmsName,
+      };
+
+      // 3️⃣ Send API PUT request
+      final endpoint = DashboardUrls.motorOnOffUrl
+          .replaceAll(':userId', userId.toString())
+          .replaceAll(':subuserId', subUserId.toString())
+          .replaceAll(':controllerId', controllerId.toString());
+      final response = await apiClient.put(endpoint,body: payload,);
+
+
+      // 4️⃣ Handle response
+      if (response.statusCode == 200) {
+        print(response.data);
+
+        // Optionally publish MQTT message here
+        // MqttClient.publish(motorSms);
+      } else {
+        print("Failed to switch motor: ${response.data}");
+      }
+    } catch (e) {
+      print("Error in motorOnOff: $e");
+    }
+  }
+
 }

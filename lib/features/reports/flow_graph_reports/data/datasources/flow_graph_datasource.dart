@@ -1,10 +1,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
 
-import '../../../../../core/error/exceptions.dart';
-import '../../../../../core/services/api_client.dart';
+
+import '../../../../../../core/error/exceptions.dart';
+import '../../../../../../core/services/api_client.dart';
 import '../../utils/flow_graph_routes.dart';
 import '../models/flow_graph_model.dart';
+
+
+
 
 abstract class FlowGraphRemoteDataSource {
   Future<FlowGraphModel> FlowGraphData({
@@ -31,7 +36,7 @@ class FlowGraphRemoteDataSourceImpl extends FlowGraphRemoteDataSource {
   }) async {
     try {
       /// Validate required params
-      if (fromDate.isEmpty || toDate.isEmpty) {
+      if (fromDate.isEmpty ) {
         throw ServerException(
           statusCode: 400,
           message: "Invalid parameters! One or more values missing.",
@@ -46,10 +51,9 @@ class FlowGraphRemoteDataSourceImpl extends FlowGraphRemoteDataSource {
           .replaceAll(':fromDate', fromDate)
           .replaceAll(':toDate', toDate);
 
-
       /// Make API call
       final response = await apiClient.get(endpoint);
-
+       print("endpoint--->$endpoint");
 
       if (response == null) {
         throw ServerException(statusCode: 500, message: "Empty server response");

@@ -1,5 +1,9 @@
-import '../entities/flow_graph_entities.dart';
+
+import 'package:niagara_smart_drip_irrigation/features/reports/flow_graph_reports/domain/entities/flow_graph_entities.dart';
+
 import '../repositories/flow_graph_repo.dart';
+
+
 
 class FetchFlowGraphData {
   final FlowGraphRepository repository;
