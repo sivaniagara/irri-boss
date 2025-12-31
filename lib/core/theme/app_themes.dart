@@ -66,6 +66,7 @@ class AppThemes {
 
   // Light Theme
   static final ThemeData _niagaraLightTheme = ThemeData(
+    scaffoldBackgroundColor: Colors.transparent,
     brightness: Brightness.light,
     primarySwatch: primarySwatch,
     primaryColor: primaryColor,
