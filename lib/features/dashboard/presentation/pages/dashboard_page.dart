@@ -482,7 +482,7 @@ class DashboardPage extends StatelessWidget {
                       userData: {
                         "userId": userId,
                         "controllerId": controller.userDeviceId,
-                        "subuserId": 0,
+                        "subUserId": 0,
                         "deviceId": controller.deviceId
                       },
                     ),

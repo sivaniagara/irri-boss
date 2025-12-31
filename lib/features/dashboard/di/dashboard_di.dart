@@ -7,6 +7,7 @@ import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/program_p
 
 import '../../../core/di/injection.dart';
 import '../../../core/services/selected_controller_persistence.dart';
+import '../presentation/cubit/dashboard_cubit.dart';
 import '../utils/dashboard_dispatcher.dart';
 import '../dashboard.dart';
 
@@ -34,4 +35,10 @@ void initDashboardDependencies() {
   sl.registerLazySingleton<NodeStatusRepository>(() => NodeStatusRepositoryImpl(nodeStatusDataSource: sl()));
   sl.registerLazySingleton(() => GetNodeStatusUsecase(nodeStatusRepository: sl()));
   sl.registerFactory(() => NodeStatusCubit(getNodeStatusUsecase: sl()));
+  sl.registerFactory(
+        () => DashboardCubit(
+      remote: sl<DashboardRemoteDataSource>(),
+      dispatcher: sl<DashboardMessageDispatcher>(),
+    ),
+  );
 }

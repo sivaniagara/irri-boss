@@ -16,6 +16,7 @@ import 'features/controller_settings/utils/controller_settings_routes.dart';
 import 'features/dashboard/domain/entities/livemessage_entity.dart';
 import 'features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'features/dashboard/presentation/bloc/dashboard_event.dart';
+import 'features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'features/dashboard/presentation/pages/controller_live_page.dart';
 import 'features/dashboard/presentation/pages/dashboard_page.dart';
 import 'features/dashboard/presentation/pages/program_preview_page.dart';
@@ -176,7 +177,7 @@ class AppRouter {
                     ..add(FetchDashboardGroupsEvent(authData.id))
                     ..add(ResetDashboardSelectionEvent()),
                 ),
-
+                BlocProvider(create: (_) => di.sl<DashboardCubit>()),
               ],
               child: DashboardPage(
                 userId: authData.id,

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_routes.dart';
+
+import '../cubit/dashboard_cubit.dart';
 
 class MotorValveSection extends StatelessWidget {
   final String motorOn;
@@ -35,6 +38,17 @@ class MotorValveSection extends StatelessWidget {
               onPressed: () {
                 AnimatedSwitcher(duration: const Duration(milliseconds: 400));
                 HapticFeedback.mediumImpact();
+                   HapticFeedback.mediumImpact();
+
+                  dialogContext.read<DashboardCubit>().motorOnOff(
+                    userId: userData['userId'],
+                    subUserId: userData['subUserId'],
+                    controllerId: userData['controllerId'],
+                    isOn: true,
+                    dualPump: model == 27,
+                    deviceId: userData['deviceId'],
+                  );
+
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
@@ -50,6 +64,14 @@ class MotorValveSection extends StatelessWidget {
               onPressed: () {
                 AnimatedSwitcher(duration: const Duration(milliseconds: 400));
                 HapticFeedback.mediumImpact();
+                dialogContext.read<DashboardCubit>().motorOnOff(
+                  userId: userData['userId'],
+                  subUserId: userData['subUserId'],
+                  controllerId: userData['controllerId'],
+                  isOn: false,
+                  dualPump: model == 27,
+                  deviceId: userData['deviceId'],
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
@@ -78,7 +100,7 @@ class MotorValveSection extends StatelessWidget {
             width: 60,
             height: 60,
           ),
-        ) :  ( model == 27) ?       Image.asset(
+        ) :  ( model == 27) ? Image.asset(
          motorOn2 == "1"
              ? 'assets/images/common/ui_motor.gif' // motor ON
              : motorOn2 == "0"
