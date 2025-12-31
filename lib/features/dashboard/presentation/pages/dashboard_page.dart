@@ -482,7 +482,8 @@ class DashboardPage extends StatelessWidget {
                       userData: {
                         "userId": userId,
                         "controllerId": controller.userDeviceId,
-                        "subuserId": 0
+                        "subuserId": 0,
+                        "deviceId": controller.deviceId
                       },
                     ),
                     SizedBox(height: scale(8)),

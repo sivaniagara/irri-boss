@@ -1,6 +1,11 @@
+import 'dart:convert';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_service.dart';
+import 'package:niagara_smart_drip_irrigation/core/services/mqtt/publish_messages.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../domain/entities/node_status_entity.dart';
 import '../../domain/usecases/get_node_status_usecase.dart';
 
@@ -32,15 +37,25 @@ class NodeStatusCubit extends Cubit<NodeStatusState> {
 
   NodeStatusCubit({required this.getNodeStatusUsecase}) : super(NodeStatusInitialState());
 
-  Future<void> getNodeStatus({required int userId, required int subUserId, required int controllerId}) async {
+  Future<void> getNodeStatus({required int userId, required int subUserId, required int controllerId, required String deviceId, bool isTestComm = false}) async {
     emit(NodeStatusInitialState());
 
     final result = await getNodeStatusUsecase(GetNodeStatusParams(
         userId: userId,
         controllerId: controllerId,
-        subuserId: subUserId
+        subuserId: subUserId,
     ));
 
+    sl.get<MqttService>().publish(
+        deviceId,
+        jsonEncode(
+            isTestComm
+                ? PublishMessageHelper.testCommunication
+                : PublishMessageHelper.requestNodeStatus
+        )
+    );
+
+    await Future.delayed(Duration(seconds: 2));
     result.fold(
           (failure) => emit(NodeStatusFailure(message: failure.message)),
           (nodeStatus) => emit(NodeStatusLoadedState(nodeStatusEntity: nodeStatus)),

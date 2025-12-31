@@ -87,9 +87,9 @@ class AppThemes {
       iconTheme: IconThemeData(
         color: Colors.black
       ),
-      backgroundColor: primaryColor,
-      foregroundColor: Colors.white,
-      elevation: 0,
+      backgroundColor: Colors.transparent,
+      /*foregroundColor: Colors.white,
+      elevation: 0,*/
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(

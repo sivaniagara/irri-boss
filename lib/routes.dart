@@ -217,7 +217,12 @@ class AppRouter {
           path: DashBoardRoutes.nodeStatus,
           builder: (context, state) {
             final data = state.extra as Map<String, dynamic>;
-            return NodeStatusPage(userId: data['userId'], controllerId: data['controllerId'], subuserId: data['subuserId'],);
+            return NodeStatusPage(
+              userId: data['userId'],
+              controllerId: data['controllerId'],
+              subuserId: data['subuserId'],
+              deviceId: data['deviceId'],
+            );
           },
         ),
         GoRoute(
