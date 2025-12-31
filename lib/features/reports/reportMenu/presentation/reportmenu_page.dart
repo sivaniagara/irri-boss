@@ -12,7 +12,8 @@ import '../../../../core/theme/app_gradients.dart';
  import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
 
 import '../../../../core/theme/app_styles.dart';
- import '../../power_reports/utils/Power_routes.dart';
+ import '../../../../core/widgets/glassy_wrapper.dart';
+import '../../power_reports/utils/Power_routes.dart';
 
 class ReportMenuPage extends StatelessWidget {
    final Map<String, dynamic> params;
@@ -24,10 +25,9 @@ class ReportMenuPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(gradient: AppGradients.commonGradient,) ,
-        child: SafeArea(
+    return GlassyWrapper(
+      child: Scaffold(
+        body: SafeArea(
           child: Column(
             children: [
               const SizedBox(height: 16),

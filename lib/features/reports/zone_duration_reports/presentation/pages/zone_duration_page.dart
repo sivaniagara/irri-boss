@@ -7,7 +7,8 @@ import 'package:niagara_smart_drip_irrigation/core/widgets/no_data.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/zone_duration_reports/presentation/pages/zone_duration_view.dart';
 
 import '../../../../../core/utils/common_date_picker.dart';
- import '../../../../report_downloader/utils/report_downloaderRoute.dart';
+ import '../../../../../core/widgets/glassy_wrapper.dart';
+import '../../../../report_downloader/utils/report_downloaderRoute.dart';
 import '../../utils/zone_duration_routes.dart';
 import '../bloc/zone_duration_bloc.dart';
 import '../bloc/zone_duration_bloc_event.dart';
@@ -32,74 +33,75 @@ class ZoneDurationPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: const BackButton(color: Colors.white),
+    return GlassyWrapper(
+      child: Scaffold(
+        appBar: AppBar(
 
-        // 🔹 TITLE CHANGE
-        title: Text("ZONE DURATION REPORT"),
-
-
-        actions: [
-          // 🔹 GRID / LIST TOGGLE
+          // 🔹 TITLE CHANGE
+          title: Text("ZONE DURATION REPORT"),
 
 
-          IconButton(
-            icon: const Icon(Icons.calendar_today,
-                color: Colors.black),
-            onPressed: () async {
-              final result = await pickReportDate(
-                context: context,
-                allowRange:  false,
-              );
-              if (result == null) return;
+          actions: [
+            // 🔹 GRID / LIST TOGGLE
 
-              context.read<ZoneDurationBloc>().add(
-                FetchZoneDurationEvent(
-                  userId: userId,
-                  subuserId: subuserId,
-                  controllerId: controllerId,
-                  fromDate: result.fromDate,
-                  toDate: result.toDate,
-                ),
-              );
-            },
-          ),
-          // 🔹 DATE PICKER
-        ],
-      ),
 
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.data_thresholding_sharp),
-        onPressed: () {
-          context.push(
-            ReportDownloadPageRoutes.ReportDownloadPage,
-            extra: {
-              "title": "Motor Cyclic Report",
-              "url": ZoneDurationPageUrls.getZoneDurationUrl,
-            },
-          );
-        },
-      ),
+            IconButton(
+              icon: const Icon(Icons.calendar_today,
+                  color: Colors.black),
+              onPressed: () async {
+                final result = await pickReportDate(
+                  context: context,
+                  allowRange:  false,
+                );
+                if (result == null) return;
 
-      // 🔹 BODY
-      body: BlocBuilder<ZoneDurationBloc, ZoneDurationState>(
-        builder: (context, state) {
-          if (state is ZoneDurationLoading) {
-            return const Center(
-                child: CircularProgressIndicator());
-          }
+                context.read<ZoneDurationBloc>().add(
+                  FetchZoneDurationEvent(
+                    userId: userId,
+                    subuserId: subuserId,
+                    controllerId: controllerId,
+                    fromDate: result.fromDate,
+                    toDate: result.toDate,
+                  ),
+                );
+              },
+            ),
+            // 🔹 DATE PICKER
+          ],
+        ),
 
-          if (state is ZoneDurationError) {
-            return Center(child: Text(state.message));
-          }
+        floatingActionButton: FloatingActionButton(
+          child: const Icon(Icons.data_thresholding_sharp),
+          onPressed: () {
+            context.push(
+              ReportDownloadPageRoutes.ReportDownloadPage,
+              extra: {
+                "title": "Motor Cyclic Report",
+                "url": ZoneDurationPageUrls.getZoneDurationUrl,
+              },
+            );
+          },
+        ),
 
-          if (state is ZoneDurationLoaded) {
-            return  ZoneDurationPageReport(data: state.data);
-          }
+        // 🔹 BODY
+        body: BlocBuilder<ZoneDurationBloc, ZoneDurationState>(
+          builder: (context, state) {
+            if (state is ZoneDurationLoading) {
+              return const Center(
+                  child: CircularProgressIndicator());
+            }
 
-          return noData;
-        },
+            if (state is ZoneDurationError) {
+              return Center(child: Text(state.message));
+            }
+
+            if (state is ZoneDurationLoaded) {
+              return  ZoneDurationPageReport(data: state.data);
+            }
+
+            return noData;
+          },
+        ),
       ),
     );
   }

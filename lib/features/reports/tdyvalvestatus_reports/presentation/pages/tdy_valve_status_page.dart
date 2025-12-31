@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/tdyvalvestatus_reports/presentation/pages/tdy_valve_status_graph.dart';
 
 import '../../../../../core/utils/common_date_picker.dart';
+import '../../../../../core/widgets/glassy_wrapper.dart';
 import '../../../../../core/widgets/no_data.dart';
 import '../../../../report_downloader/utils/report_downloaderRoute.dart';
 import '../../utils/tdy_valve_status_routes.dart';
@@ -34,106 +35,108 @@ class TdyValveStatusPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Today Valve Status"),
-        actions: [
-
-          /// 🔹 Toggle View (Cubit → View State)
-          BlocBuilder<TdyValveStatusCubit, TdyValveViewState>(
+    return GlassyWrapper(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Today Valve Status"),
+          actions: [
+      
+            /// 🔹 Toggle View (Cubit → View State)
+            BlocBuilder<TdyValveStatusCubit, TdyValveViewState>(
+              builder: (context, viewState) {
+                return IconButton(
+                  icon: Icon(
+                    viewState.viewMode == TdyValveStatusViewMode.zoneStatus
+                        ? Icons.bar_chart
+                        : Icons.list_alt,
+                  ),
+                  onPressed: () {
+                    context.read<TdyValveStatusCubit>().toggleView();
+      
+                    final program =
+                    (viewState.selectedProgramIndex + 1).toString();
+                    context.read<TdyValveStatusBloc>().add(
+                      FetchTdyValveStatusEvent(
+                        userId: userId,
+                        subuserId: subuserId,
+                        controllerId: controllerId,
+                        fromDate: fromDate,
+                        program: program,
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+      
+            /// 🔹 Date Picker
+            IconButton(
+              icon: const Icon(Icons.calendar_today),
+              onPressed: () async {
+                final result = await pickReportDate(
+                  context: context,
+                  allowRange: false,
+                );
+                if (result == null) return;
+      
+                final viewState =
+                    context.read<TdyValveStatusCubit>().state;
+      
+                final program =
+                (viewState.selectedProgramIndex + 1).toString();
+      
+                context.read<TdyValveStatusBloc>().add(
+                  FetchTdyValveStatusEvent(
+                    userId: userId,
+                    subuserId: subuserId,
+                    controllerId: controllerId,
+                    fromDate: result.fromDate,
+                    program: program,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      
+        /// 🔹 BODY → Bloc State (API)
+        body: BlocBuilder<TdyValveStatusBloc, TdyValveStatusState>(
+          builder: (context, state) {
+            if (state is TdyValveStatusLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+             if (state is TdyValveStatusError) {
+      
+              return Column(
+                children: [
+                  _programDropdown(context),
+                  noData,
+                ],
+              );
+            }
+      
+      
+      
+            if (state is TdyValveStatusLoaded) {
+              return Column(
+                children: [
+                  _programDropdown(context),
+                  const SizedBox(height: 12),
+      
+                  BlocBuilder<TdyValveStatusCubit, TdyValveViewState>(
             builder: (context, viewState) {
-              return IconButton(
-                icon: Icon(
-                  viewState.viewMode == TdyValveStatusViewMode.zoneStatus
-                      ? Icons.bar_chart
-                      : Icons.list_alt,
-                ),
-                onPressed: () {
-                  context.read<TdyValveStatusCubit>().toggleView();
-
-                  final program =
-                  (viewState.selectedProgramIndex + 1).toString();
-                  context.read<TdyValveStatusBloc>().add(
-                    FetchTdyValveStatusEvent(
-                      userId: userId,
-                      subuserId: subuserId,
-                      controllerId: controllerId,
-                      fromDate: fromDate,
-                      program: program,
-                    ),
-                  );
-                },
-              );
+              print("viewState.viewMode${viewState.viewMode}");
+              print("TdyValveStatusViewMode${TdyValveStatusViewMode.zoneStatus}");
+            return viewState.viewMode == TdyValveStatusViewMode.zoneStatus ? ZoneStatusCardTdyValveStatus(state.data) : TdyZoneStatusGraph(zones: state.data) ;
             },
-          ),
-
-          /// 🔹 Date Picker
-          IconButton(
-            icon: const Icon(Icons.calendar_today),
-            onPressed: () async {
-              final result = await pickReportDate(
-                context: context,
-                allowRange: false,
+            ),
+                 ],
               );
-              if (result == null) return;
-
-              final viewState =
-                  context.read<TdyValveStatusCubit>().state;
-
-              final program =
-              (viewState.selectedProgramIndex + 1).toString();
-
-              context.read<TdyValveStatusBloc>().add(
-                FetchTdyValveStatusEvent(
-                  userId: userId,
-                  subuserId: subuserId,
-                  controllerId: controllerId,
-                  fromDate: result.fromDate,
-                  program: program,
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-
-      /// 🔹 BODY → Bloc State (API)
-      body: BlocBuilder<TdyValveStatusBloc, TdyValveStatusState>(
-        builder: (context, state) {
-          if (state is TdyValveStatusLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-           if (state is TdyValveStatusError) {
-
-            return Column(
-              children: [
-                _programDropdown(context),
-                noData,
-              ],
-            );
-          }
-
-
-
-          if (state is TdyValveStatusLoaded) {
-            return Column(
-              children: [
-                _programDropdown(context),
-                const SizedBox(height: 12),
-
-                BlocBuilder<TdyValveStatusCubit, TdyValveViewState>(
-          builder: (context, viewState) {
-            print("viewState.viewMode${viewState.viewMode}");
-            print("TdyValveStatusViewMode${TdyValveStatusViewMode.zoneStatus}");
-          return viewState.viewMode == TdyValveStatusViewMode.zoneStatus ? ZoneStatusCardTdyValveStatus(state.data) : TdyZoneStatusGraph(zones: state.data) ;
+            }
+      
+            return noData;
           },
-          ),
-               ],
-            );
-          }
-
-          return noData;
-        },
+        ),
       ),
     );
   }

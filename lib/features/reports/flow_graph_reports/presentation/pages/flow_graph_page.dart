@@ -3,7 +3,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/app_gradients.dart';
+import '../../../../../core/theme/app_themes.dart';
 import '../../../../../core/utils/common_date_picker.dart';
+import '../../../../../core/widgets/glassy_wrapper.dart';
 import '../../../../../core/widgets/no_data.dart';
 import '../../domain/entities/flow_graph_entities.dart';
 import '../bloc/flow_graph_bloc.dart';
@@ -29,112 +31,114 @@ class FlowGraphPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("FLOW GRAPH"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.calendar_today),
-            onPressed: () async {
-              final result = await pickReportDate(
-                context: context,
-                allowRange: true,
-              );
-              if (result == null) return;
-
-              context.read<FlowGraphBloc>().add(
-                FetchFlowGraphEvent(
-                  userId: userId,
-                  subuserId: subuserId,
-                  controllerId: controllerId,
-                  fromDate: result.fromDate,
-                  toDate: result.toDate,
-                ),
-              );
-            },
-          )
-        ],
-      ),
-
-      /// 🔹 BODY
-      body: BlocBuilder<FlowGraphBloc, FlowGraphState>(
-        builder: (context, state) {
-          if (state is FlowGraphLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (state is FlowGraphError) {
-            return Center(child: Text(state.message));
-          }
-
-          if (state is FlowGraphLoaded) {
-            final list = state.data.data;
-
-            if (list.isEmpty) return noData;
-
-            final totalFlow = list.fold<double>(
-              0,
-                  (sum, e) =>
-              sum + (double.tryParse(e.totalFlow ?? '0') ?? 0),
-            );
-
-            final totalRunTimeSeconds = list.fold<int>(
-              0,
-                  (sum, e) => sum + parseTimeToSeconds(e.totalRunTime),
-            );
-
-            return ListView(
-              padding: const EdgeInsets.all(12),
-              children: [
-                /// GRAPH PLACEHOLDER
-
-                SizedBox(
-                  height: 220,
-                  child: FlowBarChart(list),
-                ),
-
-                const SizedBox(height: 12),
-
-                /// SUMMARY
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(gradient: AppGradients.commonGradient,) ,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      summaryItem(
-                        "Total Flow (L)",
-                        totalFlow.toStringAsFixed(0),
-                      ),
-                      summaryItem(
-                        "Run Time (H)",
-                        (totalRunTimeSeconds / 3600)
-                            .toStringAsFixed(1),
-                      ),
-                    ],
+    return GlassyWrapper(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("FLOW GRAPH"),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.calendar_today),
+              onPressed: () async {
+                final result = await pickReportDate(
+                  context: context,
+                  allowRange: true,
+                );
+                if (result == null) return;
+      
+                context.read<FlowGraphBloc>().add(
+                  FetchFlowGraphEvent(
+                    userId: userId,
+                    subuserId: subuserId,
+                    controllerId: controllerId,
+                    fromDate: result.fromDate,
+                    toDate: result.toDate,
                   ),
-                ),
-
-                const SizedBox(height: 12),
-                /// TABLE
-                Container(
-                  decoration: BoxDecoration(gradient: AppGradients.commonGradient,) ,
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Column(
+                );
+              },
+            )
+          ],
+        ),
+      
+        /// 🔹 BODY
+        body: BlocBuilder<FlowGraphBloc, FlowGraphState>(
+          builder: (context, state) {
+            if (state is FlowGraphLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+      
+            if (state is FlowGraphError) {
+              return Center(child: Text(state.message));
+            }
+      
+            if (state is FlowGraphLoaded) {
+              final list = state.data.data;
+      
+              if (list.isEmpty) return noData;
+      
+              final totalFlow = list.fold<double>(
+                0,
+                    (sum, e) =>
+                sum + (double.tryParse(e.totalFlow ?? '0') ?? 0),
+              );
+      
+              final totalRunTimeSeconds = list.fold<int>(
+                0,
+                    (sum, e) => sum + parseTimeToSeconds(e.totalRunTime),
+              );
+      
+              return ListView(
+                padding: const EdgeInsets.all(12),
+                children: [
+                  /// GRAPH PLACEHOLDER
+      
+                  SizedBox(
+                    height: 220,
+                    child: FlowBarChart(list),
+                  ),
+      
+                  const SizedBox(height: 12),
+      
+                  /// SUMMARY
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(gradient: AppGradients.commonGradient,) ,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        tableHeader(),
-                        ...list.map(tableRow),
+                        summaryItem(
+                          "Total Flow (L)",
+                          totalFlow.toStringAsFixed(0),
+                        ),
+                        summaryItem(
+                          "Run Time (H)",
+                          (totalRunTimeSeconds / 3600)
+                              .toStringAsFixed(1),
+                        ),
                       ],
                     ),
                   ),
-                ),
-              ],
-            );
-          }
-
-          return noData;
-        },
+      
+                  const SizedBox(height: 12),
+                  /// TABLE
+                  Container(
+                    decoration: BoxDecoration(gradient: AppGradients.commonGradient,) ,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Column(
+                        children: [
+                          tableHeader(),
+                          ...list.map(tableRow),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }
+      
+            return noData;
+          },
+        ),
       ),
     );
   }
@@ -179,7 +183,7 @@ Widget tableHeader() {
 Widget tableRow(FlowGraphDataEntity e) {
   return Container(
     decoration: BoxDecoration(
-      border: Border.all(color: Colors.blue),
+      border: Border.all(color: AppThemes.primaryColor,),
     ),
     padding: const EdgeInsets.symmetric(vertical: 10),
     child: Row(
