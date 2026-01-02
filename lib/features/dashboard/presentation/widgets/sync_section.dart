@@ -51,7 +51,20 @@ class ProgramButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext dialogContext) {
-    return GlassCard(
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white,
+            AppThemes.primaryColor.withOpacity(0.15),
+            // Colors.white.withOpacity(opacity / 2),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
       padding:  const EdgeInsets.all(0),
       margin: const EdgeInsets.all(0),
       child: TextButton.icon(

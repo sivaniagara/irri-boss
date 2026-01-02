@@ -1,8 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-import '../theme/app_themes.dart';
-
 class GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -33,23 +31,22 @@ class GlassCard extends StatelessWidget {
         gradient: LinearGradient(
           colors: [
             Colors.white.withOpacity(opacity),
-            AppThemes.primaryColor,
+            Colors.white.withOpacity(opacity),
             // Colors.white.withOpacity(opacity / 2),
           ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
       ),
       child: ClipRRect(
         borderRadius: borderRadius ?? BorderRadius.circular(16),
-        child: child
-        // BackdropFilter(
-        //   filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-        //   child: Padding(
-        //     padding: padding ?? const EdgeInsets.all(16),
-        //     child: child,
-        //   ),
-        // ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+          child: Padding(
+            padding: padding ?? const EdgeInsets.all(16),
+            child: child,
+          ),
+        ),
       ),
     );
   }
