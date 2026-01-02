@@ -167,6 +167,8 @@ class MenuButton extends StatelessWidget {
               Text(
                 title,
                 textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   color: isEnabled ? Colors.white : Colors.grey,
                   fontWeight: FontWeight.w500,
