@@ -34,7 +34,7 @@ import 'features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
 import 'features/sendrev_msg/utils/senrev_routes.dart';
 import 'features/program_settings/utils/program_settings_routes.dart';
 import 'features/setserialsettings/domain/usecase/setserial_details_params.dart';
-import 'features/setserialsettings/presentation/bloc/setserial_bloc.dart';
+import 'features/setserialsettings/presentation/bloc/set_serial_bloc.dart';
 import 'features/setserialsettings/presentation/bloc/setserial_bloc_event.dart';
 import 'features/setserialsettings/presentation/pages/setserial_page.dart';
 import 'features/side_drawer/groups/utils/group_routes.dart';

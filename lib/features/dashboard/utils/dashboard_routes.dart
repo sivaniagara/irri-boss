@@ -12,7 +12,7 @@ import '../../controller_settings/utils/controller_settings_routes.dart';
 import '../../irrigation_settings/utils/irrigation_settings_routes.dart';
 import '../../program_settings/utils/program_settings_routes.dart';
 import '../../setserialsettings/domain/usecase/setserial_details_params.dart';
-import '../../setserialsettings/presentation/bloc/setserial_bloc.dart';
+import '../../setserialsettings/presentation/bloc/set_serial_bloc.dart';
 import '../../setserialsettings/presentation/bloc/setserial_bloc_event.dart';
 import '../../setserialsettings/presentation/pages/setserial_page.dart';
 import '../domain/entities/livemessage_entity.dart';

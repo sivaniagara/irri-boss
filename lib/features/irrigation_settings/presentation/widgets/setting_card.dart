@@ -21,14 +21,12 @@ class SettingCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(18),
       onTap: () {
         if(item.irrigationSettingsEnum == IrrigationSettingsEnum.irrigationFertigation){
-          // final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
-          // context.read<WaterFertilizerSettingBloc>().add(FetchProgramZoneSetEvent(
-          //     userId: controllerContext.userId,
-          //     controllerId: controllerContext.controllerId,
-          //     subUserId: controllerContext.subUserId,
-          //     programId: '1'
-          // ));
           context.push('${DashBoardRoutes.dashboard}${IrrigationSettingsRoutes.irrigationSettings}${WaterFertilizerSettingsRoutes.program.replaceAll(':programId', '1')}');
+        }else if(item.irrigationSettingsEnum != IrrigationSettingsEnum.irrigationFertigation){
+          context.push('${DashBoardRoutes.dashboard}${IrrigationSettingsRoutes.irrigationSettings}${IrrigationSettingsRoutes.templateSetting
+              .replaceAll(':settingName', item.name)
+              .replaceAll(':settingNo', item.irrigationSettingsEnum.settingId.toString())
+          }');
         }
       },
       child: Container(
@@ -53,7 +51,6 @@ class SettingCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Image Container
             Container(
               height: 54,
               width: 54,

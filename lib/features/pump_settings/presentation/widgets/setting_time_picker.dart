@@ -59,7 +59,7 @@ class _SettingTimePickerState extends State<SettingTimePicker> {
             highlightedTextStyle: const TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              // color: Colors.white,
             ),
             onTimeChange: (newTime) {
               setState(() => currentTime = newTime);

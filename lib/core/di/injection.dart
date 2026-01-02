@@ -17,6 +17,7 @@ import '../../features/controller_details/presentation/bloc/controller_details_s
 import '../../features/dashboard/utils/dashboard_dispatcher.dart';
 import '../../features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../features/fault_msg/di/faultmsg_di.dart';
+import '../../features/irrigation_settings/di/irrigation_settings_di.dart';
 import '../../features/pump_settings/utils/pump_settings_dispatcher.dart';
 import '../services/mqtt/app_message_dispatcher.dart';
 import '../services/mqtt/mqtt_message_helper.dart';
@@ -34,7 +35,7 @@ import '../../features/sendrev_msg/di/sendrev_di.dart';
 import '../../features/setserialsettings/data/datasources/setserial_datasource.dart';
 import '../../features/setserialsettings/domain/repositories/setserial_details_repo.dart';
 import '../../features/setserialsettings/domain/usecase/setserial_details_params.dart';
-import '../../features/setserialsettings/presentation/bloc/setserial_bloc.dart';
+import '../../features/setserialsettings/presentation/bloc/set_serial_bloc.dart';
 import '../../features/setserialsettings/presentation/bloc/setserial_bloc_event.dart';
 import '../../features/auth/di/auth.di.dart';
 import '../../features/controller_settings/presentation/cubit/controller_tab_cubit.dart';
@@ -130,6 +131,9 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
 
   /// water fertilizer setting dependencies
   initWaterFertilizerSettingsDependencies();
+
+  /// irrigation template setting dependencies
+  initIrrigationSettingsDependencies();
 
   sl.registerLazySingleton<ControllerRemoteDataSource>(() => ControllerRemoteDataSourceImpl(apiClient: sl()));
   sl.registerLazySingleton<ControllerRepo>(() => ControllerRepoImpl(remoteDataSource: sl()));
