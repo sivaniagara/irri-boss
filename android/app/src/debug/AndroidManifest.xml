@@ -4,4 +4,9 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <application>
+        <meta-data
+            android:name="firebase_app_check_debug_token"
+            android:value="06249fcf-5496-44c4-9924-91148810dbcf" />
+    </application>
 </manifest>

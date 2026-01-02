@@ -209,6 +209,8 @@ class SubUserDetailsScreen extends StatelessWidget {
     return GlassCard(
       margin: const EdgeInsets.only(bottom: 8),
       padding: EdgeInsets.symmetric(vertical: 0),
+      opacity: 1,
+      blur: 0,
       child: Row(
         children: [
           Checkbox(

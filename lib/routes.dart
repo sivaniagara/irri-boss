@@ -268,17 +268,11 @@ class AppRouter {
 
             return BlocProvider.value(
               value: authBloc,
-              child: Scaffold(
-                appBar: AppBar(centerTitle: true, title: Text(title)),
-                drawer: const AppDrawer(),
-                body: GlassyWrapper(
-                  child: NotificationListener<OverscrollIndicatorNotification>(
-                    onNotification: (notification) {
-                      notification.disallowIndicator();
-                      return true;
-                    },
-                    child: child,
-                  ),
+              child: GlassyWrapper(
+                child: Scaffold(
+                  appBar: AppBar(centerTitle: true, title: Text(title)),
+                  drawer: const AppDrawer(),
+                  body: child,
                 ),
               ),
             );

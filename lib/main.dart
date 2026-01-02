@@ -14,10 +14,11 @@ Future<void> main() async {
 
   try {
     // print("🔍 App Check: Activating with provider ${kDebugMode ? 'debug' : 'playIntegrity'}");
-    await FirebaseAppCheck.instance.activate(
-      androidProvider: kDebugMode ? AndroidProvider.debug : AndroidProvider.playIntegrity,
-      appleProvider: AppleProvider.deviceCheck,
-    );
+    if (kDebugMode) {
+      await FirebaseAppCheck.instance.activate(androidProvider: AndroidProvider.debug);
+    } else {
+      await FirebaseAppCheck.instance.activate(androidProvider: AndroidProvider.playIntegrity);
+    }
     final token = await FirebaseAppCheck.instance.getToken(true);
     if (token != null) {
       if (kDebugMode) {
