@@ -263,7 +263,7 @@ class DashboardPage extends StatelessWidget {
           onPressed: selectedController?.simNumber != null
               ? () => _launchCall(selectedController!.simNumber)
               : null,
-          icon: const Icon(Icons.call, color: Colors.white),
+          icon: const Icon(Icons.call, color: AppThemes.primaryColor),
         ),
         IconButton(
           onPressed: null,
