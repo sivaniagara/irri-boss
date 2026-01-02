@@ -56,14 +56,28 @@ class StandaloneRepositoryImpl implements StandaloneRepository {
 
   @override
   Future<void> publishMqttCommand({
-    required String deviceId,
+    required String userId,
+    required int subuserId,
+    required String controllerId,
     required String command,
+    required String sentSms,
   }) async {
     try {
+      // 1. Publish to hardware via MQTT
       await remoteDataSource.publishMqttCommand(
-        deviceId: deviceId,
+        controllerId: controllerId,
         command: command,
       );
+
+      // 2. Log to history if a non-empty sentSms is provided
+      if (sentSms.isNotEmpty) {
+        await remoteDataSource.logHistory(
+          userId: userId,
+          subuserId: subuserId,
+          controllerId: controllerId,
+          sentSms: sentSms,
+        );
+      }
     } catch (e) {
       rethrow;
     }

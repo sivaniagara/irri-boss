@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
-import '../../../../core/services/mqtt_service.dart';
+import 'package:niagara_smart_drip_irrigation/core/services/api_client.dart';
+import '../../../../core/services/mqtt/mqtt_service.dart' show MqttService;
 import '../../domain/entities/standalone_entity.dart';
 import '../models/standalone_model.dart';
 
@@ -24,13 +24,20 @@ abstract class StandaloneRemoteDataSource {
   });
 
   Future<void> publishMqttCommand({
-    required String deviceId,
+    required String controllerId,
     required String command,
+  });
+
+  Future<void> logHistory({
+    required String userId,
+    required int subuserId,
+    required String controllerId,
+    required String sentSms,
   });
 }
 
 class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
-  final http.Client client;
+  final ApiClient client;
   final MqttService mqttService;
 
   StandaloneRemoteDataSourceImpl(this.client, this.mqttService);
@@ -43,37 +50,44 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
     required String menuId,
     required String settingsId,
   }) async {
-    final settingsUrl = 'http://3.1.62.165:8080/api/v1/user/$userId/subuser/$subuserId/controller/$controllerId/menu/$menuId/settings/$settingsId';
-    final zoneListUrl = 'http://3.1.62.165:8080/api/v1/user/$userId/subuser/$subuserId/controller/$controllerId/zonelistv2';
+    final settingsEndpoint = 'user/$userId/subuser/$subuserId/controller/$controllerId/menu/$menuId/settings/$settingsId';
+    final zoneListEndpoint = 'user/$userId/subuser/$subuserId/controller/$controllerId/zonelistv2';
 
     try {
-      final responses = await Future.wait([
-        client.get(Uri.parse(settingsUrl)),
-        client.get(Uri.parse(zoneListUrl)),
+      final results = await Future.wait([
+        client.get(settingsEndpoint),
+        client.get(zoneListEndpoint),
       ]);
 
-      if (responses[0].statusCode == 200 && responses[1].statusCode == 200) {
-        final settingsJson = json.decode(responses[0].body);
-        final zoneListBody = json.decode(responses[1].body);
-        
-        List<dynamic> zoneListJson;
-        if (zoneListBody is Map && zoneListBody['data'] is List) {
-          zoneListJson = zoneListBody['data'];
-        } else if (zoneListBody is List) {
-          zoneListJson = zoneListBody;
-        } else {
-          zoneListJson = [];
-        }
+      final dynamic rawSettings = results[0];
+      final dynamic rawZoneList = results[1];
 
-        return StandaloneModel.fromCombinedJson(
-          settingsJson: settingsJson,
-          zoneJson: zoneListJson,
-        );
-      } else {
-        throw Exception('Server Error');
+      Map<String, dynamic> settingsJson = {};
+      if (rawSettings is Map<String, dynamic>) {
+        settingsJson = rawSettings;
+      } else if (rawSettings is List) {
+        settingsJson = {'data': rawSettings};
       }
+
+      List<dynamic> zoneListJson = [];
+      if (rawZoneList is List) {
+        zoneListJson = rawZoneList;
+      } else if (rawZoneList is Map) {
+        final data = rawZoneList['data'];
+        final zones = rawZoneList['zones'];
+        if (data is List) {
+          zoneListJson = data;
+        } else if (zones is List) {
+          zoneListJson = zones;
+        }
+      }
+
+      return StandaloneModel.fromCombinedJson(
+        settingsJson: settingsJson,
+        zoneJson: zoneListJson,
+      );
     } catch (e) {
-      throw Exception('Failed to connect to the server: $e');
+      throw Exception('Failed to fetch standalone data: $e');
     }
   }
 
@@ -87,51 +101,64 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
     required StandaloneEntity config,
     required String sentSms,
   }) async {
-    // Exact URL from sample: user/%@/subuser/0/controller/%d/menu/59/settings
-    final url = 'http://3.1.62.165:8080/api/v1/user/$userId/subuser/$subuserId/controller/$controllerId/menu/$settingsId/settings';
-    
+    final settingsEndpoint = 'user/$userId/subuser/$subuserId/controller/$controllerId/menu/$settingsId/settings';
+    final historyEndpoint = 'user/$userId/subuser/$subuserId/controller/$controllerId/view/messages/';
+
+    final Map<String, dynamic> sendDataMap = {
+      "type": "21",
+      "zoneList": config.zones.map((z) => {
+        "zoneNumber": "ZONE ${z.zoneNumber.padLeft(3, '0')}",
+        "status": z.status ? "1" : "0",
+        "time": z.time
+      }).toList(),
+      "toggleStatus": config.settingValue,
+      "driptoggleStatus": config.dripSettingValue
+    };
+
     final body = {
       "menuSettingId": settingsId,
       "receivedData": "",
       "sentSms": sentSms,
-      "sendData": {
-        "type": "21",
-        "zoneList": config.zones.map((z) => {
-          "zoneNumber": "ZONE ${z.zoneNumber.padLeft(3, '0')}",
-          "status": z.status ? "1" : "0",
-          "time": z.time
-        }).toList(),
-        "toggleStatus": config.settingValue,
-        "driptoggleStatus": config.dripSettingValue
-      }
+      "sendData": jsonEncode(sendDataMap)
     };
 
     try {
-      final response = await client.post(
-        Uri.parse(url),
-        body: json.encode(body),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception('Failed to send configuration (Code: ${response.statusCode}): ${response.body}');
-      }
+      // 1. Save configuration
+      await client.post(settingsEndpoint, body: body);
+      // 2. Log to history
+      await client.post(historyEndpoint, body: {"sentSms": sentSms});
     } catch (e) {
-      throw Exception('Failed to connect to the server: $e');
+      throw Exception('Failed to send configuration: $e');
     }
   }
 
   @override
   Future<void> publishMqttCommand({
-    required String deviceId,
+    required String controllerId,
     required String command,
   }) async {
-    if (!mqttService.isConnected) {
-      await mqttService.connect();
+    try {
+      if (!mqttService.isConnected) {
+        await mqttService.connect();
+      }
+      mqttService.publish(controllerId, command);
+    } catch (e) {
+      throw Exception('Failed to publish MQTT command: $e');
     }
-    mqttService.publish(deviceId, command);
+  }
+
+  @override
+  Future<void> logHistory({
+    required String userId,
+    required int subuserId,
+    required String controllerId,
+    required String sentSms,
+  }) async {
+    final historyEndpoint = 'user/$userId/subuser/$subuserId/controller/$controllerId/view/messages/';
+    try {
+      await client.post(historyEndpoint, body: {"sentSms": sentSms});
+    } catch (e) {
+      // Log failure but don't rethrow to avoid blocking the main flow
+    }
   }
 }

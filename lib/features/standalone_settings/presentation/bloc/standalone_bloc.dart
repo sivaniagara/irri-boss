@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/standalone_entity.dart';
 import '../../domain/usecases/get_standalone_status.dart';
@@ -21,9 +20,9 @@ class StandaloneBloc extends Bloc<StandaloneEvent, StandaloneState> {
     required this.sendStandaloneConfig,
     required this.publishMqttCommand,
   }) : super(StandaloneInitial()) {
+    
     on<FetchStandaloneDataEvent>((event, emit) async {
       emit(StandaloneLoading());
-
       try {
         final result = await getStandaloneStatus(
           userId: event.userId,
@@ -34,7 +33,6 @@ class StandaloneBloc extends Bloc<StandaloneEvent, StandaloneState> {
         );
 
         List<ZoneEntity> finalZones = List<ZoneEntity>.from(result.zones);
-        
         if (result.settingValue == "0") {
           finalZones = finalZones.map((zone) => ZoneEntity(
             zoneNumber: zone.zoneNumber,
@@ -51,8 +49,7 @@ class StandaloneBloc extends Bloc<StandaloneEvent, StandaloneState> {
           )
         ));
       } catch (e) {
-        // Updated: Show user-friendly message instead of raw error/URLs
-        emit(StandaloneError("Unable to load settings. Please check your connection and try again."));
+        emit(StandaloneError("Unable to load live settings. Please check your connection."));
       }
     });
 
@@ -62,9 +59,7 @@ class StandaloneBloc extends Bloc<StandaloneEvent, StandaloneState> {
             ? (state as StandaloneLoaded).data 
             : (state as StandaloneSuccess).data;
 
-        if (currentStateData.settingValue != "1" && event.value) {
-          return;
-        }
+        if (currentStateData.settingValue != "1" && event.value) return;
 
         final updatedZones = List<ZoneEntity>.from(currentStateData.zones);
         final oldZone = updatedZones[event.index];
@@ -159,76 +154,71 @@ class StandaloneBloc extends Bloc<StandaloneEvent, StandaloneState> {
 
          try {
            String sentSms = "";
-           if (currentStateData.zones.isNotEmpty) {
-             final zone = currentStateData.zones[0];
-             final statusStr = zone.status ? "ON" : "OFF";
-             final timeParts = zone.time.split(':');
-             final hours = timeParts.isNotEmpty ? timeParts[0].padLeft(2, '0') : "00";
-             final minutes = timeParts.length > 1 ? timeParts[1].padLeft(2, '0') : "00";
-             final zoneNumPadded = zone.zoneNumber.padLeft(3, '0');
-             sentSms = "STZ,$zoneNumPadded,$statusStr,$hours,$minutes";
+           if (event.menuId == "94") {
+             sentSms = currentStateData.settingValue == "1" ? "CONFIGMODEON" : "CONFIGMODEOF";
+           } else {
+             sentSms = currentStateData.settingValue == "1" ? "STANDALONEMODEON" : "STANDALONEMODEOF";
            }
 
+           // MQTT Real-time Sync for individual zones - No history log here
            for (var zone in currentStateData.zones) {
-             final statusStr = zone.status ? "ON" : "OFF";
              final timeParts = zone.time.split(':');
-             final hours = timeParts.length > 0 ? timeParts[0].padLeft(2, '0') : "00";
-             final minutes = timeParts.length > 1 ? timeParts[1].padLeft(2, '0') : "00";
-             final zoneNumPadded = zone.zoneNumber.padLeft(3, '0');
-             final mqttPayload = json.encode({
-               "sentSms": "STZ,$zoneNumPadded,$statusStr,$hours,$minutes"
+             final cmd = json.encode({
+               "sentSms": "STZ,${zone.zoneNumber.padLeft(3, '0')},${zone.status ? 'ON' : 'OFF'},${timeParts[0].padLeft(2, '0')},${timeParts[1].padLeft(2, '0')}"
              });
-             await publishMqttCommand(deviceId: event.controllerId, command: mqttPayload);
-           }
-
-           try {
-             await sendStandaloneConfig(
+             await publishMqttCommand(
                userId: event.userId,
                subuserId: 0,
                controllerId: event.controllerId,
-               menuId: event.menuId,
-               settingsId: event.settingsId,
-               config: currentStateData,
-               sentSms: sentSms,
+               command: cmd,
+               sentSms: "", // PASS EMPTY to prevent multiple logs
              );
-           } catch (apiError) {
-             if (kDebugMode) print("API Update failed: $apiError");
            }
 
+           // REST API Persistence - This will trigger the SINGLE history log
+           await sendStandaloneConfig(
+             userId: event.userId,
+             subuserId: 0,
+             controllerId: event.controllerId,
+             menuId: event.menuId,
+             settingsId: event.settingsId,
+             config: currentStateData,
+             sentSms: sentSms,
+           );
+
            emit(StandaloneSuccess(event.successMessage, currentStateData));
+           
+           add(FetchStandaloneDataEvent(
+             userId: event.userId,
+             controllerId: event.controllerId,
+             menuId: event.menuId,
+             settingsId: event.settingsId,
+           ));
 
          } catch (e) {
-           if (kDebugMode) print("Error in SEND event: $e");
-           // Updated: User friendly error message
-           emit(StandaloneError("Failed to update settings. Please try again."));
+           emit(StandaloneError("Settings update failed. Please try again."));
          }
        }
     });
 
     on<ViewStandaloneEvent>((event, emit) async {
       if (state is StandaloneLoaded || state is StandaloneSuccess) {
-        final StandaloneEntity currentStateData;
-        if ((state is StandaloneLoaded)) {
-          currentStateData = (state as StandaloneLoaded).data;
-        } else {
-          currentStateData = (state as StandaloneSuccess).data;
-        }
+        final currentStateData = (state is StandaloneLoaded) 
+            ? (state as StandaloneLoaded).data 
+            : (state as StandaloneSuccess).data;
 
         try {
           final statusMsg = "STANDALONE:${currentStateData.settingValue},DRIP:${currentStateData.dripSettingValue}";
-          final mqttPayload = json.encode({
-            "sentSms": statusMsg
-          });
-
           await publishMqttCommand(
-            deviceId: event.controllerId,
-            command: mqttPayload,
+            userId: "0",
+            subuserId: 0,
+            controllerId: event.controllerId,
+            command: json.encode({"sentSms": statusMsg}),
+            sentSms: "message deliverd",
           );
-
           emit(StandaloneSuccess(event.successMessage, currentStateData));
         } catch (e) {
-          if (kDebugMode) print("Error in VIEW event: $e");
-          emit(StandaloneError("Unable to fetch status at this time."));
+          emit(StandaloneError("View status failed."));
         }
       }
     });

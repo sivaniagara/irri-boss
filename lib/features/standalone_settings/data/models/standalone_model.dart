@@ -43,7 +43,9 @@ class StandaloneModel extends StandaloneEntity {
                 decodedSendData['zoneList'] is List && 
                 (decodedSendData['zoneList'] as List).isNotEmpty) {
               finalZones = (decodedSendData['zoneList'] as List).map((z) {
+                print("final zones${finalZones}");
                 return ZoneModel.fromJson(Map<String, dynamic>.from(z as Map));
+
               }).toList();
             }
           }

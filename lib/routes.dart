@@ -27,7 +27,7 @@ import 'features/reports/Voltage_reports/utils/voltage_routes.dart';
 import 'features/reports/flow_graph_reports/utils/flow_graph_routes.dart';
 import 'features/reports/power_reports/utils/Power_routes.dart';
 import 'features/reports/reportMenu/utils/report_routes.dart';
-import 'features/reports/standalone_reports/utils/standalone_routes.dart';
+import 'features/reports/standalone_reports/utils/standalone_report_routes.dart';
 import 'features/reports/tdyvalvestatus_reports/utils/tdy_valve_status_routes.dart';
 import 'features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
 import 'features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
@@ -186,6 +186,7 @@ class AppRouter {
           routes: [
             ...controllerSettingGoRoutes,
             ...programSettingsGoRoutes,
+            ...irrigationSettingGoRoutes,
             ...standaloneRoutes,
             // ...mappingAndUnmappingNodesGoRoutes
           ],
@@ -240,8 +241,7 @@ class AppRouter {
             );
           },
         ),
-
-        //
+        ...pumpSettingsRoutes,
         ShellRoute(
           builder: (context, state, child) {
             final location = state.matchedLocation;
@@ -345,7 +345,6 @@ class AppRouter {
               path: RouteConstants.chat,
               builder: (context, state) => const Chat(),
             ),
-
             GoRoute(
               path: DealerRoutes.dealerDashboard,
               builder: (context, state) => BlocProvider.value(
@@ -355,7 +354,18 @@ class AppRouter {
             )
           ],
         ),
-
+        ...reportPageRoutes,
+        ...sendRevPageRoutes,
+        ...FaultMsgPagesRoutes,
+        ...voltGraphRoutes,
+        ...PowerGraphRoutes,
+        ...ReportDownloadRoutes,
+        ...MotorCyclicRoutes,
+        ...ZoneDurationRoutes,
+        ...standaloneReportRoutes,
+        ...TdyValveStatusRoutes,
+        ...ZoneCyclicRoutes,
+        ...FlowGraphRoutes,
       ],
     );
   }

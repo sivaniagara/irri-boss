@@ -5,6 +5,8 @@ import 'package:niagara_smart_drip_irrigation/features/fault_msg/utils/faultmsg_
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/utils/irrigation_settings_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/reportMenu/utils/report_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/utils/standalone_report_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/standalone_settings/utils/standalone_routes.dart';
 
 import '../../../sendrev_msg/utils/senrev_routes.dart';
 import '../../utils/dashboard_routes.dart';
@@ -42,7 +44,10 @@ class ActionsSection extends StatelessWidget {
             child: MenuButton(
               icon: Icons.touch_app,
               title: "Stand\nalone",
-              onTap: () {},
+              onTap: () {
+                dialogContext.push(StandaloneRoutes.standalone, extra: data);
+
+              },
             ),
           ),
           Expanded(

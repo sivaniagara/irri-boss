@@ -6,12 +6,18 @@ class PublishMqttCommand {
   PublishMqttCommand(this.repository);
 
   Future<void> call({
-    required String deviceId,
+    required String userId,
+    required int subuserId,
+    required String controllerId,
     required String command,
+    required String sentSms,
   }) async {
     return await repository.publishMqttCommand(
-      deviceId: deviceId,
+      userId: userId,
+      subuserId: subuserId,
+      controllerId: controllerId,
       command: command,
+      sentSms: sentSms,
     );
   }
 }

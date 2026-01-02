@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/utils/voltage_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/flow_graph_reports/utils/flow_graph_routes.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/utils/standalone_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/utils/standalone_report_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/tdyvalvestatus_reports/utils/tdy_valve_status_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';

@@ -8,7 +8,7 @@ import 'package:niagara_smart_drip_irrigation/features/reports/standalone_report
 import '../../../../../core/utils/common_date_picker.dart';
 import '../../../../../core/widgets/no_data.dart';
 import '../../../../report_downloader/utils/report_downloaderRoute.dart';
-import '../../utils/standalone_routes.dart';
+import '../../utils/standalone_report_routes.dart';
 import '../bloc/standalone_bloc.dart';
 import '../bloc/standalone_bloc_event.dart';
 import '../bloc/standalone_bloc_state.dart';

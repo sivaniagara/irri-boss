@@ -18,6 +18,7 @@ import '../../features/dashboard/utils/dashboard_dispatcher.dart';
 import '../../features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../features/fault_msg/di/faultmsg_di.dart';
 import '../../features/pump_settings/utils/pump_settings_dispatcher.dart';
+import '../../features/standalone_settings/di/standalone_di.dart';
 import '../services/mqtt/app_message_dispatcher.dart';
 import '../services/mqtt/mqtt_message_helper.dart';
 import '../../features/mapping_and_unmapping_nodes/di/mapping_and_unmapping_node_di.dart';
@@ -157,6 +158,7 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initTdyValveStatus();
   initZoneCyclic();
   initFlowGraph();
+  initStandaloneDependencies();
 }
 
 // Reset all

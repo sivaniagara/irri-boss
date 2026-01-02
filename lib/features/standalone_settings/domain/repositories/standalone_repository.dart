@@ -20,7 +20,10 @@ abstract class StandaloneRepository {
   });
 
   Future<void> publishMqttCommand({
-    required String deviceId,
+    required String userId,
+    required int subuserId,
+    required String controllerId,
     required String command,
+    required String sentSms,
   });
 }

@@ -19,7 +19,7 @@ class StandalonePageUrls {
       '&toDate=:toDate&type=standalone';
  }
 /// GoRouter config
-final StandaloneRoutes = <GoRoute>[
+final standaloneReportRoutes = <GoRoute>[
   GoRoute(
     path: StandalonePageRoutes.Standalonepage,
     name: 'Standalone',
