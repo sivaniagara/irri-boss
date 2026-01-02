@@ -16,6 +16,7 @@ class CtrlDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext dialogContext) {
+    print("signal:$signal");
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
