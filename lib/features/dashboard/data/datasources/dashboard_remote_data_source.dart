@@ -9,6 +9,8 @@ import '../../data/dashboard_data.dart';
 abstract class DashboardRemoteDataSource {
   Future<List<GroupDetailsEntity>> fetchDashboardGroups(int userId);
   Future<List<ControllerEntity>> fetchControllers(int userId, int groupId);
+  Future<void> motorOnOff({required int userId, required int controllerId, required String deviceId, required int subUserId, required String status, required bool dualPump,
+  });
 }
 
 class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
@@ -49,6 +51,37 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
       print(stackTrace);
       print("Error :: $e");
       rethrow;
+    }
+  }
+
+  @override
+  Future<void> motorOnOff({
+    required int userId,
+    required int controllerId,
+    required int subUserId,
+    required String status,
+    required String deviceId,
+     String? status2,
+    required bool dualPump,
+  }) async {
+    final motorSms = status == "1" ? "MOTORON" : "MTROF";
+    final motor2Sms = status2 == "1" ? "MOTOR1ON" : "MTROF";
+    final sendsmsName = dualPump ? motor2Sms : motorSms;
+
+    final payload = {
+      "status": status,
+      "sentSms": sendsmsName,
+    };
+
+    final endpoint = DashboardUrls.motorOnOffUrl
+        .replaceAll(':userId', userId.toString())
+        .replaceAll(':subuserId', subUserId.toString())
+        .replaceAll(':controllerId', controllerId.toString());
+
+    final response = await apiClient.put(endpoint, body: payload);
+
+    if (response.statusCode != 200) {
+      throw ServerException(message: "Motor switch failed");
     }
   }
 }

@@ -1,11 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/presentation/bloc/voltage_bloc_event.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/presentation/bloc/voltage_bloc_state.dart';
 
-import '../../domain/usecases/fetchFlowGraphdata.dart';
-import '../../domain/usecases/fetchflowgraphdata.dart' hide FetchFlowGraphData;
+import '../../domain/usecases/flow_graph_data.dart';
 import 'flow_graph_bloc_event.dart';
 import 'flow_graph_bloc_state.dart';
+
+
 
 
 class FlowGraphBloc
@@ -33,7 +32,13 @@ class FlowGraphBloc
         toDate: event.toDate,
       );
 
-      emit(FlowGraphLoaded(result));
+      emit(
+        FlowGraphLoaded(
+          data: result,
+          fromDate: event.fromDate,
+          toDate: event.toDate,
+        ),
+      );
     } catch (e) {
       emit(
         FlowGraphError(

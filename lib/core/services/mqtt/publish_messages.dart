@@ -6,4 +6,7 @@ class PublishMessageHelper {
   static const Map<String, dynamic> requestProgramPreview = {key: "VFERTSET"};
   static const Map<String, dynamic> requestNodeStatus = {key: "#GETMOS"};
   static const Map<String, dynamic> testCommunication = {key: "TESTCOM"};
+  static const Map<String, dynamic> motorON = {key: "MOTORON"};
+  static const Map<String, dynamic> motor2ON = {key: "MOTOR1ON"};
+  static const Map<String, dynamic> motorOFF = {key: "MTROF"};
 }

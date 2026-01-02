@@ -14,13 +14,13 @@ class TimerSection extends StatelessWidget {
   @override
   Widget build(BuildContext dialogContext) {
     return Row(
-      children: const [
+      children:  [
         Expanded(
-          child: TimerCard(title: "Run Time", time: "00:00:00"),
+          child: TimerCard(title: "Run Time", time: (setTime == null || setTime.isEmpty || setTime == "NA") ? "00:00:00" : setTime,),
         ),
         SizedBox(width: 10), // spacing between cards
         Expanded(
-          child: TimerCard(title: "Remaining Time", time: "00:00:00"),
+          child: TimerCard(title: "Remaining Time",time: (remainingTime == null || remainingTime.isEmpty || remainingTime == "NA") ? "00:00:00" : remainingTime,),
         ),
       ],
     );
@@ -60,7 +60,7 @@ class TimerCard extends StatelessWidget {
                 title,
                 textAlign: TextAlign.center,
                 style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.white),
+                    fontWeight: FontWeight.bold, color: Colors.black),
               ),
             ),
             const SizedBox(height: 16),
@@ -74,7 +74,7 @@ class TimerCard extends StatelessWidget {
                 Text(
                   time,
                   style: const TextStyle(
-                      fontWeight: FontWeight.normal, color: Colors.white),
+                      fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ],
             ),

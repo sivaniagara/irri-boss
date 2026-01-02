@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 
-import '../../../../../core/di/injection.dart' as di;
-import '../../../sendrev_msg/presentation/pages/sendrevPage.dart';
-import '../../../setserialsettings/domain/usecase/setserial_details_params.dart';
-import '../../../setserialsettings/presentation/pages/setserial_page.dart';
+ import '../../../../core/widgets/no_data.dart';
+  import '../../../set_serial_settings/domain/usecase/set_serial_details_params.dart';
 import '../../domain/usecase/controller_details_params.dart';
 import '../bloc/controller_details_bloc.dart';
 import '../bloc/controller_details_bloc_event.dart';
@@ -62,265 +62,263 @@ class ControllerDetailsPage extends StatelessWidget {
 
       String selectedCountry = "+91";
 
-      return Scaffold(
-        backgroundColor: const Color(0xFF0A4D68),
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF0A4D68),
-          centerTitle: true,
-          title: const Text(
-            "CONTROLLER DETAILS",
-            style: TextStyle(color: Colors.white),
+      return GlassyWrapper(
+        child: Scaffold(
+           appBar: AppBar(
+             centerTitle: true,
+            title: const Text(
+              "CONTROLLER DETAILS",
+              style: TextStyle(color: Colors.white),
+            ),
           ),
-        ),
 
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Center(
-                child: ControllerSectionHeader(title: "Controller Details"),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      context.pushNamed(
-                        'setSerialPage',
-                        extra: SetSerialParams(userId: params.userId, controllerId: params.controllerId,type: 1),
-                      );
-                    },
-                    child: const Center(
-                      child: Text("Set Serial"),
-                    ),
-                  ),
-                  //
-                  SizedBox(width: 20,),
-                  GestureDetector(
-                    onTap: () {
-                      context.pushNamed(
-                        'setSerialPage',
-                        extra: SetSerialParams(userId: params.userId, controllerId: params.controllerId,type: 2),
-                      );
-                    },
-                    child: const Center(
-                      child: Text("Common Calibration"),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              GestureDetector(
-                onTap: () {
-                  Clipboard.setData(ClipboardData(text: controller.deviceId));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Copied to clipboard")),
-                  );
-                },
-                child: ControllerInfoRow(
-                  label: "Device ID",
-                  value: controller.deviceId,
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Center(
+                  child: ControllerSectionHeader(title: "Controller Details"),
                 ),
-              ),
-              const SizedBox(height: 16),
-
-                  Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                const SizedBox(height: 16),
+                Row(
                   children: [
-                    const Text("Group Name", style: TextStyle(color: Colors.white70)),
-                    DropdownButton<String>(
-                      dropdownColor: const Color(0xFF0A4D68),
-                      value: controller.groupName,
-                      items: groupList.map((g) {
-                        return DropdownMenuItem(
-                          value: g.groupName,
-                          child: Text(g.groupName, style: const TextStyle(color: Colors.white)),
+                    GestureDetector(
+                      onTap: () {
+                        context.pushNamed(
+                          'setSerialPage',
+                          extra: SetSerialParams(userId: params.userId, controllerId: params.controllerId,type: 1),
                         );
-                      }).toList(),
-                      onChanged: (value) {
-                        // Add event if you want update API
                       },
+                      child: const Center(
+                        child: Text("Set Serial"),
+                      ),
+                    ),
+                    //
+                    SizedBox(width: 20,),
+                    GestureDetector(
+                      onTap: () {
+                        context.pushNamed(
+                          'setSerialPage',
+                          extra: SetSerialParams(userId: params.userId, controllerId: params.controllerId,type: 2),
+                        );
+                      },
+                      child: const Center(
+                        child: Text("Common Calibration"),
+                      ),
                     ),
                   ],
-
-              ),
-
-              const SizedBox(height: 16),
-              TextField(
-                controller: devicenameController,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  labelText: "Device Name",
-                  labelStyle: TextStyle(color: Colors.white70),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white38),
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.white),
+                ),
+                const SizedBox(height: 16),
+                GestureDetector(
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: controller.deviceId));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Copied to clipboard")),
+                    );
+                  },
+                  child: ControllerInfoRow(
+                    label: "Device ID",
+                    value: controller.deviceId,
                   ),
                 ),
-              ),
-               const SizedBox(height: 20),
-                Row(
-                children: [
-                  Container(width: 100,
-                    child: TextField(
-                      controller: countrycodeController,
-                      style: const TextStyle(color: Colors.white),
-                      keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
-                        labelText: "Country Code",
-                        labelStyle: TextStyle(color: Colors.white70),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white38),
-                        ),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.lightBlueAccent),
+                const SizedBox(height: 16),
+
+                    Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Group Name", style: TextStyle(color: Colors.white70)),
+                      DropdownButton<String>(
+                        dropdownColor: AppThemes.primaryColor,
+                        value: controller.groupName,
+                        items: groupList.map((g) {
+                          return DropdownMenuItem(
+                            value: g.groupName,
+                            child: Text(g.groupName, style: const TextStyle(color: Colors.white)),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          // Add event if you want update API
+                        },
+                      ),
+                    ],
+
+                ),
+
+                const SizedBox(height: 16),
+                TextField(
+                  controller: devicenameController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: "Device Name",
+                    labelStyle: TextStyle(color: Colors.white70),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white38),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white),
+                    ),
+                  ),
+                ),
+                 const SizedBox(height: 20),
+                  Row(
+                  children: [
+                    Container(width: 100,
+                      child: TextField(
+                        controller: countrycodeController,
+                        style: const TextStyle(color: Colors.white),
+                        keyboardType: TextInputType.phone,
+                        decoration: const InputDecoration(
+                          labelText: "Country Code",
+                          labelStyle: TextStyle(color: Colors.white70),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white38),
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.lightBlueAccent),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: TextField(
-                      controller: simController,
-                      style: const TextStyle(color: Colors.white),
-                      keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
-                        labelText: "SIM Number",
-                        labelStyle: TextStyle(color: Colors.white70),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.white38),
-                        ),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.lightBlueAccent),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: simController,
+                        style: const TextStyle(color: Colors.white),
+                        keyboardType: TextInputType.phone,
+                        decoration: const InputDecoration(
+                          labelText: "SIM Number",
+                          labelStyle: TextStyle(color: Colors.white70),
+                          enabledBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white38),
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.lightBlueAccent),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-               ControllerInfoRow(
-                label: "Operation Mode",
-                valueWidget: IconButton(
-                  icon: const Icon(Icons.visibility, color: Colors.white),
-                  onPressed: () {},
+                  ],
                 ),
-              ),
 
-              ControllerInfoRow(
-                label: "WiFi Reset",
-                valueWidget: IconButton(
-                  icon: const Icon(Icons.wifi_protected_setup_sharp, color: Colors.white),
-                  onPressed: () {},
+                const SizedBox(height: 20),
+
+                 ControllerInfoRow(
+                  label: "Operation Mode",
+                  valueWidget: IconButton(
+                    icon: const Icon(Icons.visibility, color: Colors.white),
+                    onPressed: () {},
+                  ),
                 ),
-              ),
-              //------------------------------------------------
-              ControllerSwitchRow(
-                title: "INTERNET 4G",
-                value: controller.gprsMode == "4",
-                onChanged: (val) {
-                  context.read<ControllerDetailsBloc>().add(
-                    ToggleSwitchEvent(
-                       switchName: "gprsMode",
-                      isOn: val,
+
+                ControllerInfoRow(
+                  label: "WiFi Reset",
+                  valueWidget: IconButton(
+                    icon: const Icon(Icons.wifi_protected_setup_sharp, color: Colors.white),
+                    onPressed: () {},
+                  ),
+                ),
+                //------------------------------------------------
+                ControllerSwitchRow(
+                  title: "INTERNET 4G",
+                  value: controller.gprsMode == "4",
+                  onChanged: (val) {
+                    context.read<ControllerDetailsBloc>().add(
+                      ToggleSwitchEvent(
+                         switchName: "gprsMode",
+                        isOn: val,
+                      ),
+                    );
+                  },
+                ),
+
+                ControllerSwitchRow(
+                  title: "INTERNET 2G/3G & WiFi",
+                  value: controller.gprsMode != "4",
+                  onChanged: (val) {
+                    context.read<ControllerDetailsBloc>().add(
+                      ToggleSwitchEvent(
+                         switchName: "gprsMode",
+                        isOn: !val,        // reverse logic
+                      ),
+                    );
+                  },
+                ),
+
+          ControllerSwitchRow(
+            title: "DND",
+            value: controller.dndStatus == "1",
+            onChanged: (val) {
+              context.read<ControllerDetailsBloc>().add(
+                ToggleSwitchEvent(
+                   switchName: "dndStatus",
+                  isOn: val,
+                ),
+              );
+            },
+          ),
+                const SizedBox(height: 20),
+                ControllerInfoRow(label: "Dealer Name", value: controller.dealerName),
+                ControllerInfoRow(label: "Model", value: controller.modelName),
+                ControllerInfoRow(label: "Customer Name", value: controller.customerName),
+                ControllerInfoRow(label: "Customer Number", value: controller.customerNumber),
+
+                const SizedBox(height: 24),
+
+                ControllerActionButtons(
+                  buttons: [
+                    ControllerButtonData(
+                      title: "Submit",
+                      color: Colors.blue,
+                      onPressed: () {
+                        final bloc = context.read<ControllerDetailsBloc>();
+                         bloc.add(
+                          UpdateControllerEvent(
+                            userId: '${params.userId}',
+                            controllerId: params.controllerId,
+                            countryCode: countrycodeController.text,
+                            simNumber: simController.text,
+                            deviceName: devicenameController.text,
+                            groupId: groupList.firstWhere((g) => g.groupName == controller.groupName).userGroupId,
+                            operationMode: controller.operationMode,
+                            gprsMode: controller.gprsMode,
+                            appSmsMode: controller.appSmsMode,
+                            sentSms: "",
+                            editType: "0",
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-
-              ControllerSwitchRow(
-                title: "INTERNET 2G/3G & WiFi",
-                value: controller.gprsMode != "4",
-                onChanged: (val) {
-                  context.read<ControllerDetailsBloc>().add(
-                    ToggleSwitchEvent(
-                       switchName: "gprsMode",
-                      isOn: !val,        // reverse logic
+                    ControllerButtonData(
+                      title: "Replace",
+                      color: Colors.orange,
+                      onPressed: () {},
                     ),
-                  );
-                },
-              ),
+                    ControllerButtonData(
+                      title: "Delete",
+                      color: Colors.red,
+                      onPressed: () {},
+                    ),
+                    ControllerButtonData(
+                      title: "Cancel",
+                      color: Colors.grey,
+                      onPressed: () {},
+                    ),
+                  ],
+                ),
 
-        ControllerSwitchRow(
-          title: "DND",
-          value: controller.dndStatus == "1",
-          onChanged: (val) {
-            context.read<ControllerDetailsBloc>().add(
-              ToggleSwitchEvent(
-                 switchName: "dndStatus",
-                isOn: val,
-              ),
-            );
-          },
-        ),
-              const SizedBox(height: 20),
-              ControllerInfoRow(label: "Dealer Name", value: controller.dealerName),
-              ControllerInfoRow(label: "Model", value: controller.modelName),
-              ControllerInfoRow(label: "Customer Name", value: controller.customerName),
-              ControllerInfoRow(label: "Customer Number", value: controller.customerNumber),
-
-              const SizedBox(height: 24),
-
-              ControllerActionButtons(
-                buttons: [
-                  ControllerButtonData(
-                    title: "Submit",
-                    color: Colors.blue,
-                    onPressed: () {
-                      final bloc = context.read<ControllerDetailsBloc>();
-                       bloc.add(
-                        UpdateControllerEvent(
-                          userId: '${params.userId}',
-                          controllerId: params.controllerId,
-                          countryCode: countrycodeController.text,
-                          simNumber: simController.text,
-                          deviceName: devicenameController.text,
-                          groupId: groupList.firstWhere((g) => g.groupName == controller.groupName).userGroupId,
-                          operationMode: controller.operationMode,
-                          gprsMode: controller.gprsMode,
-                          appSmsMode: controller.appSmsMode,
-                          sentSms: "",
-                          editType: "0",
-                        ),
-                      );
-                    },
-                  ),
-                  ControllerButtonData(
-                    title: "Replace",
-                    color: Colors.orange,
-                    onPressed: () {},
-                  ),
-                  ControllerButtonData(
-                    title: "Delete",
-                    color: Colors.red,
-                    onPressed: () {},
-                  ),
-                  ControllerButtonData(
-                    title: "Cancel",
-                    color: Colors.grey,
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 50),
-            ],
+                const SizedBox(height: 50),
+              ],
+            ),
           ),
         ),
       );
     }
 
-    return const Scaffold(
-      backgroundColor: Color(0xFF0A4D68),
-      body: Center(
-        child: Text(
-          "Unexpected Error",
-          style: TextStyle(color: Colors.white),
+    return  GlassyWrapper(
+      child: Scaffold(
+         body: Center(
+          child: noData,
         ),
       ),
     );
