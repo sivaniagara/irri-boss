@@ -23,7 +23,7 @@ class PressureSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("Prs IN: $prsIn",style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
-            Text(activeZone, style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.green)),
+             Text(activeZone, style:  TextStyle(fontWeight: FontWeight.bold,color: activeZone.contains("No") ?Colors.red :Colors.green)),
             Text("Prs OUT: $prsOut",style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
           ],
         ),

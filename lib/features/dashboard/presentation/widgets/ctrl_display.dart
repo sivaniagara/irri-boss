@@ -19,7 +19,7 @@ class CtrlDisplay extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        // color: Color(0xFFC1F629),
+        color: Color(0xFFC1F629),
         borderRadius: BorderRadius.circular(8),
         // border: Border.all()
       ),
@@ -30,16 +30,16 @@ class CtrlDisplay extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(children: [
-                const Icon(Icons.signal_cellular_alt,color: Color(0xFFC1F629)),
-                Text("$signal%",style: TextStyle(color: Color(0xFFC1F629),fontWeight: FontWeight.bold),),
+                const Icon(Icons.signal_cellular_alt,color: Colors.black),
+                Text("$signal%",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),),
               ]),
                Column(children: [
-              Text(l1display, style: const TextStyle(fontWeight: FontWeight.bold,color: Color(0xFFC1F629))),
-              Text(l2display,style: TextStyle(color: Color(0xFFC1F629),fontWeight: FontWeight.bold),),
+              Text(l1display, style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.black)),
+              Text(l2display,style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),),
               ]),
               Column(children: [
-                const Icon(Icons.battery_full, color: Color(0xFFC1F629),),
-                Text("$battery.V",style: TextStyle(color: Color(0xFFC1F629),fontWeight: FontWeight.bold),),
+                const Icon(Icons.battery_full, color: Colors.black,),
+                Text("$battery.V",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),),
               ]),
             ],
           ),

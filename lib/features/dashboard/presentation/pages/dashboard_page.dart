@@ -12,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/services/selected_controller_persistence.dart';
+import '../../../../core/theme/app_themes.dart';
 import '../../../../core/utils/app_images.dart';
 import '../../../controller_details/domain/usecase/controller_details_params.dart';
 import '../../../program_settings/utils/program_settings_routes.dart';
@@ -107,7 +108,7 @@ class DashboardPage extends StatelessWidget {
                   width: 140,
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Colors.transparent,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   alignment: Alignment.center,
@@ -135,7 +136,7 @@ class DashboardPage extends StatelessWidget {
               width: 140,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Colors.transparent,
                 borderRadius: BorderRadius.circular(6),
               ),
               alignment: Alignment.center,
@@ -250,7 +251,7 @@ class DashboardPage extends StatelessWidget {
         width: 140,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(6),
         ),
         alignment: Alignment.center,
@@ -309,9 +310,9 @@ class DashboardPage extends StatelessWidget {
             children: [
               Text(
                 selectedGroup.groupName,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: const TextStyle(color: AppThemes.primaryColor, fontWeight: FontWeight.bold),
               ),
-              const Icon(Icons.arrow_drop_down, color: Colors.white),
+              const Icon(Icons.arrow_drop_down, color: AppThemes.primaryColor),
             ],
           ),
           onSelected: (groupId) => _onGroupSelected(groupId, selectedGroup, state, bloc),
@@ -327,7 +328,7 @@ class DashboardPage extends StatelessWidget {
     return Expanded(
       child: Text(
         state.groups[0].groupName,
-        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        style: const TextStyle(color: AppThemes.primaryColor, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -344,9 +345,9 @@ class DashboardPage extends StatelessWidget {
             children: [
               Text(
                 selectedController?.deviceName ?? 'Select controller',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                style: const TextStyle(color: AppThemes.primaryColor, fontWeight: FontWeight.bold),
               ),
-              const Icon(Icons.arrow_drop_down, color: Colors.white),
+              const Icon(Icons.arrow_drop_down, color: AppThemes.primaryColor),
             ],
           ),
 
@@ -379,7 +380,7 @@ class DashboardPage extends StatelessWidget {
     return Expanded(
       child: Text(
         controllers[0].deviceName,
-        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        style: const TextStyle(color: AppThemes.primaryColor, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -435,81 +436,84 @@ class DashboardPage extends StatelessWidget {
                   ),
                 );
               },
-              child: GlassCard(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
-                  mainAxisAlignment: MainAxisAlignment.spaceAround, // Center vertically
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    SyncSection(
-                      liveSync: controller.livesyncTime,
-                      smsSync: controller.livesyncTime,
-                      model: controller.modelId,
-                      deviceId: controller.deviceId,
-                    ),
-                    SizedBox(height: scale(8)),
-                    GlassCard(
-                      child: CtrlDisplay(
-                        signal: controller.liveMessage.signal,
-                        battery: controller.liveMessage.batVolt,
-                        l1display:controller.liveMessage.liveDisplay1,
-                        l2display: controller.liveMessage.liveDisplay2,
+              child: GlassyWrapper(
+                 child: Padding(
+                   padding: const EdgeInsets.all(8.0),
+                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
+                    mainAxisAlignment: MainAxisAlignment.spaceAround, // Center vertically
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      SyncSection(
+                        liveSync: controller.livesyncTime,
+                        smsSync: controller.livesyncTime,
+                        model: controller.modelId,
+                        deviceId: controller.deviceId,
                       ),
-                    ),
-                    SizedBox(height: scale(8)),
-                    GestureDetector(
-                      onTap: () {
-                        context.push('${DashBoardRoutes.dashboard}${ProgramSettingsRoutes.program}', extra: {"userId" : '$userId', "controllerId" : controller.userDeviceId.toString()});
-                      },
-                      child: RYBSection(
-                        r: controller.liveMessage.rVoltage,
-                        y: controller.liveMessage.yVoltage,
-                        b: controller.liveMessage.bVoltage,
-                        c1: controller.liveMessage.rCurrent,
-                        c2: controller.liveMessage.yCurrent,
-                        c3: controller.liveMessage.bCurrent,
+                      SizedBox(height: scale(5)),
+                      GlassCard(
+                        child: CtrlDisplay(
+                          signal: controller.liveMessage.signal,
+                          battery: controller.liveMessage.batVolt,
+                          l1display:controller.liveMessage.liveDisplay1,
+                          l2display: controller.liveMessage.liveDisplay2,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: scale(8)),
-                    MotorValveSection(
-                      motorOn: controller.liveMessage.motorOnOff,
-                      motorOn2: controller.liveMessage.valveOnOff,
-                      valveOn: controller.liveMessage.valveOnOff,
-                      model: controller.modelId,
-                      userData: {
-                        "userId": userId,
-                        "controllerId": controller.userDeviceId,
-                        "subUserId": 0,
-                        "deviceId": controller.deviceId
-                      },
-                    ),
-                    SizedBox(height: scale(8)),
-                    if ([1, 5].contains(controller.modelId)) ...[
-                      PressureSection(
-                        prsIn: controller.liveMessage.prsIn,
-                        prsOut: controller.liveMessage.prsOut,
-                        activeZone: controller.zoneNo,
-                        fertlizer: '',
+                      SizedBox(height: scale(5)),
+                      GestureDetector(
+                        onTap: () {
+                          context.push('${DashBoardRoutes.dashboard}${ProgramSettingsRoutes.program}', extra: {"userId" : '$userId', "controllerId" : controller.userDeviceId.toString()});
+                        },
+                        child: RYBSection(
+                          r: controller.liveMessage.rVoltage,
+                          y: controller.liveMessage.yVoltage,
+                          b: controller.liveMessage.bVoltage,
+                          c1: controller.liveMessage.rCurrent,
+                          c2: controller.liveMessage.yCurrent,
+                          c3: controller.liveMessage.bCurrent,
+                        ),
                       ),
                       SizedBox(height: scale(8)),
-                      TimerSection(
-                        setTime: controller.setFlow,
-                        remainingTime: controller.remFlow,
+                      MotorValveSection(
+                        motorOn: controller.liveMessage.motorOnOff,
+                        motorOn2: controller.liveMessage.valveOnOff,
+                        valveOn: controller.liveMessage.valveOnOff,
+                        model: controller.modelId,
+                        userData: {
+                          "userId": userId,
+                          "controllerId": controller.userDeviceId,
+                          "subUserId": 0,
+                          "deviceId": controller.deviceId
+                        },
                       ),
                       SizedBox(height: scale(8)),
+                      if ([1, 5].contains(controller.modelId)) ...[
+                        PressureSection(
+                          prsIn: controller.liveMessage.prsIn,
+                          prsOut: controller.liveMessage.prsOut,
+                          activeZone: controller.zoneNo,
+                          fertlizer: '',
+                        ),
+                        SizedBox(height: scale(8)),
+                        TimerSection(
+                          setTime: controller.setFlow,
+                          remainingTime: controller.remFlow,
+                        ),
+                        SizedBox(height: scale(8)),
+                      ],
+                      LatestMsgSection(
+                        msg: ([1, 5].contains(controller.modelId))
+                            ? controller.msgDesc
+                            : "${controller.msgDesc}\n${controller.ctrlLatestMsg}",
+                      ),
+                      SizedBox(height: scale(8)),
+                      ActionsSection(
+                        model: controller.modelId,
+                        data: {"userId" : controller.userId, "subUserId" : 0, "controllerId" : controller.userDeviceId, "deviceId": controller.deviceId},
+                      ),
                     ],
-                    LatestMsgSection(
-                      msg: ([1, 5].contains(controller.modelId))
-                          ? controller.msgDesc
-                          : "${controller.msgDesc}\n${controller.ctrlLatestMsg}",
-                    ),
-                    SizedBox(height: scale(8)),
-                    ActionsSection(
-                      model: controller.modelId,
-                      data: {"userId" : controller.userId, "subUserId" : 0, "controllerId" : controller.userDeviceId, "deviceId": controller.deviceId},
-                    ),
-                  ],
-                ),
+                                   ),
+                 ),
               ),
             ),
           ),
