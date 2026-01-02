@@ -14,7 +14,7 @@ import '../cubit/login_ui_cubit.dart';
 class LoginPageListener {
   static void handleAuthState(BuildContext context, AuthState state) {
     final cubit = context.read<LoginPageCubit>();
-
+    print("authState :: $state");
     if (state is PhoneNumberChecked) {
       if (state.exists) {
         final useOtp = cubit.state.useOtpLogin;
