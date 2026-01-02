@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/node_status_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
@@ -15,6 +16,7 @@ import 'features/controller_settings/utils/controller_settings_routes.dart';
 import 'features/dashboard/domain/entities/livemessage_entity.dart';
 import 'features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'features/dashboard/presentation/bloc/dashboard_event.dart';
+import 'features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'features/dashboard/presentation/pages/controller_live_page.dart';
 import 'features/dashboard/presentation/pages/dashboard_page.dart';
 import 'features/dashboard/presentation/pages/program_preview_page.dart';
@@ -27,16 +29,17 @@ import 'features/reports/Voltage_reports/utils/voltage_routes.dart';
 import 'features/reports/flow_graph_reports/utils/flow_graph_routes.dart';
 import 'features/reports/power_reports/utils/Power_routes.dart';
 import 'features/reports/reportMenu/utils/report_routes.dart';
-import 'features/reports/standalone_reports/utils/standalone_report_routes.dart';
-import 'features/reports/tdyvalvestatus_reports/utils/tdy_valve_status_routes.dart';
+import 'features/reports/standalone_reports/utils/standalone_routes.dart';
+import 'features/reports/tdy_valve_status_reports/utils/tdy_valve_status_routes.dart';
 import 'features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
 import 'features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
 import 'features/sendrev_msg/utils/senrev_routes.dart';
 import 'features/program_settings/utils/program_settings_routes.dart';
-import 'features/setserialsettings/domain/usecase/setserial_details_params.dart';
-import 'features/setserialsettings/presentation/bloc/setserial_bloc.dart';
-import 'features/setserialsettings/presentation/bloc/setserial_bloc_event.dart';
-import 'features/setserialsettings/presentation/pages/setserial_page.dart';
+
+import 'features/set_serial_settings/domain/usecase/set_serial_details_params.dart';
+import 'features/set_serial_settings/presentation/bloc/set_serial_bloc.dart';
+import 'features/set_serial_settings/presentation/bloc/set_serial_bloc_event.dart';
+import 'features/set_serial_settings/presentation/pages/set_serial_page.dart';
 import 'features/side_drawer/groups/utils/group_routes.dart';
 import 'features/auth/utils/auth_routes.dart';
 
@@ -49,7 +52,7 @@ import 'features/side_drawer/groups/presentation/widgets/app_drawer.dart';
 import 'features/auth/auth.dart';
 import 'features/side_drawer/sub_users/sub_users_barrel.dart';
 import 'features/side_drawer/groups/groups_barrel.dart';
-import 'package:niagara_smart_drip_irrigation/features/standalone_settings/utils/standalone_routes.dart';
+
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream stream) {
     notifyListeners();
@@ -175,7 +178,7 @@ class AppRouter {
                     ..add(FetchDashboardGroupsEvent(authData.id))
                     ..add(ResetDashboardSelectionEvent()),
                 ),
-
+                BlocProvider(create: (_) => di.sl<DashboardCubit>()),
               ],
               child: DashboardPage(
                 userId: authData.id,
@@ -187,11 +190,8 @@ class AppRouter {
             ...controllerSettingGoRoutes,
             ...programSettingsGoRoutes,
             ...irrigationSettingGoRoutes,
-            ...standaloneRoutes,
-            // ...mappingAndUnmappingNodesGoRoutes
           ],
         ),
-
         GoRoute(
             name: 'ctrlLivePage',
             path: DashBoardRoutes.ctrlLivePage,
@@ -215,13 +215,26 @@ class AppRouter {
           },
         ),
         GoRoute(
+          name: 'nodeStatus',
+          path: DashBoardRoutes.nodeStatus,
+          builder: (context, state) {
+            final data = state.extra as Map<String, dynamic>;
+            return NodeStatusPage(
+              userId: data['userId'],
+              controllerId: data['controllerId'],
+              subuserId: data['subuserId'],
+              deviceId: data['deviceId'],
+            );
+          },
+        ),
+        GoRoute(
           name: 'ctrlDetailsPage',
           path: RouteConstants.ctrlDetailsPage,
           builder: (context, state) {
             final params = state.extra as GetControllerDetailsParams;
 
             return BlocProvider(
-              create: (_) => sl<ControllerDetailsBloc>()
+              create: (_) => di.sl<ControllerDetailsBloc>()
                 ..add(GetControllerDetailsEvent(
                   userId: params.userId,
                   controllerId: params.controllerId,
@@ -241,7 +254,6 @@ class AppRouter {
             );
           },
         ),
-        ...pumpSettingsRoutes,
         ShellRoute(
           builder: (context, state, child) {
             final location = state.matchedLocation;
@@ -354,6 +366,7 @@ class AppRouter {
             )
           ],
         ),
+        ...pumpSettingsRoutes,
         ...reportPageRoutes,
         ...sendRevPageRoutes,
         ...FaultMsgPagesRoutes,
@@ -362,7 +375,7 @@ class AppRouter {
         ...ReportDownloadRoutes,
         ...MotorCyclicRoutes,
         ...ZoneDurationRoutes,
-        ...standaloneReportRoutes,
+        ...StandaloneRoutes,
         ...TdyValveStatusRoutes,
         ...ZoneCyclicRoutes,
         ...FlowGraphRoutes,

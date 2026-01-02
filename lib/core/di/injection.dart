@@ -5,9 +5,7 @@ import 'package:niagara_smart_drip_irrigation/features/controller_details/data/d
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/program_preview_dispatcher.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/flow_graph_reports/di/flow_graph_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/di/standalone_di.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/tdyvalvestatus_reports/di/tdy_valve_status_di.dart';
-import 'package:niagara_smart_drip_irrigation/features/setserialsettings/data/repositories/setserial_details_repositories.dart';
-import 'package:niagara_smart_drip_irrigation/features/setserialsettings/domain/usecase/setserial_usercase.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/tdy_valve_status_reports/di/tdy_valve_status_di.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/controller_details/data/repositories/controller_details_repositories.dart';
 import '../../features/controller_details/domain/repositories/controller_details_repo.dart';
@@ -18,7 +16,13 @@ import '../../features/dashboard/utils/dashboard_dispatcher.dart';
 import '../../features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../features/fault_msg/di/faultmsg_di.dart';
 import '../../features/pump_settings/utils/pump_settings_dispatcher.dart';
-import '../../features/standalone_settings/di/standalone_di.dart';
+import '../../features/set_serial_settings/data/datasources/set_serial_datasource.dart';
+import '../../features/set_serial_settings/data/repositories/set_serial_details_repositories.dart';
+import '../../features/set_serial_settings/domain/repositories/set_serial_details_repo.dart';
+import '../../features/set_serial_settings/domain/usecase/set_serial_details_params.dart';
+import '../../features/set_serial_settings/domain/usecase/set_serial_usercase.dart';
+import '../../features/set_serial_settings/presentation/bloc/set_serial_bloc.dart';
+import '../../features/set_serial_settings/presentation/bloc/set_serial_bloc_event.dart';
 import '../services/mqtt/app_message_dispatcher.dart';
 import '../services/mqtt/mqtt_message_helper.dart';
 import '../../features/mapping_and_unmapping_nodes/di/mapping_and_unmapping_node_di.dart';
@@ -32,11 +36,6 @@ import '../../features/reports/reportMenu/di/report_di.dart';
 import '../../features/reports/zone_duration_reports/di/zone_duration_di.dart';
 import '../../features/reports/zonecyclic_reports/di/zone_cyclic_di.dart';
 import '../../features/sendrev_msg/di/sendrev_di.dart';
-import '../../features/setserialsettings/data/datasources/setserial_datasource.dart';
-import '../../features/setserialsettings/domain/repositories/setserial_details_repo.dart';
-import '../../features/setserialsettings/domain/usecase/setserial_details_params.dart';
-import '../../features/setserialsettings/presentation/bloc/setserial_bloc.dart';
-import '../../features/setserialsettings/presentation/bloc/setserial_bloc_event.dart';
 import '../../features/auth/di/auth.di.dart';
 import '../../features/controller_settings/presentation/cubit/controller_tab_cubit.dart';
 import '../../features/dashboard/di/dashboard_di.dart';
@@ -135,6 +134,7 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   sl.registerLazySingleton<ControllerRemoteDataSource>(() => ControllerRemoteDataSourceImpl(apiClient: sl()));
   sl.registerLazySingleton<ControllerRepo>(() => ControllerRepoImpl(remoteDataSource: sl()));
   sl.registerLazySingleton(() => GetControllerDetailsUsecase(controllerRepo: sl()));
+  sl.registerLazySingleton(() => UpdateControllerUsecase(controllerRepo: sl()));
   sl.registerFactory(() => ControllerDetailsBloc(getControllerDetails: sl(), updateController: sl(),));
   sl.registerLazySingleton<SetSerialDataSource>(
           () => SetSerialDataSourceImpl(apiClient: sl()));
@@ -158,7 +158,6 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initTdyValveStatus();
   initZoneCyclic();
   initFlowGraph();
-  initStandaloneDependencies();
 }
 
 // Reset all

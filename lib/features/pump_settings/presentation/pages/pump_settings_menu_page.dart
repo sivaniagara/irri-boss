@@ -31,38 +31,39 @@ class PumpSettingsMenuPage extends StatelessWidget {
       create: (context) => di.sl<PumpSettingsMenuBloc>()
         ..add(GetPumpSettingsMenuEvent(
             userId: userId, subUserId: subUserId, controllerId: controllerId)),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: Text("Pump Settings Menu"),
-          actions: [
-            Builder(
-              builder: (appBarContext) => IconButton(
-                onPressed: () async {
-                  final bloc = appBarContext.read<PumpSettingsMenuBloc>();
-
-                  GlassyAlertDialog.show(
-                    context: appBarContext,
-                    title: "Hide/Show Menu",
-                    content: BlocProvider.value(
-                      value: bloc,
-                      child: _HideShowSettingsDialog(userId: userId, controllerId: controllerId, subUserId: subUserId,),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(appBarContext).pop(),
-                        child: const Text("Cancel"),
+      child: GlassyWrapper(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            title: Text("Pump Settings Menu"),
+            actions: [
+              Builder(
+                builder: (appBarContext) => IconButton(
+                  onPressed: () async {
+                    final bloc = appBarContext.read<PumpSettingsMenuBloc>();
+        
+                    GlassyAlertDialog.show(
+                      context: appBarContext,
+                      title: "Hide/Show Menu",
+                      content: BlocProvider.value(
+                        value: bloc,
+                        child: _HideShowSettingsDialog(userId: userId, controllerId: controllerId, subUserId: subUserId,),
                       ),
-                    ],
-                  );
-                },
-                icon: const Icon(Icons.hide_source),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(appBarContext).pop(),
+                          child: const Text("Cancel"),
+                        ),
+                      ],
+                    );
+                  },
+                  icon: const Icon(Icons.hide_source),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
+          body: _buildBody(dialogContext),
         ),
-        body: GlassyWrapper(
-            child: _buildBody(dialogContext)),
       ),
     );
   }

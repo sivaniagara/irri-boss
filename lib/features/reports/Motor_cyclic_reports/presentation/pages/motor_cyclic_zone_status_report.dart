@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../../../../../core/theme/app_themes.dart';
 import '../../domain/entities/motor_cyclic_entities.dart';
 import '../../utils/motor_cyclic_program_calculator.dart';
 import '../widgets/row_widgets.dart';
@@ -39,7 +40,7 @@ class MotorCyclicPageReport extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 12, vertical: 10),
                   decoration: const BoxDecoration(
-                    color: Colors.blue,
+                    color: AppThemes.primaryColor,
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(12),
                     ),

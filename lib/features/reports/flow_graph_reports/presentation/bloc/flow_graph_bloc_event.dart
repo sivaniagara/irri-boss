@@ -31,3 +31,4 @@ class FetchFlowGraphEvent extends FlowGraphEvent {
     toDate,
   ];
 }
+class ToggleFlowGraphViewEvent extends FlowGraphEvent {}

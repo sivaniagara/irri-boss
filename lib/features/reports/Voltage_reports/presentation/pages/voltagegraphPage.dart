@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/no_data.dart';
 import '../../../../../core/theme/app_gradients.dart';
 import '../../../../../core/utils/common_date_picker.dart';
+import '../../../../../core/widgets/glassy_wrapper.dart';
 import '../bloc/voltage_bloc.dart';
 import '../bloc/voltage_bloc_event.dart';
 import '../bloc/voltage_bloc_state.dart';
@@ -27,44 +28,46 @@ class VoltageGraphPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-       appBar: _appBar(context),
-      body:Container(
-        decoration: BoxDecoration(
-          gradient: AppGradients.commonGradient,
-        ),
-        child: BlocBuilder<VoltageGraphBloc, VoltageGraphState>(
-          builder: (context, state) {
-            if (state is VoltageGraphLoading) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (state is VoltageGraphError) {
-              return Center(child: Text(state.message,style: TextStyle(color: Colors.black),));
-            }
-
-            if (state is VoltageGraphLoaded) {
-              final data = state.data.data;
-
-              return ListView(
-                padding: const EdgeInsets.all(8),
-                children: [
-                  _graphCard(data),
-
-                  const SizedBox(height: 12),
-                  _totalPowerCard(
-                    data.isNotEmpty
-                        ? data.last.totalPowerOnTime
-                        : "0:00",
-                  ),
-                   const SizedBox(height: 12),
-                  ...data.map((e) => _dataCard(e)).toList(),
-                ],
-              );
-            }
-
-            return noData;
-          },
+    return GlassyWrapper(
+      child: Scaffold(
+         appBar: _appBar(context),
+        body:Container(
+          decoration: BoxDecoration(
+            gradient: AppGradients.commonGradient,
+          ),
+          child: BlocBuilder<VoltageGraphBloc, VoltageGraphState>(
+            builder: (context, state) {
+              if (state is VoltageGraphLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+      
+              if (state is VoltageGraphError) {
+                return Center(child: Text(state.message,style: TextStyle(color: Colors.black),));
+              }
+      
+              if (state is VoltageGraphLoaded) {
+                final data = state.data.data;
+      
+                return ListView(
+                  padding: const EdgeInsets.all(8),
+                  children: [
+                    _graphCard(data),
+      
+                    const SizedBox(height: 12),
+                    _totalPowerCard(
+                      data.isNotEmpty
+                          ? data.last.totalPowerOnTime
+                          : "0:00",
+                    ),
+                     const SizedBox(height: 12),
+                    ...data.map((e) => _dataCard(e)).toList(),
+                  ],
+                );
+              }
+      
+              return noData;
+            },
+          ),
         ),
       ),
     );

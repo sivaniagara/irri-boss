@@ -66,6 +66,7 @@ class AppThemes {
 
   // Light Theme
   static final ThemeData _niagaraLightTheme = ThemeData(
+    scaffoldBackgroundColor: Colors.transparent,
     brightness: Brightness.light,
     primarySwatch: primarySwatch,
     primaryColor: primaryColor,
@@ -87,9 +88,9 @@ class AppThemes {
       iconTheme: IconThemeData(
         color: Colors.black
       ),
-      backgroundColor: primaryColor,
-      foregroundColor: Colors.white,
-      elevation: 0,
+      backgroundColor: Colors.transparent,
+      /*foregroundColor: Colors.white,
+      elevation: 0,*/
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(

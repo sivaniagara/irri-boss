@@ -42,47 +42,47 @@ class PumpSettingsPage extends StatelessWidget {
           controllerId: controllerId,
           menuId: menuId,
         ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: Text(menuName ?? 'Pump Settings'),
-          actions: [
-            Builder(
-              builder: (appBarContext) => IconButton(
-                onPressed: () {
-                  final cubit = appBarContext.read<PumpSettingsCubit>();
-                  GlassyAlertDialog.show(
-                    context: context,
-                    title: "Hide/Show Settings",
-                    content: BlocProvider<PumpSettingsCubit>.value(
-                      value: cubit,
-                      child: _HideShowSettingsDialog(),
-                    ),
-                    actions: [
-                      ActionButton(
-                        onPressed: () {
-                          cubit.updateHiddenFlags(
-                              userId: userId,
-                              subUserId: subUserId,
-                              controllerId: controllerId,
-                              menuItemEntity: (cubit.state as GetPumpSettingsLoaded).settings,
-                              sentSms: "Hidden flag updated"
-                          );
-                          Navigator.of(appBarContext).pop();
-                        },
-                        isPrimary: true,
-                        child: const Text("OK"),
+      child: GlassyWrapper(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            title: Text(menuName ?? 'Pump Settings'),
+            actions: [
+              Builder(
+                builder: (appBarContext) => IconButton(
+                  onPressed: () {
+                    final cubit = appBarContext.read<PumpSettingsCubit>();
+                    GlassyAlertDialog.show(
+                      context: context,
+                      title: "Hide/Show Settings",
+                      content: BlocProvider<PumpSettingsCubit>.value(
+                        value: cubit,
+                        child: _HideShowSettingsDialog(),
                       ),
-                    ],
-                  );
-                },
-                icon: const Icon(Icons.hide_source),
+                      actions: [
+                        ActionButton(
+                          onPressed: () {
+                            cubit.updateHiddenFlags(
+                                userId: userId,
+                                subUserId: subUserId,
+                                controllerId: controllerId,
+                                menuItemEntity: (cubit.state as GetPumpSettingsLoaded).settings,
+                                sentSms: "Hidden flag updated"
+                            );
+                            Navigator.of(appBarContext).pop();
+                          },
+                          isPrimary: true,
+                          child: const Text("OK"),
+                        ),
+                      ],
+                    );
+                  },
+                  icon: const Icon(Icons.hide_source),
+                ),
               ),
-            ),
-          ],
-        ),
-        body: GlassyWrapper(
-          child: BlocListener<PumpSettingsCubit, PumpSettingsState>(
+            ],
+          ),
+          body: BlocListener<PumpSettingsCubit, PumpSettingsState>(
             listenWhen: (previous, current) => current is SettingsSendStartedState
                 || current is SettingsSendSuccessState
                 || current is SettingsFailureState,
