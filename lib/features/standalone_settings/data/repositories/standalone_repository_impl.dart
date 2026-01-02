@@ -63,13 +63,13 @@ class StandaloneRepositoryImpl implements StandaloneRepository {
     required String sentSms,
   }) async {
     try {
-      // 1. Publish to hardware via MQTT
+      // 1. Publish command to hardware
       await remoteDataSource.publishMqttCommand(
         controllerId: controllerId,
         command: command,
       );
 
-      // 2. Log to history if a non-empty sentSms is provided
+      // 2. Log message to history if provided
       if (sentSms.isNotEmpty) {
         await remoteDataSource.logHistory(
           userId: userId,

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/di/injection.dart' as di;
-import '../bloc/standalone_bloc.dart';
-import '../bloc/standalone_state.dart';
-import '../bloc/standalone_event.dart';
-import '../widgets/standalone_header.dart';
-import '../widgets/zone_item.dart';
-import 'configuration_page.dart';
+
+import 'package:niagara_smart_drip_irrigation/core/di/injection.dart' as di;
+import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/bloc/standalone_bloc.dart';
+import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/bloc/standalone_state.dart';
+import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/bloc/standalone_event.dart';
+import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/widgets/standalone_header.dart';
+import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/widgets/zone_item.dart';
+import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/pages/configuration_page.dart';
 
 class StandalonePage extends StatelessWidget {
   final Map<String, dynamic> data;
@@ -15,7 +16,8 @@ class StandalonePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controllerId = data['controllerId']?.toString() ?? '';
+    final String controllerId = data['controllerId']?.toString() ?? '';
+    final String userId = data['userId']?.toString() ?? '';
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -85,12 +87,11 @@ class StandalonePage extends StatelessWidget {
                     Expanded(
                       child: GestureDetector(
                         onTap: () {
-                          final userId = data['userId']?.toString() ?? '';
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => BlocProvider(
-                                create: (context) => di.sl<StandaloneBloc>()..add(
+                              builder: (context) => BlocProvider<StandaloneBloc>(
+                                create: (context) => di.sl<StandaloneBloc>(instanceName: 'settings')..add(
                                   FetchStandaloneDataEvent(
                                     userId: userId,
                                     controllerId: controllerId,
@@ -143,12 +144,9 @@ class StandalonePage extends StatelessWidget {
                           ? (state as StandaloneLoaded).data 
                           : (state as StandaloneSuccess).data;
 
-                      final userId = data['userId']?.toString() ?? '';
-
                       return ListView(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         children: [
-                          // Top Part: (P1) Drip and Standalone toggle
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -191,7 +189,6 @@ class StandalonePage extends StatelessWidget {
                               ],
                             ),
                           ),
-                          // Middle Part: Zones inside a specific white box with blue border
                           Container(
                             margin: const EdgeInsets.only(top: 8),
                             decoration: BoxDecoration(
@@ -213,7 +210,6 @@ class StandalonePage extends StatelessWidget {
                               ],
                             ),
                           ),
-                          // SEND button below zones
                           const SizedBox(height: 8),
                           Align(
                             alignment: Alignment.centerRight,
@@ -245,7 +241,6 @@ class StandalonePage extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          // Bottom Drip Standalone card
                           Container(
                             decoration: BoxDecoration(
                               color: Colors.white,
@@ -281,7 +276,6 @@ class StandalonePage extends StatelessWidget {
                   },
                 ),
               ),
-              // Bottom Action Buttons
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
@@ -350,7 +344,7 @@ class StandalonePage extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             decoration: BoxDecoration(
-              color: isError ? Colors.red.withValues(alpha: 0.9) : Colors.greenAccent,
+              color: isError ? Colors.red.withValues(alpha: 0.9) : const Color(0xFF2E7D32).withValues(alpha: 0.9),
               borderRadius: BorderRadius.circular(25),
             ),
             child: Text(

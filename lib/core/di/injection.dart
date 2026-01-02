@@ -52,6 +52,7 @@ import '../services/mqtt/mqtt_service.dart';
 import '../services/network_info.dart';
 import '../services/notification_service.dart';
 import '../theme/theme_provider.dart';
+import '../../features/standalone_settings/di/standalone_di.dart' as settings_di;
 
 final GetIt sl = GetIt.instance;
 
@@ -155,6 +156,7 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initReportDownloadDependencies();
   initZoneDuration();
   initStandalone();
+  settings_di.initStandaloneSettings();
   initTdyValveStatus();
   initZoneCyclic();
   initFlowGraph();
