@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/node_status_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/utils/standalone_report_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/moisture_reports/utils/moisture_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/utils/standalone_routes.dart';
 import 'core/di/injection.dart';
@@ -31,15 +31,17 @@ import 'features/reports/Voltage_reports/utils/voltage_routes.dart';
 import 'features/reports/flow_graph_reports/utils/flow_graph_routes.dart';
 import 'features/reports/power_reports/utils/Power_routes.dart';
 import 'features/reports/reportMenu/utils/report_routes.dart';
+import 'features/reports/standalone_reports/utils/standalone_report_routes.dart';
 import 'features/reports/tdy_valve_status_reports/utils/tdy_valve_status_routes.dart';
 import 'features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
 import 'features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
 import 'features/sendrev_msg/utils/senrev_routes.dart';
 import 'features/program_settings/utils/program_settings_routes.dart';
+
 import 'features/set_serial_settings/domain/usecase/set_serial_details_params.dart';
 import 'features/set_serial_settings/presentation/bloc/set_serial_bloc.dart';
 import 'features/set_serial_settings/presentation/bloc/set_serial_bloc_event.dart';
-import 'features/setserialsettings/presentation/pages/setserial_page.dart';
+import 'features/set_serial_settings/presentation/pages/set_serial_page.dart';
 import 'features/side_drawer/groups/utils/group_routes.dart';
 import 'features/auth/utils/auth_routes.dart';
 
@@ -381,6 +383,7 @@ class AppRouter {
         ...TdyValveStatusRoutes,
         ...ZoneCyclicRoutes,
         ...FlowGraphRoutes,
+        ...moistureRoutes,
       ],
     );
   }
