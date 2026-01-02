@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_routes.dart';
 
+import '../../../../core/theme/app_themes.dart';
+
 class SyncSection extends StatelessWidget {
   final String liveSync;
   final String smsSync;
@@ -20,7 +22,7 @@ class SyncSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text("Live Sync", style: TextStyle(fontWeight: FontWeight.bold)),
-            Text(liveSync, style: const TextStyle(fontSize: 12,color: Colors.white)),
+            Text(liveSync, style: const TextStyle(fontSize: 16,color: AppThemes.primaryColor,fontWeight: FontWeight.bold)),
           ],
         ),
         ([1, 5].contains(model)) ? ProgramButton(programTitle: 'Program 1', deviceId: deviceId,) : Container(),
@@ -28,7 +30,7 @@ class SyncSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             const Text("SMS Sync", style: TextStyle(fontWeight: FontWeight.bold)),
-            Text(smsSync, style: const TextStyle(fontSize: 12,color: Colors.white)),
+            Text(smsSync, style: const TextStyle(fontSize: 16,color: AppThemes.primaryColor,fontWeight: FontWeight.bold)),
           ],
         ),
       ],
@@ -49,7 +51,20 @@ class ProgramButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext dialogContext) {
-    return GlassCard(
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.2)),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white,
+            AppThemes.primaryColor.withOpacity(0.15),
+            // Colors.white.withOpacity(opacity / 2),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
       padding:  const EdgeInsets.all(0),
       margin: const EdgeInsets.all(0),
       child: TextButton.icon(
@@ -59,12 +74,11 @@ class ProgramButton extends StatelessWidget {
               extra: deviceId
           );
         },
-        icon: const Icon(Icons.remove_red_eye, color: Colors.white),
+        icon: const Icon(Icons.remove_red_eye, color: AppThemes.primaryColor),
         label: Text(
           programTitle,
-          style: const TextStyle(color: Colors.white),
         ),
-      
+
       ),
     );
   }

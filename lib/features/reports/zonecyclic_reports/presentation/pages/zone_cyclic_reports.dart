@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
  import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_reports/domain/entities/zone_cyclic_entities.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_reports/presentation/widgets/zone_row_widgets.dart';
  import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_reports/utils/zone_cyclic_program_calc.dart';
@@ -31,7 +32,7 @@ class ZoneCyclicPageReport extends StatelessWidget {
             color: Colors.blue.shade50,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              side: BorderSide(color: Colors.blue,width: 0.5)
+              side: BorderSide(color: AppThemes.primaryColor,width: 0.5)
             ),
             margin: const EdgeInsets.only(bottom: 16),
             child: Column(

@@ -7,6 +7,7 @@ import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_report
 import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_reports/presentation/pages/zone_cyclic_reports.dart';
 
 import '../../../../../core/utils/common_date_picker.dart';
+import '../../../../../core/widgets/glassy_wrapper.dart';
 import '../../../../../core/widgets/no_data.dart';
 import '../../../../report_downloader/utils/report_downloaderRoute.dart';
 import '../../domain/entities/zone_cyclic_entities.dart';
@@ -33,113 +34,115 @@ class ZoneCyclicPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Zone Cyclic Status"),
-        actions: [
-          /// 🔹 Toggle View (Cubit → View State)
-          BlocBuilder<ZoneCyclicCubit, TdyValveViewState>(
-            builder: (context, viewState) {
-              return IconButton(
-                icon: Icon(
-                  viewState.viewMode == ZoneCyclicViewMode.zoneStatus
-                      ? Icons.bar_chart
-                      : Icons.list_alt,
-                ),
-                onPressed: () {
-                  context.read<ZoneCyclicCubit>().toggleView();
-                  final program =
-                  (viewState.selectedProgramIndex + 1).toString();
-                  context.read<ZoneCyclicBloc>().add(
-                    FetchZoneCyclicEvent(
-                      userId: userId,
-                      subuserId: subuserId,
-                      controllerId: controllerId,
-                      fromDate: fromDate,
-                      toDate: viewState.viewMode == ZoneCyclicViewMode.zoneStatus ? toDate : fromDate,
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-          BlocBuilder<ZoneCyclicCubit, TdyValveViewState>(
-            builder: (_, viewState) {
-              return IconButton(
-                icon: const Icon(Icons.calendar_today,
-                    color: Colors.black),
-                onPressed: () async {
-                  final result = await pickReportDate(
-                    context: context,
-                    allowRange: viewState.viewMode == ZoneCyclicViewMode.zoneStatus ? true :false,
-                  );
-                  if (result == null) return;
-
-                  context.read<ZoneCyclicBloc>().add(
-                    FetchZoneCyclicEvent(
-                      userId: userId,
-                      subuserId: subuserId,
-                      controllerId: controllerId,
-                      fromDate: result.fromDate,
-                      toDate: result.toDate,
-                    ),
-                  );
-                },
-              ) ;
-            },
-          ),
-         ],
-      ),
-       /// 🔹 BODY → Bloc State (API)
-      body: BlocBuilder<ZoneCyclicBloc, ZoneCyclicState>(
-        builder: (context, state) {
-          if (state is ZoneCyclicLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-           if (state is ZoneCyclicError) {
-
-            return Column(
-              children: [
-                _programDropdown(context),
-                noData,
-              ],
-            );
-          }
-
-          if (state is ZoneCyclicLoaded) {
-            return Column(
-              children: [
-                BlocBuilder<ZoneCyclicCubit, TdyValveViewState>(
-                  builder: (context, viewState) {
-                    return   viewState.viewMode == ZoneCyclicViewMode.zoneStatus ? SizedBox() : _programDropdown(context);
+    return GlassyWrapper(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Zone Cyclic Status"),
+          actions: [
+            /// 🔹 Toggle View (Cubit → View State)
+            BlocBuilder<ZoneCyclicCubit, TdyValveViewState>(
+              builder: (context, viewState) {
+                return IconButton(
+                  icon: Icon(
+                    viewState.viewMode == ZoneCyclicViewMode.zoneStatus
+                        ? Icons.bar_chart
+                        : Icons.list_alt,
+                  ),
+                  onPressed: () {
+                    context.read<ZoneCyclicCubit>().toggleView();
+                    final program =
+                    (viewState.selectedProgramIndex + 1).toString();
+                    context.read<ZoneCyclicBloc>().add(
+                      FetchZoneCyclicEvent(
+                        userId: userId,
+                        subuserId: subuserId,
+                        controllerId: controllerId,
+                        fromDate: fromDate,
+                        toDate: viewState.viewMode == ZoneCyclicViewMode.zoneStatus ? toDate : fromDate,
+                      ),
+                    );
                   },
-                ),
-                 const SizedBox(height: 12),
-
-                BlocBuilder<ZoneCyclicCubit, TdyValveViewState>(
-          builder: (context, viewState) {
-            final selectedProgram = (viewState.selectedProgramIndex + 1).toString();
-
-
-            final matchingPrograms = state.data.data
-                .where((e) => e.program == selectedProgram)
-                .toList();
-
-            final selectedProgramZones =
-            matchingPrograms.isNotEmpty ? matchingPrograms.first.zoneList : <ZoneCyclicDetailEntity>[];
-
-
-            return viewState.viewMode == ZoneCyclicViewMode.zoneStatus ? ZoneCyclicPageReport(data: state.data) : ZoneCyclicGraph(
-            zoneList: selectedProgramZones,
-            totalFlow: state.data.totalFlow,
-          );
-          },
-          ),
-               ],
+                );
+              },
+            ),
+            BlocBuilder<ZoneCyclicCubit, TdyValveViewState>(
+              builder: (_, viewState) {
+                return IconButton(
+                  icon: const Icon(Icons.calendar_today,
+                      color: Colors.black),
+                  onPressed: () async {
+                    final result = await pickReportDate(
+                      context: context,
+                      allowRange: viewState.viewMode == ZoneCyclicViewMode.zoneStatus ? true :false,
+                    );
+                    if (result == null) return;
+      
+                    context.read<ZoneCyclicBloc>().add(
+                      FetchZoneCyclicEvent(
+                        userId: userId,
+                        subuserId: subuserId,
+                        controllerId: controllerId,
+                        fromDate: result.fromDate,
+                        toDate: result.toDate,
+                      ),
+                    );
+                  },
+                ) ;
+              },
+            ),
+           ],
+        ),
+         /// 🔹 BODY → Bloc State (API)
+        body: BlocBuilder<ZoneCyclicBloc, ZoneCyclicState>(
+          builder: (context, state) {
+            if (state is ZoneCyclicLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+             if (state is ZoneCyclicError) {
+      
+              return Column(
+                children: [
+                  _programDropdown(context),
+                  noData,
+                ],
+              );
+            }
+      
+            if (state is ZoneCyclicLoaded) {
+              return Column(
+                children: [
+                  BlocBuilder<ZoneCyclicCubit, TdyValveViewState>(
+                    builder: (context, viewState) {
+                      return   viewState.viewMode == ZoneCyclicViewMode.zoneStatus ? SizedBox() : _programDropdown(context);
+                    },
+                  ),
+                   const SizedBox(height: 12),
+      
+                  BlocBuilder<ZoneCyclicCubit, TdyValveViewState>(
+            builder: (context, viewState) {
+              final selectedProgram = (viewState.selectedProgramIndex + 1).toString();
+      
+      
+              final matchingPrograms = state.data.data
+                  .where((e) => e.program == selectedProgram)
+                  .toList();
+      
+              final selectedProgramZones =
+              matchingPrograms.isNotEmpty ? matchingPrograms.first.zoneList : <ZoneCyclicDetailEntity>[];
+      
+      
+              return viewState.viewMode == ZoneCyclicViewMode.zoneStatus ? ZoneCyclicPageReport(data: state.data) : ZoneCyclicGraph(
+              zoneList: selectedProgramZones,
+              totalFlow: state.data.totalFlow,
             );
-          }
-          return noData;
-        },
+            },
+            ),
+                 ],
+              );
+            }
+            return noData;
+          },
+        ),
       ),
     );
   }

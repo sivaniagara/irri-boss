@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
-import '../../domain/entities/flow_graph_entities.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/flow_graph_reports/domain/entities/flow_graph_entities.dart';
 
+/// BASE STATE
 abstract class FlowGraphState extends Equatable {
   const FlowGraphState();
 
@@ -8,23 +9,13 @@ abstract class FlowGraphState extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Initial
+/// INITIAL
 class FlowGraphInitial extends FlowGraphState {}
 
-/// Loading
+/// LOADING
 class FlowGraphLoading extends FlowGraphState {}
 
-/// Success
-class FlowGraphLoaded extends FlowGraphState {
-  final FlowGraphEntities data;
-
-  const FlowGraphLoaded(this.data);
-
-  @override
-  List<Object?> get props => [data];
-}
-
-/// Error
+/// ERROR
 class FlowGraphError extends FlowGraphState {
   final String message;
 
@@ -32,4 +23,24 @@ class FlowGraphError extends FlowGraphState {
 
   @override
   List<Object?> get props => [message];
+}
+
+/// LOADED ✅ (MOST IMPORTANT)
+class FlowGraphLoaded extends FlowGraphState {
+  final FlowGraphEntities data;
+  final String fromDate;
+  final String toDate;
+
+  const FlowGraphLoaded({
+    required this.data,
+    required this.fromDate,
+    required this.toDate,
+  });
+
+  @override
+  List<Object?> get props => [
+    data,
+    fromDate,
+    toDate,
+  ];
 }
