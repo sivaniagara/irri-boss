@@ -41,7 +41,7 @@ class StandaloneRemoteDataSourceImpl extends StandaloneRemoteDataSource {
       }
 
       /// Build endpoint URL
-      String endpoint = StandalonePageUrls.getStandaloneUrl
+      String endpoint = StandaloneReportPageUrls.getStandaloneUrl
           .replaceAll(':userId', '$userId')
           .replaceAll(':subuserId', '$subuserId')
           .replaceAll(':controllerId', '$controllerId')

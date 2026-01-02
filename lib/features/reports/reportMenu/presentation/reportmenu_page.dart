@@ -103,7 +103,7 @@ class ReportMenuPage extends StatelessWidget {
             title: 'Standalone',
             icon: Icons.touch_app,
             onTap: () {
-              context.push(StandalonePageRoutes.Standalonepage,extra: params);
+              context.push(StandaloneReportPageRoutes.Standalonepage,extra: params);
             },
           ),
           _reportCard(
