@@ -30,15 +30,16 @@ import 'features/reports/flow_graph_reports/utils/flow_graph_routes.dart';
 import 'features/reports/power_reports/utils/Power_routes.dart';
 import 'features/reports/reportMenu/utils/report_routes.dart';
 import 'features/reports/standalone_reports/utils/standalone_routes.dart';
-import 'features/reports/tdyvalvestatus_reports/utils/tdy_valve_status_routes.dart';
+import 'features/reports/tdy_valve_status_reports/utils/tdy_valve_status_routes.dart';
 import 'features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
 import 'features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
 import 'features/sendrev_msg/utils/senrev_routes.dart';
 import 'features/program_settings/utils/program_settings_routes.dart';
-import 'features/setserialsettings/domain/usecase/setserial_details_params.dart';
-import 'features/setserialsettings/presentation/bloc/setserial_bloc.dart';
-import 'features/setserialsettings/presentation/bloc/setserial_bloc_event.dart';
-import 'features/setserialsettings/presentation/pages/setserial_page.dart';
+
+import 'features/set_serial_settings/domain/usecase/set_serial_details_params.dart';
+import 'features/set_serial_settings/presentation/bloc/set_serial_bloc.dart';
+import 'features/set_serial_settings/presentation/bloc/set_serial_bloc_event.dart';
+import 'features/set_serial_settings/presentation/pages/set_serial_page.dart';
 import 'features/side_drawer/groups/utils/group_routes.dart';
 import 'features/auth/utils/auth_routes.dart';
 

@@ -1,7 +1,7 @@
 
 
-import '../datasources/setserial_datasource.dart';
-import '../models/setserial_details_model.dart';
+import '../datasources/set_serial_datasource.dart';
+import '../models/set_serial_details_model.dart';
 
 
 class SetSerialRepository {

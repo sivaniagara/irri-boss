@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,15 +10,12 @@ import 'package:niagara_smart_drip_irrigation/features/auth/auth.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart' as di;
-import '../../../../core/services/mqtt/mqtt_message_helper.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/services/selected_controller_persistence.dart';
 import '../../../../core/utils/app_images.dart';
 import '../../../controller_details/domain/usecase/controller_details_params.dart';
-import '../../../controller_settings/utils/controller_settings_routes.dart';
 import '../../../program_settings/utils/program_settings_routes.dart';
 import '../../../side_drawer/groups/presentation/widgets/app_drawer.dart';
-
 import '../../utils/dashboard_routes.dart';
 import '../widgets/actions_section.dart';
 import '../widgets/ctrl_display.dart';
@@ -29,7 +25,6 @@ import '../widgets/pressure_section.dart';
 import '../widgets/ryb_section.dart';
 import '../widgets/sync_section.dart';
 import '../widgets/timer_section.dart';
-// import '../../../mqtt/mqtt_barrel.dart';
 import '../../dashboard.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -104,24 +99,26 @@ class DashboardPage extends StatelessWidget {
     }
     if (state is DashboardError) {
       return GlassyWrapper(
-        child: Scaffold(
-            backgroundColor: Colors.transparent,
-            appBar: AppBar(
-              title: Container(
-                width: 140,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(6),
+        child: SafeArea(
+          child: Scaffold(
+              backgroundColor: Colors.transparent,
+              appBar: AppBar(
+                title: Container(
+                  width: 140,
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  alignment: Alignment.center,
+                  child: Image.asset(NiagaraCommonImages.logoSmall),
                 ),
-                alignment: Alignment.center,
-                child: Image.asset(NiagaraCommonImages.logoSmall),
               ),
-            ),
-            drawer: userType == 1 ? const AppDrawer() : null,
-            body: Center(
-                child: Text('Error: ${state.message}', style: TextStyle(color: Colors.white),)
-            )
+              drawer: userType == 1 ? const AppDrawer() : null,
+              body: Center(
+                  child: Text('Error: ${state.message}', style: TextStyle(color: Colors.white),)
+              )
+          ),
         ),
       );
     }

@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
- import 'package:niagara_smart_drip_irrigation/features/reports/tdyvalvestatus_reports/presentation/bloc/tdy_valve_status_bloc_event.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/tdyvalvestatus_reports/presentation/bloc/tdy_valve_status_bloc_state.dart';
+ import 'package:niagara_smart_drip_irrigation/features/reports/tdy_valve_status_reports/presentation/bloc/tdy_valve_status_bloc_event.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/tdy_valve_status_reports/presentation/bloc/tdy_valve_status_bloc_state.dart';
 
 import '../../domain/usecases/tdy_valve_status_data.dart';
 

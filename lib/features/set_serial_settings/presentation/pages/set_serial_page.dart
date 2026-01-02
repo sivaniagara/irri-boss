@@ -4,9 +4,9 @@ import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import '../../../../../core/di/injection.dart' as di;
 
 import '../../../../core/widgets/no_data.dart';
-import '../bloc/setserial_bloc.dart';
-import '../bloc/setserial_bloc_event.dart';
-import '../bloc/setserial_state.dart';
+import '../bloc/set_serial_bloc.dart';
+import '../bloc/set_serial_bloc_event.dart';
+import '../bloc/set_serial_state.dart';
 
 class SerialSetCalibrationPage extends StatelessWidget {
   final int userId;

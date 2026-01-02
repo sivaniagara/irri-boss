@@ -1,8 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:niagara_smart_drip_irrigation/features/setserialsettings/presentation/bloc/setserial_bloc_event.dart';
-import 'package:niagara_smart_drip_irrigation/features/setserialsettings/presentation/bloc/setserial_state.dart';
+import 'package:niagara_smart_drip_irrigation/features/set_serial_settings/presentation/bloc/set_serial_bloc_event.dart';
+import 'package:niagara_smart_drip_irrigation/features/set_serial_settings/presentation/bloc/set_serial_state.dart';
 
-import '../../data/repositories/setserial_details_repositories.dart';
+import '../../data/repositories/set_serial_details_repositories.dart';
+
 
 class SetSerialBloc extends Bloc<SetSerialEvent, SetSerialState> {
   final SetSerialRepository repo;

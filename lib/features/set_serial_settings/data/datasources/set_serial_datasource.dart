@@ -3,7 +3,7 @@ import 'dart:convert';
 import '../../../../../core/error/exceptions.dart';
 import '../../../../../core/services/api_client.dart';
 import '../../../../../core/utils/api_urls.dart';
-import '../models/setserial_details_model.dart';
+import '../models/set_serial_details_model.dart';
 
 abstract class SetSerialDataSource {
   Future<String> sendSerial({

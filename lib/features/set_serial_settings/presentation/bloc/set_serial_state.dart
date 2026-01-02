@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
-import '../../data/models/setserial_details_model.dart';
+import '../../data/models/set_serial_details_model.dart';
+
 
 abstract class SetSerialState extends Equatable {
   @override

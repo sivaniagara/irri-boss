@@ -1,8 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/presentation/pages/motor_cyclic_page.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/tdyvalvestatus_reports/presentation/bloc/tdy_valve_mode.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/tdy_valve_status_reports/presentation/bloc/tdy_valve_mode.dart';
 import '../../../../../core/di/injection.dart' as di;
 import '../presentation/bloc/tdy_valve_status_bloc.dart';
 import '../presentation/bloc/tdy_valve_status_bloc_event.dart';

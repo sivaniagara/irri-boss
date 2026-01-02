@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
-import '../../data/datasources/setserial_datasource.dart';
-import '../../data/models/setserial_details_model.dart';
-import '../../data/repositories/setserial_details_repositories.dart';
+import '../../data/datasources/set_serial_datasource.dart';
+import '../../data/models/set_serial_details_model.dart';
+import '../../data/repositories/set_serial_details_repositories.dart';
 
 
 class SetSerialRepositoryImpl implements SetSerialRepository {
