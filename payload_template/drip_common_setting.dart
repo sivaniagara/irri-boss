@@ -43,8 +43,8 @@ var dripCommonSettings = {
       "NAME": "Calculated Flow",
       "SETS": [
         {"SN": 1, "WT": 2, "VAL": 'OF', "SF": "CALFLOWRATE", "TT": "Calculated Flow", "HF": '1'},
-        {"SN": 2, "WT": 9, "VAL": '0', "SF": "CALFLOW2", "TT": "2 Phase", "HF": '1'},
-        {"SN": 3, "WT": 9, "VAL": '0', "SF": "CALFLOW3", "TT": "3 Phase", "HF": '1'},
+        {"SN": 2, "WT": 10, "VAL": '0', "SF": "CALFLOW2", "TT": "2 Phase", "HF": '1'},
+        {"SN": 3, "WT": 10, "VAL": '0', "SF": "CALFLOW3", "TT": "3 Phase", "HF": '1'},
       ]
     },
     {
@@ -95,7 +95,7 @@ var programCommonSettings = {
       "TID": 2,
       "NAME": "Fertilizer",
       "SETS": [
-        {"SN": 1, "WT": 2, "VAL": "0;0;0;0;0;0", "SF": "FERTOBOF", "TT": "F1;F2;F3;F4;F5;F6", "HF": '1;1;1;1;1;1'},
+        {"SN": 1, "WT": 2, "VAL": "OF;OF;OF;OF;OF;OF", "SF": "FERTONOF", "TT": "F1;F2;F3;F4;F5;F6", "HF": '1;1;1;1;1;1'},
       ]
     },
     {
@@ -109,7 +109,7 @@ var programCommonSettings = {
       "TID": 3,
       "NAME": "Blower Settings",
       "SETS": [
-        {"SN": 1, "WT": 2, "VAL": '0', "SF": "FANRTC", "TT": "Blower RTC Mode", "HF": '1'},
+        {"SN": 1, "WT": 2, "VAL": 'OF', "SF": "FANRTC", "TT": "Blower RTC Mode", "HF": '1'},
         {"SN": 2, "WT": 3, "VAL": '00:00;00:00', "SF": "FANRTCTIM", "TT": "RTC On Time;RTC Off Time", "HF": '1;1'},
         {"SN": 3, "WT": 3, "VAL": '00:00;00:00', "SF": "FANCYCLICTIM", "TT": "Cyclic On Time;Cyclic Off Time", "HF": '1;1'},
       ]
@@ -123,42 +123,42 @@ var adjustPercent = {
       "TID": 1,
       "NAME": "Program 1",
       "SETS": [
-        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP1,", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
+        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP1", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
       ]
     },
     {
       "TID": 2,
       "NAME": "Program 2",
       "SETS": [
-        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP2,", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
+        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP2", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
       ]
     },
     {
       "TID": 3,
       "NAME": "Program 3",
       "SETS": [
-        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP3,", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
+        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP3", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
       ]
     },
     {
       "TID": 4,
       "NAME": "Program 4",
       "SETS": [
-        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP4,", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
+        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP4", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
       ]
     },
     {
       "TID": 5,
       "NAME": "Program 5",
       "SETS": [
-        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP5,", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
+        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP5", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
       ]
     },
     {
       "TID": 6,
       "NAME": "Program 6",
       "SETS": [
-        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP6,", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
+        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP6", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
       ]
     },
   ],
@@ -183,7 +183,7 @@ var backwash = {
       "NAME": "Filter Settings",
       "SETS": [
         {"SN": 1, "WT": 2, "VAL": "OF;OF;OF;OF", "SF": "REFRESHONOF", "TT": "SAN filter 1;SAN filter 2;DISK filter 1;DISK filter 2", "HF": '1;1;1;1'},
-        {"SN": 2, "WT": 2, "VAL": "OF", "SF": "CYCLICFILTEROF", "TT": "Cyclic Filter", "HF": '1'},
+        {"SN": 2, "WT": 2, "VAL": "OF", "SF": "CYCLICFILTER", "TT": "Cyclic Filter", "HF": '1'},
         {"SN": 3, "WT": 2, "VAL": "OF", "SF": "AUTOBCKWASH", "TT": "Auto Back Wash", "HF": '1'},
         {"SN": 4, "WT": 10, "VAL": "0.0", "SF": "PRESSURELIMIT", "TT": "Pressure Limit", "HF": '1'},
       ]

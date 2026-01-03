@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/gradiant_background.dart';
@@ -7,9 +8,12 @@ import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/prese
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/widgets/setting_row.dart';
 
 import '../../../../core/services/time_picker_service.dart';
+import '../../../../core/widgets/alert_dialog.dart';
+import '../../../../core/widgets/app_alerts.dart';
 import '../../domain/entities/common_setting_group_entity.dart';
 import '../../domain/entities/common_setting_item_entity.dart';
 import '../bloc/template_irrigation_settings_bloc.dart';
+import '../enums/update_template_setting_status.dart';
 
 class TemplateSettingPage extends StatelessWidget {
   final String appBarTitle;
@@ -88,6 +92,8 @@ class TemplateSettingPage extends StatelessWidget {
                                                           )
                                                       );
                                                     },
+                                                    groupIndex: groupIndex,
+                                                    settingIndex: index,
                                                   );
                                                 }
                                             ),
@@ -154,6 +160,8 @@ class TemplateSettingPage extends StatelessWidget {
                                                               );
                                                             }
                                                           } : null,
+                                                          groupIndex: groupIndex,
+                                                          settingIndex: index,
                                                         );
                                                       },
                                                     );
@@ -163,8 +171,13 @@ class TemplateSettingPage extends StatelessWidget {
                                             ),
                                             IconButton(
                                               onPressed: (){
-
-                                              },
+                                                print('send button clicked....');
+                                                context.read<TemplateIrrigationSettingsBloc>().add(
+                                                    UpdateTemplateSettingEvent(
+                                                      groupIndex: groupIndex,
+                                                      settingIndex: index
+                                                    )
+                                                );                                            },
                                               icon: Icon(Icons.send_outlined, color: Theme.of(context).primaryColor,),
                                               style: ButtonStyle(
                                                   backgroundColor: WidgetStatePropertyAll(Theme.of(context).primaryColorLight.withValues(alpha: 0.3))
@@ -198,7 +211,21 @@ class TemplateSettingPage extends StatelessWidget {
 
           },
           listener: (context, state){
-
+            if(state is TemplateIrrigationSettingsLoaded && state.updateTemplateSettingStatus == UpdateTemplateSettingStatus.loading){
+              showGradientLoadingDialog(context);
+            }else if(state is TemplateIrrigationSettingsLoaded && state.updateTemplateSettingStatus == UpdateTemplateSettingStatus.failure){
+              context.pop();
+              showErrorAlert(context: context, message: state.message);
+            }else if(state is TemplateIrrigationSettingsLoaded && state.updateTemplateSettingStatus == UpdateTemplateSettingStatus.success){
+              context.pop();
+              showSuccessAlert(
+                  context: context,
+                  message: state.message,
+                  onPressed: (){
+                    context.pop();
+                  }
+              );
+            }
           }
       ),
     );

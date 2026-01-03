@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/time_picker_service.dart';
 
@@ -41,6 +42,12 @@ class FindSuitableWidget extends StatelessWidget {
       return TextFormField(
         initialValue: singleSettingItemEntity.value,
         keyboardType: TextInputType.number,
+        inputFormatters: [
+          singleSettingItemEntity.widgetType == 9
+              ? integerFormatter
+              : decimalFormatter,
+        ],
+
         decoration: InputDecoration(
           filled: true,
           fillColor: Colors.grey.shade100,
@@ -65,7 +72,7 @@ class FindSuitableWidget extends StatelessWidget {
          key: UniqueKey(),
          underline: Container(),
          value: singleSettingItemEntity.value,
-         items: singleSettingItemEntity.optionSno.map((e){
+         items: singleSettingItemEntity.option.map((e){
            return DropdownMenuItem(
              value: e,
                child: Text(e)
@@ -78,3 +85,6 @@ class FindSuitableWidget extends StatelessWidget {
     return Container();
   }
 }
+
+final integerFormatter = FilteringTextInputFormatter.allow(RegExp(r'[0-9]'));
+final decimalFormatter = FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'));

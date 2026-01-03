@@ -12,7 +12,7 @@ class SingleSettingItemEntity extends CommonSettingItemEntity{
   final String settingField;
   final String titleText;
   final String hf;
-  final List<String> optionSno;
+  final List<String> option;
 
   SingleSettingItemEntity({
     required this.sNo,
@@ -21,7 +21,7 @@ class SingleSettingItemEntity extends CommonSettingItemEntity{
     required this.settingField,
     required this.titleText,
     required this.hf,
-    required this.optionSno,
+    required this.option,
   });
 
   SingleSettingItemEntity copyWith({String? updateValue}){
@@ -31,7 +31,7 @@ class SingleSettingItemEntity extends CommonSettingItemEntity{
         value: updateValue ?? value,
         settingField: settingField,
         titleText: titleText,
-        hf: hf, optionSno: optionSno
+        hf: hf, option: option
     );
   }
 

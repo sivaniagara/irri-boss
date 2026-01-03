@@ -15,6 +15,15 @@ class FetchTemplateSettingEvent extends TemplateIrrigationSettingsEvent{
   });
 }
 
+class UpdateTemplateSettingEvent extends TemplateIrrigationSettingsEvent{
+  final int groupIndex;
+  final int settingIndex;
+  UpdateTemplateSettingEvent({
+    required this.groupIndex,
+    required this.settingIndex,
+  });
+}
+
 
 class UpdateSingleSettingRowEvent extends TemplateIrrigationSettingsEvent{
   final int groupIndex;
