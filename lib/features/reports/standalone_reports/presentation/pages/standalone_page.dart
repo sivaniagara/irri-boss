@@ -9,20 +9,20 @@ import '../../../../../core/utils/common_date_picker.dart';
 import '../../../../../core/widgets/glassy_wrapper.dart';
 import '../../../../../core/widgets/no_data.dart';
 import '../../../../report_downloader/utils/report_downloaderRoute.dart';
-import '../../utils/standalone_routes.dart';
+import '../../utils/standalone_report_routes.dart';
 import '../bloc/standalone_bloc.dart';
 import '../bloc/standalone_bloc_event.dart';
 import '../bloc/standalone_bloc_state.dart';
 
 
-class StandalonePage extends StatelessWidget {
+class StandaloneReportPage extends StatelessWidget {
   final int userId;
   final int subuserId;
   final int controllerId;
   final String fromDate;
   final String toDate;
 
-  const StandalonePage({
+  const StandaloneReportPage({
     super.key,
     required this.userId,
     required this.subuserId,
@@ -71,7 +71,7 @@ class StandalonePage extends StatelessWidget {
               ReportDownloadPageRoutes.ReportDownloadPage,
               extra: {
                 "title": "Stand Alone Report",
-                "url": StandalonePageUrls.getStandaloneUrl,
+                "url": StandaloneReportPageUrls.getStandaloneUrl,
               },
             );
           },

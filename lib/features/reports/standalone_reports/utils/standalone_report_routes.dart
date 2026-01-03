@@ -8,20 +8,20 @@ import '../presentation/bloc/standalone_bloc_event.dart';
 import '../presentation/pages/standalone_page.dart';
 
 /// Page Route Name Constants
-abstract class StandalonePageRoutes {
+abstract class StandaloneReportPageRoutes {
   static const String Standalonepage = '/Standalone';
 }
 
 /// API URL Pattern
-class StandalonePageUrls {
+class StandaloneReportPageUrls {
   static const String getStandaloneUrl =
       'user/:userId/subuser/:subuserId/controller/:controllerId/report?&fromDate=:fromDate'
       '&toDate=:toDate&type=standalone';
  }
 /// GoRouter config
-final StandaloneRoutes = <GoRoute>[
+final standaloneReportRoutes = <GoRoute>[
   GoRoute(
-    path: StandalonePageRoutes.Standalonepage,
+    path: StandaloneReportPageRoutes.Standalonepage,
     name: 'Standalone',
     builder: (context, state) {
       /// Safe param extraction
@@ -51,7 +51,7 @@ final StandaloneRoutes = <GoRoute>[
         ),
 
        ],
-         child: StandalonePage(
+         child: StandaloneReportPage(
            userId: userId,
            subuserId: subuserId,
            controllerId: controllerId,

@@ -5,7 +5,7 @@ import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_repo
 
 import '../../../../../../core/error/exceptions.dart';
 import '../../../../../../core/services/api_client.dart';
-import '../../utils/standalone_routes.dart';
+import '../../utils/standalone_report_routes.dart';
 import '../models/standalone_model.dart';
 
 abstract class StandaloneRemoteDataSource {
@@ -41,7 +41,7 @@ class StandaloneRemoteDataSourceImpl extends StandaloneRemoteDataSource {
       }
 
       /// Build endpoint URL
-      String endpoint = StandalonePageUrls.getStandaloneUrl
+      String endpoint = StandaloneReportPageUrls.getStandaloneUrl
           .replaceAll(':userId', '$userId')
           .replaceAll(':subuserId', '$subuserId')
           .replaceAll(':controllerId', '$controllerId')

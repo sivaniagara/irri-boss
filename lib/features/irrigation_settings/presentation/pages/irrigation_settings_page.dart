@@ -56,7 +56,7 @@ class IrrigationSettingsPage extends StatelessWidget {
               crossAxisCount: 3,        // ✅ 3 per row
               crossAxisSpacing: 14,
               mainAxisSpacing: 14,
-              childAspectRatio: 0.78,   // perfect card ratio
+              childAspectRatio: 0.8,   // perfect card ratio
             ),
             itemCount: settings.length,
             itemBuilder: (context, index) {

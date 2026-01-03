@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:niagara_smart_drip_irrigation/features/controller_details/data/datasources/controller_datasource.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/program_preview_dispatcher.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/flow_graph_reports/di/flow_graph_di.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/moisture_reports/di/moisture_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/di/standalone_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/tdy_valve_status_reports/di/tdy_valve_status_di.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,6 +16,7 @@ import '../../features/controller_details/presentation/bloc/controller_details_s
 import '../../features/dashboard/utils/dashboard_dispatcher.dart';
 import '../../features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../features/fault_msg/di/faultmsg_di.dart';
+import '../../features/irrigation_settings/di/irrigation_settings_di.dart';
 import '../../features/pump_settings/utils/pump_settings_dispatcher.dart';
 import '../../features/set_serial_settings/data/datasources/set_serial_datasource.dart';
 import '../../features/set_serial_settings/data/repositories/set_serial_details_repositories.dart';
@@ -52,6 +54,7 @@ import '../services/mqtt/mqtt_service.dart';
 import '../services/network_info.dart';
 import '../services/notification_service.dart';
 import '../theme/theme_provider.dart';
+import '../../features/standalone_settings/di/standalone_settings_di.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -131,6 +134,9 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   /// water fertilizer setting dependencies
   initWaterFertilizerSettingsDependencies();
 
+  /// irrigation template setting dependencies
+  initIrrigationSettingsDependencies();
+
   sl.registerLazySingleton<ControllerRemoteDataSource>(() => ControllerRemoteDataSourceImpl(apiClient: sl()));
   sl.registerLazySingleton<ControllerRepo>(() => ControllerRepoImpl(remoteDataSource: sl()));
   sl.registerLazySingleton(() => GetControllerDetailsUsecase(controllerRepo: sl()));
@@ -155,9 +161,11 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initReportDownloadDependencies();
   initZoneDuration();
   initStandalone();
+  initStandaloneSettings();
   initTdyValveStatus();
   initZoneCyclic();
   initFlowGraph();
+  initMoisture();
 }
 
 // Reset all

@@ -1,20 +1,57 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/pages/irrigation_settings_page.dart';
-
+import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/pages/template_setting_page.dart';
+import '../../../core/di/injection.dart' as di;
+import '../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../progam_zone_set/utils/program_tab_routes.dart';
+import '../../water_fertilizer_settings/presentation/bloc/water_fertilizer_setting_bloc.dart';
+import '../presentation/bloc/template_irrigation_settings_bloc.dart';
 
 class IrrigationSettingsRoutes {
   static const String irrigationSettings = "/irrigationSettings";
+  static const String templateSetting = "/templateSetting/:settingName/:settingNo";
 }
 
 final irrigationSettingGoRoutes = [
   GoRoute(
       path: IrrigationSettingsRoutes.irrigationSettings,
       builder: (context, state) {
-        return IrrigationSettingsPage();
+        return MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (context)=> di.sl<WaterFertilizerSettingBloc>(),
+              )
+            ],
+            child: IrrigationSettingsPage()
+        );
       },
       routes: [
-        ...programTabRoutesGoRoutes
+        ...programTabRoutesGoRoutes,
+        GoRoute(
+            path: IrrigationSettingsRoutes.templateSetting,
+            builder: (context, state) {
+              var settingName = state.pathParameters['settingName']!;
+              var settingNo = state.pathParameters['settingNo']!;
+              final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
+
+              return MultiBlocProvider(
+                  providers: [
+                    BlocProvider(
+                      create: (context)=> di.sl<TemplateIrrigationSettingsBloc>()..add(
+                          FetchTemplateSettingEvent(
+                              userId: controllerContext.userId,
+                              controllerId: controllerContext.controllerId,
+                              subUserId: controllerContext.subUserId,
+                              settingNo: settingNo
+                          )
+                      ),
+                    )
+                  ],
+                  child: TemplateSettingPage(appBarTitle: settingName)
+              );
+            },
+        )
       ]
   ),
 ];

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/domain/entities/setting_item_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/utils/irrigation_settings_routes.dart';
 
+import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
+import '../../../water_fertilizer_settings/presentation/bloc/water_fertilizer_setting_bloc.dart';
 import '../../../water_fertilizer_settings/utils/water_fertilizer_settings_routes.dart';
+import '../enums/irrigation_settings_enum.dart';
 
 class SettingCard extends StatelessWidget {
   final SettingItemEntity item;
@@ -16,7 +20,14 @@ class SettingCard extends StatelessWidget {
     return InkWell(
       borderRadius: BorderRadius.circular(18),
       onTap: () {
-        context.push('${DashBoardRoutes.dashboard}${IrrigationSettingsRoutes.irrigationSettings}${WaterFertilizerSettingsRoutes.program.replaceAll(':programId', '1')}');
+        if(item.irrigationSettingsEnum == IrrigationSettingsEnum.irrigationFertigation){
+          context.push('${DashBoardRoutes.dashboard}${IrrigationSettingsRoutes.irrigationSettings}${WaterFertilizerSettingsRoutes.program.replaceAll(':programId', '1')}');
+        }else if(item.irrigationSettingsEnum != IrrigationSettingsEnum.irrigationFertigation){
+          context.push('${DashBoardRoutes.dashboard}${IrrigationSettingsRoutes.irrigationSettings}${IrrigationSettingsRoutes.templateSetting
+              .replaceAll(':settingName', item.name)
+              .replaceAll(':settingNo', item.irrigationSettingsEnum.settingId.toString())
+          }');
+        }
       },
       child: Container(
         decoration: BoxDecoration(
@@ -40,7 +51,6 @@ class SettingCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Image Container
             Container(
               height: 54,
               width: 54,
