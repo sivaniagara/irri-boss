@@ -109,7 +109,7 @@ class _ViewPumpSettingsView extends StatelessWidget {
               return const Center(child: Text("No templates available"));
             }
 
-            final excludedIds = {508, 509, 510, 512};
+            final excludedIds = {502, 509, 510, 511, 513, 514, 515};
             final filteredLabels = state.settingLabels!
                 .where((template) => !excludedIds.contains(template['menuSettingId']))
                 .toList();
@@ -125,7 +125,7 @@ class _ViewPumpSettingsView extends StatelessWidget {
               final int menuId = int.tryParse(template['menuSettingId'].toString()) ?? 0;
               Map<String, dynamic> config;
 
-              if (menuId == 507) {
+              if (menuId == 508) {
                 config = {
                   "setting": [
                     {
@@ -213,8 +213,7 @@ class _ViewPumpSettingsView extends StatelessWidget {
 
                 late Map<String, dynamic> templateConfig;
 
-                // Use static config for 507, otherwise parse from JSON
-                if (currentMenuSettingId == 507) {
+                if (currentMenuSettingId == 508) {
                   templateConfig = {
                     "setting": [
                       {
@@ -374,19 +373,34 @@ class _ViewPumpSettingsView extends StatelessWidget {
         );
     }
 
-    if(data['TT'].contains(";")) {
+    if (data['TT'].contains(';')) {
+      final ttItems = data['TT'].split(';');
+      final valueItems = value.split(data['WT'] == 7 ? ':' : ';');
+
+      // Determine the maximum length to avoid index errors
+      final maxLength = ttItems.length > valueItems.length
+          ? ttItems.length
+          : valueItems.length;
+
       return GlassCard(
-        margin: EdgeInsets.symmetric(vertical: 4),
+        margin: const EdgeInsets.symmetric(vertical: 4),
         padding: EdgeInsets.zero,
         blur: 0,
         opacity: 1,
         child: Column(
           children: [
-            for(int i = 0; i < data['TT'].split(';').length; i++)
+            for (int i = 0; i < maxLength; i++)
               SettingListTile(
-                title: data['TT'].split(';')[i],
-                trailing: Text(value.split(data['WT'] == 7 ? ':' : ';')[i], style: Theme.of(context).textTheme.bodyMedium,),
-              )
+                title: i < ttItems.length
+                    ? ttItems[i].trim()
+                    : '', // Safe access with fallback
+                trailing: Text(
+                  i < valueItems.length
+                      ? valueItems[i].trim()
+                      : '',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
           ],
         ),
       );

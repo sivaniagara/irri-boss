@@ -64,7 +64,7 @@ class ApiClient {
       };
 
       print("Request Method: $method | Endpoint: $endpoint");
-      // print("Request Body: $body");
+      print("Request Body: $body");
       // print("Encoded Body: ${jsonEncode(body)}");
 
       // Make the initial request

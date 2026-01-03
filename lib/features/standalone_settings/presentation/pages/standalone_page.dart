@@ -91,7 +91,7 @@ class StandalonePage extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (context) => BlocProvider<StandaloneBloc>(
-                                create: (context) => di.sl<StandaloneBloc>(instanceName: 'settings')..add(
+                                create: (context) => di.sl<StandaloneBloc>()..add(
                                   FetchStandaloneDataEvent(
                                     userId: userId,
                                     controllerId: controllerId,

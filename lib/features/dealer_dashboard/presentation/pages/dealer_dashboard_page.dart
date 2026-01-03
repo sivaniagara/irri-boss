@@ -1,8 +1,9 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/utils/auth_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
@@ -10,19 +11,21 @@ import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../dashboard/utils/dashboard_routes.dart';
 
 class DealerDashboardPage extends StatelessWidget {
-  const DealerDashboardPage({super.key});
+  final Map<String, dynamic> userData;
+  const DealerDashboardPage({super.key, required this.userData});
 
   static const _tabs = [
     {'icon': Icons.build, 'label': 'Service Request', 'route': DashBoardRoutes.dashboard},
     {'icon': Icons.sell, 'label': 'Selling Device', 'route': DashBoardRoutes.dashboard},
     {'icon': Icons.person_search, 'label': 'Customer Device', 'route': DashBoardRoutes.dashboard},
     {'icon': Icons.devices, 'label': 'My Device', 'route': DashBoardRoutes.dashboard},
-    {'icon': Icons.group_work, 'label': 'Shared Device', 'route': DashBoardRoutes.dashboard},
+    {'icon': Icons.group_work, 'label': 'Shared Device', 'route': DealerRoutes.sharedDevice},
     {'icon': Icons.check_box, 'label': 'Selected Customer', 'route': DashBoardRoutes.dashboard},
   ];
 
   @override
   Widget build(BuildContext dialogContext) {
+    final queryParams = GoRouterState.of(dialogContext).uri.queryParameters;
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is LoggedOut) {
@@ -53,7 +56,9 @@ class DealerDashboardPage extends StatelessWidget {
                       icon: tab['icon'] as IconData,
                       label: label,
                       onTap: () {
-                        context.push(route);
+                        context.push(
+                          '$route?userId=${queryParams['userId']}&userType=${queryParams['userType']}',
+                        );
                       },
                     );
                   },
@@ -81,41 +86,23 @@ class DealerDashboardPage extends StatelessWidget {
     return InkWell(
       borderRadius: BorderRadius.circular(14),
       onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(14),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withOpacity(0.04),
-                  Colors.white.withOpacity(0.2),
-                ],
+      child: GlassCard(
+        opacity: 1,
+        blur: 0,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 36,color: Theme.of(context).primaryColor,),
+            const SizedBox(height: 12),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
               ),
-              border: Border.all(color: Colors.white.withOpacity(0.06)),
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 36, color: Colors.white70),
-                const SizedBox(height: 12),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          ],
         ),
       ),
     );

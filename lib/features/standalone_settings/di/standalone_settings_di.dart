@@ -12,25 +12,24 @@ void initStandaloneSettings() {
   
   // Data sources
   sl.registerLazySingleton<StandaloneRemoteDataSource>(
-    () => StandaloneRemoteDataSourceImpl(sl(), sl()),
-    instanceName: 'settings',
+    () => StandaloneRemoteDataSourceImpl(),
+
   );
 
   // Repository
   sl.registerLazySingleton<StandaloneRepository>(
-    () => StandaloneRepositoryImpl(remoteDataSource: sl(instanceName: 'settings')),
-    instanceName: 'settings',
+    () => StandaloneRepositoryImpl(remoteDataSource: sl()),
   );
 
   // Use cases
-  sl.registerLazySingleton(() => GetStandaloneStatus(sl(instanceName: 'settings')), instanceName: 'settings');
-  sl.registerLazySingleton(() => SendStandaloneConfig(sl(instanceName: 'settings')), instanceName: 'settings');
-  sl.registerLazySingleton(() => PublishMqttCommand(sl(instanceName: 'settings')), instanceName: 'settings');
+  sl.registerLazySingleton(() => GetStandaloneStatus(sl()));
+  sl.registerLazySingleton(() => SendStandaloneConfig(sl()));
+  sl.registerLazySingleton(() => PublishMqttCommand(sl()));
 
   // BLoC
   sl.registerFactory(() => StandaloneBloc(
-    getStandaloneStatus: sl(instanceName: 'settings'),
-    sendStandaloneConfig: sl(instanceName: 'settings'),
-    publishMqttCommand: sl(instanceName: 'settings'),
-  ), instanceName: 'settings');
+    getStandaloneStatus: sl(),
+    sendStandaloneConfig: sl(),
+    publishMqttCommand: sl(),
+  ), );
 }

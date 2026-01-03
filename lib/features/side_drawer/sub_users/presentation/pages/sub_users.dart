@@ -32,7 +32,7 @@ class SubUsers extends StatelessWidget {
               await context.read<SubUsersBloc>().stream
                   .firstWhere((s) => s is SubUsersLoaded || s is SubUsersError);
             },
-            child: ListView.builder(
+            child: ListView.separated(
               itemCount: state.subUsersList.length,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               itemBuilder: (context, index) {
@@ -48,6 +48,9 @@ class SubUsers extends StatelessWidget {
                 return GlassCard(
                   padding: EdgeInsets.zero,
                   borderRadius: borderRadius,
+                  margin: EdgeInsetsGeometry.symmetric(horizontal: 0),
+                  opacity: 1,
+                  blur: 0,
                   child: ListTile(
                     contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
                     minTileHeight: 40,
@@ -67,6 +70,9 @@ class SubUsers extends StatelessWidget {
                     },
                   ),
                 );
+              },
+              separatorBuilder: (BuildContext context, int index) {
+                return Divider(height: 0, thickness: 0.5, color: Theme.of(context).primaryColor,);
               },
             ),
           );

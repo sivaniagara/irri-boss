@@ -18,7 +18,8 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(authData);
     } on AuthException catch (e) {
       return Left(AuthFailure(e.message));
-    } catch (e) {
+    } catch (e, stackTrace) {
+      print("stackTrace :: $stackTrace");
       return Left(ServerFailure('Login failed: $e'));
     }
   }

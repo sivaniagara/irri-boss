@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:niagara_smart_drip_irrigation/core/services/api_client.dart';
+import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_manager.dart';
+import '../../../../core/di/injection.dart';
 import '../../../../core/services/mqtt/mqtt_service.dart' show MqttService;
 import '../../domain/entities/standalone_entity.dart';
 import '../models/standalone_model.dart';
@@ -37,10 +39,8 @@ abstract class StandaloneRemoteDataSource {
 }
 
 class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
-  final ApiClient client;
-  final MqttService mqttService;
 
-  StandaloneRemoteDataSourceImpl(this.client, this.mqttService);
+  StandaloneRemoteDataSourceImpl();
 
   @override
   Future<StandaloneModel> fetchStandaloneData({
@@ -55,8 +55,8 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
 
     try {
       final results = await Future.wait([
-        client.get(settingsEndpoint),
-        client.get(zoneListEndpoint),
+        sl<ApiClient>().get(settingsEndpoint),
+        sl<ApiClient>().get(zoneListEndpoint),
       ]);
 
       final dynamic rawSettings = results[0];
@@ -124,9 +124,9 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
 
     try {
       // 1. Save configuration
-      await client.post(settingsEndpoint, body: body);
+      await sl<ApiClient>().post(settingsEndpoint, body: body);
       // 2. Log to history
-      await client.post(historyEndpoint, body: {"sentSms": sentSms});
+      await sl<ApiClient>().post(historyEndpoint, body: {"sentSms": sentSms});
     } catch (e) {
       throw Exception('Failed to send configuration: $e');
     }
@@ -138,10 +138,10 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
     required String command,
   }) async {
     try {
-      if (!mqttService.isConnected) {
-        await mqttService.connect();
+      if (!sl<MqttService>().isConnected) {
+        await sl<MqttService>().connect();
       }
-      mqttService.publish(controllerId, command);
+      sl<MqttManager>().publish(controllerId, command);
     } catch (e) {
       throw Exception('Failed to publish MQTT command: $e');
     }
@@ -156,7 +156,7 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
   }) async {
     final historyEndpoint = 'user/$userId/subuser/$subuserId/controller/$controllerId/view/messages/';
     try {
-      await client.post(historyEndpoint, body: {"sentSms": sentSms});
+      await sl<ApiClient>().post(historyEndpoint, body: {"sentSms": sentSms});
     } catch (e) {
       // Log failure but don't rethrow to avoid blocking the main flow
     }

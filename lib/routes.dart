@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/node_status_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/utils/standalone_report_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/moisture_reports/utils/moisture_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/utils/standalone_routes.dart';
 import 'core/di/injection.dart';
@@ -23,6 +23,7 @@ import 'features/dashboard/presentation/pages/controller_live_page.dart';
 import 'features/dashboard/presentation/pages/dashboard_page.dart';
 import 'features/dashboard/presentation/pages/program_preview_page.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
+import 'features/dealer_dashboard/presentation/pages/dealer_dashboard_page.dart';
 import 'features/irrigation_settings/utils/irrigation_settings_routes.dart';
 import 'features/fault_msg/utils/faultmsg_routes.dart';
 import 'features/report_downloader/utils/report_downloaderRoute.dart';
@@ -31,27 +32,23 @@ import 'features/reports/Voltage_reports/utils/voltage_routes.dart';
 import 'features/reports/flow_graph_reports/utils/flow_graph_routes.dart';
 import 'features/reports/power_reports/utils/Power_routes.dart';
 import 'features/reports/reportMenu/utils/report_routes.dart';
+import 'features/reports/standalone_reports/utils/standalone_report_routes.dart';
 import 'features/reports/tdy_valve_status_reports/utils/tdy_valve_status_routes.dart';
 import 'features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
 import 'features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
 import 'features/sendrev_msg/utils/senrev_routes.dart';
 import 'features/program_settings/utils/program_settings_routes.dart';
+
 import 'features/set_serial_settings/domain/usecase/set_serial_details_params.dart';
 import 'features/set_serial_settings/presentation/bloc/set_serial_bloc.dart';
 import 'features/set_serial_settings/presentation/bloc/set_serial_bloc_event.dart';
-import 'features/setserialsettings/presentation/pages/setserial_page.dart';
-import 'features/side_drawer/groups/utils/group_routes.dart';
+import 'features/set_serial_settings/presentation/pages/set_serial_page.dart';
 import 'features/auth/utils/auth_routes.dart';
 
 import 'core/di/injection.dart' as di;
 import 'core/utils/route_constants.dart';
-import 'core/widgets/glassy_wrapper.dart';
-import 'features/dealer_dashboard/presentation/pages/dealer_dashboard_page.dart';
-import 'features/side_drawer/groups/presentation/pages/chat.dart';
-import 'features/side_drawer/groups/presentation/widgets/app_drawer.dart';
 import 'features/auth/auth.dart';
-import 'features/side_drawer/sub_users/sub_users_barrel.dart';
-import 'features/side_drawer/groups/groups_barrel.dart';
+import 'features/side_drawer/side_drawer_routes.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream stream) {
@@ -107,10 +104,12 @@ class AppRouter {
         }
 
         if (isLoggedIn && (location == AuthRoutes.login || location == AuthRoutes.verifyOtp)) {
+          final userId = authState.user.userDetails.id;
+          final userType = authState.user.userDetails.userType;
           if (authState.user.userDetails.userType == 2) {
-            return DealerRoutes.dealerDashboard;
+            return '${DealerRoutes.dealerDashboard}?userId=$userId&userType=$userType';
           } else if (authState.user.userDetails.userType == 1) {
-            return DashBoardRoutes.dashboard;
+            return '${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType';
           }
         }
 
@@ -169,21 +168,18 @@ class AppRouter {
           name: 'dashboard',
           path: DashBoardRoutes.dashboard,
           builder: (context, state) {
-            final authData = _getAuthData();
+            final params = state.uri.queryParameters as Map<String, dynamic>;
 
             return MultiBlocProvider(
               providers: [
                 BlocProvider(
                   create: (_) => di.sl<DashboardBloc>()
-                    ..add(FetchDashboardGroupsEvent(authData.id))
+                    ..add(FetchDashboardGroupsEvent(params['userId']))
                     ..add(ResetDashboardSelectionEvent()),
                 ),
                 BlocProvider(create: (_) => di.sl<DashboardCubit>()),
               ],
-              child: DashboardPage(
-                userId: authData.id,
-                userType: authData.userType,
-              ),
+              child: DashboardPage(),
             );
           },
           routes: [
@@ -256,118 +252,8 @@ class AppRouter {
             );
           },
         ),
-        ShellRoute(
-          builder: (context, state, child) {
-            final location = state.matchedLocation;
-            String title = 'Dealer Dashboard';
-            if (location == GroupRoutes.groups) {
-              title = 'Groups';
-            } else if (location == SubUserRoutes.subUsers) {
-              title = 'Sub Users';
-            } else if (location == RouteConstants.chat) {
-              title = 'Chat';
-            } else if (location == SubUserRoutes.subUserDetails) {
-              title = 'Sub User Details';
-            }
-
-            return BlocProvider.value(
-              value: authBloc,
-              child: Scaffold(
-                appBar: AppBar(centerTitle: true, title: Text(title)),
-                drawer: const AppDrawer(),
-                body: GlassyWrapper(
-                  child: NotificationListener<OverscrollIndicatorNotification>(
-                    onNotification: (notification) {
-                      notification.disallowIndicator();
-                      return true;
-                    },
-                    child: child,
-                  ),
-                ),
-              ),
-            );
-          },
-          routes: [
-            GoRoute(
-              name: 'dealerDashboard',
-              path: DealerRoutes.dealerDashboard,
-              builder: (context, state) => BlocProvider.value(
-                value: authBloc,
-                child: const DealerDashboardPage(),
-              ),
-            ),
-            GoRoute(
-              name: 'groups',
-              path: GroupRoutes.groups,
-              builder: (context, state) {
-                final authData = _getAuthData();
-                final groupFetchingUseCase = di.sl<GroupFetchingUsecase>();
-                final groupAddingUseCase = di.sl<GroupAddingUsecase>();
-                final editGroupUsecase = di.sl<EditGroupUsecase>();
-                final deleteGroupUsecase = di.sl<DeleteGroupUsecase>();
-                return BlocProvider(
-                  create: (context) => GroupBloc(
-                    groupFetchingUsecase: groupFetchingUseCase,
-                    groupAddingUsecase: groupAddingUseCase,
-                    editGroupUsecase: editGroupUsecase,
-                    deleteGroupUsecase: deleteGroupUsecase,
-                  )..add(FetchGroupsEvent(authData.id)),
-                  child: GroupsPage(userId: authData.id),
-                );
-              },
-            ),
-            _authRoute(
-              name: 'subUsers',
-              path: SubUserRoutes.subUsers,
-              builder: (context, state) {
-                final authData = _getAuthData();
-                final getSubUserUsecase = di.sl<GetSubUsersUsecase>();
-                final getSubUserDetailsUsecase = di.sl<GetSubUserDetailsUsecase>();
-                final updateSubUserDetailsUsecase = di.sl<UpdateSubUserDetailsUseCase>();
-                final getSubUserByPhoneUseCase = di.sl<GetSubUserByPhoneUsecase>();
-                return BlocProvider(
-                  create: (context) => SubUsersBloc(
-                    getSubUsersUsecase: getSubUserUsecase,
-                    getSubUserDetailsUsecase: getSubUserDetailsUsecase,
-                    updateSubUserDetailsUseCase: updateSubUserDetailsUsecase,
-                    getSubUserByPhoneUsecase: getSubUserByPhoneUseCase,
-                  )..add(GetSubUsersEvent(userId: authData.id)),
-                  child: SubUsers(userId: authData.id),
-                );
-              },
-            ),
-            _authRoute(
-              name: 'subUserDetails',
-              path: SubUserRoutes.subUserDetails,
-              builder: (context, state) {
-                final params = state.extra is Map ? state.extra as Map : null;
-                final SubUsersBloc existingBloc = params?['existingBloc'] as SubUsersBloc;
-                return BlocProvider.value(
-                  value: existingBloc,
-                  child: SubUserDetailsScreen(
-                    subUserDetailsParams: GetSubUserDetailsParams(
-                        userId: params?['userId'],
-                        subUserCode: params?['subUserCode'],
-                        isNewSubUser: params?['isNewSubUser']
-                    ),
-                  ),
-                );
-              },
-            ),
-            _authRoute(
-              name: 'chat',
-              path: RouteConstants.chat,
-              builder: (context, state) => const Chat(),
-            ),
-            GoRoute(
-              path: DealerRoutes.dealerDashboard,
-              builder: (context, state) => BlocProvider.value(
-                value: authBloc,
-                child: const DealerDashboardPage(),
-              ),
-            )
-          ],
-        ),
+        ...dealerRoutes,
+        ...sideDrawerRoutes,
         ...pumpSettingsRoutes,
         ...reportPageRoutes,
         ...sendRevPageRoutes,
@@ -381,26 +267,11 @@ class AppRouter {
         ...TdyValveStatusRoutes,
         ...ZoneCyclicRoutes,
         ...FlowGraphRoutes,
+        ...moistureRoutes,
       ],
     );
   }
 
-  UserEntity _getAuthData() {
-    final authState = authBloc.state;
-    if (authState is Authenticated) {
-      return authState.user.userDetails;
-    }
-    return UserEntity(
-      id: 0,
-      name: '',
-      mobile: '',
-      userType: 0,
-      deviceToken: '',
-      mobCctv: '',
-      webCctv: '',
-      altPhoneNum: [],
-    );
-  }
 
   Widget _buildWithAuthBloc(Widget child) => BlocProvider.value(value: authBloc, child: child);
 

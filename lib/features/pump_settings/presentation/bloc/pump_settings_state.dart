@@ -3,7 +3,8 @@ import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/enti
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/settings_menu_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/template_json_entity.dart';
 
-class PumpSettingsState extends Equatable {
+abstract class PumpSettingsState extends Equatable {
+  const PumpSettingsState();
   @override List<Object?> get props => [];
 }
 
@@ -11,14 +12,14 @@ class GetPumpSettingsMenuInitial extends PumpSettingsState {}
 
 class GetPumpSettingsMenuLoaded extends PumpSettingsState {
   final List<SettingsMenuEntity> settingMenuList;
-  GetPumpSettingsMenuLoaded({required this.settingMenuList});
+  const GetPumpSettingsMenuLoaded({required this.settingMenuList});
 
   @override List<Object?> get props => [settingMenuList];
 }
 
 class GetPumpSettingsMenuError extends PumpSettingsState {
   final String message;
-  GetPumpSettingsMenuError({required this.message});
+  const GetPumpSettingsMenuError({required this.message});
 
   @override List<Object?> get props => [message];
 }
@@ -27,7 +28,7 @@ class UpdatingMenuStatus extends PumpSettingsState {}
 
 class UpdateMenuStatusSuccess extends PumpSettingsState {
   final String message;
-  UpdateMenuStatusSuccess({required this.message});
+  const UpdateMenuStatusSuccess({required this.message});
 
   @override
   List<Object?> get props => [message];
@@ -35,7 +36,7 @@ class UpdateMenuStatusSuccess extends PumpSettingsState {
 
 class UpdateMenuStatusFailure extends PumpSettingsState {
   final String message;
-  UpdateMenuStatusFailure({required this.message});
+  const UpdateMenuStatusFailure({required this.message});
 
   @override
   List<Object?> get props => [message];
@@ -46,21 +47,21 @@ class GetPumpSettingsInitial extends PumpSettingsState {}
 class GetPumpSettingsLoaded extends PumpSettingsState {
   final MenuItemEntity settings;
   final int version;
-  GetPumpSettingsLoaded({required this.settings, this.version = 0});
+  const GetPumpSettingsLoaded({required this.settings, this.version = 0});
 
   @override List<Object?> get props => [settings, version];
 }
 
 class GetPumpSettingsError extends PumpSettingsState {
   final String message;
-  GetPumpSettingsError({required this.message});
+  const GetPumpSettingsError({required this.message});
 
   @override List<Object?> get props => [message];
 }
 
 class UpdatePumpSettingValueStarted extends PumpSettingsState {
   final SettingsEntity settingsEntity;
-  UpdatePumpSettingValueStarted({required this.settingsEntity});
+  const UpdatePumpSettingValueStarted({required this.settingsEntity});
 
   @override List<Object?> get props => [settingsEntity];
 }
@@ -71,12 +72,12 @@ class SettingSendingState extends PumpSettingsState {
   final int sectionIndex;
   final int settingIndex;
 
-  SettingSendingState(this.sectionIndex, this.settingIndex);
+  const SettingSendingState(this.sectionIndex, this.settingIndex);
 }
 
 class SettingsSendSuccessState extends PumpSettingsState {
   final String message;
-  SettingsSendSuccessState({required this.message});
+  const SettingsSendSuccessState({required this.message});
 
   @override
   List<Object> get props => [message];
@@ -84,7 +85,7 @@ class SettingsSendSuccessState extends PumpSettingsState {
 
 class SettingsFailureState extends PumpSettingsState {
   final String message;
-  SettingsFailureState({required this.message});
+  const SettingsFailureState({required this.message});
 
   @override
   List<Object> get props => [message];

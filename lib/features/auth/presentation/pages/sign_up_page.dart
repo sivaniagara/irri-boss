@@ -148,19 +148,19 @@ class _UserProfileFormBody extends StatelessWidget {
       }
     }
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: AppBar(
-        title: Text(isEdit ? 'Edit Profile' : 'Sign Up'),
-        leading: isEdit
-            ? IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
-          onPressed: () => Navigator.pop(dialogContext),
-        )
-            : null,
-      ),
-      body: SafeArea(
-        child: GlassyWrapper(
+    return GlassyWrapper(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(isEdit ? 'Edit Profile' : 'Sign Up'),
+          leading: isEdit
+              ? IconButton(
+            icon: const Icon(Icons.close),
+            onPressed: () => Navigator.pop(dialogContext),
+          )
+              : null,
+        ),
+        body: SafeArea(
           child: Form(
             key: formKey,
             child: SingleChildScrollView(
@@ -170,10 +170,10 @@ class _UserProfileFormBody extends StatelessWidget {
                 children: [
                   const Text(
                     'Personal Information',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 20),
-
+          
                   // Mobile Number with intl_phone_field
                   IntlPhoneField(
                     initialCountryCode: _detectInitialCountry(initialData?.mobile),
@@ -195,11 +195,11 @@ class _UserProfileFormBody extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: 16),
-
+          
                   _buildField(nameCtrl, 'User Name *', Icons.person,
                       validator: (v) => v!.trim().isEmpty ? 'Name is required' : null),
                   const SizedBox(height: 16),
-
+          
                   // User Type Dropdown
                   ValueListenableBuilder<String?>(
                     valueListenable: selectedUserType,
@@ -218,13 +218,13 @@ class _UserProfileFormBody extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: 24),
-
+          
                   const Text(
                     'Address',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 16),
-
+          
                   _buildField(address1Ctrl, 'Address Line 1', Icons.home),
                   const SizedBox(height: 16),
                   _buildField(address2Ctrl, 'Address Line 2 (Optional)', Icons.home),
@@ -233,7 +233,7 @@ class _UserProfileFormBody extends StatelessWidget {
                   const SizedBox(height: 16),
                   _buildField(villageCtrl, 'Village', Icons.location_on),
                   const SizedBox(height: 16),
-
+          
                   Row(
                     children: [
                       Expanded(
@@ -274,14 +274,14 @@ class _UserProfileFormBody extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-
+          
                   _buildField(cityCtrl, 'City', Icons.location_city),
                   const SizedBox(height: 16),
                   _buildField(postalCodeCtrl, 'Postal Code', Icons.mail),
                   const SizedBox(height: 16),
                   _buildField(altPhoneCtrl, 'Alternate Phone (Optional)', Icons.phone),
                   const SizedBox(height: 16),
-
+          
                   _buildField(emailCtrl, 'Email (Optional)', Icons.email,
                       keyboardType: TextInputType.emailAddress,
                       validator: (v) {
@@ -291,7 +291,7 @@ class _UserProfileFormBody extends StatelessWidget {
                         return null;
                       }),
                   const SizedBox(height: 16),
-
+          
                   if (!isEdit)
                     TextFormField(
                       controller: passwordCtrl,
@@ -299,9 +299,9 @@ class _UserProfileFormBody extends StatelessWidget {
                       decoration: _inputDecoration('Password *', Icons.lock),
                       validator: (_) => passwordCtrl.text.isEmpty ? 'Password required' : null,
                     ),
-
+          
                   const SizedBox(height: 32),
-
+          
                   SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -366,12 +366,12 @@ class _UserProfileFormBody extends StatelessWidget {
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, color: Colors.white70),
+      prefixIcon: Icon(icon),
       enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white70)),
       focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white, width: 2)),
       errorBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.redAccent)),
       focusedErrorBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.redAccent, width: 2)),
-      labelStyle: const TextStyle(color: Colors.white70),
+      // labelStyle: const TextStyle(color: Colors.white70),
       errorStyle: const TextStyle(color: Colors.redAccent),
     );
   }

@@ -89,20 +89,7 @@ class PumpSettingsMenuPage extends StatelessWidget {
           if (state is GetPumpSettingsMenuInitial) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is GetPumpSettingsMenuLoaded) {
-            final List<SettingsMenuEntity> additionalSettings = [
-              SettingsMenuEntity(
-                  menuSettingId: 513,
-                  referenceId: 600,
-                  menuItem: "Notifications",
-                  templateName: "Notifications",
-                  hiddenFlag: 1),
-              SettingsMenuEntity(
-                  menuSettingId: 514,
-                  referenceId: 600,
-                  menuItem: "Pump Setting View",
-                  templateName: "Pump Setting View",
-                  hiddenFlag: 1),
-            ];
+            final List<SettingsMenuEntity> additionalSettings = [];
 
             final List<SettingsMenuEntity> visibleSettings = [
               ...state.settingMenuList,
@@ -152,14 +139,14 @@ class PumpSettingsMenuPage extends StatelessWidget {
               };
 
               switch (item.menuSettingId) {
-                case 513:
+                case 514:
                   context.push(
                     PumpSettingsPageRoutes.notificationsPage,
                     extra: commonExtra,
                   );
                   return;
 
-                case 514:
+                case 515:
                   context.push(
                     PumpSettingsPageRoutes.viewSettingsPage,
                     extra: commonExtra,
@@ -183,17 +170,22 @@ class PumpSettingsMenuPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
-                  radius: 30,
+                  radius: 27,
                   backgroundColor: Theme.of(context).primaryColor.withAlpha(50),
-                  child: Image.asset(PumpSettingsImages.getByIndex(index)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Image.asset(PumpSettingsImages.getByIndex(index)),
+                  ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
                       child: Text(
                         item.menuItem,
                         style: Theme.of(context).textTheme.titleSmall,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Icon(Icons.navigate_next, color: Theme.of(context).primaryColor,)
