@@ -21,7 +21,7 @@ final standaloneRoutes = <GoRoute>[
       final controllerId = params["controllerId"]?.toString() ?? '';
 
       return BlocProvider(
-        create: (_) => di.sl<StandaloneBloc>(instanceName: 'settings')
+        create: (_) => di.sl<StandaloneBloc>()
           ..add(FetchStandaloneDataEvent(userId: userId, controllerId: controllerId)),
         child: StandalonePage(data: params,),
       );
