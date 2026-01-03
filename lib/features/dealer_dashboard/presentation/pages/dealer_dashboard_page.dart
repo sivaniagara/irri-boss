@@ -10,7 +10,8 @@ import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../dashboard/utils/dashboard_routes.dart';
 
 class DealerDashboardPage extends StatelessWidget {
-  const DealerDashboardPage({super.key});
+  final Map<String, dynamic> userData;
+  const DealerDashboardPage({super.key, required this.userData});
 
   static const _tabs = [
     {'icon': Icons.build, 'label': 'Service Request', 'route': DashBoardRoutes.dashboard},
@@ -23,6 +24,7 @@ class DealerDashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext dialogContext) {
+    final queryParams = GoRouterState.of(dialogContext).uri.queryParameters;
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is LoggedOut) {
@@ -53,7 +55,9 @@ class DealerDashboardPage extends StatelessWidget {
                       icon: tab['icon'] as IconData,
                       label: label,
                       onTap: () {
-                        context.push(route);
+                        context.push(
+                          '$route?userId=${queryParams['userId']}&userType=${queryParams['userType']}',
+                        );
                       },
                     );
                   },

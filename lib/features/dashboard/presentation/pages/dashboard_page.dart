@@ -29,27 +29,29 @@ import '../widgets/timer_section.dart';
 import '../../dashboard.dart';
 
 class DashboardPage extends StatelessWidget {
-  final int userId, userType;
-  const DashboardPage({super.key, required this.userId, required this.userType});
+  const DashboardPage({super.key});
 
   @override
   Widget build(BuildContext dialogContext) {
+    final queryParams = GoRouterState.of(dialogContext).uri.queryParameters;
+    final userId = int.parse(queryParams['userId']!);
+    final userType = int.parse(queryParams['userType']!);
     if (userId <= 0) {
       return const Center(child: Text('Invalid user session. Please log in again.'));
     }
 
     final bloc = di.sl.get<DashboardBloc>();
-    _initializeBloc(bloc, dialogContext);
+    _initializeBloc(bloc, dialogContext, userId, userType);
 
     return BlocProvider.value(
       value: bloc,
       child: BlocBuilder<DashboardBloc, DashboardState>(
-        builder: (context, state) => _buildContent(context, state),
+        builder: (context, state) => _buildContent(context, state, userId, userType),
       ),
     );
   }
 
-  void _initializeBloc(DashboardBloc bloc, BuildContext context) {
+  void _initializeBloc(DashboardBloc bloc, BuildContext context, int userId, int userType) {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (bloc.state is! DashboardLoading && bloc.state is! DashboardGroupsLoaded) {
         bloc.add(FetchDashboardGroupsEvent(userId));
@@ -93,33 +95,33 @@ class DashboardPage extends StatelessWidget {
     });
   }
 
-  Widget _buildContent(BuildContext context, DashboardState state) {
+  Widget _buildContent(BuildContext context, DashboardState state, int userId, int userType) {
     if (state is DashboardLoading) {
-      return Scaffold(
-          body: const Center(child: CircularProgressIndicator()));
+      return GlassyWrapper(
+        child: Scaffold(
+            body: const Center(child: CircularProgressIndicator())),
+      );
     }
     if (state is DashboardError) {
       return GlassyWrapper(
-        child: SafeArea(
-          child: Scaffold(
-              backgroundColor: Colors.transparent,
-              appBar: AppBar(
-                title: Container(
-                  width: 140,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  alignment: Alignment.center,
-                  child: Image.asset(NiagaraCommonImages.logoSmall),
+        child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              title: Container(
+                width: 140,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(6),
                 ),
+                alignment: Alignment.center,
+                child: Image.asset(NiagaraCommonImages.logoSmall),
               ),
-              drawer: userType == 1 ? const AppDrawer() : null,
-              body: Center(
-                  child: Text('Error: ${state.message}', style: TextStyle(color: Colors.white),)
-              )
-          ),
+            ),
+            drawer: userType == 1 ? const AppDrawer() : null,
+            body: Center(
+                child: Text('Error: ${state.message}', style: TextStyle(color: Colors.white),)
+            )
         ),
       );
     }
@@ -182,7 +184,7 @@ class DashboardPage extends StatelessWidget {
         listener: (BuildContext context, state){
           final registerDetailsEntity = context.read<AuthBloc>().state as Authenticated;
           if (state is DashboardGroupsLoaded && state.groupControllers.isNotEmpty && (context.read<ControllerContextCubit>().state is! ControllerContextLoaded)) {
-            final controller = state.groupControllers[state.groupControllers.keys.first]!.first; // or selected one
+            final controller = state.groupControllers[state.groupControllers.keys.first]!.first;
             context.read<ControllerContextCubit>().setContext(
               userId: registerDetailsEntity.user.userDetails.id.toString(),
               controllerId: controller.userDeviceId.toString(),
@@ -193,19 +195,13 @@ class DashboardPage extends StatelessWidget {
           }
         },
       child: GlassyWrapper(
-        child: NotificationListener<OverscrollIndicatorNotification>(
-          onNotification: (notification) {
-            notification.disallowIndicator();
-            return true;
-          },
-          child: Scaffold(
-            backgroundColor: Colors.transparent,
-            appBar: _buildAppBar(selectedGroup, selectedController, controllers, state, bloc, context),
-            drawer: userType == 1 ? const AppDrawer() : null,
-            body: selectedController == null
-                ? const Center(child: CircularProgressIndicator())
-                : _buildBody(selectedController),
-          ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: _buildAppBar(selectedGroup, selectedController, controllers, state, bloc, context, userType),
+          drawer: userType == 1 ? const AppDrawer() : null,
+          body: selectedController == null
+              ? const Center(child: CircularProgressIndicator())
+              : _buildBody(selectedController, userId, userType),
         ),
       ),
     );
@@ -245,9 +241,11 @@ class DashboardPage extends StatelessWidget {
       DashboardGroupsLoaded state,
       DashboardBloc bloc,
       BuildContext context,
+      int userType
       ) {
+    print("userType :: $userType");
     return AppBar(
-      title: Container(
+      title: userType == 1 ? Container(
         width: 140,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
@@ -256,6 +254,14 @@ class DashboardPage extends StatelessWidget {
         ),
         alignment: Alignment.center,
         child: Image.asset(NiagaraCommonImages.logoSmall),
+      ) : SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            for(int i = 0 ; i < 5; i++)
+              Card(child: Text("Text ${i+1}"),)
+          ],
+        ),
       ),
       bottom: _buildAppBarBottom(selectedGroup, selectedController, controllers, state, bloc, context),
       actions: [
@@ -287,7 +293,7 @@ class DashboardPage extends StatelessWidget {
     return PreferredSize(
       preferredSize: Size(MediaQuery.of(context).size.width, 40),
       child: Container(
-        color: Theme.of(context).appBarTheme.backgroundColor ?? Theme.of(context).primaryColor ?? Colors.blue, // Ensure visible background
+        color: Theme.of(context).appBarTheme.backgroundColor ?? Theme.of(context).primaryColor,
         child: Row(
           children: [
             _buildGroupSelector(state, selectedGroup, bloc),
@@ -395,11 +401,11 @@ class DashboardPage extends StatelessWidget {
     bloc.add(SelectGroupEvent(groupId));
   }
 
-  Widget _buildBody(dynamic selectedController) {
+  Widget _buildBody(dynamic selectedController, int userId, int userType) {
     return RefreshIndicator(
       onRefresh: () => _refreshLiveData(selectedController),
       child: LayoutBuilder(
-        builder: (context, constraints) => _buildScaledContent(context, constraints, selectedController),
+        builder: (context, constraints) => _buildScaledContent(context, constraints, selectedController, userId, userType),
       ),
     );
   }
@@ -414,7 +420,7 @@ class DashboardPage extends StatelessWidget {
     }
   }
 
-  Widget _buildScaledContent(BuildContext context, BoxConstraints constraints, ControllerEntity controller) {
+  Widget _buildScaledContent(BuildContext context, BoxConstraints constraints, ControllerEntity controller, int userId, int userType) {
     final width = constraints.maxWidth;
     final modelCheck = ([1, 5].contains(controller.modelId)) ? 300 : 120;
     double scale(double size) => size * (width / modelCheck);

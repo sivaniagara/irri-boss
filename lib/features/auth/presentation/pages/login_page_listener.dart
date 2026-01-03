@@ -4,8 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 
-import '../../../../core/utils/route_constants.dart';
-import '../../domain/usecases/login_params.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -36,10 +34,16 @@ class LoginPageListener {
     }
 
     if (state is Authenticated) {
-      if (state.user.userDetails.userType == 2) {
-        context.go(DealerRoutes.dealerDashboard);
+      final userId = state.user.userDetails.id;
+      final userType = state.user.userDetails.userType;
+      if (userType == 2) {
+        context.go(
+            "${DealerRoutes.dealerDashboard}?userId=$userId&userType=$userType",
+        );
       } else if (state.user.userDetails.userType == 1) {
-        context.go(DashBoardRoutes.dashboard);
+        context.go(
+            "${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType",
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
