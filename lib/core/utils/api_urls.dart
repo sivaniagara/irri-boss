@@ -207,7 +207,7 @@ class ApiUrls {
 String buildUrl(String urlTemplate, Map<String, dynamic> params) {
   String url = urlTemplate;
   for (final entry in params.entries) {
-    url = url.replaceAll(':${entry.key}', '${entry.value}');
+    url = url.replaceAll(':${entry.key}', entry.value.toString());
   }
   return url;
 }

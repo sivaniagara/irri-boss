@@ -29,13 +29,14 @@ import '../widgets/timer_section.dart';
 import '../../dashboard.dart';
 
 class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+  final Map<String, dynamic>? userData;
+  const DashboardPage({super.key, this.userData});
 
   @override
   Widget build(BuildContext dialogContext) {
     final queryParams = GoRouterState.of(dialogContext).uri.queryParameters;
-    final userId = int.parse(queryParams['userId']!);
-    final userType = int.parse(queryParams['userType']!);
+    final userId = userData != null ? int.parse(userData!['userId']) : int.parse(queryParams['userId']!);
+    final userType = userData != null ? int.parse(userData!['userType']) : int.parse(queryParams['userType']!);
     if (userId <= 0) {
       return const Center(child: Text('Invalid user session. Please log in again.'));
     }
@@ -56,8 +57,6 @@ class DashboardPage extends StatelessWidget {
       if (bloc.state is! DashboardLoading && bloc.state is! DashboardGroupsLoaded) {
         bloc.add(FetchDashboardGroupsEvent(userId));
       }
-
-      // One-time restore + auto-select when groups are loaded
       bloc.stream
           .where((state) => state is DashboardGroupsLoaded && (state).groups.isNotEmpty)
           .take(1)
@@ -66,32 +65,6 @@ class DashboardPage extends StatelessWidget {
         _restoreLastSelectionIfPossible(loadedState, bloc);
         _autoSelectGroupIfNeeded(bloc, loadedState);
       });
-
-      await Future.delayed(const Duration(seconds: 5));
-      // if (!bloc.isClosed) bloc.add(StartPollingEvent());
-
-    /*  final mqttBloc = di.sl.get<MqttBloc>();
-      mqttBloc.setProcessingContext(context);*/
-
-      final router = GoRouter.of(context);
-
-      void pollingListener() {
-        final currentLocation = router.state.matchedLocation;
-
-        if (currentLocation == DashBoardRoutes.dashboard) {
-          // We are ON the dashboard → start/resume polling
-          // bloc.add(StartPollingEvent());
-        } else {
-          // We are anywhere else (ctrlLivePage, settings, etc.) → stop polling
-          // bloc.add(StopPollingEvent());
-        }
-      }
-
-      router.routerDelegate.removeListener(pollingListener);
-      router.routerDelegate.addListener(pollingListener);
-
-      // Initial check
-      pollingListener();
     });
   }
 

@@ -16,6 +16,7 @@ import '../../core/utils/route_constants.dart';
 import '../../core/widgets/glassy_wrapper.dart';
 import '../auth/presentation/bloc/auth_bloc.dart';
 import '../auth/presentation/bloc/auth_state.dart';
+import '../dealer_dashboard/presentation/pages/dealer_dashboard_page.dart';
 import '../dealer_dashboard/utils/dealer_routes.dart';
 import 'groups/domain/usecases/add_group_usecase.dart';
 import 'groups/domain/usecases/delete_group_usecase.dart';
@@ -68,7 +69,14 @@ final sideDrawerRoutes = <ShellRoute>[
       );
     },
     routes: [
-      ...dealerRoutes,
+      GoRoute(
+        name: "dealerDashboard",
+        path: DealerRoutes.dealerDashboard,
+        builder: (context, state) {
+          final params = state.uri.queryParameters as Map<String, dynamic>;
+          return DealerDashboardPage(userData: params);
+        },
+      ),
       GoRoute(
         name: 'groups',
         path: GroupRoutes.groups,

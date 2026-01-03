@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/utils/auth_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
@@ -18,7 +19,7 @@ class DealerDashboardPage extends StatelessWidget {
     {'icon': Icons.sell, 'label': 'Selling Device', 'route': DashBoardRoutes.dashboard},
     {'icon': Icons.person_search, 'label': 'Customer Device', 'route': DashBoardRoutes.dashboard},
     {'icon': Icons.devices, 'label': 'My Device', 'route': DashBoardRoutes.dashboard},
-    {'icon': Icons.group_work, 'label': 'Shared Device', 'route': DashBoardRoutes.dashboard},
+    {'icon': Icons.group_work, 'label': 'Shared Device', 'route': DealerRoutes.sharedDevice},
     {'icon': Icons.check_box, 'label': 'Selected Customer', 'route': DashBoardRoutes.dashboard},
   ];
 
