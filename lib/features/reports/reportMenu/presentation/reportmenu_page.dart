@@ -9,6 +9,7 @@ import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_report
 import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
 import '../../../../core/theme/app_styles.dart';
  import '../../../../core/widgets/glassy_wrapper.dart';
+import '../../moisture_reports/utils/moisture_routes.dart';
 import '../../power_reports/utils/Power_routes.dart';
 import '../../standalone_reports/utils/standalone_report_routes.dart';
 
@@ -135,7 +136,9 @@ class ReportMenuPage extends StatelessWidget {
           _reportCard(
             title: 'Moisture',
             icon: Icons.agriculture,
-            onTap: () {},
+            onTap: () {
+              context.push(MoistureReportPageRoutes.Moisturepage,extra: params);
+            },
           ),
           _reportCard(
             title: 'Fertilizer Live',
