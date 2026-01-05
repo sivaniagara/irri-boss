@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/utils/voltage_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/fertilizer_reports/utils/fertilizer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/flow_graph_reports/utils/flow_graph_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/tdy_valve_status_reports/utils/tdy_valve_status_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
@@ -131,7 +132,9 @@ class ReportMenuPage extends StatelessWidget {
           _reportCard(
             title: 'Fertilizer',
             icon: Icons.timer,
-            onTap: () {},
+            onTap: () {
+              context.push(FertilizerPageRoutes.Fertilizerpage,extra: params);
+            },
           ),
           _reportCard(
             title: 'Moisture',
@@ -147,8 +150,10 @@ class ReportMenuPage extends StatelessWidget {
           ),
           _reportCard(
             title: 'Green House',
-            icon: Icons.agriculture,
-            onTap: () {},
+            icon: Icons.house,
+            onTap: () {
+              context.push(MoistureReportPageRoutes.Moisturepage,extra: params);
+            },
           ),
         ],
       ),

@@ -28,6 +28,7 @@ import 'features/fault_msg/utils/faultmsg_routes.dart';
 import 'features/report_downloader/utils/report_downloaderRoute.dart';
 import 'features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
 import 'features/reports/Voltage_reports/utils/voltage_routes.dart';
+import 'features/reports/fertilizer_reports/utils/fertilizer_routes.dart';
 import 'features/reports/flow_graph_reports/utils/flow_graph_routes.dart';
 import 'features/reports/power_reports/utils/Power_routes.dart';
 import 'features/reports/reportMenu/utils/report_routes.dart';
@@ -384,6 +385,7 @@ class AppRouter {
         ...ZoneCyclicRoutes,
         ...FlowGraphRoutes,
         ...moistureRoutes,
+        ...fertilizerRoutes,
       ],
     );
   }
