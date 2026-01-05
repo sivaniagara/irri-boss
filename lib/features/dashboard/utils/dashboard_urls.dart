@@ -5,6 +5,7 @@ class DashboardUrls {
   static const String dashboardForGroupUrl = 'controller/user/:userId/cluster';
   static const String dashboardUrl = 'user/:userId/cluster/:groupId/controller';
   static const String motorOnOffUrl = 'user/:userId/subuser/:subuserId/controller/:controllerId/manualstatus';
+  static const String sharedDevices = 'user/:userId/share/:/controller';
 
 
   static String nodeStatusUrl({

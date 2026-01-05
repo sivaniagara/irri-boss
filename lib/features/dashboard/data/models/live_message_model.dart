@@ -161,7 +161,7 @@ class LiveMessageModel extends LiveMessageEntity {
      final batvolt = fertStatus.length > 8 ? fertStatus[8] : '0.0';
     // List<String> fertStatus = <String>[];
     String runTimePrevious = safeString(28, '00:00:00');
-    List<String> ecph = parts.length < 23 ? parts[25].split(':') : ['0:0'];
+    List<String> ecph = parts.length > 23 ? parts[25].split(':') : ['0:0'];
     final ec = ecph.isNotEmpty ? ecph[0] : "0";
     final ph = ecph.isNotEmpty && ecph.length > 1 ? ecph[1] : "0";
 
