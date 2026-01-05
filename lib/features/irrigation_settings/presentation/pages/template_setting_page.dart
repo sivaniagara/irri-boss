@@ -101,88 +101,93 @@ class TemplateSettingPage extends StatelessWidget {
                                           ],
                                         );
                                       }else if (setting is MultipleSettingItemEntity){
-                                        return Row(
+                                        return Column(
                                           children: [
-                                            Expanded(
-                                              child: Column(
-                                                children: [
-                                                  ...List.generate(setting.listOfSingleSettingItemEntity.length, (multipleIndex) {
-                                                    return BlocSelector<TemplateIrrigationSettingsBloc, TemplateIrrigationSettingsState, String>(
-                                                      selector: (state) {
-                                                        if (state is! TemplateIrrigationSettingsLoaded) return '';
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Column(
+                                                    children: [
+                                                      ...List.generate(setting.listOfSingleSettingItemEntity.length, (multipleIndex) {
+                                                        return BlocSelector<TemplateIrrigationSettingsBloc, TemplateIrrigationSettingsState, String>(
+                                                          selector: (state) {
+                                                            if (state is! TemplateIrrigationSettingsLoaded) return '';
 
-                                                        final groups = state.controllerIrrigationSettingEntity.settings;
-                                                        if (groupIndex >= groups.length) return '';
+                                                            final groups = state.controllerIrrigationSettingEntity.settings;
+                                                            if (groupIndex >= groups.length) return '';
 
-                                                        final sets = groups[groupIndex].sets;
-                                                        if (index >= sets.length) return '';
+                                                            final sets = groups[groupIndex].sets;
+                                                            if (index >= sets.length) return '';
 
-                                                        final item = sets[index];
-                                                        if (item is! MultipleSettingItemEntity) return '';
+                                                            final item = sets[index];
+                                                            if (item is! MultipleSettingItemEntity) return '';
 
-                                                        final innerList = item.listOfSingleSettingItemEntity;
-                                                        if (multipleIndex >= innerList.length) return '';
+                                                            final innerList = item.listOfSingleSettingItemEntity;
+                                                            if (multipleIndex >= innerList.length) return '';
 
-                                                        return innerList[multipleIndex].value;
-                                                      },
-                                                      builder: (context, currentValue) {
-                                                        final childEntity = setting.listOfSingleSettingItemEntity[multipleIndex];
+                                                            return innerList[multipleIndex].value;
+                                                          },
+                                                          builder: (context, currentValue) {
+                                                            final childEntity = setting.listOfSingleSettingItemEntity[multipleIndex];
 
-                                                        return SettingRow(
-                                                          singleSettingItemEntity: childEntity,
-                                                          hideSendButton: true,
-                                                          onChanged: (value) {
-                                                            print('multi onChanged: $value');
-                                                            context.read<TemplateIrrigationSettingsBloc>().add(
-                                                              UpdateMultipleSettingRowEvent(
-                                                                groupIndex: groupIndex,
-                                                                multipleIndex: index,         // index of MultipleSettingItemEntity in sets
-                                                                index: multipleIndex,         // index inside the inner list
-                                                                value: childEntity.widgetType == 2
-                                                                    ? (value == true ? 'ON' : 'OF')
-                                                                    : value.toString(),
-                                                              ),
+                                                            return SettingRow(
+                                                              singleSettingItemEntity: childEntity,
+                                                              hideSendButton: true,
+                                                              onChanged: (value) {
+                                                                print('multi onChanged: $value');
+                                                                context.read<TemplateIrrigationSettingsBloc>().add(
+                                                                  UpdateMultipleSettingRowEvent(
+                                                                    groupIndex: groupIndex,
+                                                                    multipleIndex: index,         // index of MultipleSettingItemEntity in sets
+                                                                    index: multipleIndex,         // index inside the inner list
+                                                                    value: childEntity.widgetType == 2
+                                                                        ? (value == true ? 'ON' : 'OF')
+                                                                        : value.toString(),
+                                                                  ),
+                                                                );
+                                                              },
+                                                              onTap: childEntity.widgetType == 3 ? () async {  // only if it's time picker
+                                                                final result = await TimePickerService.show(
+                                                                  context: context,
+                                                                  initialTime: childEntity.value,
+                                                                );
+                                                                if (result != null) {
+                                                                  context.read<TemplateIrrigationSettingsBloc>().add(
+                                                                    UpdateMultipleSettingRowEvent(
+                                                                      groupIndex: groupIndex,
+                                                                      multipleIndex: index,
+                                                                      index: multipleIndex,
+                                                                      value: result,
+                                                                    ),
+                                                                  );
+                                                                }
+                                                              } : null,
+                                                              groupIndex: groupIndex,
+                                                              settingIndex: index,
                                                             );
                                                           },
-                                                          onTap: childEntity.widgetType == 3 ? () async {  // only if it's time picker
-                                                            final result = await TimePickerService.show(
-                                                              context: context,
-                                                              initialTime: childEntity.value,
-                                                            );
-                                                            if (result != null) {
-                                                              context.read<TemplateIrrigationSettingsBloc>().add(
-                                                                UpdateMultipleSettingRowEvent(
-                                                                  groupIndex: groupIndex,
-                                                                  multipleIndex: index,
-                                                                  index: multipleIndex,
-                                                                  value: result,
-                                                                ),
-                                                              );
-                                                            }
-                                                          } : null,
-                                                          groupIndex: groupIndex,
-                                                          settingIndex: index,
                                                         );
-                                                      },
-                                                    );
-                                                  })
-                                                ],
-                                              ),
+                                                      })
+                                                    ],
+                                                  ),
+                                                ),
+                                                IconButton(
+                                                  onPressed: (){
+                                                    print('send button clicked....');
+                                                    context.read<TemplateIrrigationSettingsBloc>().add(
+                                                        UpdateTemplateSettingEvent(
+                                                          groupIndex: groupIndex,
+                                                          settingIndex: index
+                                                        )
+                                                    );                                            },
+                                                  icon: Icon(Icons.send_outlined, color: Theme.of(context).primaryColor,),
+                                                  style: ButtonStyle(
+                                                      backgroundColor: WidgetStatePropertyAll(Theme.of(context).primaryColorLight.withValues(alpha: 0.3))
+                                                  ),
+                                                )
+                                              ],
                                             ),
-                                            IconButton(
-                                              onPressed: (){
-                                                print('send button clicked....');
-                                                context.read<TemplateIrrigationSettingsBloc>().add(
-                                                    UpdateTemplateSettingEvent(
-                                                      groupIndex: groupIndex,
-                                                      settingIndex: index
-                                                    )
-                                                );                                            },
-                                              icon: Icon(Icons.send_outlined, color: Theme.of(context).primaryColor,),
-                                              style: ButtonStyle(
-                                                  backgroundColor: WidgetStatePropertyAll(Theme.of(context).primaryColorLight.withValues(alpha: 0.3))
-                                              ),
-                                            )
+                                            Divider(color: Colors.grey.shade300,)
                                           ],
                                         );
                                       }else{

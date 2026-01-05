@@ -32,9 +32,10 @@ final dealerRoutes = <GoRoute>[
               );
             }
           },
-          child: const GlassyWrapper(
+          child: GlassyWrapper(
             child: Scaffold(
-              body: Center(child: CircularProgressIndicator()),
+              appBar: AppBar(title: const Text('dvsfdv'),),
+              body: const Center(child: CircularProgressIndicator()),
             ),
           ),
         ),
