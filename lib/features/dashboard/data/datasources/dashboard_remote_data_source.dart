@@ -1,3 +1,4 @@
+import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_urls.dart';
 
 import '../../../../core/error/exceptions.dart';
@@ -7,7 +8,7 @@ import '../../domain/dashboard_domain.dart';
 import '../../data/dashboard_data.dart';
 
 abstract class DashboardRemoteDataSource {
-  Future<List<GroupDetailsEntity>> fetchDashboardGroups(int userId);
+  Future<List<GroupDetailsEntity>> fetchDashboardGroups(int userId, GoRouterState routeState);
   Future<List<ControllerEntity>> fetchControllers(int userId, int groupId);
   Future<void> motorOnOff({required int userId, required int controllerId, required String deviceId, required int subUserId, required String status, required bool dualPump,
   });
@@ -19,7 +20,7 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
   DashboardRemoteDataSourceImpl({required this.apiClient});
 
   @override
-  Future<List<GroupDetailsEntity>> fetchDashboardGroups(int userId) async {
+  Future<List<GroupDetailsEntity>> fetchDashboardGroups(int userId, GoRouterState routeState) async {
     try {
       final endpoint = DashboardUrls.dashboardForGroupUrl.replaceAll(':userId', userId.toString());
       final response = await apiClient.get(endpoint);

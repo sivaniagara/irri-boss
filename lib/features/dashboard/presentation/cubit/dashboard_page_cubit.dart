@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/services/mqtt/mqtt_manager.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
@@ -16,9 +17,9 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     required this.fetchControllers,
   }) : super(DashboardInitial());
 
-  Future<void> getGroups(int userId) async {
+  Future<void> getGroups(int userId, GoRouterState routeState) async {
     emit(DashboardLoading());
-    final result = await fetchDashboardGroups(DashboardGroupsParams(userId));
+    final result = await fetchDashboardGroups(DashboardGroupsParams(userId, routeState));
 
     result.fold(
           (failure) => emit(DashboardError(message: failure.message)),

@@ -34,6 +34,7 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final queryParams = GoRouterState.of(context).uri.queryParameters;
+    print("Query parameters :: ${GoRouterState.of(context).uri.queryParameters}");
     final userId = int.parse(queryParams['userId']!);
     final userType = int.parse(queryParams['userType']!);
     final groupId = queryParams['groupId'];
@@ -68,7 +69,7 @@ class DashboardPage extends StatelessWidget {
       ) {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (cubit.state is! DashboardLoading && cubit.state is! DashboardGroupsLoaded) {
-        await cubit.getGroups(userId);
+        await cubit.getGroups(userId, GoRouterState.of(context));
       }
 
       // Listen once for groups loaded to auto-select group

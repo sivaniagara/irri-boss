@@ -18,7 +18,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   }) : super(DashboardInitial()) {
     on<FetchDashboardGroupsEvent>((event, emit) async {
       emit(DashboardLoading());
-      final result = await fetchDashboardGroups(DashboardGroupsParams(event.userId));
+      final result = await fetchDashboardGroups(DashboardGroupsParams(event.userId, event.routeState));
 
       result.fold(
             (failure) => emit(DashboardError(message: failure.message)),
