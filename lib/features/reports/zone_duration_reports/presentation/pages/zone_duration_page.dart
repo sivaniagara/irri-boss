@@ -36,16 +36,11 @@ class ZoneDurationPage extends StatelessWidget {
     return GlassyWrapper(
       child: Scaffold(
         appBar: AppBar(
-
-          // 🔹 TITLE CHANGE
+           // 🔹 TITLE CHANGE
           title: Text("ZONE DURATION REPORT"),
-
-
-          actions: [
+            actions: [
             // 🔹 GRID / LIST TOGGLE
-
-
-            IconButton(
+             IconButton(
               icon: const Icon(Icons.calendar_today,
                   color: Colors.black),
               onPressed: () async {

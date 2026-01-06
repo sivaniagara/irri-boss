@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/node_status_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/green_house_reports/utils/green_house_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/moisture_reports/utils/moisture_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/utils/standalone_routes.dart';
@@ -386,6 +387,7 @@ class AppRouter {
         ...FlowGraphRoutes,
         ...moistureRoutes,
         ...fertilizerRoutes,
+        ...greenHouseReportRoutes,
       ],
     );
   }

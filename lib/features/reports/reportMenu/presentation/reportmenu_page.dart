@@ -4,6 +4,7 @@ import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_repo
 import 'package:niagara_smart_drip_irrigation/features/reports/Voltage_reports/utils/voltage_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/fertilizer_reports/utils/fertilizer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/flow_graph_reports/utils/flow_graph_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/green_house_reports/utils/green_house_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/tdy_valve_status_reports/utils/tdy_valve_status_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
@@ -138,7 +139,7 @@ class ReportMenuPage extends StatelessWidget {
           ),
           _reportCard(
             title: 'Moisture',
-            icon: Icons.agriculture,
+            icon: Icons.lens_blur,
             onTap: () {
               context.push(MoistureReportPageRoutes.Moisturepage,extra: params);
             },
@@ -152,13 +153,15 @@ class ReportMenuPage extends StatelessWidget {
             title: 'Green House',
             icon: Icons.house,
             onTap: () {
-              context.push(MoistureReportPageRoutes.Moisturepage,extra: params);
+               context.push(GreenHouseReportPageRoutes.greenHouseReportPage,extra: params);
             },
           ),
         ],
       ),
     );
   }
+
+
 
   Widget _reportCard({
     required String title,
