@@ -15,6 +15,7 @@ class FetchTemplateSettingEvent extends TemplateIrrigationSettingsEvent{
   });
 }
 
+
 class UpdateSingleSettingRowEvent extends TemplateIrrigationSettingsEvent{
   final int groupIndex;
   final int index;
@@ -37,27 +38,4 @@ class UpdateMultipleSettingRowEvent extends TemplateIrrigationSettingsEvent{
     required this.index,
     required this.value,
   });
-}
-
-class UpdateValveFlowNodeEvent extends TemplateIrrigationSettingsEvent {
-  final int index;
-  final String? nodeValue;
-  UpdateValveFlowNodeEvent({
-    required this.index,
-    this.nodeValue,
-  });
-}
-
-class UpdateCommonFlowDeviationEvent extends TemplateIrrigationSettingsEvent {
-  final String deviation;
-  UpdateCommonFlowDeviationEvent({required this.deviation});
-}
-
-class SendValveFlowSmsEvent extends TemplateIrrigationSettingsEvent {
-  final int? index; // if null, send all
-  SendValveFlowSmsEvent({this.index});
-}
-
-class SaveValveFlowSettingsEvent extends TemplateIrrigationSettingsEvent {
-  SaveValveFlowSettingsEvent();
 }
