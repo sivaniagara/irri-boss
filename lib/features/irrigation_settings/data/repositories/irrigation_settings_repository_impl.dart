@@ -83,12 +83,13 @@ class IrrigationSettingsRepositoryImpl extends IrrigationSettingsRepository{
     required String sentSms,
   }) async {
     try {
-      // 1. MQTT real-time publish - Wrap in JSON for the legacy controller processor
+      // 1. MQTT Hardware Command
+      print("sent sms:  $sentSms");
       await dataSource.publishMqttCommand(
         controllerId: controllerId,
         command: jsonEncode({"sentSms": sentSms}), 
       );
-      // 2. Log history for Send & Receive page - Crucial: Send exactly the unified string line
+      // 2. Status History Log - Single unified string line
       await dataSource.logHistory(
         userId: userId,
         subUserId: int.tryParse(subUserId) ?? 0,
@@ -109,12 +110,13 @@ class IrrigationSettingsRepositoryImpl extends IrrigationSettingsRepository{
     required ValveFlowEntity entity,
   }) async {
     try {
-      // Standard settings collection endpoint for legacy modules to avoid 404
-      final endpoint = 'user/$userId/subuser/$subUserId/controller/$controllerId/menu/92/settings';
+      // Use the generic newSettings POST endpoint to resolve 404 and match legacy patterns
+
+      final endpoint = 'user/$userId/subuser/$subUserId/controller/$controllerId/menu/92/newSettings';
       
       Map<String, dynamic> templateJson = {};
       try {
-        if (entity.templateJson.isNotEmpty && entity.templateJson.startsWith('{')) {
+        if (entity.templateJson.startsWith('{')) {
           templateJson = jsonDecode(entity.templateJson);
         } else {
           templateJson = {"FLOWPERCENT": "", "type": "52"};
@@ -128,7 +130,7 @@ class IrrigationSettingsRepositoryImpl extends IrrigationSettingsRepository{
       final body = {
         "menuSettingId": 488,
         "receivedData": "",
-        "sentSms": "", // Handled separately by logHistory to prevent splitting/double-entry
+        "sentSms": "", // Handled separately by logHistory call in BLoC to avoid double logging
         "templateJson": jsonEncode(templateJson),
         "sendData": jsonEncode(entity.nodes.map((n) => {
           "nodeName": n.nodeName,
@@ -140,11 +142,10 @@ class IrrigationSettingsRepositoryImpl extends IrrigationSettingsRepository{
         }).toList())
       };
 
-      // POST to collection is the standard update method for these settings
       await dataSource.saveValveFlowSettings(endpoint: endpoint, body: body, method: 'POST');
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure('saveValveFlowSettings failed: ${e.toString()}'));
+      return Left(ServerFailure('saveValveFlowSettings: ${e.toString()}'));
     }
   }
 }

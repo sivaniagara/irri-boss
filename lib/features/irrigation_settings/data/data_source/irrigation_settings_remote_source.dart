@@ -70,6 +70,7 @@ class IrrigationSettingsRemoteSourceImpl extends IrrigationSettingsRemoteSource{
     final historyEndpoint = 'user/$userId/subuser/$subUserId/controller/$controllerId/view/messages/';
     try {
       // Ensuring the body is a clean map with the single unified string
+
       await apiClient.post(historyEndpoint, body: {"sentSms": sentSms});
     } catch (e) {
       // Log failure but don't rethrow to avoid blocking the main flow

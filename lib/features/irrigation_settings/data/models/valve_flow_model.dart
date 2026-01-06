@@ -14,7 +14,7 @@ class ValveFlowModel extends ValveFlowEntity {
   });
 
   factory ValveFlowModel.fromJson(Map<String, dynamic> json) {
-    // Safely handle sendData
+    // Safely handle sendData which contains the nodes
     var rawSendData = json['sendData'];
     List<dynamic> sendDataList = [];
     if (rawSendData is String) {
@@ -29,11 +29,11 @@ class ValveFlowModel extends ValveFlowEntity {
     
     var nodes = sendDataList.map((e) {
       var node = ValveFlowNodeModel.fromJson(e);
-      // Initialize to 0 as per user request
+      // Initialize nodeValue to 0 as requested, but keep its actual serialNo and ID
       return node.copyWith(nodeValue: '0', flowDeviation: '0');
     }).toList();
 
-    // Safely handle templateJson
+    // Safely handle templateJson for flowPercent
     var rawTemplateJson = json['templateJson'];
     Map<String, dynamic> templateJsonData = {};
     if (rawTemplateJson is String) {
@@ -79,13 +79,17 @@ class ValveFlowNodeModel extends ValveFlowNodeEntity {
   });
 
   factory ValveFlowNodeModel.fromJson(Map<String, dynamic> json) {
+    print('json: $json');
+
     return ValveFlowNodeModel(
       nodeName: json['nodeName']?.toString() ?? '',
       nodeId: json['nodeId']?.toString() ?? '',
-      serialNo: json['serialNo']?.toString() ?? '',
+      // Map serialNo accurately from the API response
+      serialNo: json['serialNo']?.toString() ?? '', 
       nodeValue: json['nodeValue']?.toString() ?? '0',
       qrCode: json['QRCode']?.toString() ?? '',
       flowDeviation: json['flowDeviation']?.toString() ?? '0',
     );
+
   }
 }
