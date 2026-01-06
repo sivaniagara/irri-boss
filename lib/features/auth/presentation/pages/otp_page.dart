@@ -74,7 +74,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                   if(state.user.userDetails.userType == 2) {
                     context.go(DealerRoutes.dealerDashboard);
                   } else if (state.user.userDetails.userType == 1){
-                    context.go(DashBoardRoutes.dashboard);
+                    context.go(DashBoardRoutes.dashboard, extra: state.user.userDetails);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

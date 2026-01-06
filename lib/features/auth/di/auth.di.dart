@@ -31,7 +31,7 @@ void initAuthDependencies() {
   // ──────────────────────────────────────
   // 4. Bloc (Factory - BlocProvider auto dispose)
   // ──────────────────────────────────────
-  sl.registerFactory(
+  sl.registerLazySingleton(
         () => AuthBloc(
       loginWithPassword: sl(),
       sendOtp: sl(),

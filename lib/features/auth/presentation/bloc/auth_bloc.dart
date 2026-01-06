@@ -26,21 +26,26 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     on<LoginWithPasswordEvent>((event, emit) async {
       emit(AuthLoading());
-      final result = await loginWithPassword(LoginParams(phone: event.phone, password: event.password));
-      result.fold(
-        (failure) => emit(failure is AuthFailure
-            ? AuthError(message: failure.message, code: failure.code)
-            : AuthError(message: failure.message)),
-        (authData) {
-          emit(Authenticated(authData));
-          // Remove: _dashboardBloc.add(FetchDashboardGroupsEvent(authData.userDetails.id));
-          _notificationService.showNotification(
-            title: 'Login Successful',
-            body: 'Welcome back, ${authData.userDetails.name}!',
-            payload: 'login_success',
-          );
-        },
-      );
+      try {
+        final result = await loginWithPassword(LoginParams(phone: event.phone, password: event.password));
+        result.fold(
+              (failure) => emit(failure is AuthFailure
+              ? AuthError(message: failure.message, code: failure.code)
+              : AuthError(message: failure.message)),
+              (authData) {
+            emit(Authenticated(authData));
+            // Remove: _dashboardBloc.add(FetchDashboardGroupsEvent(authData.userDetails.id));
+            _notificationService.showNotification(
+              title: 'Login Successful',
+              body: 'Welcome back, ${authData.userDetails.name}!',
+              payload: 'login_success',
+            );
+          },
+        );
+      } catch(e, s) {
+        print("Error :: $e");
+        print("Stack trace :: $s");
+      }
     });
 
     on<SendOtpEvent>((event, emit) async {

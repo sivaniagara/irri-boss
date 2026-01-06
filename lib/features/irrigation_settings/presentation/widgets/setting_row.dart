@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/widgets/find_suitable_widget.dart';
 
 import '../../domain/entities/common_setting_item_entity.dart';
+import '../bloc/template_irrigation_settings_bloc.dart';
 
 class SettingRow extends StatelessWidget {
   final SingleSettingItemEntity singleSettingItemEntity;
   final bool hideSendButton;
   final void Function(dynamic)? onChanged;
   final void Function()? onTap;
+  final int groupIndex;
+  final int settingIndex;
   const SettingRow({
     super.key,
     required this.singleSettingItemEntity,
     required this.hideSendButton,
     required this.onChanged,
     required this.onTap,
+    required this.groupIndex,
+    required this.settingIndex,
   });
 
   @override
@@ -35,7 +41,13 @@ class SettingRow extends StatelessWidget {
               SizedBox(width: 10,),
               IconButton(
                 onPressed: (){
-
+                  print('send button clicked....');
+                  context.read<TemplateIrrigationSettingsBloc>().add(
+                      UpdateTemplateSettingEvent(
+                          groupIndex: groupIndex,
+                          settingIndex: settingIndex
+                      )
+                  );
                 },
                 icon: Icon(Icons.send_outlined, color: Theme.of(context).primaryColor,),
                 style: ButtonStyle(

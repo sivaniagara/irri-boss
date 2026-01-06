@@ -10,6 +10,7 @@ class GetTemplateIrrigationSettingParams{
   final String controllerId;
   final String subUserId;
   final String settingNo;
+
   GetTemplateIrrigationSettingParams({
     required this.userId,
     required this.controllerId,

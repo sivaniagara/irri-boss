@@ -112,6 +112,8 @@ class _GroupsView extends StatelessWidget {
               GlassCard(
                 padding: EdgeInsets.zero,
                 borderRadius: borderRadius,
+                opacity: 1,
+                blur: 0,
                 child: ListTile(
                   contentPadding: const EdgeInsets.only(left: 10, right: 5),
                   title: Text(group.groupName),

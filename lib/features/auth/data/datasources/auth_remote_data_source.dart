@@ -84,6 +84,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
 
       final data = _handleApiResponse(response, operation: 'Login');
+      try {
+        final data = _handleApiResponse(response, operation: 'Login');
+        return RegisterDetailsModel.fromJson(data);
+      } catch(e, s) {
+        print("error :: $e");
+        print("stack trace :: $s");
+      }
       return RegisterDetailsModel.fromJson(data);
     } on AuthException {
       rethrow; // Preserve existing AuthExceptions

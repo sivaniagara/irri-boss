@@ -7,7 +7,6 @@ import 'package:niagara_smart_drip_irrigation/features/reports/flow_graph_report
 import 'package:niagara_smart_drip_irrigation/features/reports/moisture_reports/di/moisture_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/di/standalone_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/tdy_valve_status_reports/di/tdy_valve_status_di.dart';
-import 'package:niagara_smart_drip_irrigation/features/valve_flow_settings/di/valve_flow_di.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/controller_details/data/repositories/controller_details_repositories.dart';
 import '../../features/controller_details/domain/repositories/controller_details_repo.dart';
@@ -16,6 +15,7 @@ import '../../features/controller_details/presentation/bloc/controller_details_b
 import '../../features/controller_details/presentation/bloc/controller_details_state.dart';
 import '../../features/dashboard/utils/dashboard_dispatcher.dart';
 import '../../features/dashboard/presentation/cubit/controller_context_cubit.dart';
+import '../../features/dealer_dashboard/domain/di/shared_devices_di.dart';
 import '../../features/fault_msg/di/faultmsg_di.dart';
 import '../../features/irrigation_settings/di/irrigation_settings_di.dart';
 import '../../features/pump_settings/utils/pump_settings_dispatcher.dart';
@@ -167,7 +167,6 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initZoneCyclic();
   initFlowGraph();
   initMoisture();
-  initValveFlowDependencies();
 }
 
 // Reset all
