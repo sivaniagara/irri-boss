@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../domain/entities/livemessage_entity.dart';
 
@@ -9,7 +10,8 @@ abstract class DashboardEvent extends Equatable {
 
 class FetchDashboardGroupsEvent extends DashboardEvent {
   final int userId;
-  FetchDashboardGroupsEvent(this.userId);
+  final GoRouterState routeState;
+  FetchDashboardGroupsEvent(this.userId, this.routeState);
 
   @override
   List<Object?> get props => [userId];

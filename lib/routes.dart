@@ -174,7 +174,7 @@ class AppRouter {
               providers: [
                 BlocProvider(
                   create: (_) => di.sl<DashboardBloc>()
-                    ..add(FetchDashboardGroupsEvent(params['userId']))
+                    ..add(FetchDashboardGroupsEvent(params['userId'], GoRouterState.of(context)))
                     ..add(ResetDashboardSelectionEvent()),
                 ),
                 BlocProvider(create: (_) => di.sl<DashboardCubit>()),

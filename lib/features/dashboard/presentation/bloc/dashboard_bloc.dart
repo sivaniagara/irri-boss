@@ -18,7 +18,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   }) : super(DashboardInitial()) {
     on<FetchDashboardGroupsEvent>((event, emit) async {
       emit(DashboardLoading());
-      final result = await fetchDashboardGroups(DashboardGroupsParams(event.userId));
+      final result = await fetchDashboardGroups(DashboardGroupsParams(event.userId, event.routeState));
 
       result.fold(
             (failure) => emit(DashboardError(message: failure.message)),
@@ -61,7 +61,6 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
       final currentState = state as DashboardGroupsLoaded;
 
-      // Step 1: Immediately update UI with selected group (optimistic)
       final newState = currentState.copyWith(
         selectedGroupId: event.groupId,
         selectedControllerIndex: null,
@@ -74,24 +73,6 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       );
 
       final userId = group.userId;
-      final persistence = sl.get<SelectedControllerPersistence>();
-
-      // Step 2: Check if controllers already loaded
-      if (currentState.groupControllers.containsKey(event.groupId)) {
-        final controllers = currentState.groupControllers[event.groupId]!;
-
-        if (controllers.isNotEmpty) {
-          sl<MqttManager>().subscribe(controllers[0].deviceId);
-          sl<MqttManager>().publish(controllers[0].deviceId, jsonEncode(PublishMessageHelper.requestLive));
-          // mqttBloc.add(SubscribeMqttEvent(controllers[0].deviceId));
-          await persistence.save(controllers[0].deviceId, event.groupId);
-        }
-
-        emit(newState.copyWith(
-          selectedControllerIndex: controllers.isNotEmpty ? 0 : null,
-        ));
-        return;
-      }
 
       emit(DashboardLoading());
 
@@ -108,8 +89,6 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
           if (controllers.isNotEmpty) {
             sl<MqttManager>().subscribe(controllers[0].deviceId);
             sl<MqttManager>().publish(controllers[0].deviceId, jsonEncode(PublishMessageHelper.requestLive));
-            // mqttBloc.add(SubscribeMqttEvent(controllers[0].deviceId));
-            await persistence.save(controllers[0].deviceId, event.groupId);
           }
 
           emit(DashboardGroupsLoaded(

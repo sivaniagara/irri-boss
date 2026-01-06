@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../datasources/dashboard_remote_data_source.dart';
@@ -10,9 +11,9 @@ class DashboardRepositoryImpl implements DashboardRepository {
   DashboardRepositoryImpl({required this.remote});
 
   @override
-  Future<Either<Failure, List<GroupDetailsEntity>>> fetchDashboardGroups(int userId) async {
+  Future<Either<Failure, List<GroupDetailsEntity>>> fetchDashboardGroups(int userId, GoRouterState routeState) async {
     try {
-      final response = await remote.fetchDashboardGroups(userId);
+      final response = await remote.fetchDashboardGroups(userId, routeState);
       return Right(response);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
