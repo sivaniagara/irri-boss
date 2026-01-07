@@ -4,18 +4,18 @@ import '../flavor/flavor_config.dart';
 class AppThemes {
   static ThemeData get lightTheme {
     switch (FlavorConfig.instance.flavor) {
-      case Flavor.agritel:
-        return _agritelLightTheme;
-      case Flavor.niagara:
-        return _niagaraLightTheme;
+      case Flavor.irriBossDevelopment:
+        return _irriBossLightTheme;
+      case Flavor.irriBossProduction:
+        return _irriBossLightTheme;
     }
   }
 
   static ThemeData get darkTheme {
     switch (FlavorConfig.instance.flavor) {
-      case Flavor.agritel:
+      case Flavor.irriBossDevelopment:
         return _agritelDarkTheme;
-      case Flavor.niagara:
+      case Flavor.irriBossProduction:
         return _niagaraDarkTheme;
     }
   }
@@ -64,9 +64,11 @@ class AppThemes {
     },
   );
 
+  static Color scaffoldBackGround = Color(0xffE1EEEE);
+
   // Light Theme
-  static final ThemeData _niagaraLightTheme = ThemeData(
-    scaffoldBackgroundColor: Colors.transparent,
+  static final ThemeData _irriBossLightTheme = ThemeData(
+    scaffoldBackgroundColor: scaffoldBackGround,
     brightness: Brightness.light,
     primarySwatch: primarySwatch,
     primaryColor: primaryColor,
@@ -84,11 +86,11 @@ class AppThemes {
       onError: Colors.white,
       seedColor: primaryColor,
     ),
-    appBarTheme: const AppBarTheme(
-      iconTheme: IconThemeData(
+    appBarTheme: AppBarTheme(
+      iconTheme: const IconThemeData(
         color: Colors.black
       ),
-      backgroundColor: Colors.transparent,
+      backgroundColor: scaffoldBackGround,
       /*foregroundColor: Colors.white,
       elevation: 0,*/
     ),

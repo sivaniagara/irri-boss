@@ -1,7 +1,7 @@
 plugins {
     id "com.android.application"
     // START: FlutterFire Configuration
-    id 'com.google.gms.google-services'
+//    id 'com.google.gms.google-services'
     // END: FlutterFire Configuration
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
@@ -11,15 +11,15 @@ android {
     flavorDimensions "flavor-type"
 
     productFlavors {
-        niagara {
+        irriBossDevelopment {
             dimension "flavor-type"
-            applicationId "com.niagaraautomations.niagara"
-            resValue "string", "app_name", "Niagara"
+            applicationId "com.niagaraautomations.irriBossDevelopment"
+            resValue "string", "app_name", "Irri Boss"
         }
-        agritel {
+        irriBossProduction {
             dimension "flavor-type"
-            applicationId "com.niagaraautomations.agritel"
-            resValue "string", "app_name", "AgriTel"
+            applicationId "com.niagaraautomations.irriBossProduction"
+            resValue "string", "app_name", "Irri Boss"
         }
     }
 
@@ -38,8 +38,7 @@ android {
 
     signingConfigs {
         debug {
-//            storeFile file("C:/Users/Saravanan/.android/debug.keystore")
-            storeFile file(System.getenv("USERPROFILE") + "/.android/debug.keystore")
+            storeFile file("C:/Users/sivap/.android/debug.keystore")
             storePassword "android"
             keyAlias "androiddebugkey"
             keyPassword "android"
@@ -71,7 +70,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.niagaraautomations.niagara"
+        applicationId = "com.niagaraautomations.irriBossDevelopment"
 //        minSdk = flutter.minSdkVersion
         //noinspection GradleIdeError
 //        minSdkVersion flutter.minSdkVersion
