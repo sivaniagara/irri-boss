@@ -8,6 +8,7 @@ import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/auth.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/controller_context_cubit.dart';
+import 'package:niagara_smart_drip_irrigation/features/edit_program/utils/edit_program_routes.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/services/mqtt/publish_messages.dart';
@@ -441,7 +442,7 @@ class DashboardPage extends StatelessWidget {
                       SizedBox(height: scale(5)),
                       GestureDetector(
                         onTap: () {
-                          context.push('${DashBoardRoutes.dashboard}${ProgramSettingsRoutes.program}', extra: {"userId" : '$userId', "controllerId" : controller.userDeviceId.toString()});
+                          context.push('${DashBoardRoutes.dashboard}${EditProgramRoutes.program}');
                         },
                         child: RYBSection(
                           r: controller.liveMessage.rVoltage,

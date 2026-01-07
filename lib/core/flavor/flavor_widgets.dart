@@ -15,9 +15,9 @@ class FlavorBanner extends StatelessWidget {
   Color _bannerColor() {
     final f = FlavorConfig.instance.flavor;
     switch (f) {
-      case Flavor.niagara:
+      case Flavor.irriBossDevelopment:
         return Colors.indigo;
-      case Flavor.agritel:
+      case Flavor.irriBossProduction:
         return Colors.green;
     }
   }

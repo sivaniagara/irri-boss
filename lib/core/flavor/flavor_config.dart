@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-enum Flavor { niagara, agritel }
+enum Flavor { irriBossDevelopment, irriBossProduction }
 
 class FlavorValues {
   final String displayName;
@@ -54,13 +54,13 @@ class FlavorConfig {
   /// Useful for CI or single-entry setups where native differences are not required.
   static void setupFromDartDefine() {
     const raw = String.fromEnvironment('FLAVOR', defaultValue: '');
-    final f = _fromString(raw) ?? Flavor.niagara;
+    final f = _fromString(raw) ?? Flavor.irriBossDevelopment;
     setup(f);
   }
 
   static FlavorValues _defaultValuesFor(Flavor flavor) {
     switch (flavor) {
-      case Flavor.niagara:
+      case Flavor.irriBossDevelopment:
         return const FlavorValues(
           displayName: 'Niagara',
           apiBaseUrl: "http://3.1.62.165:8080/api/v1/",
@@ -70,7 +70,7 @@ class FlavorConfig {
           themeKey: 'niagara',
           showFlavorBanner: true,
         );
-      case Flavor.agritel:
+      case Flavor.irriBossProduction:
         return const FlavorValues(
           displayName: 'AgriTel',
           apiBaseUrl: 'https://api.example.com',
@@ -86,13 +86,13 @@ class FlavorConfig {
   static Flavor? _fromString(String raw) {
     final s = raw.trim().toLowerCase();
     if (s.isEmpty) return null;
-    if (s == 'niagara' || s == 'n' || s == 'niag') return Flavor.niagara;
-    if (s == 'agritel' || s == 'agri' || s == 'a') return Flavor.agritel;
+    if (s == 'Development') return Flavor.irriBossDevelopment;
+    if (s == 'Production') return Flavor.irriBossProduction;
     return null;
   }
 
-  bool get isNiagara => flavor == Flavor.niagara;
-  bool get isAgritel => flavor == Flavor.agritel;
+  // bool get isNiagara => flavor == Flavor.irriBossDevelopment;
+  // bool get isAgritel => flavor == Flavor.irriBossProduction;
 
   @override
   String toString() => 'FlavorConfig(flavor: $flavor, theme: ${values.themeKey})';

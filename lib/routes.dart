@@ -24,6 +24,7 @@ import 'features/dashboard/presentation/pages/dashboard_page.dart';
 import 'features/dashboard/presentation/pages/program_preview_page.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
 import 'features/dealer_dashboard/presentation/pages/dealer_dashboard_page.dart';
+import 'features/edit_program/utils/edit_program_routes.dart';
 import 'features/irrigation_settings/utils/irrigation_settings_routes.dart';
 import 'features/fault_msg/utils/faultmsg_routes.dart';
 import 'features/report_downloader/utils/report_downloaderRoute.dart';
@@ -183,6 +184,7 @@ class AppRouter {
             );
           },
           routes: [
+            ...editProgramGoRoutes,
             ...controllerSettingGoRoutes,
             ...programSettingsGoRoutes,
             ...irrigationSettingGoRoutes,
