@@ -16,6 +16,7 @@ import '../../features/controller_details/presentation/bloc/controller_details_s
 import '../../features/dashboard/utils/dashboard_dispatcher.dart';
 import '../../features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../features/dealer_dashboard/domain/di/shared_devices_di.dart';
+import '../../features/edit_program/di/edit_program_di.dart';
 import '../../features/fault_msg/di/faultmsg_di.dart';
 import '../../features/irrigation_settings/di/irrigation_settings_di.dart';
 import '../../features/pump_settings/utils/pump_settings_dispatcher.dart';
@@ -128,6 +129,9 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
 
   /// Mapping and Unmapping Nodes Dependencies
   initMappingAndUnmappingNodeDependencies();
+
+  /// Edit Program Bloc
+  initEditProgramDependencies();
 
   /// program tab Dependencies
   sl.registerFactory(() => ProgramTabCubit());

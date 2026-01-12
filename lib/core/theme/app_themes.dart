@@ -35,9 +35,9 @@ class AppThemes {
     colorScheme: ColorScheme.dark(primary: Colors.green),
   );
 
-  // Niagara Theme Variants
-  static const Color primaryColor = Color(0xFF016DB5);
-  static const Color secondaryColor = Color(0xFF00AFF0);
+  // Irri Boss Theme Variants
+  static const Color primaryColor = Color(0xFF5385B2);
+  static const Color secondaryColor = Color(0xFFC1E2FF);
 
 
 
@@ -72,7 +72,7 @@ class AppThemes {
     brightness: Brightness.light,
     primarySwatch: primarySwatch,
     primaryColor: primaryColor,
-    primaryColorLight: Color(0xff6DA8F5),
+    primaryColorLight: Color(0xffC1E2FF),
     iconTheme: IconThemeData(color: Colors.white),
     colorScheme: ColorScheme.fromSeed(
       primary: primaryColor,
@@ -85,6 +85,7 @@ class AppThemes {
       onBackground: primaryColor.withOpacity(0.1),
       onError: Colors.white,
       seedColor: primaryColor,
+      outline: Color(0xffABABAB)
     ),
     appBarTheme: AppBarTheme(
       iconTheme: const IconThemeData(
@@ -108,12 +109,13 @@ class AppThemes {
       // titleTextStyle: TextStyle(color: Colors.black, fontSize: 20)
     ),
     textTheme: TextTheme(
-     /* titleMedium: TextStyle(color: Colors.white),
-      titleSmall: TextStyle(color: Colors.white),
-      titleLarge: TextStyle(color: Colors.white),
-      bodySmall: TextStyle(color: Colors.white),
+      titleLarge: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500), // use
+      labelMedium: TextStyle(color: Colors.white),
+      labelSmall: TextStyle(fontSize: 14,color: Colors.white, fontWeight: FontWeight.w500), // use
+      labelLarge: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w500), // use
+      bodySmall: TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.w500),
       bodyLarge: TextStyle(color: Colors.white),
-      bodyMedium: TextStyle(color: Colors.white),*/
+      bodyMedium: TextStyle(color: Colors.white),
     ),
     inputDecorationTheme: InputDecorationTheme(
       border: UnderlineInputBorder(
@@ -138,75 +140,20 @@ class AppThemes {
         borderRadius: BorderRadius.circular(0),
       ),
     ),
-    /*checkboxTheme: CheckboxThemeData(
-      fillColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-        if (states.contains(WidgetState.selected)) {
-          return Colors.white;
-        }
-        if (states.contains(WidgetState.disabled)) {
-          return primaryColor.withOpacity(0.1);
-        }
-        return Colors.white.withOpacity(0.05);
-      }),
-      checkColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-        if (states.contains(WidgetState.selected) || states.contains(WidgetState.disabled)) {
-          return primaryColor;
-        }
-        return null;
-      }),
-      overlayColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-        if (states.contains(WidgetState.selected)) {
-          return Colors.white.withOpacity(0.1);
-        }
-        if (states.contains(WidgetState.hovered)) {
-          return Colors.white.withOpacity(0.08);
-        }
-        if (states.contains(WidgetState.focused) || states.contains(WidgetState.pressed)) {
-          return Colors.white.withOpacity(0.12);
-        }
-        return null;
-      }),
-      side: BorderSide(color: Colors.white54, width: 2),
-      splashRadius: 24.0,
-    ),
-    switchTheme: SwitchThemeData(
-      thumbColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-        if (states.contains(WidgetState.selected) || states.contains(WidgetState.disabled)) {
-          return primaryColor;
-        }
-        return Colors.white.withOpacity(0.3);
-      }),
-      trackColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-        if (states.contains(WidgetState.selected)) {
-          return Colors.white.withOpacity(0.6);
-        }
-        if (states.contains(WidgetState.disabled)) {
-          return primaryColor.withOpacity(0.1);
-        }
-        return Colors.white.withOpacity(0.1);
-      }),
-      overlayColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-        if (states.contains(WidgetState.hovered)) {
-          return Colors.white.withOpacity(0.06);
-        }
-        if (states.contains(WidgetState.focused) || states.contains(WidgetState.pressed)) {
-          return Colors.white.withOpacity(0.1);
-        }
-        return Colors.white;
-      }),
-      trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-        if(states.contains(WidgetState.selected)) {
-          return Colors.white;
-        }
-        return Colors.white54;
-      }),
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    ),*/
     dividerTheme: DividerThemeData(
       color: const Color(0xff727272),
       thickness: 1
     ),
-
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.all(Colors.white),
+      trackColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return Colors.green;
+        }
+        return Colors.grey.shade400;
+      }),
+      trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+    ),
 
   );
   // Dark Theme

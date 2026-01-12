@@ -15,6 +15,7 @@ import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/theme/app_themes.dart';
 import '../../../../core/utils/app_images.dart';
 import '../../../controller_details/domain/usecase/controller_details_params.dart';
+import '../../../edit_program/utils/edit_program_routes.dart';
 import '../../../program_settings/utils/program_settings_routes.dart';
 import '../../../side_drawer/groups/presentation/widgets/app_drawer.dart';
 import '../../utils/dashboard_routes.dart';
@@ -27,6 +28,7 @@ import '../widgets/ryb_section.dart';
 import '../widgets/sync_section.dart';
 import '../widgets/timer_section.dart';
 import '../../dashboard.dart';
+import 'dashboard_2_0.dart';
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -204,28 +206,26 @@ class DashboardPage extends StatelessWidget {
             userId: authState.user.userDetails.id.toString(),
             controllerId: firstController.userDeviceId.toString(),
             userType: authState.user.userDetails.userType.toString(),
-            subUserId: '0',
+            subUserId: '0', deviceId: firstController.deviceId,
           );
         }
       },
-      child: GlassyWrapper(
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: _buildAppBar(
-            selectedGroup,
-            selectedController,
-            controllers,
-            loadedState,
-            cubit,
-            context,
-            userId,
-            userType,
-          ),
-          drawer: userType == 1 ? const AppDrawer() : null,
-          body: selectedController == null
-              ? const Center(child: CircularProgressIndicator())
-              : _buildBody(selectedController, userId, userType),
+      child: Scaffold(
+        appBar: _buildAppBar(
+          selectedGroup,
+          selectedController,
+          controllers,
+          loadedState,
+          cubit,
+          context,
+          userId,
+          userType,
         ),
+        drawer: userType == 1 ? const AppDrawer() : null,
+        body: selectedController == null
+            ? const Center(child: CircularProgressIndicator())
+            : Dashboard20()
+            // : _buildBody(selectedController, userId, userType),
       ),
     );
   }
@@ -380,9 +380,14 @@ class DashboardPage extends StatelessWidget {
           ),
           onSelected: (index) {
             cubit.selectController(index);
-
+            print("index => $index");
+            for(var i = 0;i < controllers.length;i++){
+              print('$i => ${controllers[i].deviceId}');
+            }
+            print('update to ${controllers[index].deviceId}');
             context.read<ControllerContextCubit>().updateController(
               controllerId: controllers[index].userDeviceId.toString(),
+              deviceId: controllers[index].deviceId,
             );
           },
           itemBuilder: (context) => controllers.asMap().entries.map((entry) {
@@ -479,13 +484,7 @@ class DashboardPage extends StatelessWidget {
                       SizedBox(height: scale(5)),
                       GestureDetector(
                         onTap: () {
-                          context.push(
-                            '${DashBoardRoutes.dashboard}${ProgramSettingsRoutes.program}',
-                            extra: {
-                              "userId": '$userId',
-                              "controllerId": controller.userDeviceId.toString()
-                            },
-                          );
+                          context.push('${DashBoardRoutes.dashboard}${EditProgramRoutes.program}?programId=1');
                         },
                         child: RYBSection(
                           r: controller.liveMessage.rVoltage,

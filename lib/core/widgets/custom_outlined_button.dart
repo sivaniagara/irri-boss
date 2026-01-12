@@ -12,11 +12,16 @@ class CustomOutlinedButton extends StatelessWidget {
         style: ButtonStyle(
           backgroundColor: WidgetStatePropertyAll(Colors.white),
           padding: WidgetStatePropertyAll(
-            EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+            EdgeInsets.symmetric(vertical: 10, horizontal: 50),
           ),
-          shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)))
+          shape: WidgetStatePropertyAll(
+              RoundedRectangleBorder(
+                side: BorderSide(color: Theme.of(context).colorScheme.primary),
+                  borderRadius: BorderRadius.circular(8),
+              )
+          )
         ),
-        child: Text(title, style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 20))
+        child: Text(title, style: Theme.of(context).textTheme.labelLarge)
     );
   }
 }

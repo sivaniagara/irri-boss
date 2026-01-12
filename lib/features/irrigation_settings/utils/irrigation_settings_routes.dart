@@ -51,7 +51,7 @@ final irrigationSettingGoRoutes = [
                   child: TemplateSettingPage(appBarTitle: settingName)
               );
             },
-        )
+        ),
       ]
   ),
 ];

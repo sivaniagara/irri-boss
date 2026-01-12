@@ -28,9 +28,10 @@ class SettingRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         children: [
-          Expanded(child: Text(singleSettingItemEntity.titleText, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),)),
-          SizedBox(
-            width: 150,
+          Expanded(child: Text(singleSettingItemEntity.titleText, style: Theme.of(context).textTheme.labelLarge,)),
+          Container(
+            padding: EdgeInsets.only(right: singleSettingItemEntity.widgetType == 2 ? 10 : 0),
+            width: singleSettingItemEntity.widgetType == 2 ? 80 : 150,
             child: FindSuitableWidget(
               singleSettingItemEntity: singleSettingItemEntity,
               onChanged: onChanged, onTap: onTap,
@@ -38,10 +39,8 @@ class SettingRow extends StatelessWidget {
           ),
           if(!hideSendButton)
             ...[
-              SizedBox(width: 10,),
-              IconButton(
-                onPressed: (){
-                  print('send button clicked....');
+              InkWell(
+                onTap: (){
                   context.read<TemplateIrrigationSettingsBloc>().add(
                       UpdateTemplateSettingEvent(
                           groupIndex: groupIndex,
@@ -49,13 +48,15 @@ class SettingRow extends StatelessWidget {
                       )
                   );
                 },
-                icon: Icon(Icons.send_outlined, color: Theme.of(context).primaryColor,),
-                style: ButtonStyle(
-                    backgroundColor: WidgetStatePropertyAll(Theme.of(context).primaryColorLight.withValues(alpha: 0.3))
+                child: Container(
+                  padding: EdgeInsets.all(10),
+                  child: Image.asset(
+                      'assets/images/icons/send_icon.png',
+                    width: 25,
+                  ),
                 ),
               )
             ]
-
         ],
       ),
     );

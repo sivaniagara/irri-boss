@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/time_picker_service.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/custom_switch.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/leaf_box.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/tiny_text_form_field.dart';
 
 import '../../domain/entities/common_setting_item_entity.dart';
 import '../bloc/template_irrigation_settings_bloc.dart';
@@ -20,6 +23,7 @@ class FindSuitableWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if(singleSettingItemEntity.widgetType == 2){
+      return CustomSwitch(value: singleSettingItemEntity.value == 'ON', onChanged: onChanged);
       return Switch(
           value: singleSettingItemEntity.value == 'ON' ? true : false,
           onChanged: onChanged
@@ -27,45 +31,22 @@ class FindSuitableWidget extends StatelessWidget {
     }else if(singleSettingItemEntity.widgetType == 3){
       return GestureDetector(
         onTap: onTap,
-        child: Container(
-          height: 48,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
-              border: Border.all(width: 1)
-          ),
-          child: Center(
-              child: Text(singleSettingItemEntity.value)
-          ),
+        child: LeafBox(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Text(singleSettingItemEntity.value, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.black),),
+                Text('HH:MM', style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 10, fontWeight: FontWeight.w400),)
+              ],
+            )
         ),
       );
     }else if([9, 10].contains(singleSettingItemEntity.widgetType)){
-      return TextFormField(
-        initialValue: singleSettingItemEntity.value,
-        keyboardType: TextInputType.number,
-        inputFormatters: [
-          singleSettingItemEntity.widgetType == 9
-              ? integerFormatter
-              : decimalFormatter,
-        ],
-
-        decoration: InputDecoration(
-          filled: true,
-          fillColor: Colors.grey.shade100,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            // borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(
-              color: Theme.of(context).primaryColor,
-              width: 1.5,
-            ),
-          ),
-          // contentPadding:
-          // const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      return LeafBox(
+        child: TinyTextFormField(
+            value: singleSettingItemEntity.value,
+          onChanged: onChanged,
         ),
-        onChanged: onChanged,
       );
     }else if(singleSettingItemEntity.widgetType == 8){
        return DropdownButton(
