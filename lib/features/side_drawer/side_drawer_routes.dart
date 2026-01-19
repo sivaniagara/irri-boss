@@ -59,7 +59,7 @@ final sideDrawerRoutes = <ShellRoute>[
                     borderRadius: BorderRadius.circular(6),
                   ),
                   alignment: Alignment.center,
-                  child: Image.asset(NiagaraCommonImages.logoSmall),
+                  child: Image.asset(AppImages.logoSmall),
                 ) : Text(title)
             ),
             drawer: const AppDrawer(),

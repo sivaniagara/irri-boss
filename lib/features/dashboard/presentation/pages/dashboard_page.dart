@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_manager.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/auth.dart';
@@ -29,9 +31,55 @@ import '../widgets/sync_section.dart';
 import '../widgets/timer_section.dart';
 import '../../dashboard.dart';
 import 'dashboard_2_0.dart';
+import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 
-class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+
+enum BottomNavigationOption{home, report, setting, sentAndReceive}
+
+extension BottomNavivigationOptionExtension on BottomNavigationOption{
+  String title(){
+    switch (this){
+      case BottomNavigationOption.home:
+        return 'Home';
+      case BottomNavigationOption.report:
+        return 'Report';
+      case BottomNavigationOption.setting:
+        return 'Setting';
+      case BottomNavigationOption.sentAndReceive:
+        return 'Sent And Receive';
+    }
+  }
+}
+
+class DashboardPage extends StatefulWidget {
+  final Widget child;
+  const DashboardPage({super.key, required this.child});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+
+  static Future<void> _refreshLiveData(ControllerEntity controller) async {
+    final mqttManager = di.sl.get<MqttManager>();
+    final deviceId = controller.deviceId;
+    final publishMessage = jsonEncode(PublishMessageHelper.requestLive);
+    mqttManager.publish(deviceId, publishMessage);
+
+    if (kDebugMode) {
+      print("Live message requested for device: $deviceId");
+    }
+  }
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  BottomNavigationOption selectedBottomNavigation = BottomNavigationOption.home;
+  final NotchBottomBarController _controller = NotchBottomBarController(index: 0);
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _controller.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -128,7 +176,7 @@ class DashboardPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(6),
               ),
               alignment: Alignment.center,
-              child: Image.asset(NiagaraCommonImages.logoSmall),
+              child: Image.asset(AppImages.logoSmall),
             ),
           ),
           drawer: userType == 1 ? const AppDrawer() : null,
@@ -161,7 +209,7 @@ class DashboardPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(6),
               ),
               alignment: Alignment.center,
-              child: Image.asset(NiagaraCommonImages.logoSmall),
+              child: Image.asset(AppImages.logoSmall),
             ),
           ),
           drawer: userType == 1 ? const AppDrawer() : null,
@@ -211,7 +259,76 @@ class DashboardPage extends StatelessWidget {
         }
       },
       child: Scaffold(
-        appBar: _buildAppBar(
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        floatingActionButton: AnimatedNotchBottomBar(
+          /// Provide NotchBottomBarController
+          notchBottomBarController: _controller,
+          color: Colors.white,
+          showLabel: true,
+          textOverflow: TextOverflow.visible,
+          maxLine: 1,
+          shadowElevation: 5,
+          kBottomRadius: 28.0,
+
+          // notchShader: const SweepGradient(
+          //   startAngle: 0,
+          //   endAngle: pi / 2,
+          //   colors: [Colors.red, Colors.green, Colors.orange],
+          //   tileMode: TileMode.mirror,
+          // ).createShader(Rect.fromCircle(center: Offset.zero, radius: 8.0)),
+          notchColor: Colors.white,
+
+          /// restart app if you change removeMargins
+          removeMargins: true,
+          showShadow: false,
+          durationInMilliSeconds: 300,
+
+          itemLabelStyle: const TextStyle(fontSize: 10, color: Colors.black),
+
+          // elevation: 1,
+          bottomBarItems: [
+            BottomBarItem(
+              inActiveItem: Image.asset(AppImages.inActiveHomeIcon,),
+              activeItem: Image.asset(AppImages.activeHomeIcon),
+              itemLabel: 'Home',
+            ),
+            BottomBarItem(
+              inActiveItem: Image.asset(AppImages.inActiveReportIcon,),
+              activeItem: Image.asset(AppImages.activeReportIcon),
+              itemLabel: 'Report',
+            ),
+            BottomBarItem(
+              inActiveItem: Image.asset(AppImages.inActiveSettingIcon,),
+              activeItem: Image.asset(AppImages.activeSettingIcon),
+              itemLabel: 'Settings',
+            ),
+            BottomBarItem(
+              inActiveItem: Image.asset(AppImages.inActiveSentIcon,),
+              activeItem: Image.asset(AppImages.activeSentIcon),
+              itemLabel: 'Message',
+            ),
+          ],
+          onTap: (index) {
+            if(index == 0){
+              selectedBottomNavigation = BottomNavigationOption.home;
+              context.pushReplacement("${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType");
+            }else if(index == 1){
+              selectedBottomNavigation = BottomNavigationOption.report;
+              context.pushReplacement("${DashBoardRoutes.report}?userId=$userId&userType=$userType");
+            }else if(index == 2){
+              selectedBottomNavigation = BottomNavigationOption.setting;
+              context.pushReplacement("${DashBoardRoutes.settings}?userId=$userId&userType=$userType");
+            }else if(index == 3){
+              selectedBottomNavigation = BottomNavigationOption.sentAndReceive;
+              context.pushReplacement("${DashBoardRoutes.sentAndReceive}?userId=$userId&userType=$userType");
+            }
+            setState(() {});
+            log('current selected index $index');
+            // _pageController.jumpToPage(index);
+          },
+          kIconSize: 24.0,
+        ),
+        appBar: selectedBottomNavigation == BottomNavigationOption.home ? _buildAppBar(
           selectedGroup,
           selectedController,
           controllers,
@@ -220,11 +337,13 @@ class DashboardPage extends StatelessWidget {
           context,
           userId,
           userType,
-        ),
+        ) : CustomAppBar(title: selectedBottomNavigation.title()),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        // drawer: userType == 1 ?),
         drawer: userType == 1 ? const AppDrawer() : null,
         body: selectedController == null
             ? const Center(child: CircularProgressIndicator())
-            : Dashboard20()
+            : widget.child
             // : _buildBody(selectedController, userId, userType),
       ),
     );
@@ -266,7 +385,7 @@ class DashboardPage extends StatelessWidget {
           borderRadius: BorderRadius.circular(6),
         ),
         alignment: Alignment.center,
-        child: Image.asset(NiagaraCommonImages.logoSmall),
+        child: Image.asset(AppImages.logoSmall),
       ),
       bottom: _buildAppBarBottom(
           selectedGroup, selectedController, controllers, state, cubit, context, userId),
@@ -411,23 +530,12 @@ class DashboardPage extends StatelessWidget {
 
   Widget _buildBody(ControllerEntity controller, int userId, int userType) {
     return RefreshIndicator(
-      onRefresh: () => _refreshLiveData(controller),
+      onRefresh: () => DashboardPage._refreshLiveData(controller),
       child: LayoutBuilder(
         builder: (context, constraints) =>
             _buildScaledContent(context, constraints, controller, userId, userType),
       ),
     );
-  }
-
-  static Future<void> _refreshLiveData(ControllerEntity controller) async {
-    final mqttManager = di.sl.get<MqttManager>();
-    final deviceId = controller.deviceId;
-    final publishMessage = jsonEncode(PublishMessageHelper.requestLive);
-    mqttManager.publish(deviceId, publishMessage);
-
-    if (kDebugMode) {
-      print("Live message requested for device: $deviceId");
-    }
   }
 
   Widget _buildScaledContent(

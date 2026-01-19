@@ -36,7 +36,7 @@ class IrrigationSettingsPage extends StatelessWidget {
     SettingItemEntity(name: 'Adjust %', image: 'assets/images/common/adjust_percentage.png', irrigationSettingsEnum: IrrigationSettingsEnum.adjustPercentage),
     SettingItemEntity(name: 'Change From', image: 'assets/images/common/change_from.png', irrigationSettingsEnum: IrrigationSettingsEnum.changeFrom),
     SettingItemEntity(name: 'Backwash', image: 'assets/images/common/backwash.png', irrigationSettingsEnum: IrrigationSettingsEnum.backwash),
-    SettingItemEntity(name: 'Pump Change Over', image: 'assets/images/common/pump_chang_over.png', irrigationSettingsEnum: IrrigationSettingsEnum.pumpChangeOver),
+    SettingItemEntity(name: 'Pump Change Over', image: 'assets/images/common/pump_change_over.png', irrigationSettingsEnum: IrrigationSettingsEnum.pumpChangeOver),
     SettingItemEntity(name: 'Sump', image: 'assets/images/common/sump_setting.png', irrigationSettingsEnum: IrrigationSettingsEnum.sump),
     SettingItemEntity(name: 'Moisture & Level', image: 'assets/images/common/moisture_level.png', irrigationSettingsEnum: IrrigationSettingsEnum.moistureAndLevel),
     SettingItemEntity(name: 'Pump Configuration', image: 'assets/images/common/pump_configuration.png', irrigationSettingsEnum: IrrigationSettingsEnum.pumpConfiguration),
@@ -170,10 +170,8 @@ class IrrigationSettingsPage extends StatelessWidget {
                 context,
                 items[itemIndex],
                 onTap: () {
-                  if(items[itemIndex].irrigationSettingsEnum == IrrigationSettingsEnum.irrigationFertigation){
-                    context.push('${DashBoardRoutes.dashboard}${IrrigationSettingsRoutes.irrigationSettings}${WaterFertilizerSettingsRoutes.program.replaceAll(':programId', '1')}');
-                  }else if(items[itemIndex].irrigationSettingsEnum != IrrigationSettingsEnum.irrigationFertigation){
-                    context.push('${DashBoardRoutes.dashboard}${IrrigationSettingsRoutes.irrigationSettings}${IrrigationSettingsRoutes.templateSetting
+                  if(items[itemIndex].irrigationSettingsEnum != IrrigationSettingsEnum.irrigationFertigation){
+                    context.push('${IrrigationSettingsRoutes.irrigationSettings}${IrrigationSettingsRoutes.templateSetting
                         .replaceAll(':settingName', items[itemIndex].name)
                         .replaceAll(':settingNo', items[itemIndex].irrigationSettingsEnum.settingId.toString())
                     }');

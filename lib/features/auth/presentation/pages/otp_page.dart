@@ -137,7 +137,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                   child: Padding(
                                     padding: const EdgeInsets.all(16),
                                     child: Image.asset(
-                                      NiagaraCommonImages.logoLarge,
+                                      AppImages.logoLarge,
                                       height: 140,
                                       width: 140,
                                       fit: BoxFit.contain,

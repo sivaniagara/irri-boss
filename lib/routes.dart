@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/dashboard_2_0.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/node_status_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/moisture_reports/utils/moisture_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/settings/presentation/pages/settings_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/utils/standalone_routes.dart';
 import 'core/di/injection.dart';
@@ -165,33 +167,79 @@ class AppRouter {
             );
           },
         ),
-        GoRoute(
-          name: 'dashboard',
-          path: DashBoardRoutes.dashboard,
-          builder: (context, state) {
-            final params = state.uri.queryParameters as Map<String, dynamic>;
+        ShellRoute(
+            builder: (context, state, child){
+              return DashboardPage(child: child,);
+            },
+            routes: [
+              GoRoute(
+                  path: DashBoardRoutes.dashboard,
+                  builder: (context, state) {
+                    return Dashboard20();
+                  },
+              ),
+              GoRoute(
+                  path: DashBoardRoutes.report,
+                  builder: (context, state) {
+                    return Center(
+                      child: Text('Report'),
+                    );
+                  },
+                  routes: [
 
-            return MultiBlocProvider(
-              providers: [
-                BlocProvider(
-                  create: (_) => di.sl<DashboardBloc>()
-                    ..add(FetchDashboardGroupsEvent(params['userId'], GoRouterState.of(context)))
-                    ..add(ResetDashboardSelectionEvent()),
-                ),
-                BlocProvider(create: (_) => di.sl<DashboardCubit>()),
-              ],
-              child: DashboardPage(),
-            );
-          },
-          routes: [
-            ...editProgramGoRoutes,
-            ...controllerSettingGoRoutes,
-            ...programSettingsGoRoutes,
-            ...irrigationSettingGoRoutes,
-            ...standaloneRoutes,
+                  ]
+              ),
+              GoRoute(
+                  path: DashBoardRoutes.settings,
+                  builder: (context, state) {
+                    return SettingsPage();
+                  },
+                  routes: [
 
-          ],
+                  ]
+              ),
+              GoRoute(
+                  path: DashBoardRoutes.sentAndReceive,
+                  builder: (context, state) {
+                    return Center(
+                      child: Text('sentAndReceive'),
+                    );
+                  },
+                  routes: [
+
+                  ]
+              ),
+
+            ]
         ),
+        ...irrigationSettingGoRoutes,
+        // GoRoute(
+        //   name: 'dashboard',
+        //   path: DashBoardRoutes.dashboard,
+        //   builder: (context, state) {
+        //     final params = state.uri.queryParameters as Map<String, dynamic>;
+        //
+        //     return MultiBlocProvider(
+        //       providers: [
+        //         BlocProvider(
+        //           create: (_) => di.sl<DashboardBloc>()
+        //             ..add(FetchDashboardGroupsEvent(params['userId'], GoRouterState.of(context)))
+        //             ..add(ResetDashboardSelectionEvent()),
+        //         ),
+        //         BlocProvider(create: (_) => di.sl<DashboardCubit>()),
+        //       ],
+        //       child: DashboardPage(),
+        //     );
+        //   },
+        //   routes: [
+        //     ...editProgramGoRoutes,
+        //     ...controllerSettingGoRoutes,
+        //     ...programSettingsGoRoutes,
+        //     ...irrigationSettingGoRoutes,
+        //     ...standaloneRoutes,
+        //
+        //   ],
+        // ),
         GoRoute(
             name: 'ctrlLivePage',
             path: DashBoardRoutes.ctrlLivePage,

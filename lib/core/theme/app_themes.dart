@@ -109,10 +109,10 @@ class AppThemes {
       // titleTextStyle: TextStyle(color: Colors.black, fontSize: 20)
     ),
     textTheme: TextTheme(
-      titleLarge: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500), // use
-      labelMedium: TextStyle(color: Colors.white),
-      labelSmall: TextStyle(fontSize: 14,color: Colors.white, fontWeight: FontWeight.w500), // use
-      labelLarge: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w500), // use
+      titleLarge: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500),
+      labelMedium: TextStyle(color: Colors.black),
+      labelSmall: TextStyle(fontSize: 14,color: Colors.black, fontWeight: FontWeight.w500),
+      labelLarge: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w500),
       bodySmall: TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.w500),
       bodyLarge: TextStyle(color: Colors.white),
       bodyMedium: TextStyle(color: Colors.white),
