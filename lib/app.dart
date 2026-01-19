@@ -5,6 +5,7 @@ import 'package:niagara_smart_drip_irrigation/features/program_settings/presenta
 import 'features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'features/mapping_and_unmapping_nodes/presentation/bloc/mapping_and_unmapping_nodes_bloc.dart';
 import 'features/progam_zone_set/presentation/cubit/program_tab_cubit.dart';
+import 'features/pump_settings/presentation/cubit/pump_settings_view_response_cubit.dart';
 import 'firebase_options.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 // import 'package:niagara_smart_drip_irrigation/features/mqtt/bloc/mqtt_bloc.dart';
@@ -53,6 +54,9 @@ Future<void> appMain() async {
           BlocProvider(create: (_) => di.sl<ProgramBloc>()),
           BlocProvider(create: (context) => di.sl<ProgramTabCubit>()),
           BlocProvider(create: (_)=> di.sl<MappingAndUnmappingNodesBloc>()),
+          BlocProvider.value(
+            value: di.sl<PumpSettingsViewResponseCubit>(),
+          ),
         ],
         child: RootApp(authBloc: authBloc),
       ),

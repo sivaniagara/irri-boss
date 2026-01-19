@@ -11,6 +11,7 @@ import '../domain/usecsases/get_settings_menu_usecase.dart';
 import '../domain/usecsases/subscribe_notifications_usecase.dart';
 import '../presentation/bloc/pump_settings_menu_bloc.dart';
 import '../presentation/cubit/notifications_cubit.dart';
+import '../presentation/cubit/pump_settings_view_response_cubit.dart';
 import '../presentation/cubit/pump_settings_cubit.dart';
 import '../presentation/cubit/view_pump_settings_cubit.dart';
 import '../utils/pump_settings_dispatcher.dart';
@@ -30,7 +31,7 @@ void initPumpSettingsDependencies() {
   sl.registerLazySingleton(() => SubscribeNotificationsUsecase(pumpSettingsRepository: sl()));
   sl.registerFactory(() => NotificationsPageCubit(getNotificationsUsecase: sl(), subscribeNotificationsUsecase: sl()));
 
-  sl.registerFactory<ViewPumpSettingsCubit>(() => ViewPumpSettingsCubit(),);
-  sl.registerFactory<PumpSettingsDispatcher>(() => PumpSettingsDispatcher(sl<ViewPumpSettingsCubit>()),
-  );
+  sl.registerFactory<ViewPumpSettingsCubit>(() => ViewPumpSettingsCubit());
+  sl.registerLazySingleton<PumpSettingsViewResponseCubit>(() => PumpSettingsViewResponseCubit());
+  sl.registerLazySingleton<PumpSettingsDispatcher>(() => PumpSettingsDispatcher(cubit: sl<ViewPumpSettingsCubit>(), pumpSettings: sl<PumpSettingsViewResponseCubit>()));
 }

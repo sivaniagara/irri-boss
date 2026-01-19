@@ -110,14 +110,15 @@ class AppThemes {
     ),
     textTheme: TextTheme(
       titleLarge: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500), // use
-      labelMedium: TextStyle(color: Colors.white),
-      labelSmall: TextStyle(fontSize: 14,color: Colors.white, fontWeight: FontWeight.w500), // use
+      labelMedium: TextStyle(color: Colors.black),
+      labelSmall: TextStyle(fontSize: 14,color: Colors.black, fontWeight: FontWeight.w500), // use
       labelLarge: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w500), // use
       bodySmall: TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.w500),
-      bodyLarge: TextStyle(color: Colors.white),
-      bodyMedium: TextStyle(color: Colors.white),
+      bodyLarge: TextStyle(color: Colors.black),
+      bodyMedium: TextStyle(color: Colors.black),
     ),
     inputDecorationTheme: InputDecorationTheme(
+      labelStyle: TextStyle(color: Color(0xffB6AAAA), fontWeight: FontWeight.w400),
       border: UnderlineInputBorder(
         borderRadius: BorderRadius.circular(0),
       ),
@@ -141,8 +142,10 @@ class AppThemes {
       ),
     ),
     dividerTheme: DividerThemeData(
-      color: const Color(0xff727272),
-      thickness: 1
+        color: const Color(0xffadadad99),
+        thickness: 0.5,
+        radius: BorderRadius.circular(5),
+        space: 1
     ),
     switchTheme: SwitchThemeData(
       thumbColor: WidgetStateProperty.all(Colors.white),
@@ -154,7 +157,21 @@ class AppThemes {
       }),
       trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
     ),
-
+    checkboxTheme: CheckboxThemeData(
+      fillColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
+          return Colors.green;
+        }
+        return Colors.transparent;
+      }),
+      splashRadius: 5,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      checkColor: MaterialStateProperty.all(Colors.white),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(2),
+      ),
+      side: BorderSide(color: Colors.grey.shade400, width: 0.5),
+    )
   );
   // Dark Theme
   static final ThemeData _niagaraDarkTheme = ThemeData(

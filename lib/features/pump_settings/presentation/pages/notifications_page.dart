@@ -34,149 +34,150 @@ class NotificationsPage extends StatelessWidget {
         ),
       child: Builder(
         builder: (context) {
-          return GlassyWrapper(
-            child: Scaffold(
-              backgroundColor: Colors.transparent,
-              appBar: AppBar(
-                title: const Text("Notifications"),
-              ),
-              body: BlocConsumer<NotificationsPageCubit, NotificationsState>(
-                listener: (context, state) {
-                  if (state is GetNotificationsFailure) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.message)),
-                    );
-                  }
-
-                  if (state is UpdateNotificationsSuccess) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Notifications subscribed successfully!")),
-                    );
-                    Future.delayed(Duration(milliseconds: 500));
-                    context.pop();
-                  }
-
-                  if (state is UpdateNotificationsFailure) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(state.message)),
-                    );
-                  }
-                },
-                builder: (context, state) {
-                  if (state is GetNotificationsInitial) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (state is GetNotificationsFailure) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(state.message),
-                          ElevatedButton(
-                            onPressed: () => context.read<NotificationsPageCubit>().loadNotifications(
-                              userId: userId,
-                              subUserId: subUserId,
-                              controllerId: controllerId,
-                            ),
-                            child: const Text("Retry"),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  if (state is GetNotificationsLoaded) {
-                    if (state.notifications.isEmpty) {
-                      return const Center(child: Text("No notifications yet"));
-                    }
-
-                    return NotificationListener<OverscrollIndicatorNotification>(
-                      onNotification: (n) {
-                        n.disallowIndicator();
-                        return true;
-                      },
-                      child: Column(
-                        children: [
-                          CheckboxListTile(
-                            title: const Text("Select All"),
-                            value: state.notifications.every((e) => e.checkFlag == 1),
-                            onChanged: (newValue) => context.read<NotificationsPageCubit>().updateSettings(newValue! ? 1 : 0, -1),
-                          ),
-                          Expanded(
-                            child: ListView.builder(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              itemCount: state.notifications.length,
-                              itemBuilder: (context, index) {
-                                final notification = state.notifications[index];
-                                return Column(
-                                  children: [
-                                    GlassCard(
-                                      margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                                      blur: 0,
-                                      opacity: 1,
-                                      padding: EdgeInsets.zero,
-                                      child: CheckboxListTile(
-                                        title: Text(notification.msgDesc),
-                                        value: notification.checkFlag == 1,
-                                        contentPadding:
-                                        const EdgeInsets.symmetric(horizontal: 10),
-                                        onChanged: (newValue) => context.read<NotificationsPageCubit>().updateSettings(newValue! ? 1 : 0, index),
-                                      ),
-                                    ),
-                                    if (index == state.notifications.length - 1)
-                                      const SizedBox(height: 80),
-                                  ],
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  if (state is UpdateNotificationsLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  return const SizedBox();
-                },
-              ),
-              floatingActionButton: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 15),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: ActionButton(
-                        onPressed: () {
-                          final currentState = context.read<NotificationsPageCubit>().state;
-                          if (currentState is GetNotificationsLoaded) {
-                            final List<Map<String, dynamic>> notificationsJson = currentState.notifications.map((entity) => entity.toModel().toJson()).toList();
-                            final Map<String, dynamic> body = {
-                              "msgCodeList": notificationsJson,
-                            };
-                            context.read<NotificationsPageCubit>().subscribeNotifications(userId, controllerId, subUserId, body);
-                          }
-                        },
-                        isPrimary: true,
-                        child: context.watch<NotificationsPageCubit>().state is UpdateNotificationsLoading
-                            ? CircularProgressIndicator()
-                            : Text("Subscribe"),
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: ActionButton(
-                        onPressed: () => context.pop(),
-                        child: const Text("Cancel"),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text("Notifications"),
             ),
+            body: BlocConsumer<NotificationsPageCubit, NotificationsState>(
+              listener: (context, state) {
+                if (state is GetNotificationsFailure) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(state.message)),
+                  );
+                }
+
+                if (state is UpdateNotificationsSuccess) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Notifications subscribed successfully!")),
+                  );
+                  Future.delayed(Duration(milliseconds: 500));
+                  context.pop();
+                }
+
+                if (state is UpdateNotificationsFailure) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(state.message)),
+                  );
+                }
+              },
+              builder: (context, state) {
+                print("state :: $state");
+                if (state is GetNotificationsInitial) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (state is GetNotificationsFailure) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(state.message),
+                        ElevatedButton(
+                          onPressed: () => context.read<NotificationsPageCubit>().loadNotifications(
+                            userId: userId,
+                            subUserId: subUserId,
+                            controllerId: controllerId,
+                          ),
+                          child: const Text("Retry"),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                if (state is GetNotificationsLoaded) {
+                  if (state.notifications.isEmpty) {
+                    return const Center(child: Text("No notifications yet"));
+                  }
+
+                  return NotificationListener<OverscrollIndicatorNotification>(
+                    onNotification: (n) {
+                      n.disallowIndicator();
+                      return true;
+                    },
+                    child: Column(
+                      children: [
+                        CheckboxListTile(
+                          title: const Text("Select All"),
+                          value: state.notifications.every((e) => e.checkFlag == 1),
+                          controlAffinity: ListTileControlAffinity.leading,
+                          onChanged: (newValue) => context.read<NotificationsPageCubit>().updateSettings(newValue! ? 1 : 0, -1),
+                        ),
+                        Expanded(
+                          child: ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            itemCount: state.notifications.length,
+                            itemBuilder: (context, index) {
+                              final notification = state.notifications[index];
+                              return Column(
+                                children: [
+                                  GlassCard(
+                                    margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                                    blur: 0,
+                                    opacity: 1,
+                                    padding: EdgeInsets.zero,
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: CheckboxListTile(
+                                      title: Text(notification.msgDesc, style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),),
+                                      value: notification.checkFlag == 1,
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                                      controlAffinity: ListTileControlAffinity.leading,
+                                      dense: true,
+                                      onChanged: (newValue) => context.read<NotificationsPageCubit>().updateSettings(newValue! ? 1 : 0, index),
+                                    ),
+                                  ),
+                                  if (index == state.notifications.length - 1)
+                                    const SizedBox(height: 80),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                if (state is UpdateNotificationsLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                return const SizedBox();
+              },
+            ),
+            floatingActionButton: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 15),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ActionButton(
+                      onPressed: () {
+                        final currentState = context.read<NotificationsPageCubit>().state;
+                        if (currentState is GetNotificationsLoaded) {
+                          final List<Map<String, dynamic>> notificationsJson = currentState.notifications.map((entity) => entity.toModel().toJson()).toList();
+                          final Map<String, dynamic> body = {
+                            "msgCodeList": notificationsJson,
+                          };
+                          context.read<NotificationsPageCubit>().subscribeNotifications(userId, controllerId, subUserId, body);
+                        }
+                      },
+                      isPrimary: true,
+                      child: context.watch<NotificationsPageCubit>().state is UpdateNotificationsLoading
+                          ? CircularProgressIndicator()
+                          : Text("Subscribe"),
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: ActionButton(
+                      onPressed: () => context.pop(),
+                      child: const Text("Cancel"),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
           );
         }
       ),

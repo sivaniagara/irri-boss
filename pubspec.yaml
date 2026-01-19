@@ -106,6 +106,8 @@ flutter:
     - assets/images/pump_menu_icons/
     - assets/images/icons/
     - assets/svg/node_status_svg/
+    - assets/images/controller_status_check/
+    - assets/images/communication_config_icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

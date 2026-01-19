@@ -61,6 +61,7 @@ abstract class MessageDispatcher {
   void onPumpWaterPumpSettings(String deviceId, String message) {}
   void onScheduleOne(String deviceId, Map<String, dynamic> message) {}
   void onScheduleTwo(String deviceId, Map<String, dynamic> message) {}
+  void onViewSettings(String deviceId, Map<String, dynamic> message) {}
 }
 
 class MqttMessageHelper {
@@ -124,6 +125,10 @@ class MqttMessageHelper {
     if(type == MqttMessageType.scheduleTwo) {
       print("schedule Two");
       dispatcher.onScheduleTwo(qrCode, jsonDecode(mqttMsg));
+    }
+
+    if(type == MqttMessageType.sms) {
+      dispatcher.onViewSettings(qrCode, jsonDecode(mqttMsg));
     }
 
     // Switch for type-specific storage (use type?.code)

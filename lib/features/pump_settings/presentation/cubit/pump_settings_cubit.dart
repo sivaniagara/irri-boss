@@ -2,11 +2,13 @@ import 'dart:convert';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_manager.dart';
+import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_service.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/menu_item_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/template_json_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/usecsases/send_settings_usecase.dart';
 
 import '../../../../core/di/injection.dart' as di;
+import '../../../../core/di/injection.dart';
 import '../../../../core/services/mqtt/mqtt_message_helper.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../domain/usecsases/get_menu_items.dart';
@@ -29,7 +31,6 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     required int menuId,
   }) async {
     if (state is GetPumpSettingsLoaded) return;
-    emit(GetPumpSettingsInitial());
 
     final result = await getPumpSettingsUsecase(GetPumpSettingsParams(
       userId: userId,
@@ -99,11 +100,6 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     }
   }
 
-  Future<void> sendSetting(String payload, String deviceId) async {
-    final publishMessage = jsonEncode(PublishMessageHelper.settingsPayload(payload));
-    di.sl.get<MqttManager>().publish(deviceId, publishMessage);
-  }
-
   Future<void> updateHiddenFlags({
     required int userId,
     required int subUserId,
@@ -131,5 +127,20 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     } finally {
       emit(GetPumpSettingsLoaded(settings: menuItemEntity));
     }
+  }
+
+  void getViewSettings(Map<String, dynamic> message) {
+    final prettyString = message['cM'];
+
+    final timestamp = DateTime.now().toString().substring(0, 19);
+    final displayText = '[$timestamp] Device response:\n$prettyString';
+
+    print("state :: $state");
+    if (state is GetPumpSettingsLoaded) {
+      final current = state as GetPumpSettingsLoaded;
+      emit(current.copyWith(lastReceivedViewMessage: displayText));
+    }
+
+    print("Device view settings received:\n$prettyString");
   }
 }

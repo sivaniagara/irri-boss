@@ -4,8 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/alert_dialog.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
 import '../../../../core/widgets/glass_effect.dart';
-import '../../../../core/widgets/glassy_wrapper.dart';
-import '../../domain/entities/settings_menu_entity.dart';
+import '../../domain/entities/menu_item_entity.dart';
 import '../../presentation/bloc/pump_settings_event.dart';
 import '../../presentation/bloc/pump_settings_state.dart';
 
@@ -31,39 +30,36 @@ class PumpSettingsMenuPage extends StatelessWidget {
       create: (context) => di.sl<PumpSettingsMenuBloc>()
         ..add(GetPumpSettingsMenuEvent(
             userId: userId, subUserId: subUserId, controllerId: controllerId)),
-      child: GlassyWrapper(
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            title: Text("Pump Settings Menu"),
-            actions: [
-              Builder(
-                builder: (appBarContext) => IconButton(
-                  onPressed: () async {
-                    final bloc = appBarContext.read<PumpSettingsMenuBloc>();
-        
-                    GlassyAlertDialog.show(
-                      context: appBarContext,
-                      title: "Hide/Show Menu",
-                      content: BlocProvider.value(
-                        value: bloc,
-                        child: _HideShowSettingsDialog(userId: userId, controllerId: controllerId, subUserId: subUserId,),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text("Pump Settings Menu"),
+          actions: [
+            Builder(
+              builder: (appBarContext) => IconButton(
+                onPressed: () async {
+                  final bloc = appBarContext.read<PumpSettingsMenuBloc>();
+
+                  GlassyAlertDialog.show(
+                    context: appBarContext,
+                    title: "Hide/Show Menu",
+                    content: BlocProvider.value(
+                      value: bloc,
+                      child: _HideShowSettingsDialog(userId: userId, controllerId: controllerId, subUserId: subUserId,),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(appBarContext).pop(),
+                        child: const Text("Cancel"),
                       ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(appBarContext).pop(),
-                          child: const Text("Cancel"),
-                        ),
-                      ],
-                    );
-                  },
-                  icon: const Icon(Icons.hide_source),
-                ),
+                    ],
+                  );
+                },
+                icon: const Icon(Icons.hide_source),
               ),
-            ],
-          ),
-          body: _buildBody(dialogContext),
+            ),
+          ],
         ),
+        body: _buildBody(dialogContext),
       ),
     );
   }
@@ -89,12 +85,12 @@ class PumpSettingsMenuPage extends StatelessWidget {
           if (state is GetPumpSettingsMenuInitial) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is GetPumpSettingsMenuLoaded) {
-            final List<SettingsMenuEntity> additionalSettings = [];
+            final List<MenuItemEntity> additionalSettings = [];
 
-            final List<SettingsMenuEntity> visibleSettings = [
+            final List<MenuItemEntity> visibleSettings = [
               ...state.settingMenuList,
               ...additionalSettings,
-            ].where((item) => item.hiddenFlag != 0).toList();
+            ].where((item) => item.menu.hiddenFlag != 0).toList();
 
             return _buildSettingMenuList(context, visibleSettings);
           } else if (state is GetPumpSettingsMenuError) {
@@ -117,91 +113,116 @@ class PumpSettingsMenuPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingMenuList(BuildContext context, List<SettingsMenuEntity> settingMenuList) {
-    return GridView.builder(
-      padding: EdgeInsets.all(10),
-      itemCount: settingMenuList.length,
-      itemBuilder: (BuildContext context, int index) {
-        final item = settingMenuList[index];
-        if(item.hiddenFlag == 0) return SizedBox();
-        return GlassCard(
-          opacity: 1,
-          blur: 0,
-          padding: EdgeInsetsGeometry.symmetric(horizontal: 8, vertical: 10),
-          child: InkWell(
-            onTap: () {
-              // print(item.menuSettingId);
-              final commonExtra = {
-                'userId': userId,
-                'controllerId': controllerId,
-                'subUserId': subUserId,
-                'deviceId': deviceId
-              };
+  Widget _buildSettingMenuList(BuildContext context, List<MenuItemEntity> settingMenuList) {
+    final grouped = <String, List<MenuItemEntity>>{};
 
-              switch (item.menuSettingId) {
-                case 514:
-                  context.push(
-                    PumpSettingsPageRoutes.notificationsPage,
-                    extra: commonExtra,
-                  );
-                  return;
+    for (final item in settingMenuList) {
+      if (item.menu.hiddenFlag == 0) continue;
 
-                case 515:
-                  context.push(
-                    PumpSettingsPageRoutes.viewSettingsPage,
-                    extra: commonExtra,
-                  );
-                  return;
+      final group = item.menu.groupName;
+      grouped.putIfAbsent(group, () => []).add(item);
+    }
 
-                default:
-                  context.push(
-                    PumpSettingsPageRoutes.pumpSettingsPage,
-                    extra: {
-                      ...commonExtra,
-                      'menuId': item.menuSettingId,
-                      'menuName': item.templateName,
-                    },
-                  );
-              }
-            },
-            borderRadius: BorderRadius.circular(12.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  radius: 27,
-                  backgroundColor: Theme.of(context).primaryColor.withAlpha(50),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Image.asset(PumpSettingsImages.getByIndex(index)),
+    final groupNames = grouped.keys.toList();
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(10),
+      itemCount: groupNames.length,
+      itemBuilder: (context, groupIndex) {
+        final groupName = groupNames[groupIndex];
+        final itemsInGroup = grouped[groupName]!;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if(groupName.isNotEmpty)
+              ...[
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    groupName,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontSize: 14,
+                      color: const Color(0xff303030),
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        item.menuItem,
-                        style: Theme.of(context).textTheme.titleSmall,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Icon(Icons.navigate_next, color: Theme.of(context).primaryColor,)
-                  ],
-                ),
               ],
+
+            const SizedBox(height: 8),
+
+            GlassCard(
+              opacity: 1,
+              blur: 0,
+              margin: EdgeInsets.zero,
+              padding: EdgeInsets.zero,
+              borderRadius: const BorderRadius.all(Radius.circular(12)),
+              child: Column(
+                children: List.generate(itemsInGroup.length, (i) {
+                  final item = itemsInGroup[i];
+
+                  return Material(
+                    color: Colors.transparent,
+                    child: Column(
+                      children: [
+                        ListTile(
+                          title: Text(
+                            item.menu.menuItem,
+                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          leading: groupName.isNotEmpty ? Image.asset(PumpSettingsImages.getMenuIcons(item.menu.menuSettingId,), width: 20, height: 20,) : null,
+                          trailing: const Icon(Icons.chevron_right_rounded),
+                          onTap: () {
+                            final commonExtra = {
+                              'userId': userId,
+                              'controllerId': controllerId,
+                              'subUserId': subUserId,
+                              'deviceId': deviceId,
+                            };
+
+                            switch (item.menu.menuSettingId) {
+                              case 514:
+                                context.push(
+                                  PumpSettingsPageRoutes.notificationsPage,
+                                  extra: commonExtra,
+                                );
+                                break;
+
+                              case 515:
+                                context.push(
+                                  PumpSettingsPageRoutes.viewSettingsPage,
+                                  extra: commonExtra,
+                                );
+                                break;
+
+                              default:
+                                context.push(
+                                  PumpSettingsPageRoutes.pumpSettingsPage,
+                                  extra: {
+                                    ...commonExtra,
+                                    'menuId': item.menu.menuSettingId,
+                                    'menuName': item.menu.menuItem,
+                                  },
+                                );
+                            }
+                          },
+                        ),
+                        if (i < itemsInGroup.length - 1)
+                          const Divider(height: 1, indent: 16, endIndent: 16),
+                      ],
+                    ),
+                  );
+                }),
+              ),
             ),
-          ),
+            const SizedBox(height: 8),
+          ],
         );
       },
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        childAspectRatio: 0.8,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-      ),
     );
   }
 }
@@ -239,7 +260,7 @@ class _HideShowSettingsDialog extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
-          final item = state.settingMenuList[0];
+          final item = state.settingMenuList[0].menu;
           final isVisible = item.hiddenFlag == 1;
 
           return CheckboxListTile(

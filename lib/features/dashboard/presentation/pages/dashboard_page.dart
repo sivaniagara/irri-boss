@@ -224,8 +224,8 @@ class DashboardPage extends StatelessWidget {
         drawer: userType == 1 ? const AppDrawer() : null,
         body: selectedController == null
             ? const Center(child: CircularProgressIndicator())
-            : Dashboard20()
-            // : _buildBody(selectedController, userId, userType),
+            // : Dashboard20()
+            : _buildBody(selectedController, userId, userType),
       ),
     );
   }
