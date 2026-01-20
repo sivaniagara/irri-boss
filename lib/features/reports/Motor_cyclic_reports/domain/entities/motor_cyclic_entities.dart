@@ -21,6 +21,19 @@ class MotoCyclicEntity {
     required this.ctrlDuration,
     required this.ctrlDuration1,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'code': code,
+      'message': message,
+      'data': data.map((e) => e.toJson()).toList(),
+      'totDuration': totDuration,
+      'totFlow': totFlow,
+      'powerDuration': powerDuration,
+      'ctrlDuration': ctrlDuration,
+      'ctrlDuration1': ctrlDuration1,
+    };
+  }
 }
 
 // ---------------------- Moto Cyclic Datum Entity ----------------------
@@ -35,6 +48,14 @@ class MotoCyclicDatumEntity {
     required this.ctrlMsg,
     required this.zoneList,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'program': program,
+      'ctrlMsg': ctrlMsg,
+      'zoneList': zoneList.map((e) => e.toJson()).toList(),
+    };
+  }
 }
 
 // ---------------------- Moto Cyclic Zone Entity ----------------------
@@ -85,4 +106,28 @@ class MotoCyclicZoneEntity {
     required this.c2,
     required this.c3,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'date': date,
+      'zone': zone,
+      'onTime': onTime,
+      'offDate': offDate,
+      'offTime': offTime,
+      'duration': duration,
+      'dateTime': dateTime,
+      'flow': flow,
+      'pressure': pressure,
+      'pressureIn': pressureIn,
+      'pressureOut': pressureOut,
+      'wellLevel': wellLevel,
+      'wellPercentage': wellPercentage,
+      'ph': ph,
+      'ec': ec,
+      'vrb': vrb,
+      'c1': c1,
+      'c2': c2,
+      'c3': c3,
+    };
+  }
 }

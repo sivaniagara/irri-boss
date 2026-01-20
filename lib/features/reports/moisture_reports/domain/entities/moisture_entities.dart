@@ -11,6 +11,14 @@ class MoistureEntity extends Equatable {
     required this.data,
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+      'code': code,
+      'message': message,
+      'data': data.toJson(),
+    };
+  }
+
   @override
   List<Object?> get props => [code, message, data];
 }
@@ -26,10 +34,17 @@ class MoistureDataEntity extends Equatable {
     required this.ctrlTime,
   });
 
+  Map<String, dynamic> toJson() {
+    return {
+      'mostList': mostList.map((e) => e.toJson()).toList(),
+      'ctrlDate': ctrlDate,
+      'ctrlTime': ctrlTime,
+    };
+  }
+
   @override
   List<Object?> get props => [mostList, ctrlDate, ctrlTime];
 }
-
 
 class MostEntity extends Equatable {
   final String serialNo;
@@ -69,6 +84,28 @@ class MostEntity extends Equatable {
     required this.moisture2,
     required this.temperature,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'serialNo': serialNo,
+      'nodeName': nodeName,
+      'message': message,
+      'categoryId': categoryId,
+      'modelId': modelId,
+      'categoryName': categoryName,
+      'modelName': modelName,
+      'feedback': feedback,
+      'adcValue': adcValue,
+      'extra1': extra1,
+      'extra2': extra2,
+      'batteryVot': batteryVot,
+      'solarVot': solarVot,
+      'pressure': pressure,
+      'moisture1': moisture1,
+      'moisture2': moisture2,
+      'temperature': temperature,
+    };
+  }
 
   @override
   List<Object?> get props => [

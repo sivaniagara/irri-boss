@@ -15,7 +15,8 @@ import '../../../../auth/presentation/bloc/auth_state.dart';
 import '../../../../dashboard/utils/dashboard_routes.dart';
 
 class AppDrawer extends StatelessWidget {
-  const AppDrawer({super.key});
+  final Map<String, dynamic> userData;
+  const AppDrawer({super.key, required this.userData});
 
   @override
   Widget build(BuildContext dialogContext) {
@@ -204,7 +205,7 @@ class AppDrawer extends StatelessWidget {
           if (onTap != null) {
             onTap();
           } else if (route != null) {
-            context.go(route);
+            context.go('$route?userId=${userData['userId']}&userType=${userData['userType']}');
             Navigator.pop(context);
           }
         },

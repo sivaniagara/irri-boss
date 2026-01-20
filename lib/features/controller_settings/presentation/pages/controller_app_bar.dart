@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/gradiant_background.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/utils/mapping_and_unmapping_nodes_routes.dart';
 
 import '../../../program_settings/utils/program_settings_routes.dart';
@@ -54,13 +55,13 @@ class ControllerAppBar extends StatelessWidget {
           context.read<ControllerTabCubit>().changeTab(tab);
           switch (tab) {
             case ControllerTab.details:
-              context.go('${DashBoardRoutes.dashboard}${ControllerSettingsRoutes.controllerDetails}');
+              context.pushReplacement('${DashBoardRoutes.dashboard}${ControllerSettingsRoutes.controllerDetails}');
               break;
             case ControllerTab.nodes:
-              context.go('${DashBoardRoutes.dashboard}${MappingAndUnmappingNodesRoutes.nodes}');
+              context.pushReplacement('${DashBoardRoutes.dashboard}${MappingAndUnmappingNodesRoutes.nodes}');
               break;
             case ControllerTab.programs:
-              context.go('${DashBoardRoutes.dashboard}${ProgramSettingsRoutes.program}');
+              context.pushReplacement('${DashBoardRoutes.dashboard}${ProgramSettingsRoutes.program}');
               break;
           }
         },

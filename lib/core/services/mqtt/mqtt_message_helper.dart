@@ -124,10 +124,12 @@ class MqttMessageHelper {
 
     if(type == MqttMessageType.scheduleTwo) {
       print("schedule Two");
+      print("mqttMsg");
       dispatcher.onScheduleTwo(qrCode, jsonDecode(mqttMsg));
     }
 
     if(type == MqttMessageType.sms) {
+      print("pump settings view");
       dispatcher.onViewSettings(qrCode, jsonDecode(mqttMsg));
     }
 

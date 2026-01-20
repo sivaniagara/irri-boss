@@ -10,15 +10,16 @@ import 'package:niagara_smart_drip_irrigation/features/auth/auth.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/dashboard_page_cubit.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/di/injection.dart';
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/theme/app_themes.dart';
 import '../../../../core/utils/app_images.dart';
 import '../../../controller_details/domain/usecase/controller_details_params.dart';
-import '../../../edit_program/utils/edit_program_routes.dart';
 import '../../../program_settings/utils/program_settings_routes.dart';
 import '../../../side_drawer/groups/presentation/widgets/app_drawer.dart';
 import '../../utils/dashboard_routes.dart';
+import '../helper/get_sms_sync.dart';
 import '../widgets/actions_section.dart';
 import '../widgets/ctrl_display.dart';
 import '../widgets/latestmsg_section.dart';
@@ -28,17 +29,26 @@ import '../widgets/ryb_section.dart';
 import '../widgets/sync_section.dart';
 import '../widgets/timer_section.dart';
 import '../../dashboard.dart';
-import 'dashboard_2_0.dart';
+
+const int fakeGroupId = 0;
 
 class DashboardPage extends StatelessWidget {
-  const DashboardPage({super.key});
+  final Map<String, dynamic> userData;
+  const DashboardPage({super.key, required this.userData});
 
   @override
   Widget build(BuildContext context) {
     final queryParams = GoRouterState.of(context).uri.queryParameters;
-    print("Query parameters :: ${GoRouterState.of(context).uri.queryParameters}");
-    final userId = int.parse(queryParams['userId']!);
-    final userType = int.parse(queryParams['userType']!);
+    late int userId;
+    late int userType;
+    if (queryParams.containsKey('userId') && queryParams['userId'] != null) {
+      userId = int.parse(queryParams['userId']!);
+      userType = int.parse(queryParams['userType']!);
+    } else {
+      userId = int.parse(userData['userId']!);
+      userType = int.parse(userData['userType']!);
+    }
+
     final groupId = queryParams['groupId'];
 
     if (userId <= 0) {
@@ -46,7 +56,7 @@ class DashboardPage extends StatelessWidget {
     }
 
     return BlocProvider(
-      create: (_) => di.sl<DashboardPageCubit>(),
+      create: (_) => sl<DashboardPageCubit>(),
       child: Builder(
         builder: (context) {
           final cubit = context.read<DashboardPageCubit>();
@@ -71,16 +81,15 @@ class DashboardPage extends StatelessWidget {
       ) {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (cubit.state is! DashboardLoading && cubit.state is! DashboardGroupsLoaded) {
-        await cubit.getGroups(userId, GoRouterState.of(context));
+        await cubit.getGroups(userId, GoRouterState.of(context), userType);
       }
 
-      // Listen once for groups loaded to auto-select group
       context.read<DashboardPageCubit>().stream
           .where((state) => state is DashboardGroupsLoaded && (state).groups.isNotEmpty)
           .take(1)
           .listen((state) {
         final loadedState = state as DashboardGroupsLoaded;
-        _autoSelectGroupIfNeeded(cubit, loadedState, groupId, userId);
+        _autoSelectGroupIfNeeded(cubit, loadedState, groupId, userId, context);
       });
     });
   }
@@ -90,14 +99,19 @@ class DashboardPage extends StatelessWidget {
       DashboardGroupsLoaded state,
       String? groupIdParam,
       int userId,
+      BuildContext context,
       ) {
     if (state.selectedGroupId == null && state.groups.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final targetGroupId = groupIdParam != null ? int.tryParse(groupIdParam) : null;
         final groupIdToSelect = targetGroupId ?? state.groups[0].userGroupId;
-        cubit.selectGroup(groupIdToSelect, userId);
+        cubit.selectGroup(groupIdToSelect, userId, GoRouterState.of(context));
       });
     }
+  }
+
+  bool _isFakeGroupMode(DashboardGroupsLoaded state) {
+    return state.groups.length == 1 && state.groups.first.userGroupId == fakeGroupId;
   }
 
   Widget _buildContent(
@@ -131,7 +145,7 @@ class DashboardPage extends StatelessWidget {
               child: Image.asset(NiagaraCommonImages.logoSmall),
             ),
           ),
-          drawer: userType == 1 ? const AppDrawer() : null,
+          drawer: userType == 1 ? AppDrawer(userData: {"userId": userId, "userType": userType}) : null,
           body: Center(
             child: Text(
               'Error: ${state.message}',
@@ -164,7 +178,7 @@ class DashboardPage extends StatelessWidget {
               child: Image.asset(NiagaraCommonImages.logoSmall),
             ),
           ),
-          drawer: userType == 1 ? const AppDrawer() : null,
+          drawer: userType == 1 ? AppDrawer(userData: {"userId": userId, "userType": userType}) : null,
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -191,8 +205,7 @@ class DashboardPage extends StatelessWidget {
       );
     }
 
-    final (selectedGroup, selectedController, controllers) =
-    _getSelectedGroupAndController(loadedState);
+    final (selectedGroup, selectedController, controllers) = _getSelectedGroupAndController(loadedState);
 
     return BlocListener<DashboardPageCubit, DashboardState>(
       listener: (context, state) {
@@ -210,22 +223,24 @@ class DashboardPage extends StatelessWidget {
           );
         }
       },
-      child: Scaffold(
-        appBar: _buildAppBar(
-          selectedGroup,
-          selectedController,
-          controllers,
-          loadedState,
-          cubit,
-          context,
-          userId,
-          userType,
+      child: GlassyWrapper(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: _buildAppBar(
+            selectedGroup,
+            selectedController,
+            controllers,
+            loadedState,
+            cubit,
+            context,
+            userId,
+            userType,
+          ),
+          drawer: userType == 1 ? AppDrawer(userData: {"userId": userId, "userType": userType}) : null,
+          body: selectedController == null
+              ? const Center(child: CircularProgressIndicator())
+              : _buildBody(selectedController, userId, userType),
         ),
-        drawer: userType == 1 ? const AppDrawer() : null,
-        body: selectedController == null
-            ? const Center(child: CircularProgressIndicator())
-            // : Dashboard20()
-            : _buildBody(selectedController, userId, userType),
       ),
     );
   }
@@ -241,8 +256,7 @@ class DashboardPage extends StatelessWidget {
     final effectiveIndex = controllers.isNotEmpty
         ? (state.selectedControllerIndex ?? 0).clamp(0, controllers.length - 1)
         : -1;
-    final selectedController =
-    controllers.isNotEmpty ? controllers[effectiveIndex] : null;
+    final selectedController = controllers.isNotEmpty ? controllers[effectiveIndex] : null;
 
     return (selectedGroup, selectedController, controllers);
   }
@@ -269,7 +283,14 @@ class DashboardPage extends StatelessWidget {
         child: Image.asset(NiagaraCommonImages.logoSmall),
       ),
       bottom: _buildAppBarBottom(
-          selectedGroup, selectedController, controllers, state, cubit, context, userId),
+        selectedGroup,
+        selectedController,
+        controllers,
+        state,
+        cubit,
+        context,
+        userId,
+      ),
       actions: [
         IconButton(
           onPressed: selectedController?.simNumber != null
@@ -281,9 +302,7 @@ class DashboardPage extends StatelessWidget {
           onPressed: null,
           icon: Icon(
             Icons.circle,
-            color: selectedController?.ctrlStatusFlag == '1'
-                ? Colors.green
-                : Colors.red,
+            color: selectedController?.ctrlStatusFlag == '1' ? Colors.green : Colors.red,
           ),
         ),
       ],
@@ -299,17 +318,27 @@ class DashboardPage extends StatelessWidget {
       BuildContext context,
       int userId,
       ) {
+    final bool fakeMode = _isFakeGroupMode(state);
+
     return PreferredSize(
-      preferredSize: Size(MediaQuery.of(context).size.width, 40),
+      preferredSize: const Size.fromHeight(48),
       child: Container(
-        color: Theme.of(context).appBarTheme.backgroundColor ??
-            Theme.of(context).primaryColor,
+        color: Theme.of(context).appBarTheme.backgroundColor ?? Theme.of(context).primaryColor,
         child: Row(
           children: [
-            _buildGroupSelector(state, selectedGroup, cubit, userId),
-            if (state.groups.length > 1) const _Divider(),
-            _buildControllerSelector(
-                selectedController, controllers, cubit, context),
+            _buildGroupSelector(state, selectedGroup, cubit, userId, context),
+
+            // Divider only when we have both group selector AND controller selector
+            if (!fakeMode && state.groups.length > 1) const _Divider(),
+
+            Expanded(
+              child: _buildControllerSelector(
+                selectedController,
+                controllers,
+                cubit,
+                context,
+              ),
+            ),
           ],
         ),
       ),
@@ -321,7 +350,27 @@ class DashboardPage extends StatelessWidget {
       GroupDetailsEntity selectedGroup,
       DashboardPageCubit cubit,
       int userId,
+      BuildContext context,
       ) {
+    if (_isFakeGroupMode(state)) {
+      // Dealer/special mode - static title, no dropdown
+      return Expanded(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Text(
+            selectedGroup.groupName,
+            style: const TextStyle(
+              color: AppThemes.primaryColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      );
+    }
+
+    // Normal user flow
     if (state.groups.length > 1) {
       return Expanded(
         child: PopupMenuButton<int>(
@@ -331,26 +380,39 @@ class DashboardPage extends StatelessWidget {
               Text(
                 selectedGroup.groupName,
                 style: const TextStyle(
-                    color: AppThemes.primaryColor, fontWeight: FontWeight.bold),
+                  color: AppThemes.primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const Icon(Icons.arrow_drop_down, color: AppThemes.primaryColor),
             ],
           ),
-          onSelected: (groupId) => cubit.selectGroup(groupId, userId),
-          itemBuilder: (context) => state.groups.map((group) => PopupMenuItem<int>(
-            value: group.userGroupId,
-            child: Text(group.groupName),
-          ))
-              .toList(),
+          onSelected: (groupId) {
+            cubit.selectGroup(groupId, userId, GoRouterState.of(context));
+            context.read<ControllerContextCubit>().toInitial();
+          },
+          itemBuilder: (context) => state.groups.map((group) {
+            return PopupMenuItem<int>(
+              value: group.userGroupId,
+              child: Text(group.groupName),
+            );
+          }).toList(),
         ),
       );
     }
 
+    // Single real group - just show name
     return Expanded(
-      child: Text(
-        state.groups[0].groupName,
-        style: const TextStyle(
-            color: AppThemes.primaryColor, fontWeight: FontWeight.bold),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Text(
+          state.groups[0].groupName,
+          style: const TextStyle(
+            color: AppThemes.primaryColor,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
       ),
     );
   }
@@ -361,50 +423,53 @@ class DashboardPage extends StatelessWidget {
       DashboardPageCubit cubit,
       BuildContext context,
       ) {
-    if (controllers.isEmpty) return const SizedBox.shrink();
+    if (controllers.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     if (controllers.length > 1) {
-      return Expanded(
-        child: PopupMenuButton<int>(
-          enabled: controllers.isNotEmpty,
-          icon: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                selectedController?.deviceName ?? 'Select controller',
-                style: const TextStyle(
-                    color: AppThemes.primaryColor, fontWeight: FontWeight.bold),
+      return PopupMenuButton<int>(
+        enabled: controllers.isNotEmpty,
+        icon: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              selectedController?.deviceName ?? 'Select controller',
+              style: const TextStyle(
+                color: AppThemes.primaryColor,
+                fontWeight: FontWeight.bold,
               ),
-              const Icon(Icons.arrow_drop_down, color: AppThemes.primaryColor),
-            ],
-          ),
-          onSelected: (index) {
-            cubit.selectController(index);
-            print("index => $index");
-            for(var i = 0;i < controllers.length;i++){
-              print('$i => ${controllers[i].deviceId}');
-            }
-            print('update to ${controllers[index].deviceId}');
-            context.read<ControllerContextCubit>().updateController(
-              controllerId: controllers[index].userDeviceId.toString(),
-              deviceId: controllers[index].deviceId,
-            );
-          },
-          itemBuilder: (context) => controllers.asMap().entries.map((entry) {
-            return PopupMenuItem<int>(
-              value: entry.key,
-              child: Text(entry.value.deviceName),
-            );
-          }).toList(),
+            ),
+            const Icon(Icons.arrow_drop_down, color: AppThemes.primaryColor),
+          ],
         ),
+        onSelected: (index) {
+          cubit.selectController(index);
+          context.read<ControllerContextCubit>().updateController(
+            controllerId: controllers[index].userDeviceId.toString(),
+            deviceId: controllers[index].deviceId,
+          );
+        },
+        itemBuilder: (context) => controllers.asMap().entries.map((entry) {
+          return PopupMenuItem<int>(
+            value: entry.key,
+            child: Text(entry.value.deviceName),
+          );
+        }).toList(),
       );
     }
 
-    return Expanded(
+    // Single controller
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Text(
         controllers[0].deviceName,
         style: const TextStyle(
-            color: AppThemes.primaryColor, fontWeight: FontWeight.bold),
+          color: AppThemes.primaryColor,
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
@@ -440,6 +505,15 @@ class DashboardPage extends StatelessWidget {
     final width = constraints.maxWidth;
     final modelCheck = ([1, 5].contains(controller.modelId)) ? 300 : 120;
     double scale(double size) => size * (width / modelCheck);
+    final router = GoRouterState.of(context);
+    print(router.extra != null && (router.extra as Map<String, dynamic>)['name'] != null
+        && (router.extra as Map<String, dynamic>)['name'] != DashBoardRoutes.dashboard);
+    if(userType == 2) {
+      userId = router.extra != null && (router.extra as Map<String, dynamic>)['name'] != null
+          && (router.extra as Map<String, dynamic>)['name'] != DashBoardRoutes.dashboard
+          ? int.parse((router.uri.queryParameters as Map<String, dynamic>)['dealerId']) : userId;
+    }
+    print(userId);
 
     return CustomScrollView(
       physics: const AlwaysScrollableScrollPhysics(),
@@ -455,91 +529,99 @@ class DashboardPage extends StatelessWidget {
                   extra: GetControllerDetailsParams(
                     userId: controller.userId,
                     controllerId: controller.userDeviceId,
+                    deviceId: controller.deviceId,
                   ),
                 );
               },
-              child: GlassyWrapper(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      SyncSection(
-                        liveSync: controller.livesyncTime,
-                        smsSync: controller.livesyncTime,
-                        model: controller.modelId,
-                        deviceId: controller.deviceId,
+              child: Container(
+                color: Colors.white,
+                padding: EdgeInsets.all(2),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    SizedBox(height: scale(2)),
+                    SyncSection(
+                      liveSync: "${controller.livesyncTime}\n${controller.livesyncDate}",
+                      smsSync: getSmsSync(controller.ctrlLatestMsg),
+                      model: controller.modelId,
+                      deviceId: controller.deviceId,
+                    ),
+                    SizedBox(height: scale(5)),
+                    GlassCard(
+                      child: CtrlDisplay(
+                        signal: controller.liveMessage.signal,
+                        battery: controller.liveMessage.batVolt,
+                        l1display: controller.liveMessage.liveDisplay1,
+                        l2display: controller.liveMessage.liveDisplay2,
                       ),
-                      SizedBox(height: scale(5)),
-                      GlassCard(
-                        child: CtrlDisplay(
-                          signal: controller.liveMessage.signal,
-                          battery: controller.liveMessage.batVolt,
-                          l1display: controller.liveMessage.liveDisplay1,
-                          l2display: controller.liveMessage.liveDisplay2,
-                        ),
+                    ),
+                    SizedBox(height: scale(5)),
+                    GestureDetector(
+                      onTap: () {
+                        context.push(
+                          '${DashBoardRoutes.dashboard}${ProgramSettingsRoutes.program}',
+                          extra: {
+                            "userId": '$userId',
+                            "controllerId": controller.userDeviceId.toString()
+                          },
+                        );
+                      },
+                      child: RYBSection(
+                        r: controller.liveMessage.rVoltage,
+                        y: controller.liveMessage.yVoltage,
+                        b: controller.liveMessage.bVoltage,
+                        c1: controller.liveMessage.rCurrent,
+                        c2: controller.liveMessage.yCurrent,
+                        c3: controller.liveMessage.bCurrent,
                       ),
-                      SizedBox(height: scale(5)),
-                      GestureDetector(
-                        onTap: () {
-                          context.push('${DashBoardRoutes.dashboard}${EditProgramRoutes.program}?programId=1');
-                        },
-                        child: RYBSection(
-                          r: controller.liveMessage.rVoltage,
-                          y: controller.liveMessage.yVoltage,
-                          b: controller.liveMessage.bVoltage,
-                          c1: controller.liveMessage.rCurrent,
-                          c2: controller.liveMessage.yCurrent,
-                          c3: controller.liveMessage.bCurrent,
-                        ),
-                      ),
-                      SizedBox(height: scale(8)),
-                      MotorValveSection(
-                        motorOn: controller.liveMessage.motorOnOff,
-                        motorOn2: controller.liveMessage.valveOnOff,
-                        valveOn: controller.liveMessage.valveOnOff,
-                        model: controller.modelId,
-                        userData: {
-                          "userId": userId,
-                          "controllerId": controller.userDeviceId,
-                          "subUserId": 0,
-                          "deviceId": controller.deviceId
-                        },
-                      ),
-                      SizedBox(height: scale(8)),
-                      if ([1, 5].contains(controller.modelId)) ...[
-                        PressureSection(
-                          prsIn: controller.liveMessage.prsIn,
-                          prsOut: controller.liveMessage.prsOut,
-                          activeZone: controller.zoneNo,
-                          fertlizer: '',
-                        ),
-                        SizedBox(height: scale(8)),
-                        TimerSection(
-                          setTime: controller.setFlow,
-                          remainingTime: controller.remFlow,
-                        ),
-                        SizedBox(height: scale(8)),
-                      ],
-                      LatestMsgSection(
-                        msg: ([1, 5].contains(controller.modelId))
-                            ? controller.msgDesc
-                            : "${controller.msgDesc}\n${controller.ctrlLatestMsg}",
+                    ),
+                    SizedBox(height: scale(5)),
+                    MotorValveSection(
+                      motorOn: controller.liveMessage.motorOnOff,
+                      motorOn2: controller.liveMessage.valveOnOff,
+                      valveOn: controller.liveMessage.valveOnOff,
+                      model: controller.modelId,
+                      userData: {
+                        "userId": userId,
+                        "controllerId": controller.userDeviceId,
+                        "subUserId": 0,
+                        "deviceId": controller.deviceId
+                      },
+                    ),
+                    SizedBox(height: scale(5)),
+                    if ([1, 5].contains(controller.modelId)) ...[
+                      PressureSection(
+                        prsIn: controller.liveMessage.prsIn,
+                        prsOut: controller.liveMessage.prsOut,
+                        activeZone: controller.zoneNo,
+                        fertlizer: '',
                       ),
                       SizedBox(height: scale(8)),
-                      ActionsSection(
-                        model: controller.modelId,
-                        data: {
-                          "userId": controller.userId,
-                          "subUserId": 0,
-                          "controllerId": controller.userDeviceId,
-                          "deviceId": controller.deviceId
-                        },
+                      TimerSection(
+                        setTime: controller.setFlow,
+                        remainingTime: controller.remFlow,
                       ),
+                      SizedBox(height: scale(8)),
                     ],
-                  ),
+                    LatestMsgSection(
+                      msg: ([1, 5].contains(controller.modelId))
+                          ? controller.msgDesc
+                          : "${controller.msgDesc}\n${controller.ctrlLatestMsg}",
+                    ),
+                    SizedBox(height: scale(8)),
+                    ActionsSection(
+                      model: controller.modelId,
+                      data: {
+                        "userId": userId,
+                        "subUserId": userType == 1 ? 0 : userId,
+                        "controllerId": controller.userDeviceId,
+                        "deviceId": controller.deviceId
+                      },
+                    ),
+                    SizedBox(height: scale(3)),
+                  ],
                 ),
               ),
             ),

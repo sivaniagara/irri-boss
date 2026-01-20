@@ -35,15 +35,21 @@ class MoistureReportPage extends StatelessWidget {
 
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.data_thresholding_sharp),
-          onPressed: () {
-            context.push(
-              ReportDownloadPageRoutes.ReportDownloadPage,
-              extra: {
-                "title": "Moisture Report",
-                "url": MoistureReportPageUrls.getMoistureUrl,
-              },
-            );
-          },
+            onPressed: () {
+              final state = context.read<MoistureBloc>().state;
+
+              if (state is MoistureLoaded) {
+                final List<Map<String, dynamic>> excelData =
+                state.data.data.mostList.map((e) => e.toJson()).toList();
+                context.push(
+                  ReportDownloadPageRoutes.ReportDownloadPage,
+                  extra: {
+                    "title": "Moisture REPORT",
+                    "data": excelData,
+                  },
+                );
+              }
+            }
         ),
 
         // 🔹 BODY

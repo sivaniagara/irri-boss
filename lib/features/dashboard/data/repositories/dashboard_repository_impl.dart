@@ -23,9 +23,9 @@ class DashboardRepositoryImpl implements DashboardRepository {
   }
 
   @override
-  Future<Either<Failure, List<ControllerEntity>>> fetchControllers(int userId, int groupId) async {
+  Future<Either<Failure, List<ControllerEntity>>> fetchControllers(int userId, int groupId, GoRouterState routeState) async {
     try {
-      final response = await remote.fetchControllers(userId, groupId);
+      final response = await remote.fetchControllers(userId, groupId, routeState);
       return Right(response);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));

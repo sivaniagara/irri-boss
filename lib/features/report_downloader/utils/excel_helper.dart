@@ -13,11 +13,10 @@ class ExcelHelper {
     }
 
     final headers = data.first.keys.toList();
-
     final excel = Excel.createExcel();
     final sheet = excel[title];
 
-    /// 🔹 Merge title row
+    /// 🔹 Title row (row 0)
     sheet.merge(
       CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0),
       CellIndex.indexByColumnRow(
@@ -29,20 +28,54 @@ class ExcelHelper {
     sheet
         .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0))
         .value = TextCellValue(title);
+    // final headers = data.first.keys.toList();
+    // final excel = Excel.createExcel();
+    //
+    // /// ✅ Get existing default sheet
+    // final String defaultSheet = excel.getDefaultSheet()!;
+    // final sheet = excel[defaultSheet];
+    //
+    // /// ✅ Rename it (safe)
+    // excel.rename(defaultSheet, title);
+    //
+    // /// 🔹 Now write data ONLY to this sheet
+    // sheet.merge(
+    //   CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0),
+    //   CellIndex.indexByColumnRow(
+    //     columnIndex: headers.length - 1,
+    //     rowIndex: 0,
+    //   ),
+    // );
+    //
+    // sheet
+    //     .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: 0))
+    //     .value = TextCellValue(title);
 
-    /// 🔹 Header row
-    sheet.appendRow(
-      headers.map((h) => TextCellValue(h)).toList(),
-    );
-
-    /// 🔹 Data rows
-    for (final row in data) {
-      sheet.appendRow(
-        headers.map((h) => _toCellValue(row[h])).toList(),
-      );
+    /// 🔹 Header row (row 1)
+    for (int col = 0; col < headers.length; col++) {
+      sheet
+          .cell(CellIndex.indexByColumnRow(columnIndex: col, rowIndex: 1))
+          .value = TextCellValue(headers[col]);
     }
 
-    final dir = await getExternalStorageDirectory();
+    /// 🔹 Data rows (row 2+)
+    int rowIndex = 2;
+    for (final row in data) {
+      for (int col = 0; col < headers.length; col++) {
+        sheet
+            .cell(CellIndex.indexByColumnRow(
+          columnIndex: col,
+          rowIndex: rowIndex,
+        ))
+            .value = _toCellValue(row[headers[col]]);
+      }
+      rowIndex++;
+    }
+
+    final dir = Platform.isAndroid
+        ? await getExternalStorageDirectory()
+        : await getApplicationDocumentsDirectory();
+
     if (dir == null) throw Exception("Storage not accessible");
 
     final formatted =
@@ -58,6 +91,7 @@ class ExcelHelper {
 
     return filePath;
   }
+
 
   /// 🔹 Centralized CellValue converter
   static CellValue _toCellValue(dynamic value) {

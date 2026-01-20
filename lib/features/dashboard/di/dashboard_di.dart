@@ -22,13 +22,6 @@ void initDashboardDependencies() {
   sl.registerLazySingleton(() => FetchDashboardGroups(sl()));
   sl.registerLazySingleton(() => FetchControllers(sl()));
 
-  sl.registerLazySingleton<DashboardBloc>(
-        () => DashboardBloc(
-      fetchDashboardGroups: sl(),
-      fetchControllers: sl(),
-    ),
-  );
-
   sl.registerFactory<DashboardPageCubit>(
         () => DashboardPageCubit(
       fetchDashboardGroups: sl(),
@@ -36,7 +29,7 @@ void initDashboardDependencies() {
     ),
   );
 
-  sl.registerLazySingleton<DashboardMessageDispatcher>(() => DashboardMessageDispatcher(dashboardBloc: sl<DashboardBloc>()),);
+  sl.registerLazySingleton<DashboardMessageDispatcher>(() => DashboardMessageDispatcher(dashboardBloc: sl<DashboardPageCubit>()),);
   sl.registerLazySingleton<ProgramPreviewDispatcher>(() => ProgramPreviewDispatcher());
 
   sl.registerLazySingleton<NodeStatusDataSource>(() => NodeStatusDataSourceImpl());

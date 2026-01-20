@@ -35,6 +35,7 @@ class ControllerDetailsBloc
       GetControllerDetailsParams(
         userId: event.userId,
         controllerId: event.controllerId,
+        deviceId: event.deviceId,
       ),
     );
 

@@ -9,18 +9,19 @@ import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../dashboard/utils/dashboard_routes.dart';
+import '../../../service_request/utils/service_request_routes.dart';
 
 class DealerDashboardPage extends StatelessWidget {
   final Map<String, dynamic> userData;
   const DealerDashboardPage({super.key, required this.userData});
 
   static const _tabs = [
-    {'icon': Icons.build, 'label': 'Service Request', 'route': DashBoardRoutes.dashboard},
+    {'icon': Icons.build, 'label': 'Service Request', 'route': ServiceRequestRoutes.serviceRequest},
     {'icon': Icons.sell, 'label': 'Selling Device', 'route': DashBoardRoutes.dashboard},
-    {'icon': Icons.person_search, 'label': 'Customer Device', 'route': DashBoardRoutes.dashboard},
+    {'icon': Icons.person_search, 'label': 'Customer Device', 'route': DealerRoutes.customerDevice},
     {'icon': Icons.devices, 'label': 'My Device', 'route': DashBoardRoutes.dashboard},
     {'icon': Icons.group_work, 'label': 'Shared Device', 'route': DealerRoutes.sharedDevice},
-    {'icon': Icons.check_box, 'label': 'Selected Customer', 'route': DashBoardRoutes.dashboard},
+    {'icon': Icons.check_box, 'label': 'Selected Customer', 'route': DealerRoutes.selectedCustomer},
   ];
 
   @override
@@ -58,6 +59,9 @@ class DealerDashboardPage extends StatelessWidget {
                       onTap: () {
                         context.push(
                           '$route?userId=${queryParams['userId']}&userType=${queryParams['userType']}',
+                          extra: {
+                            'name': route
+                          }
                         );
                       },
                     );

@@ -11,6 +11,7 @@ class SharedDevicesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final queryParams = GoRouterState.of(context).uri.queryParameters as Map<String, dynamic>;
     return GlassyWrapper(
       child: Scaffold(
         appBar: AppBar(title: const Text('Shared Devices')),
@@ -45,10 +46,8 @@ class SharedDevicesPage extends StatelessWidget {
                     trailing: const Icon(Icons.arrow_forward_ios),
                     onTap: () {
                       context.push(
-                        '${DashBoardRoutes.dashboard}?userId=${controller.userId}&userType=2&groupId=${controller.groupId}',
-                        extra: {
-                          'forcedControllerId': controller.userDeviceId,
-                        },
+                        '${DashBoardRoutes.dashboard}?dealerId=${queryParams['userId']}&userId=${controller.userId}&userType=${2}',
+                        extra: GoRouterState.of(context).extra,
                       );
                     },
                   );

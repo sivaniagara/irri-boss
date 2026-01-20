@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
 
 class ControllerInfoRow extends StatelessWidget {
   final String label;
@@ -14,22 +15,35 @@ class ControllerInfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label,style: const TextStyle(color: Colors.white, fontSize: 16)),
-           if (valueWidget != null)
-            valueWidget!
-           else
-            Text(
-              value ?? "",
-              style: const TextStyle(color: Colors.white70, fontSize: 16),
-            ),
-        ],
+    return SizedBox(
+      height: 70,
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 6),
+        elevation: 2,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
+              valueWidget ??
+                  Text(
+                    value ?? "-",
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(color: AppThemes.primaryColor),
+                  ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
+
 

@@ -16,8 +16,15 @@ import '../../core/utils/route_constants.dart';
 import '../../core/widgets/glassy_wrapper.dart';
 import '../auth/presentation/bloc/auth_bloc.dart';
 import '../auth/presentation/bloc/auth_state.dart';
+import '../controller_settings/utils/controller_settings_routes.dart';
+import '../dashboard/presentation/cubit/dashboard_cubit.dart';
+import '../dashboard/presentation/pages/dashboard_page.dart';
+import '../dashboard/utils/dashboard_routes.dart';
 import '../dealer_dashboard/presentation/pages/dealer_dashboard_page.dart';
 import '../dealer_dashboard/utils/dealer_routes.dart';
+import '../irrigation_settings/utils/irrigation_settings_routes.dart';
+import '../program_settings/utils/program_settings_routes.dart';
+import '../standalone_settings/utils/standalone_routes.dart';
 import 'groups/domain/usecases/add_group_usecase.dart';
 import 'groups/domain/usecases/delete_group_usecase.dart';
 import 'groups/domain/usecases/edit_group_usecase.dart';
@@ -62,7 +69,7 @@ final sideDrawerRoutes = <ShellRoute>[
                   child: Image.asset(NiagaraCommonImages.logoSmall),
                 ) : Text(title)
             ),
-            drawer: const AppDrawer(),
+            drawer: AppDrawer(userData: {"userId": '${(sl.get<AuthBloc>().state as Authenticated).user.userDetails.id}', "userType": '${(sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType}'},),
             body: child,
           ),
         ),
@@ -148,6 +155,21 @@ final sideDrawerRoutes = <ShellRoute>[
             value: sl.get<AuthBloc>(),
             child:  const Chat()
         ),
+      ),
+      GoRoute(
+        path: DashBoardRoutes.dashboard,
+        builder: (context, state) {
+          final params = state.uri.queryParameters as Map<String, dynamic>;
+
+          return DashboardPage(userData: params,);
+        },
+        routes: [
+          ...controllerSettingGoRoutes,
+          ...programSettingsGoRoutes,
+          ...irrigationSettingGoRoutes,
+          ...standaloneRoutes,
+
+        ],
       ),
     ],
   )

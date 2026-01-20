@@ -306,7 +306,7 @@ class StandalonePage extends StatelessWidget {
                             context.read<StandaloneBloc>().add(
                               ViewStandaloneEvent(
                                 controllerId: controllerId,
-                                successMessage: "message deliverd",
+                                successMessage: "message delivered",
                               ),
                             );
                           },

@@ -1,4 +1,3 @@
-
 // ---------------------- Zone Duration Entity ----------------------
 
 class ZoneDurationEntity {
@@ -22,7 +21,21 @@ class ZoneDurationEntity {
     required this.ctrlDuration,
     required this.ctrlDuration1,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'code': code,
+      'message': message,
+      'data': data.map((e) => e.toJson()).toList(),
+      'totDuration': totDuration,
+      'totFlow': totFlow,
+      'powerDuration': powerDuration,
+      'ctrlDuration': ctrlDuration,
+      'ctrlDuration1': ctrlDuration1,
+    };
+  }
 }
+
 // ---------------------- Zone Duration Datum Entity ----------------------
 
 class ZoneDurationDatumEntity {
@@ -74,4 +87,29 @@ class ZoneDurationDatumEntity {
     required this.c2,
     required this.c3,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'date': date,
+      'zone': zone,
+      'onTime': onTime,
+      'offDate': offDate,
+      'offTime': offTime,
+      'duration': duration,
+      'dateTime': dateTime,
+      'flow': flow,
+      'pressure': pressure,
+      'pressureIn': pressureIn,
+      'pressureOut': pressureOut,
+      'wellLevel': wellLevel,
+      'wellPercentage': wellPercentage,
+      'ec': ec,
+      'ph': ph,
+      'program': program,
+      'vrb': vrb,
+      'c1': c1,
+      'c2': c2,
+      'c3': c3,
+    };
+  }
 }

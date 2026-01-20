@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart' if (dart.library.html) 'package:mqtt_client/mqtt_browser_client.dart';
 
+import '../../utils/common_toast.dart';
+
 class MqttService {
   final String broker;
   final int port;
@@ -100,6 +102,11 @@ class MqttService {
       final builder = MqttClientPayloadBuilder();
       builder.addString(message);
       _client.publishMessage(topic, qos, builder.payload!);
+
+      //ShowToast Remove Production this is only for development purpose
+      showToast(message);
+
+
       if (kDebugMode) {
         print('Published to $topic: $message');
       }
