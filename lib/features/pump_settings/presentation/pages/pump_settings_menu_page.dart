@@ -2,123 +2,165 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/alert_dialog.dart';
-import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
-import '../../../../core/widgets/glass_effect.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/custom_switch.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/retry.dart';
 import '../../domain/entities/menu_item_entity.dart';
-import '../../presentation/bloc/pump_settings_event.dart';
-import '../../presentation/bloc/pump_settings_state.dart';
-
-import '../../../../core/di/injection.dart' as di;
-import '../../../../core/widgets/retry.dart';
-import '../../utils/pump_settings_images.dart';
+import '../bloc/pump_settings_event.dart';
 import '../bloc/pump_settings_menu_bloc.dart';
+import '../bloc/pump_settings_state.dart';
+import '../cubit/pump_settings_cubit.dart';
+import '../cubit/pump_settings_view_response_cubit.dart';
+import '../widgets/setting_list_tile.dart';
+import '../../../../core/di/injection.dart' as di;
+import '../../utils/pump_settings_images.dart';
+import '../../utils/pump_settings_page_routes.dart';
 
 class PumpSettingsMenuPage extends StatelessWidget {
   final int userId, subUserId, controllerId;
   final String deviceId;
+
   const PumpSettingsMenuPage({
     super.key,
     required this.userId,
     required this.subUserId,
     required this.controllerId,
-    required this.deviceId
+    required this.deviceId,
   });
 
   @override
-  Widget build(BuildContext dialogContext) {
-    return BlocProvider(
-      create: (context) => di.sl<PumpSettingsMenuBloc>()
-        ..add(GetPumpSettingsMenuEvent(
-            userId: userId, subUserId: subUserId, controllerId: controllerId)),
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => di.sl<PumpSettingsCubit>()),
+        BlocProvider(
+          create: (context) {
+            final bloc = di.sl<PumpSettingsMenuBloc>()
+              ..add(GetPumpSettingsMenuEvent(
+                userId: userId,
+                subUserId: subUserId,
+                controllerId: controllerId,
+              ));
+
+            Future.microtask(() {
+              context.read<PumpSettingsCubit>().loadSettings(
+                userId: userId,
+                subUserId: subUserId,
+                controllerId: controllerId,
+                menuId: 502,
+              );
+            });
+
+            return bloc;
+          },
+        ),
+      ],
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Pump Settings Menu"),
+          title: const Text("Pump Settings Menu"),
           actions: [
             Builder(
-              builder: (appBarContext) => IconButton(
-                onPressed: () async {
-                  final bloc = appBarContext.read<PumpSettingsMenuBloc>();
-
-                  GlassyAlertDialog.show(
-                    context: appBarContext,
-                    title: "Hide/Show Menu",
-                    content: BlocProvider.value(
-                      value: bloc,
-                      child: _HideShowSettingsDialog(userId: userId, controllerId: controllerId, subUserId: subUserId,),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(appBarContext).pop(),
-                        child: const Text("Cancel"),
-                      ),
-                    ],
-                  );
-                },
+              builder: (ctx) => IconButton(
                 icon: const Icon(Icons.hide_source),
+                onPressed: () => _showHideMenuDialog(ctx),
               ),
             ),
           ],
         ),
-        body: _buildBody(dialogContext),
+        body: _MenuListView(
+          userId: userId,
+          subUserId: subUserId,
+          controllerId: controllerId,
+          deviceId: deviceId,
+        ),
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context) {
+  void _showHideMenuDialog(BuildContext context) {
+    final cubit = context.read<PumpSettingsCubit>();
+
+    GlassyAlertDialog.show(
+      context: context,
+      title: "Hide/Show Menu",
+      content: BlocProvider.value(
+        value: cubit,
+        child: _HideShowSettingsDialog(
+          userId: userId,
+          subUserId: subUserId,
+          controllerId: controllerId,
+          deviceId: deviceId,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text("Cancel"),
+        ),
+      ],
+    );
+  }
+}
+
+class _MenuListView extends StatelessWidget {
+  final int userId, subUserId, controllerId;
+  final String deviceId;
+
+  const _MenuListView({
+    required this.userId,
+    required this.subUserId,
+    required this.controllerId,
+    required this.deviceId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return BlocConsumer<PumpSettingsMenuBloc, PumpSettingsState>(
-      listenWhen: (previous, current) => current is UpdateMenuStatusSuccess,
-      listener: (context, state) {
-        if (state is UpdateMenuStatusSuccess) {
-          context.read<PumpSettingsMenuBloc>().add(GetPumpSettingsMenuEvent(
-            userId: userId,
-            subUserId: subUserId,
-            controllerId: controllerId,
-          ));
+      listenWhen: (_, state) => state is UpdateMenuStatusSuccess,
+      listener: (context, _) {
+        context.read<PumpSettingsMenuBloc>().add(GetPumpSettingsMenuEvent(
+          userId: userId,
+          subUserId: subUserId,
+          controllerId: controllerId,
+        ));
+      },
+      buildWhen: (_, state) =>
+      state is GetPumpSettingsMenuInitial ||
+          state is GetPumpSettingsMenuLoaded ||
+          state is GetPumpSettingsMenuError,
+      builder: (context, state) {
+        if (state is GetPumpSettingsMenuInitial) {
+          return const Center(child: CircularProgressIndicator());
         }
-      },
-      buildWhen: (previous, current) {
-        return current is GetPumpSettingsMenuInitial ||
-            current is GetPumpSettingsMenuLoaded ||
-            current is GetPumpSettingsMenuError;
-      },
-        builder: (context, state) {
-          if (state is GetPumpSettingsMenuInitial) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (state is GetPumpSettingsMenuLoaded) {
-            final List<MenuItemEntity> additionalSettings = [];
 
-            final List<MenuItemEntity> visibleSettings = [
-              ...state.settingMenuList,
-              ...additionalSettings,
-            ].where((item) => item.menu.hiddenFlag != 0).toList();
-
-            return _buildSettingMenuList(context, visibleSettings);
-          } else if (state is GetPumpSettingsMenuError) {
-            return Center(
-              child: Retry(
-                message: state.message,
-                onPressed: () => context.read<PumpSettingsMenuBloc>().add(
-                  GetPumpSettingsMenuEvent(
-                    userId: userId,
-                    subUserId: subUserId,
-                    controllerId: controllerId,
-                  ),
+        if (state is GetPumpSettingsMenuError) {
+          return Center(
+            child: Retry(
+              message: state.message,
+              onPressed: () => context.read<PumpSettingsMenuBloc>().add(
+                GetPumpSettingsMenuEvent(
+                  userId: userId,
+                  subUserId: subUserId,
+                  controllerId: controllerId,
                 ),
               ),
-            );
-          }
+            ),
+          );
+        }
 
+        if (state is! GetPumpSettingsMenuLoaded) {
           return const SizedBox.shrink();
-        },
+        }
+
+        return _buildGroupedMenu(context, state.settingMenuList);
+      },
     );
   }
 
-  Widget _buildSettingMenuList(BuildContext context, List<MenuItemEntity> settingMenuList) {
+  Widget _buildGroupedMenu(BuildContext context, List<MenuItemEntity> items) {
     final grouped = <String, List<MenuItemEntity>>{};
 
-    for (final item in settingMenuList) {
-      if (item.menu.hiddenFlag == 0) continue;
-
+    for (final item in items) {
       final group = item.menu.groupName;
       grouped.putIfAbsent(group, () => []).add(item);
     }
@@ -128,31 +170,30 @@ class PumpSettingsMenuPage extends StatelessWidget {
     return ListView.builder(
       padding: const EdgeInsets.all(10),
       itemCount: groupNames.length,
-      itemBuilder: (context, groupIndex) {
-        final groupName = groupNames[groupIndex];
-        final itemsInGroup = grouped[groupName]!;
+      itemBuilder: (context, i) {
+        final groupName = groupNames[i];
+        final groupItems = grouped[groupName]!;
+
+        if (groupName.isEmpty) {
+          return _buildSpecialTwoPhaseTile(context);
+        }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if(groupName.isNotEmpty)
-              ...[
-                const SizedBox(height: 16),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Text(
-                    groupName,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontSize: 14,
-                      color: const Color(0xff303030),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+            const SizedBox(height: 16),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                groupName,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontSize: 14,
+                  color: const Color(0xff303030),
+                  fontWeight: FontWeight.w500,
                 ),
-              ],
-
+              ),
+            ),
             const SizedBox(height: 8),
-
             GlassCard(
               opacity: 1,
               blur: 0,
@@ -160,63 +201,17 @@ class PumpSettingsMenuPage extends StatelessWidget {
               padding: EdgeInsets.zero,
               borderRadius: const BorderRadius.all(Radius.circular(12)),
               child: Column(
-                children: List.generate(itemsInGroup.length, (i) {
-                  final item = itemsInGroup[i];
-
-                  return Material(
-                    color: Colors.transparent,
-                    child: Column(
-                      children: [
-                        ListTile(
-                          title: Text(
-                            item.menu.menuItem,
-                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          leading: groupName.isNotEmpty ? Image.asset(PumpSettingsImages.getMenuIcons(item.menu.menuSettingId,), width: 20, height: 20,) : null,
-                          trailing: const Icon(Icons.chevron_right_rounded),
-                          onTap: () {
-                            final commonExtra = {
-                              'userId': userId,
-                              'controllerId': controllerId,
-                              'subUserId': subUserId,
-                              'deviceId': deviceId,
-                            };
-
-                            switch (item.menu.menuSettingId) {
-                              case 514:
-                                context.push(
-                                  PumpSettingsPageRoutes.notificationsPage,
-                                  extra: commonExtra,
-                                );
-                                break;
-
-                              case 515:
-                                context.push(
-                                  PumpSettingsPageRoutes.viewSettingsPage,
-                                  extra: commonExtra,
-                                );
-                                break;
-
-                              default:
-                                context.push(
-                                  PumpSettingsPageRoutes.pumpSettingsPage,
-                                  extra: {
-                                    ...commonExtra,
-                                    'menuId': item.menu.menuSettingId,
-                                    'menuName': item.menu.menuItem,
-                                  },
-                                );
-                            }
-                          },
-                        ),
-                        if (i < itemsInGroup.length - 1)
-                          const Divider(height: 1, indent: 16, endIndent: 16),
-                      ],
-                    ),
-                  );
-                }),
+                children: List.generate(
+                  groupItems.length,
+                      (index) => _MenuItemTile(
+                    item: groupItems[index],
+                    isLast: index == groupItems.length - 1,
+                    userId: userId,
+                    subUserId: subUserId,
+                    controllerId: controllerId,
+                    deviceId: deviceId,
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -225,66 +220,205 @@ class PumpSettingsMenuPage extends StatelessWidget {
       },
     );
   }
+
+  Widget _buildSpecialTwoPhaseTile(BuildContext context) {
+    return BlocSelector<PumpSettingsCubit, PumpSettingsState, MenuItemEntity?>(
+      selector: (state) => state is GetPumpSettingsLoaded ? state.settings : null,
+      builder: (context, item) {
+        if (item == null) return const SizedBox.shrink();
+
+        final setting = item.template.sections[0].settings[0];
+        if (setting.hiddenFlag == "0") return const SizedBox.shrink();
+
+        final isOn = setting.value == "ON";
+        final isSending = context.watch<PumpSettingsCubit>().state is SettingsSendStartedState;
+
+        return GlassCard(
+          opacity: 1,
+          blur: 0,
+          margin: EdgeInsets.zero,
+          padding: EdgeInsets.zero,
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          child: Row(
+            children: [
+              Expanded(
+                child: SettingListTile(
+                  title: setting.title,
+                  trailing: SizedBox(
+                    width: 55,
+                    height: 25,
+                    child: CustomSwitch(
+                      value: isOn,
+                      onChanged: (_) => _toggleTwoPhase(context, isOn, item),
+                    ),
+                  ),
+                  onTap: () => _toggleTwoPhase(context, isOn, item),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                padding: EdgeInsets.zero,
+                icon: isSending
+                    ? const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+                    : Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Image.asset(
+                    'assets/images/icons/send_icon.png',
+                    width: 25,
+                  ),
+                ),
+                onPressed: isSending
+                    ? null
+                    : () => _sendTwoPhaseSettings(context, item),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _toggleTwoPhase(BuildContext context, bool isOn, MenuItemEntity item) {
+    final newValue = isOn ? "OF" : "ON";
+    context.read<PumpSettingsCubit>().updateSettingValue(newValue, 0, 0, item);
+  }
+
+  void _sendTwoPhaseSettings(BuildContext context, MenuItemEntity item) {
+    final cubit = context.read<PumpSettingsCubit>();
+    cubit.sendCurrentSetting(0, 0, deviceId, userId, subUserId, controllerId, item);
+    context.read<PumpSettingsViewResponseCubit>().clear();
+  }
 }
 
-class _HideShowSettingsDialog extends StatelessWidget {
-  final int userId, controllerId, subUserId;
+class _MenuItemTile extends StatelessWidget {
+  final MenuItemEntity item;
+  final bool isLast;
+  final int userId, subUserId, controllerId;
+  final String deviceId;
 
-  const _HideShowSettingsDialog({
+  const _MenuItemTile({
+    required this.item,
+    required this.isLast,
     required this.userId,
-    required this.controllerId,
     required this.subUserId,
+    required this.controllerId,
+    required this.deviceId,
   });
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<PumpSettingsMenuBloc, PumpSettingsState>(
-      listenWhen: (previous, current) {
-        return current is UpdateMenuStatusSuccess || current is UpdateMenuStatusFailure;
-      },
-      listener: (context, state) {
-        if (state is UpdateMenuStatusSuccess) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.message)),
-          );
-        } else if (state is UpdateMenuStatusFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Failed: ${state.message}")),
-          );
-        }
-      },
-      child: BlocBuilder<PumpSettingsMenuBloc, PumpSettingsState>(
-        buildWhen: (previous, current) => current is GetPumpSettingsMenuLoaded,
-        builder: (context, state) {
-          if (state is! GetPumpSettingsMenuLoaded || state.settingMenuList.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
+    return Material(
+      color: Colors.transparent,
+      child: Column(
+        children: [
+          ListTile(
+            leading: Image.asset(
+              PumpSettingsImages.getMenuIcons(item.menu.menuSettingId),
+              width: 20,
+              height: 20,
+            ),
+            title: Text(
+              item.menu.menuItem,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () {
+              final extra = {
+                'userId': userId,
+                'subUserId': subUserId,
+                'controllerId': controllerId,
+                'deviceId': deviceId,
+              };
 
-          final item = state.settingMenuList[0].menu;
-          final isVisible = item.hiddenFlag == 1;
+              final route = _getRouteForMenuId(item.menu.menuSettingId);
 
-          return CheckboxListTile(
-            title: Text(item.menuItem),
-            value: isVisible,
-            onChanged: (bool? newValue) {
-              if (newValue == null) return;
-
-              final updatedItem = item.copyWith(newValue ? 1 : 0);
-
-              context.read<PumpSettingsMenuBloc>().add(
-                UpdateHiddenFlagsEvent(
-                  userId: userId,
-                  subUserId: subUserId,
-                  controllerId: controllerId,
-                  settingsMenuEntity: updatedItem,
-                ),
+              context.push(
+                route,
+                extra: item.menu.menuSettingId == 514 || item.menu.menuSettingId == 515
+                    ? extra
+                    : {...extra, 'menuId': item.menu.menuSettingId, 'menuName': item.menu.menuItem},
               );
-
-              Navigator.of(context).pop();
             },
-          );
-        },
+          ),
+          if (!isLast) const Divider(height: 1, indent: 16, endIndent: 16),
+        ],
       ),
+    );
+  }
+
+  String _getRouteForMenuId(int menuId) {
+    switch (menuId) {
+      case 514:
+        return PumpSettingsPageRoutes.notificationsPage;
+      case 515:
+        return PumpSettingsPageRoutes.viewSettingsPage;
+      default:
+        return PumpSettingsPageRoutes.pumpSettingsPage;
+    }
+  }
+}
+
+class _HideShowSettingsDialog extends StatelessWidget {
+  final int userId, subUserId, controllerId;
+  final String deviceId;
+
+  const _HideShowSettingsDialog({
+    required this.userId,
+    required this.subUserId,
+    required this.controllerId,
+    required this.deviceId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
+      buildWhen: (_, state) => state is GetPumpSettingsLoaded,
+      builder: (context, state) {
+        if (state is! GetPumpSettingsLoaded) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final setting = state.settings.template.sections[0].settings[0];
+
+        return CheckboxListTile(
+          title: Text(setting.title),
+          value: setting.hiddenFlag == "1",
+          onChanged: (bool? shouldHide) async {
+            if (shouldHide == null) return;
+
+            final cubit = context.read<PumpSettingsCubit>();
+
+            cubit.updateSettingValue(
+              shouldHide ? '1' : '0',
+              0,
+              0,
+              state.settings,
+              isHiddenFlag: true,
+            );
+
+            // Small delay to let state update
+            await Future.delayed(const Duration(milliseconds: 60));
+
+            final updated = cubit.state;
+            if (updated is! GetPumpSettingsLoaded) return;
+
+            await cubit.updateHiddenFlags(
+              userId: userId,
+              subUserId: subUserId,
+              controllerId: controllerId,
+              menuItemEntity: updated.settings,
+              sentSms: "",
+            );
+
+            if (context.mounted) Navigator.pop(context);
+          },
+        );
+      },
     );
   }
 }

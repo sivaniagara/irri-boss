@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/action_button.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/alert_dialog.dart';
@@ -15,6 +16,7 @@ import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentatio
 
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/widgets/custom_switch.dart';
+import '../../../sendrev_msg/utils/senrev_routes.dart';
 import '../../domain/entities/template_json_entity.dart';
 import '../../utils/pump_settings_images.dart';
 import '../bloc/pump_setting_view_state.dart';
@@ -82,6 +84,12 @@ class PumpSettingsPage extends StatelessWidget {
                 icon: const Icon(Icons.hide_source),
               ),
             ),
+            IconButton(
+              onPressed: () {
+                context.push(SendRevPageRoutes.sendRevMsgPage, extra: {'userId': userId, 'controllerId': controllerId, 'subuserId': subUserId});
+              },
+              icon: Icon(Icons.message),
+            )
           ],
         ),
         body: BlocListener<PumpSettingsCubit, PumpSettingsState>(
