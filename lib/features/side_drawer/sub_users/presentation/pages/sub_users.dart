@@ -34,45 +34,37 @@ class SubUsers extends StatelessWidget {
             },
             child: ListView.separated(
               itemCount: state.subUsersList.length,
+              physics: BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               itemBuilder: (context, index) {
-                final isFirst = index == 0;
                 final SubUserEntity subUserEntity = state.subUsersList[index];
-                final isLast = index == state.subUsersList.length - 1;
-                final borderRadius = BorderRadius.only(
-                  topLeft: isFirst ? const Radius.circular(16) : Radius.zero,
-                  topRight: isFirst ? const Radius.circular(16) : Radius.zero,
-                  bottomLeft: isLast ? const Radius.circular(16) : Radius.zero,
-                  bottomRight: isLast ? const Radius.circular(16) : Radius.zero,
-                );
-                return GlassCard(
-                  padding: EdgeInsets.zero,
-                  borderRadius: borderRadius,
-                  margin: EdgeInsetsGeometry.symmetric(horizontal: 0),
-                  opacity: 1,
-                  blur: 0,
-                  child: ListTile(
-                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-                    minTileHeight: 40,
-                    leading: Text(subUserEntity.subUserCode),
-                    title: Text(subUserEntity.userName, style: TextStyle(fontWeight: FontWeight.bold)),
-                    subtitle: Text(subUserEntity.mobileNumber),
-                    onTap: () {
-                      final bloc = context.read<SubUsersBloc>();
-                      context.push(
-                          SubUserRoutes.subUserDetails,
-                          extra: {
-                            "userId": userId,
-                            "subUserCode": subUserEntity.subUserCode,
-                            "isNewSubUser": subUserEntity.sharedUserId.toString().isEmpty,
-                            "existingBloc": bloc,
-                          });
-                    },
+                return ListTile(
+                  contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  minTileHeight: 40,
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.grey[200],
+                    child: Icon(Icons.person, color: Colors.grey, size: 30,),
                   ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  title: Text(subUserEntity.userName, style: TextStyle(fontWeight: FontWeight.bold)),
+                  subtitle: Text(subUserEntity.mobileNumber),
+                  tileColor: Colors.white,
+                  trailing: Icon(Icons.chevron_right),
+                  onTap: () {
+                    final bloc = context.read<SubUsersBloc>();
+                    context.push(
+                        SubUserRoutes.subUserDetails,
+                        extra: {
+                          "userId": userId,
+                          "subUserCode": subUserEntity.subUserCode,
+                          "isNewSubUser": subUserEntity.sharedUserId.toString().isEmpty,
+                          "existingBloc": bloc,
+                        });
+                  },
                 );
               },
               separatorBuilder: (BuildContext context, int index) {
-                return Divider(height: 0, thickness: 0.5, color: Theme.of(context).primaryColor,);
+                return SizedBox(height: 10,);
               },
             ),
           );

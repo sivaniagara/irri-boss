@@ -23,6 +23,7 @@ class AppDrawer extends StatelessWidget {
     final theme = Theme.of(dialogContext);
 
     return Drawer(
+      backgroundColor: Colors.white,
       child: Column(
         children: [
           Expanded(
@@ -180,16 +181,6 @@ class AppDrawer extends StatelessWidget {
                   },
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 );
-                return _buildDrawerItem(
-                  context,
-                  icon: Icons.logout,
-                  title: 'Logout',
-                  onTap: () {
-                    context.read<AuthBloc>().add(LogoutEvent());
-                    context.go(AuthRoutes.login);
-                    // context.pop();
-                  },
-                );
               }
               return _buildDrawerItem(
                 context,
@@ -199,6 +190,7 @@ class AppDrawer extends StatelessWidget {
               );
             },
           ),
+          SizedBox(height: 20,)
         ],
       ),
     );
