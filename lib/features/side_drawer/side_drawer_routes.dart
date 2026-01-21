@@ -40,7 +40,7 @@ final sideDrawerRoutes = <ShellRoute>[
   ShellRoute(
     builder: (context, state, child) {
       final location = state.matchedLocation;
-      String title = 'Dealer Dashboard';
+      String title = 'Home';
       if (location == GroupRoutes.groups) {
         title = 'Groups';
       } else if (location == SubUserRoutes.subUsers) {
@@ -53,24 +53,30 @@ final sideDrawerRoutes = <ShellRoute>[
 
       return BlocProvider.value(
         value: sl.get<AuthBloc>(),
-        child: GlassyWrapper(
-          child: Scaffold(
-            appBar: AppBar(
-                centerTitle: true,
-                title: (sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType == 2 ? Container(
-                  width: 140,
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  alignment: Alignment.center,
-                  child: Image.asset(NiagaraCommonImages.logoSmall),
-                ) : Text(title)
-            ),
-            drawer: AppDrawer(userData: {"userId": '${(sl.get<AuthBloc>().state as Authenticated).user.userDetails.id}', "userType": '${(sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType}'},),
-            body: child,
+        child: Scaffold(
+          appBar: AppBar(
+              backgroundColor: (sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType == 2
+                  ? Theme.of(context).primaryColorDark : null,
+              centerTitle: true,
+              title: Text(title),
+              foregroundColor: (sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType == 2
+                  ? Colors.white
+                  : Colors.black,
+              iconTheme: IconThemeData(color:  (sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType == 2
+                  ? Colors.white : Colors.black)
+            /* title: (sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType == 2 ? Container(
+                width: 140,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                alignment: Alignment.center,
+                child: Image.asset(NiagaraCommonImages.logoSmall),
+              ) : Text(title)*/
           ),
+          drawer: AppDrawer(userData: {"userId": '${(sl.get<AuthBloc>().state as Authenticated).user.userDetails.id}', "userType": '${(sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType}'},),
+          body: child,
         ),
       );
     },
