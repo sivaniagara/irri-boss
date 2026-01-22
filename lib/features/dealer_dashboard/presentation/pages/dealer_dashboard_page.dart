@@ -154,9 +154,10 @@ class DealerDashboardPage extends StatelessWidget {
                           )),
                       Text(
                         label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
+                              fontWeight: FontWeight.w500,),
                       ),
                       Row(
                         spacing: 10,

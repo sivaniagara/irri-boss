@@ -399,13 +399,9 @@ class _SettingRow extends StatelessWidget {
     return switch (setting.widgetType) {
       SettingWidgetType.nothing => Container(),
       SettingWidgetType.text => _TextInput(setting: setting, onChanged: _onChanged(context)),
-      SettingWidgetType.toggle => SizedBox(
-        width: 55,
-        height: 25,
-        child: CustomSwitch(
-            value: setting.value == "ON",
-            onChanged: (_) => _onChanged(context)(setting.value == "ON" ? "OF" : "ON")
-        ),
+      SettingWidgetType.toggle => CustomSwitch(
+          value: setting.value == "ON",
+          onChanged: (_) => _onChanged(context)(setting.value == "ON" ? "OF" : "ON")
       ),
       SettingWidgetType.time => LeafBox(
         margin: EdgeInsets.zero,
