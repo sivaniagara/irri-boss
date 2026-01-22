@@ -1,6 +1,8 @@
 import 'package:niagara_smart_drip_irrigation/features/edit_program/data/models/selected_node_model.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/entities/zone_setting_entity.dart';
 
+import '../../../../core/services/mqtt/publish_messages.dart';
+
 class ZoneSettingModel extends ZoneSettingEntity {
   ZoneSettingModel({
     required super.zoneNumber,
@@ -114,7 +116,7 @@ class ZoneSettingModel extends ZoneSettingEntity {
     );
   }
 
-  List<String> submitZone({required int programId}){
+  List<Map<String, dynamic>> submitZone({required int programId}){
     int fixedNodeLength = 4;
     List<String> getBalanceEmptyNode (int count){
       return List.generate(count, (index) => '000');
@@ -135,8 +137,8 @@ class ZoneSettingModel extends ZoneSettingEntity {
       ...getBalanceEmptyNode(fixedNodeLength - selectedLevel.length)
     ].join(',');
     return [
-      "IDZONESELP$programId$zoneNumber,$valveSerialNoInZone",
-      "IDZLMSETP$programId$moistureSerialNoInZone,$levelSerialNoInZone"
+      PublishMessageHelper.settingsPayload("IDZONESELP$programId$zoneNumber,$valveSerialNoInZone"),
+      PublishMessageHelper.settingsPayload("IDZLMSETP$programId$moistureSerialNoInZone,$levelSerialNoInZone"),
     ];
   }
 }

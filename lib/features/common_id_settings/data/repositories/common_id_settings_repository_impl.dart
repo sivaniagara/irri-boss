@@ -2,10 +2,10 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
-import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/common_id_settings/data/models/category_model.dart';
+import 'package:niagara_smart_drip_irrigation/features/common_id_settings/data/models/category_model.dart';
 
-import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/common_id_settings/domain/entities/category_entity.dart';
-import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/common_id_settings/domain/usecases/submit_category_usecase.dart';
+import 'package:niagara_smart_drip_irrigation/features/common_id_settings/domain/entities/category_entity.dart';
+import 'package:niagara_smart_drip_irrigation/features/common_id_settings/domain/usecases/submit_category_usecase.dart';
 
 import '../../domain/repositories/common_id_settings_repository.dart';
 import '../../domain/usecases/get_common_id_settings_usecase.dart';

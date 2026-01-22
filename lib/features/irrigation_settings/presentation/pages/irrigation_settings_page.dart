@@ -63,7 +63,8 @@ class IrrigationSettingsPage extends StatelessWidget {
                 context: context,
                 sectionTitle: 'Drip Setting',
                 items: [
-                  settings[1]
+                  settings[1],
+                  settings[2],
                 ],
               ),
               settingsSection(
@@ -134,6 +135,12 @@ class IrrigationSettingsPage extends StatelessWidget {
       onTap: onTap,
       child: Row(
         children: [
+          Image.asset(
+              entity.image,
+            width: 25,
+            height: 25,
+          ),
+          SizedBox(width: 10,),
           Text(entity.name, style: Theme.of(context).textTheme.labelLarge),
           const Spacer(),
           const Icon(Icons.arrow_forward_ios, color: Colors.black, size: 14,),
@@ -176,7 +183,8 @@ class IrrigationSettingsPage extends StatelessWidget {
                         .replaceAll(':settingNo', items[itemIndex].irrigationSettingsEnum.settingId.toString())
                     }');
                   }
-                },              );
+                },
+              );
             }),
           ),
         ),

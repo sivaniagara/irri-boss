@@ -8,6 +8,7 @@ import 'package:niagara_smart_drip_irrigation/features/reports/moisture_reports/
 import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/di/standalone_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/tdy_valve_status_reports/di/tdy_valve_status_di.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../features/common_id_settings/di/common_id_settings_di.dart';
 import '../../features/controller_details/data/repositories/controller_details_repositories.dart';
 import '../../features/controller_details/domain/repositories/controller_details_repo.dart';
 import '../../features/controller_details/domain/usecase/controller_details_usercase.dart';
@@ -141,6 +142,9 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
 
   /// irrigation template setting dependencies
   initIrrigationSettingsDependencies();
+
+  /// common id settings dependencies
+  initCommonSettingDependencies();
 
   sl.registerLazySingleton<ControllerRemoteDataSource>(() => ControllerRemoteDataSourceImpl(apiClient: sl()));
   sl.registerLazySingleton<ControllerRepo>(() => ControllerRepoImpl(remoteDataSource: sl()));

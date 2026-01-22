@@ -12,6 +12,7 @@ import 'package:niagara_smart_drip_irrigation/features/settings/presentation/pag
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/utils/standalone_routes.dart';
 import 'core/di/injection.dart';
+import 'features/common_id_settings/utils/common_id_settings_routes.dart';
 import 'features/controller_details/domain/usecase/controller_details_params.dart';
 import 'features/controller_details/presentation/bloc/controller_details_bloc.dart';
 import 'features/controller_details/presentation/bloc/controller_details_bloc_event.dart';
@@ -29,6 +30,7 @@ import 'features/dealer_dashboard/presentation/pages/dealer_dashboard_page.dart'
 import 'features/edit_program/utils/edit_program_routes.dart';
 import 'features/irrigation_settings/utils/irrigation_settings_routes.dart';
 import 'features/fault_msg/utils/faultmsg_routes.dart';
+import 'features/mapping_and_unmapping_nodes/utils/mapping_and_unmapping_nodes_routes.dart';
 import 'features/report_downloader/utils/report_downloaderRoute.dart';
 import 'features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
 import 'features/reports/Voltage_reports/utils/voltage_routes.dart';
@@ -212,7 +214,11 @@ class AppRouter {
 
             ]
         ),
+        ...editProgramGoRoutes,
         ...irrigationSettingGoRoutes,
+        ...mappingAndUnmappingNodesGoRoutes,
+        ...commonIdSettingsGoRoutes,
+
         // GoRoute(
         //   name: 'dashboard',
         //   path: DashBoardRoutes.dashboard,

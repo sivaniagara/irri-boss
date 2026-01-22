@@ -57,7 +57,7 @@ class ControllerAppBar extends StatelessWidget {
               context.go('${DashBoardRoutes.dashboard}${ControllerSettingsRoutes.controllerDetails}');
               break;
             case ControllerTab.nodes:
-              context.go('${DashBoardRoutes.dashboard}${MappingAndUnmappingNodesRoutes.nodes}');
+              context.go('${DashBoardRoutes.dashboard}${MappingAndUnmappingNodesRoutes.nodeSetting}');
               break;
             case ControllerTab.programs:
               context.go('${DashBoardRoutes.dashboard}${ProgramSettingsRoutes.program}');

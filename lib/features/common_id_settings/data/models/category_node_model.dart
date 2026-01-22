@@ -1,4 +1,4 @@
-import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/common_id_settings/data/models/serial_no_model.dart';
+import 'package:niagara_smart_drip_irrigation/features/common_id_settings/data/models/serial_no_model.dart';
 
 import '../../domain/entities/category_node_entity.dart';
 

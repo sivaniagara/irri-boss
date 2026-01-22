@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/common_id_settings/domain/usecases/submit_category_usecase.dart';
-import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/common_id_settings/presentation/bloc/common_id_settings_event.dart';
-import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/common_id_settings/presentation/bloc/common_id_settings_state.dart';
+import 'package:niagara_smart_drip_irrigation/features/common_id_settings/domain/usecases/submit_category_usecase.dart';
+import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presentation/bloc/common_id_settings_event.dart';
+import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presentation/bloc/common_id_settings_state.dart';
 
 import '../../domain/entities/category_entity.dart';
 import '../../domain/usecases/get_common_id_settings_usecase.dart';

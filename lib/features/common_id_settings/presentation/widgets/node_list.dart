@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/common_id_settings/presentation/bloc/common_id_settings_bloc.dart';
-import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/common_id_settings/presentation/bloc/common_id_settings_state.dart';
+import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presentation/bloc/common_id_settings_bloc.dart';
+import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presentation/bloc/common_id_settings_state.dart';
 
-import '../../../../../../core/widgets/alert_dialog.dart';
-import '../../../../../../core/widgets/custom_material_button.dart';
-import '../../../../../../core/widgets/custom_outlined_button.dart';
+import '../../../../core/widgets/alert_dialog.dart';
+import '../../../../core/widgets/custom_material_button.dart';
+import '../../../../core/widgets/custom_outlined_button.dart';
 import '../../domain/entities/category_node_entity.dart';
 import '../bloc/common_id_settings_event.dart';
 
@@ -105,22 +105,18 @@ class _NodeListState extends State<NodeList> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      CustomMaterialButton(
-                          onPressed: () {
-                            context.pop();
-
-                          },
-                          title: 'View'),
                       CustomOutlinedButton(
-                          title: 'Cancel',
-                          onPressed: () {
-                            context.pop();
-                          }),
+                        onPressed: () {
+                          context.pop();
+                        },
+                        title: 'Cancel',
+                      ),
                       CustomMaterialButton(
                           onPressed: () {
                             context.read<CommonIdSettingsBloc>().add(EditNodesSerialNo(nodes: listOfCategoryNode, categoryIndex: widget.categoryIndex));
                           },
-                          title: 'Send')
+                          title: 'Send'
+                      )
                     ],
                   ),
                 ),

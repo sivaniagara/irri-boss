@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/domain/entities/unmapped_category_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/domain/entities/unmapped_category_node_entity.dart';
 
-import '../../../program_settings/sub_module/common_id_settings/data/models/category_model.dart';
+import '../../../common_id_settings/data/models/category_model.dart';
 import '../../domain/entities/mapped_node_entity.dart';
 import '../../domain/entities/mapping_and_unmapping_node_entity.dart';
 import '../../domain/entities/unmapped_category_node_entity.dart';
@@ -88,9 +88,10 @@ class MappingAndUnmappingNodesBloc extends Bloc<MappingAndUnmappingNodesEvent, M
                   qrCode: event.mappedNodeEntity.qrCode,
                   modelName: event.mappedNodeEntity.modelName,
                   dateManufacture: event.mappedNodeEntity.dateManufacture,
+                  userName: event.mappedNodeEntity.userName,
+                  mobileNumber: event.mappedNodeEntity.mobileNumber,
                 ),
               ]..sort((a, b) => a.nodeId.compareTo(b.nodeId)); // more meaningful sort
-
               return category.copyWith(updateNodes: updatedUnmappedNodes);
             }
           }).toList();

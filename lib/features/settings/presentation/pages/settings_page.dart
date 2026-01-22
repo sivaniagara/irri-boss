@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/utils/app_images.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/leaf_box.dart';
-
+import 'package:niagara_smart_drip_irrigation/features/common_id_settings/utils/common_id_settings_routes.dart';
 import '../../../irrigation_settings/utils/irrigation_settings_routes.dart';
+import '../../../mapping_and_unmapping_nodes/utils/mapping_and_unmapping_nodes_routes.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -25,6 +26,22 @@ class SettingsPage extends StatelessWidget {
             onTap: () {
               context.push(IrrigationSettingsRoutes.irrigationSettings);
             }
+        ),
+        _buildSettingsItem(
+            context: context,
+            title: 'Node Settings',
+            iconPath: AppImages.irrigationSettingIcon,
+            onTap: () {
+              context.push(MappingAndUnmappingNodesRoutes.nodeSetting);
+            }
+        ),
+        _buildSettingsItem(
+            context: context,
+            title: 'Common Id Settings',
+            iconPath: AppImages.irrigationSettingIcon,
+            onTap: () {
+              context.push(CommonIdSettingsRoutes.commonIdSettings);
+            }
         )
       ],
     );
@@ -40,14 +57,15 @@ class SettingsPage extends StatelessWidget {
       margin: EdgeInsets.all(10),
       decoration: BoxDecoration(
           borderRadius: BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
-          border: Border.all(width: 1, color: Theme.of(context).colorScheme.outline)
+          border: Border.all(width: 1, color: Theme.of(context).colorScheme.outline),
       ),
       child: ListTile(
         onTap: onTap,
-        leading: Image.asset(iconPath, width: 30,),
+        leading: Image.asset(iconPath, width: 20,),
         title: Text(title),
         trailing: Icon(Icons.arrow_forward_ios, size: 20,),
       ),
     );
   }
+
 }

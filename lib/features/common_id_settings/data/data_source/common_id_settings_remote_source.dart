@@ -1,7 +1,8 @@
 
-import '../../../../../../core/services/api_client.dart';
-import '../../../../../../core/utils/api_urls.dart';
-import '../../../../utils/program_settings_urls.dart';
+import '../../../../core/services/api_client.dart';
+import '../../../../core/utils/api_urls.dart';
+import '../../../program_settings/utils/program_settings_urls.dart';
+import '../../utils/common_id_settings_urls.dart';
 
 abstract class CommonIdSettingsRemoteSource{
   Future<Map<String, dynamic>> getCommonIdSettings(Map<String, String> data);
@@ -15,7 +16,7 @@ class CommonIdSettingsDataSourceImpl extends CommonIdSettingsRemoteSource{
   @override
   Future<Map<String, dynamic>> getCommonIdSettings(Map<String, String> data)async {
     try{
-      String endpoint = buildUrl(ProgramSettingsUrls.getCommonIdSettings, data);
+      String endpoint = buildUrl(CommonIdSettingsUrls.getCommonIdSettings, data);
       final response = await apiClient.get(endpoint);
       return response;
     }catch (e){
@@ -27,7 +28,7 @@ class CommonIdSettingsDataSourceImpl extends CommonIdSettingsRemoteSource{
   @override
   Future<Map<String, dynamic>> updateCategoryNodeSerialNo({required Map<String, String> urlData, required Map<String, dynamic> body}) async{
     try{
-      String endpoint = buildUrl(ProgramSettingsUrls.getCommonIdSettings, urlData);
+      String endpoint = buildUrl(CommonIdSettingsUrls.getCommonIdSettings, urlData);
       final response = await apiClient.post(endpoint, body: body);
       return response;
     }catch (e){

@@ -1,7 +1,11 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/custom_switch.dart';
 import '../../../../core/utils/app_images.dart';
+import '../../../edit_program/utils/edit_program_routes.dart';
+import '../../utils/dashboard_routes.dart';
 import '../widgets/static_progress_circle_with_image.dart';
 
 class Dashboard20 extends StatefulWidget {
@@ -253,7 +257,7 @@ class _Dashboard20State extends State<Dashboard20> {
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(color: const Color(0xff0F8AD0)),
@@ -273,30 +277,36 @@ class _Dashboard20State extends State<Dashboard20> {
                   child: Row(
                     spacing: 25,
                     children: [
-                      ...List.generate(6, (index) {
-                        return Column(
-                          spacing: 10,
-                          children: [
-                            StaticProgressCircleWithImage(
-                              progress: 0.68,
-                              size: 70,
-                              progressColor: Theme.of(context).colorScheme.primary,
-                              backgroundColor: Colors.grey.shade300,
-                              strokeWidth: 5,
-                              edgeIcon: Icons.bolt,
-                              iconColor: Theme.of(context).colorScheme.primary,
-                              iconSize: 15,
-                              centerWidget: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: Image.asset('assets/images/common/sprinkler.png'),
+                      ...List.generate(4, (index) {
+                        return GestureDetector(
+                          onTap: (){
+                            context.push('${EditProgramRoutes.program}?programId=1');
+                          },
+                          child: Column(
+                            spacing: 10,
+                            children: [
+                              StaticProgressCircleWithImage(
+                                progress: 0.68,
+                                size: 70,
+                                progressColor: Theme.of(context).colorScheme.primary,
+                                backgroundColor: Colors.grey.shade300,
+                                strokeWidth: 5,
+                                edgeIcon: Icons.bolt,
+                                iconColor: Theme.of(context).colorScheme.primary,
+                                iconSize: 15,
+                                centerWidget: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.asset('assets/images/common/sprinkler.png'),
+                                ),
                               ),
-                            ),
-                            Text(
-                              'P${index + 1} (Aarnav)',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            Image.asset('assets/images/icons/switch_on_icon.png')
-                          ],
+                              Text(
+                                'P${index + 1} (Aarnav)',
+                                style: Theme.of(context).textTheme.bodySmall,
+                              ),
+                              CustomSwitch(value: false, onChanged: (value){}, disable: false,),
+                              // Image.asset('assets/images/icons/switch_on_icon.png')
+                            ],
+                          ),
                         );
                       }),
                     ],
@@ -305,7 +315,7 @@ class _Dashboard20State extends State<Dashboard20> {
               ],
             ),
           ),
-          SizedBox(height: 50,)
+          SizedBox(height: 100)
         ],
       ),
     );

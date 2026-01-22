@@ -82,58 +82,160 @@ class _MappedNodeListState extends State<MappedNodeList> {
                     Expanded(
                       child: state.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity.isNotEmpty
                           ? ListView.builder(
-                          itemCount: state.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity.length,
-                          itemBuilder: (context, int index) {
-                            final node = state.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity[index];
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                spacing: 10,
-                                children: [
-                                  Text(node.serialNo, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                                  SizedBox(
-                                      width: 150,
-                                      child: Text(node.qrCode, style: TextStyle(fontSize: 16))
+                        itemCount: state.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity.length,
+                        itemBuilder: (context, index) {
+                          final node = state.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity[index];
+
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ListTile(
+                                dense: true,
+                                visualDensity: VisualDensity.compact,
+                                minLeadingWidth: 30,
+                                horizontalTitleGap: 12,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+
+                                leading: Container(
+                                  width: 50,
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    node.serialNo ?? '—',
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.grey[900],
+                                      letterSpacing: 0.4,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
                                   ),
-                                  SizedBox(
-                                      width: 100,
-                                      child: Text(node.categoryName, style: TextStyle(fontSize: 16), maxLines: 2,)
-                                  ),
-                                  IconButton(
-                                      onPressed: (){
-                                        final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
-                                        context.read<MappingAndUnmappingNodesBloc>()
-                                            .add(
-                                            DeleteMappedNodeEvent(
-                                                userId: controllerContext.userId,
-                                                controllerId: controllerContext.controllerId,
-                                                mappedNodeEntity: node
-                                            )
-                                        );
-                                      },
-                                      style: const ButtonStyle(
-                                          backgroundColor:
-                                          WidgetStatePropertyAll(Color(0xffEDF8FF))
+                                ),
+
+                                title: Text.rich(
+                                  TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: node.categoryName ?? '—',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.teal[800],
+                                        ),
                                       ),
-                                      icon: Icon(Icons.link, color: Theme.of(context).primaryColor,)
-                                  )
-                                ],
+                                      const TextSpan(
+                                        text: '   •   ',
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontWeight: FontWeight.w300,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: node.qrCode ?? '—',
+                                        style: TextStyle(
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.blueGrey[800],
+                                          letterSpacing: 0.3,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
+
+                                subtitle: Padding(
+                                  padding: const EdgeInsets.only(top: 3),
+                                  child: Text.rich(
+                                    TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: 'Mfg: ',
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: node.dateManufacture ?? '??',
+                                          style: TextStyle(
+                                            color: Colors.green[800],
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text: '   •   ',
+                                          style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                                        ),
+                                        TextSpan(
+                                          text: node.userName ?? '—',
+                                          style: TextStyle(
+                                            color: Colors.indigo[700],
+                                            fontSize: 12.5,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        if (node.mobileNumber != null) ...[
+                                          TextSpan(
+                                            text: '   •   ',
+                                            style: TextStyle(color: Colors.grey[400], fontSize: 12),
+                                          ),
+                                          TextSpan(
+                                            text: node.mobileNumber!,
+                                            style: TextStyle(
+                                              color: Colors.deepPurple[700],
+                                              fontSize: 12.5,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 2,
+                                  ),
+                                ),
+
+                                trailing: IconButton(
+                                  onPressed: () {
+                                    final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+                                    context.read<MappingAndUnmappingNodesBloc>().add(
+                                      DeleteMappedNodeEvent(
+                                        userId: controllerContext.userId,
+                                        controllerId: controllerContext.controllerId,
+                                        mappedNodeEntity: node,
+                                      ),
+                                    );
+                                  },
+                                  icon: const Icon(Icons.link_off_rounded, size: 22),
+                                  tooltip: 'Unmap / Remove node',
+                                  visualDensity: VisualDensity.compact,
+                                  padding: const EdgeInsets.all(8),
+                                  constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: const Color(0xFFEDF8FF),
+                                    foregroundColor: Theme.of(context).primaryColor,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  ),
+                                ),
                               ),
-                            );
-                            return CheckboxListTile(
-                              controlAffinity: ListTileControlAffinity.leading,
-                              activeColor: Theme.of(context).primaryColor,
-                              checkColor: Colors.white, side: const BorderSide( color: Colors.black, width: 2, ),
-                              value: node.select,
-                              onChanged: (value){
-                                setState(() {
-                                  node.select = value!;
-                                });
-                              },
-                              title: Text(node.qrCode),
-                            );
-                          })
+
+                              // Divider after each item (except possibly the last one)
+                              if (index < state.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity.length - 1)
+                                Divider(
+                                  height: 1,
+                                  thickness: 0.8,
+                                  indent: 12,
+                                  endIndent: 12,
+                                  color: Colors.grey[400],
+                                ),
+                            ],
+                          );
+                        },
+                      )
                           : Lottie.asset(
                         'assets/lottie/no_data.json',
                         width: MediaQuery.of(context).size.width * 0.8,

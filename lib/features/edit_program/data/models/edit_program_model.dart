@@ -2,6 +2,7 @@ import 'package:niagara_smart_drip_irrigation/features/edit_program/data/models/
 import 'package:niagara_smart_drip_irrigation/features/edit_program/data/models/mapped_node_model.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/entities/edit_program_entity.dart';
 
+import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../domain/entities/zone_setting_entity.dart';
 import 'node_model.dart';
 
@@ -20,8 +21,8 @@ class EditProgramModel extends EditProgramEntity {
   });
 
   factory EditProgramModel.fromJson(Map<String, dynamic> json) {
-    final data = json['data'] as Map<String, dynamic>;
-    final defaultData = json['default'] as Map<String, dynamic>;
+    final data = json['data']['setting'] as Map<String, dynamic>;
+    final defaultData = json['data']['default'] as Map<String, dynamic>;
 
     return EditProgramModel(
       programId: data['programId'] as int,
@@ -67,7 +68,7 @@ class EditProgramModel extends EditProgramEntity {
   String _cmd(String template, String zoneSetId) =>
       template
           .replaceAll(':programId', programId.toString())
-          .replaceAll(':zoneSetId', zoneSetId.padLeft(2, '0'));
+          .replaceAll(':zoneSetId', zoneSetId.substring(zoneSetId.length - 2));
 
   String _joinTimes(Iterable<String> values) {
     final formEightZone = [
@@ -125,7 +126,7 @@ class EditProgramModel extends EditProgramEntity {
 
     final cmd = template
         .replaceAll(':programId', programId.toString())
-        .replaceAll(':zoneSetId', zoneSetId.padLeft(2, '0'))
+        .replaceAll(':zoneSetId', zoneSetId.substring(zoneSetId.length - 2))
         .replaceAll(':channelNo', channelNo.toString());
 
     final values = listOfZone.map(
@@ -172,7 +173,7 @@ class EditProgramModel extends EditProgramEntity {
   }
 
   // ---------------- ROUTER ----------------
-  String mqttPayload({
+  Map<String, dynamic> mqttPayload({
     required int channelNo,
     required int irrigationDosingOrPrePost,
     required int method,
@@ -181,27 +182,27 @@ class EditProgramModel extends EditProgramEntity {
     required List<ZoneSettingModel> listOfZone
   }) {
     if (method == 1) {
-      if (mode == 1) return formZonesTimePayload(zoneSetId: zoneSetId, listOfZone: listOfZone);
-      if (mode == 2) return formPreTimePayload(zoneSetId: zoneSetId, listOfZone: listOfZone);
+      if (mode == 1) return PublishMessageHelper.settingsPayload(formZonesTimePayload(zoneSetId: zoneSetId, listOfZone: listOfZone));
+      if (mode == 2) return PublishMessageHelper.settingsPayload(formPreTimePayload(zoneSetId: zoneSetId, listOfZone: listOfZone));
       if (mode == 3) {
-        return formFertTimeFlowPayload(
+        return PublishMessageHelper.settingsPayload(formFertTimeFlowPayload(
           zoneSetId: zoneSetId,
           channelNo: channelNo,
           method: method, listOfZone: listOfZone,
-        );
+        ));
       }
-      return formPostTimePayload(zoneSetId: zoneSetId, listOfZone: listOfZone);
+      return PublishMessageHelper.settingsPayload(formPostTimePayload(zoneSetId: zoneSetId, listOfZone: listOfZone));
     }
 
-    if (mode == 1) return formZonesFlowPayload(zoneSetId: zoneSetId, listOfZone: listOfZone);
-    if (mode == 2) return formPreFlowPayload(zoneSetId: zoneSetId, listOfZone: listOfZone);
+    if (mode == 1) return PublishMessageHelper.settingsPayload(formZonesFlowPayload(zoneSetId: zoneSetId, listOfZone: listOfZone));
+    if (mode == 2) return PublishMessageHelper.settingsPayload(formPreFlowPayload(zoneSetId: zoneSetId, listOfZone: listOfZone));
     if (mode == 3) {
-      return formFertTimeFlowPayload(
+      return PublishMessageHelper.settingsPayload(formFertTimeFlowPayload(
         zoneSetId: zoneSetId,
         channelNo: channelNo,
         method: method, listOfZone: listOfZone,
-      );
+      ));
     }
-    return formPostFlowPayload(zoneSetId: zoneSetId, listOfZone: listOfZone);
+    return PublishMessageHelper.settingsPayload(formPostFlowPayload(zoneSetId: zoneSetId, listOfZone: listOfZone));
   }
 }

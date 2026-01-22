@@ -1,4 +1,4 @@
-import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/common_id_settings/domain/entities/category_entity.dart';
+import 'package:niagara_smart_drip_irrigation/features/common_id_settings/domain/entities/category_entity.dart';
 
 import '../enums/common_id_settings_enum.dart';
 

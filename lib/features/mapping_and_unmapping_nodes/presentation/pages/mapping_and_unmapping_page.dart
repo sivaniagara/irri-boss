@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:niagara_smart_drip_irrigation/core/utils/app_images.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_list_tile.dart';
 import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/presentation/bloc/mapping_and_unmapping_nodes_bloc.dart';
@@ -44,24 +45,32 @@ class _MappingAndUnmappingPageState extends State<MappingAndUnmappingPage> {
             if (state is MappingAndUnmappingNodesLoading) {
               return const Center(child: CircularProgressIndicator());
             }else if(state is MappingAndUnmappingNodesLoaded){
-              return SingleChildScrollView(
-                child: Column(
-                  children: [
-                    SizedBox(height: 10,),
-                    CustomListTile(
-                        onTap: (){
-                          showMappedNodeBottomSheet(context);
-                        },
-                        title: 'Mapped Nodes'
+              return Scaffold(
+                appBar: CustomAppBar(title: 'Node Settings'),
+                body: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      children: [
+                        SizedBox(height: 10,),
+                        CustomListTile(
+                          image: getImages(1),
+                            onTap: (){
+                              showMappedNodeBottomSheet(context);
+                            },
+                            title: 'Mapped Nodes (${state.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity.length})'
+                        ),
+                        for(UnmappedCategoryEntity category in state.mappingAndUnmappingNodeEntity.listOfUnmappedCategoryEntity)
+                          CustomListTile(
+                            image: getImages(category.categoryId),
+                              onTap: (){
+                                showUnmappedNodeBottomSheet(context, category);
+                              },
+                              title: '${category.categoryName} (${category.nodes.length})'
+                          ),
+                      ],
                     ),
-                    for(UnmappedCategoryEntity category in state.mappingAndUnmappingNodeEntity.listOfUnmappedCategoryEntity)
-                      CustomListTile(
-                          onTap: (){
-                            showUnmappedNodeBottomSheet(context, category);
-                          },
-                          title: category.categoryName
-                      ),
-                  ],
+                  ),
                 ),
               );
             }else{
@@ -70,7 +79,6 @@ class _MappingAndUnmappingPageState extends State<MappingAndUnmappingPage> {
           }
       ),
     );
-
   }
 
   void showMappedNodeBottomSheet(BuildContext context) {
@@ -105,5 +113,26 @@ class _MappingAndUnmappingPageState extends State<MappingAndUnmappingPage> {
         );
       },
     );
+  }
+
+  String getImages(int categoryId){
+    switch(categoryId){
+      case 1 : return AppImages.mappedNodesIcon;
+      case 2 : return AppImages.valveIcon;
+      case 3 : return AppImages.lightIcon;
+      case 4 : return AppImages.lightIcon;
+      case 5 : return AppImages.moistureSensorIcon;
+      case 6 : return AppImages.levelSensorIcon;
+      case 7 : return AppImages.humiditySensorIcon;
+      case 8 : return AppImages.temperatureSensorIcon;
+      case 9 : return AppImages.flowMeterIcon;
+      case 10 : return AppImages.fertilizerPumpIcon;
+      case 11 : return AppImages.foggerIcon;
+      case 12 : return AppImages.energyMeterIcon;
+      case 13 : return AppImages.communicationNodeIcon;
+      case 14 : return AppImages.pumpControlWithFlowIcon;
+      case 15 : return AppImages.overHeadTankIcon;
+      default : return AppImages.pumpSettingIcon;
+    }
   }
 }

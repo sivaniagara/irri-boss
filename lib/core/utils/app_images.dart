@@ -18,5 +18,19 @@ class AppImages {
   static const String programIcon = '$iconPath/program_icon.png';
   static const String pumpSettingIcon = '$iconPath/pump_setting_icon.png';
   static const String irrigationSettingIcon = '$iconPath/irrigation_setting_icon.png';
+  static const String mappedNodesIcon = '$iconPath/mapped_nodes_icon.png';
+  static const String valveIcon = '$iconPath/valve_icon.png';
+  static const String lightIcon = '$iconPath/light_icon.png';
+  static const String moistureSensorIcon = '$iconPath/moisture_sensor_icon.png';
+  static const String levelSensorIcon = '$iconPath/level_sensor_icon.png';
+  static const String humiditySensorIcon = '$iconPath/humidity_sensor_icon.png';
+  static const String temperatureSensorIcon = '$iconPath/temperature_sensor_icon.png';
+  static const String flowMeterIcon = '$iconPath/flow_meter_icon.png';
+  static const String fertilizerPumpIcon = '$iconPath/fertilizer_pump_icon.png';
+  static const String foggerIcon = '$iconPath/fogger_icon.png';
+  static const String energyMeterIcon = '$iconPath/energy_meter_icon.png';
+  static const String communicationNodeIcon = '$iconPath/communication_node_icon.png';
+  static const String pumpControlWithFlowIcon = '$iconPath/pump_control_with_flow_icon.png';
+  static const String overHeadTankIcon = '$iconPath/over_head_tank_icon.png';
 
 }

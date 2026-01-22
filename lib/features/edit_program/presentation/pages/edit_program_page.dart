@@ -12,6 +12,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/presentation/widgets/wrap_or_row.dart';
 import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/edit_zone/presentation/bloc/edit_zone_bloc.dart';
 
+import '../../../../core/services/time_picker_service.dart';
 import '../../../water_fertilizer_settings/domain/entities/zone_water_fertilizer_entity.dart';
 import '../../domain/entities/zone_setting_entity.dart';
 import '../bloc/edit_program_bloc.dart';
@@ -91,7 +92,7 @@ class _EditProgramPageState extends State<EditProgramPage> {
             return Container(
               width: double.infinity,
               height: double.infinity,
-              color: Colors.white,
+              color: Theme.of(context).scaffoldBackgroundColor,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -334,7 +335,43 @@ class _EditProgramPageState extends State<EditProgramPage> {
     required int mode,
   }){
     return GestureDetector(
-      onTap: () => pickTime(context, zoneNo, mode),
+      // onTap: () => pickTime(context, zoneNo, mode),
+      onTap: ()async{
+        final result = await TimePickerService.show(
+            context: context,
+            initialTime: time
+        );
+        if(result != null){
+          if(irrigationDosingOrPrePostMode == 1 && timeOrQuantity == 1 && mode == 1){
+            context.read<EditProgramBloc>().add(
+                UpdateTotalTime(
+                    zoneIndex: zoneNo,
+                    time: result
+                ));
+          }else if(irrigationDosingOrPrePostMode == 2 && timeOrQuantity == 1 && mode == 2){
+            context.read<EditProgramBloc>().add(
+                UpdatePreTime(
+                  zoneIndex: zoneNo,
+                  time: result,
+                ));
+          }else if(irrigationDosingOrPrePostMode == 1 && timeOrQuantity == 1 && mode == 3){
+            context.read<EditProgramBloc>().add(
+                UpdateChannelTime(
+                    zoneIndex: zoneNo,
+                    time: result,
+                    channelIndex: selectedChannel
+                ));
+          }else{
+            context.read<EditProgramBloc>().add(
+                UpdatePostTime(
+                  zoneIndex: zoneNo,
+                  time: result,
+                )
+            );
+          }
+        }
+
+      },
       child: leafBox(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,

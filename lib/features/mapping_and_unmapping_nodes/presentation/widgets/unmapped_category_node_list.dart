@@ -88,14 +88,74 @@ class _UnmappedCategoryNodeListState extends State<UnmappedCategoryNodeList> {
                       return CheckboxListTile(
                         controlAffinity: ListTileControlAffinity.leading,
                         activeColor: Theme.of(context).primaryColor,
-                        checkColor: Colors.white, side: const BorderSide( color: Colors.black, width: 2, ),
+                        checkColor: Colors.white,
+                        side: const BorderSide(color: Colors.black, width: 2),
+                        dense: true,                    // ← makes it smaller / less padding
+                        visualDensity: VisualDensity.compact, // ← even tighter
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+
                         value: node.select,
-                        onChanged: (value){
+                        onChanged: (value) {
                           setState(() {
                             node.select = value!;
                           });
                         },
-                        title: Text(node.qrCode),
+
+                        title: Text(
+                          node.qrCode,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+
+                        subtitle: Text.rich(
+                          TextSpan(
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey,          // fallback/base color
+                              height: 1.1,
+                            ),
+                            children: [
+                              const TextSpan(
+                                text: "MD : ",
+                                style: TextStyle(
+                                  color: Colors.blueGrey,    // or Colors.blue[800]
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              TextSpan(
+                                text: "${node.dateManufacture} ",
+                                style: const TextStyle(
+                                  color: Colors.teal,        // nice contrast for date
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const TextSpan(
+                                text: "- ",
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                              TextSpan(
+                                text: "${node.userName} ",
+                                style: const TextStyle(
+                                  color: Colors.indigo,      // good for names
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const TextSpan(
+                                text: "- ",
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                              TextSpan(
+                                text: node.mobileNumber ?? "—",
+                                style: const TextStyle(
+                                  color: Colors.deepPurple,  // stands out for phone
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       );
                     })
                     : Lottie.asset(

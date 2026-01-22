@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:mqtt_client/mqtt_client.dart';
 
 import 'mqtt_message_helper.dart';
@@ -52,9 +53,14 @@ class MqttManager {
     _currentDeviceId = deviceId;
   }
 
-  void publish(String deviceId, String payload) {
-    mqttService.publish(deviceId, payload);
-  }
+  void publish(String deviceId, dynamic payload) {
+    print("deviceId : $deviceId");
+    print("payload : $payload");
+    if(payload is String){
+      mqttService.publish(deviceId, payload);
+    }else{
+      mqttService.publish(deviceId, jsonEncode(payload));
+    }  }
 
   void dispose() {
     _subscription?.cancel();
