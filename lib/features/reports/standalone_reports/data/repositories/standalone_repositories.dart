@@ -35,9 +35,5 @@ Future<StandaloneEntity> getStandaloneData({
         powerDuration: model.powerDuration,
         controllerDuration: model.ctrlDuration,
         controllerDuration1: model.ctrlDuration1);
-
   }
-
-
-
 }

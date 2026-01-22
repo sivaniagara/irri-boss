@@ -14,7 +14,7 @@ abstract class StandaloneRoutes {
 final standaloneRoutes = <GoRoute>[
   GoRoute(
     path: 'standalone', 
-    name: 'standalone',
+    // name: 'standalone',
     builder: (context, state) {
       final params = state.extra as Map<String, dynamic>;
       final userId = params["userId"]?.toString() ?? '';

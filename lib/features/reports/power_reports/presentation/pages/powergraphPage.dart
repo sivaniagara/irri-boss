@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/core/utils/api_urls.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/no_data.dart';
 import '../../../../../../core/theme/app_gradients.dart';
 import '../../../../../core/widgets/glassy_wrapper.dart';
@@ -43,9 +44,21 @@ class PowerGraphPage extends StatelessWidget {
         floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.data_thresholding_sharp),
         onPressed: () {
-          context.push(ReportDownloadPageRoutes.ReportDownloadPage,extra:{"title":"Power Motor Report","url": '${PowerGraphPageUrls.getPowerGraphUrl}' ,});
-          },
+          final state = context.read<PowerGraphBloc>().state;
 
+          if (state is PowerGraphLoaded) {
+            final List<Map<String, dynamic>> excelData =
+            state.data.data.map((e) => e.toJson()).toList();
+
+            context.push(
+              ReportDownloadPageRoutes.ReportDownloadPage,
+              extra: {
+                "title": "Power Motor Report",
+                "data": excelData,
+              },
+            );
+          }
+        }
       ),
         body: Container(
           decoration: BoxDecoration(

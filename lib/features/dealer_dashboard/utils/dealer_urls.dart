@@ -4,8 +4,10 @@ class DealerUrls {
   static const String getSellingUnit = 'dealer/:userId/category/:categoryId';
   static const String deviceTraceDealer = 'dealer/:userId/tracecode/:deviceId';
   static const String getDealerDetails = 'dealer/:userId/product/:deviceId/details';
+
+  /// Customer Devices
   static const String getDealerCustomerDetails = 'dealer/:userId/customer';
-  static const String getDealerCustomerDeviceDetails = 'dealer/:dealerId/user/:userId/controller';
+  static const String getDealerCustomerDeviceDetails = 'dealer/:dealerId/user/:userId/controller';//Customer dashboard
 
   /// Post methods
   static const String getSales = 'dealer/sales';
@@ -16,4 +18,7 @@ class DealerUrls {
   /// Get methods
   static const String getCustomerSharedDevice = 'user/:userId/invitee/list';
   static const String getCustomerSharedDeviceListItem = 'user/:userId/share/:shareId/controller';
+
+  /// Selected customers
+  static const String getSelectedCustomerDeviceListItem = 'dealer/:dealerId/selectedcustomer';
 }

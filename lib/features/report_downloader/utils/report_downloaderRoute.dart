@@ -4,21 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../../core/di/injection.dart' as di;
  import '../presentation/bloc/report_bloc.dart';
-
-
-
-
 /// Page Route Name Constants
 abstract class ReportDownloadPageRoutes {
   static const String ReportDownloadPage = '/ReportDownload';
 }
-//
-// /// API URL Pattern
-// class ReportDownloadPageUrls {
-//   static const String getPowerGraphUrl =
-//       'user/:userId/subuser/:subuserId/controller/:controllerId/powerandmotor?fromDate=%27:fromDate%27'
-//       '&toDate=%27:toDate%27&sum=:sum';
-// }
 
 /// GoRouter config
 final ReportDownloadRoutes = <GoRoute>[
@@ -30,14 +19,14 @@ final ReportDownloadRoutes = <GoRoute>[
       final params = state.extra as Map<String, dynamic>? ?? {};
 
       final String title = params['title'] ?? "";
-      final String url = params['url'] ?? "";
+      final List<Map<String, dynamic>> data = params['data'] ?? "";
 
       return  MultiBlocProvider(
         providers: [
           BlocProvider<ReportDownloadBloc>(
             create: (_) => di.sl<ReportDownloadBloc>()),
          ],
-        child: ReportDownloadPage(title: title, url: url),
+        child: ReportDownloadPage(title: title, data: data),
       );
     },
   ),

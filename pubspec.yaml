@@ -73,6 +73,7 @@ dependencies:
   flutter_svg: ^2.2.3
   dotted_border: ^3.1.0
   animated_notch_bottom_bar: ^1.0.3
+  webview_flutter: ^4.13.1
 
 dev_dependencies:
   flutter_test:
@@ -107,6 +108,8 @@ flutter:
     - assets/images/pump_menu_icons/
     - assets/images/icons/
     - assets/svg/node_status_svg/
+    - assets/images/controller_status_check/
+    - assets/images/communication_config_icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

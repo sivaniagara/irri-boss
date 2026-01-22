@@ -9,9 +9,14 @@ class PowerGraphEntity {
     required this.message,
     required this.data,
   });
+  Map<String, dynamic> toJson() {
+    return {
+      'code': code,
+      'message': message,
+      'data': data.map((e) => e.toJson()).toList(),
+    };
+  }
 }
-
-
 
 class PowerDatumEntity {
   final String date;
@@ -74,5 +79,35 @@ class PowerDatumEntity {
     required this.solar3Volt,
     required this.solar4Volt,
   });
-
+  Map<String, dynamic> toJson() {
+    return {
+      'date': date,
+      'time': time,
+      'totalPowerOnTime': totalPowerOnTime,
+      'totalPowerOffTime': totalPowerOffTime,
+      'motorRunTime': motorRunTime,
+      'motorRunTime2': motorRunTime2,
+      'motorIdleTime': motorIdleTime,
+      'motorIdleTime2': motorIdleTime2,
+      'dryRunTripTime': dryRunTripTime,
+      'dryRunTripTime2': dryRunTripTime2,
+      'cyclicTripTime': cyclicTripTime,
+      'cyclicTripTime2': cyclicTripTime2,
+      'otherTripTime': otherTripTime,
+      'otherTripTime2': otherTripTime2,
+      'totalFlowToday': totalFlowToday,
+      'cumulativeFlowToday': cumulativeFlowToday,
+      'averageFlowRate': averageFlowRate,
+      'pressureIn': pressureIn,
+      'pressureOut': pressureOut,
+      'battery1Volt': battery1Volt,
+      'battery2Volt': battery2Volt,
+      'battery3Volt': battery3Volt,
+      'battery4Volt': battery4Volt,
+      'solar1Volt': solar1Volt,
+      'solar2Volt': solar2Volt,
+      'solar3Volt': solar3Volt,
+      'solar4Volt': solar4Volt,
+    };
+  }
 }

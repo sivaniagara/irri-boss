@@ -54,13 +54,13 @@ class ControllerAppBar extends StatelessWidget {
           context.read<ControllerTabCubit>().changeTab(tab);
           switch (tab) {
             case ControllerTab.details:
-              context.go('${DashBoardRoutes.dashboard}${ControllerSettingsRoutes.controllerDetails}');
+              context.pushReplacement('${DashBoardRoutes.dashboard}${ControllerSettingsRoutes.controllerDetails}');
               break;
             case ControllerTab.nodes:
               context.go('${DashBoardRoutes.dashboard}${MappingAndUnmappingNodesRoutes.nodeSetting}');
               break;
             case ControllerTab.programs:
-              context.go('${DashBoardRoutes.dashboard}${ProgramSettingsRoutes.program}');
+              context.pushReplacement('${DashBoardRoutes.dashboard}${ProgramSettingsRoutes.program}');
               break;
           }
         },

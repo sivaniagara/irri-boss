@@ -1,5 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/core/utils/api_urls.dart';
+import 'package:niagara_smart_drip_irrigation/core/utils/common_toast.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_urls.dart';
+import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_urls.dart';
 
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/services/api_client.dart';
@@ -9,7 +15,7 @@ import '../../data/dashboard_data.dart';
 
 abstract class DashboardRemoteDataSource {
   Future<List<GroupDetailsEntity>> fetchDashboardGroups(int userId, GoRouterState routeState);
-  Future<List<ControllerEntity>> fetchControllers(int userId, int groupId);
+  Future<List<ControllerEntity>> fetchControllers(int userId, int groupId, GoRouterState routeState);
   Future<void> motorOnOff({required int userId, required int controllerId, required String deviceId, required int subUserId, required String status, required bool dualPump,
   });
 }
@@ -22,7 +28,7 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
   @override
   Future<List<GroupDetailsEntity>> fetchDashboardGroups(int userId, GoRouterState routeState) async {
     try {
-      final endpoint = DashboardUrls.dashboardForGroupUrl.replaceAll(':userId', userId.toString());
+      final endpoint = buildUrl(DashboardUrls.dashboardForGroupUrl, {'userId': userId});
       final response = await apiClient.get(endpoint);
       return handleListResponse<GroupDetails>(
         response,
@@ -37,9 +43,17 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
   }
 
   @override
-  Future<List<ControllerEntity>> fetchControllers(int userId, int groupId) async {
+  Future<List<ControllerEntity>> fetchControllers(int userId, int groupId, GoRouterState routeState) async {
     try {
-      final endpoint = DashboardUrls.dashboardUrl.replaceAll(':userId', userId.toString()).replaceAll(':groupId', groupId.toString());
+      final extra = routeState.extra != null ? routeState.extra as Map<String, dynamic> : {};
+      final queryParams = routeState.uri.queryParameters as Map<String, dynamic>;
+      String endpoint = buildUrl(DashboardUrls.dashboardUrl, {'userId': userId, 'groupId': groupId});
+      if(extra.containsKey('name') && extra['name'] != DashBoardRoutes.dashboard) {
+        if(extra['name'] == DealerRoutes.sharedDevice) {
+          endpoint = buildUrl(DealerUrls.getCustomerSharedDevice, {'userId': queryParams['userId'], 'dealerId': queryParams['dealerId']});
+        }
+        endpoint = buildUrl(DealerUrls.getDealerCustomerDeviceDetails, {'userId': queryParams['userId'], 'dealerId': queryParams['dealerId']});
+      }
       final response = await apiClient.get(endpoint);
       return handleListResponse<ControllerModel>(
         response,
@@ -73,6 +87,7 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
       "status": status,
       "sentSms": sendsmsName,
     };
+    print("payload:$payload");
 
     final endpoint = DashboardUrls.motorOnOffUrl
         .replaceAll(':userId', userId.toString())
@@ -81,8 +96,11 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
 
     final response = await apiClient.put(endpoint, body: payload);
 
-    if (response.statusCode != 200) {
+    if (response['code'] != 200) {
+      showToast(response['message'],backgroundColor: Colors.red,textColor: Colors.white);
       throw ServerException(message: "Motor switch failed");
     }
+    showToast(response['message'],backgroundColor: Colors.green,textColor: Colors.white);
+
   }
 }

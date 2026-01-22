@@ -3,10 +3,14 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:niagara_smart_drip_irrigation/features/controller_details/data/datasources/controller_datasource.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/program_preview_dispatcher.dart';
+import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/di/dealer_dashboard_di.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/fertilizer_reports/di/fertilizer_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/flow_graph_reports/di/flow_graph_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/moisture_reports/di/moisture_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/di/standalone_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/tdy_valve_status_reports/di/tdy_valve_status_di.dart';
+import 'package:niagara_smart_drip_irrigation/features/service_request/di/service_request_di.dart';
+import 'package:niagara_smart_drip_irrigation/features/valve_flow_settings/di/valve_flow_di.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/common_id_settings/di/common_id_settings_di.dart';
 import '../../features/controller_details/data/repositories/controller_details_repositories.dart';
@@ -16,11 +20,10 @@ import '../../features/controller_details/presentation/bloc/controller_details_b
 import '../../features/controller_details/presentation/bloc/controller_details_state.dart';
 import '../../features/dashboard/utils/dashboard_dispatcher.dart';
 import '../../features/dashboard/presentation/cubit/controller_context_cubit.dart';
-import '../../features/dealer_dashboard/domain/di/shared_devices_di.dart';
-import '../../features/edit_program/di/edit_program_di.dart';
 import '../../features/fault_msg/di/faultmsg_di.dart';
 import '../../features/irrigation_settings/di/irrigation_settings_di.dart';
 import '../../features/pump_settings/utils/pump_settings_dispatcher.dart';
+import '../../features/reports/green_house_reports/di/green_house_di.dart';
 import '../../features/set_serial_settings/data/datasources/set_serial_datasource.dart';
 import '../../features/set_serial_settings/data/repositories/set_serial_details_repositories.dart';
 import '../../features/set_serial_settings/domain/repositories/set_serial_details_repo.dart';
@@ -131,9 +134,6 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   /// Mapping and Unmapping Nodes Dependencies
   initMappingAndUnmappingNodeDependencies();
 
-  /// Edit Program Bloc
-  initEditProgramDependencies();
-
   /// program tab Dependencies
   sl.registerFactory(() => ProgramTabCubit());
 
@@ -157,7 +157,7 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
           () => SetSerialRepositoryImpl(remoteDataSource: sl()));
   sl.registerFactory(() => SetSerialBloc(sl()));
   sl.registerFactory(
-          () => SetSerialParams(userId: sl(), controllerId: sl(), type: sl()));
+          () => SetSerialParams(userId: sl(), controllerId: sl(), type: sl(),deviceId: sl()));
   sl.registerFactory(() => LoadSerialUsecase(sl()));
   sl.registerFactory(() => LoadSerialEvent(userId: sl(), controllerId: sl()));
 
@@ -175,7 +175,12 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initZoneCyclic();
   initFlowGraph();
   initMoisture();
-  initSharedDevicesDependencies();
+  initValveFlowDependencies();
+  initDealerDashboardDependencies();
+  initFertilizer();
+  initGreenHouse();
+  initServiceRequestDependencies();
+
 }
 
 // Reset all

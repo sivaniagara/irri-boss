@@ -11,7 +11,7 @@ abstract class PumpSettingsState extends Equatable {
 class GetPumpSettingsMenuInitial extends PumpSettingsState {}
 
 class GetPumpSettingsMenuLoaded extends PumpSettingsState {
-  final List<SettingsMenuEntity> settingMenuList;
+  final List<MenuItemEntity> settingMenuList;
   const GetPumpSettingsMenuLoaded({required this.settingMenuList});
 
   @override List<Object?> get props => [settingMenuList];
@@ -47,9 +47,20 @@ class GetPumpSettingsInitial extends PumpSettingsState {}
 class GetPumpSettingsLoaded extends PumpSettingsState {
   final MenuItemEntity settings;
   final int version;
-  const GetPumpSettingsLoaded({required this.settings, this.version = 0});
+  final String? lastReceivedViewMessage;
+  const GetPumpSettingsLoaded({required this.settings, this.version = 0, this.lastReceivedViewMessage});
 
-  @override List<Object?> get props => [settings, version];
+  @override List<Object?> get props => [settings, version, lastReceivedViewMessage];
+
+  GetPumpSettingsLoaded copyWith({
+    String? lastReceivedViewMessage,
+  }) {
+    return GetPumpSettingsLoaded(
+      settings: settings,
+      version: version,
+      lastReceivedViewMessage: lastReceivedViewMessage ?? this.lastReceivedViewMessage,
+    );
+  }
 }
 
 class GetPumpSettingsError extends PumpSettingsState {

@@ -18,8 +18,8 @@ class CustomSwitch extends StatelessWidget {
       onTap: () => onChanged!(!value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        width: 65,
-        height: 30,
+        width: 55,
+        height: 25,
         padding: const EdgeInsets.all(3),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(17),
@@ -46,8 +46,8 @@ class CustomSwitch extends StatelessWidget {
               duration: const Duration(milliseconds: 200),
               alignment: value ? Alignment.centerRight : Alignment.centerLeft,
               child: Container(
-                width: 28,
-                height: 28,
+                width: 18,
+                height: 18,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white,

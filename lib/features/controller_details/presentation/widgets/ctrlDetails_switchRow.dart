@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_themes.dart';
+
 class ControllerSwitchRow extends StatelessWidget {
   final String title;
   final bool value;
@@ -14,10 +16,15 @@ class ControllerSwitchRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SwitchListTile(
-      value: value,
-      onChanged: onChanged,
-      title: Text(title, style: const TextStyle(color: Colors.white)),
-     );
+    return SizedBox(
+      height: 65,
+      child: Card(
+        child: SwitchListTile(
+          value: value,
+          onChanged: onChanged,
+          title: Text(title),
+         ),
+      ),
+    );
   }
 }

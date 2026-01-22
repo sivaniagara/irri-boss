@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl_phone_field/countries.dart'; // Keep for countries data; remove full package if extracting data elsewhere
-
-import 'custom_country_picker.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 
 class CustomPhoneField extends StatefulWidget {
   final TextEditingController? controller;
   final String? initialValue;
   final String initialCountryCode;
+  final String? label;
   final InputDecoration? decoration;
   final Color? labelColor;
   final Color? textColor;
@@ -19,76 +18,26 @@ class CustomPhoneField extends StatefulWidget {
     this.initialCountryCode = 'IN',
     this.decoration,
     this.labelColor,
+    this.label,
     this.textColor,
     this.suffix,
   });
 
   @override
-  State<CustomPhoneField> createState() => CustomPhoneFieldState();
+  State<CustomPhoneField> createState() => _CustomPhoneFieldState();
 }
 
-class CustomPhoneFieldState extends State<CustomPhoneField> {
-  late final TextEditingController _effectiveController;
-  late final GlobalKey<FormFieldState> _fieldKey;
-  late String _countryCode;
-  late Country _selectedCountry;
+class _CustomPhoneFieldState extends State<CustomPhoneField> {
+  late TextEditingController _effectiveController;
+  String? _currentCountryCode;
 
   @override
   void initState() {
     super.initState();
-    _fieldKey = GlobalKey<FormFieldState>();
     _effectiveController = widget.controller ?? TextEditingController();
-
-    final initialCountry = countries.firstWhere(
-          (country) => country.code == widget.initialCountryCode,
-      orElse: () => countries.firstWhere((country) => country.code == 'IN'),
-    );
-    _selectedCountry = initialCountry;
-    _countryCode = '+${_selectedCountry.dialCode}';
-
-    if (widget.controller == null && widget.initialValue != null && widget.initialValue!.isNotEmpty) {
+    if (widget.initialValue != null && widget.initialValue!.isNotEmpty) {
       _effectiveController.text = widget.initialValue!;
     }
-  }
-
-  void _showCountryPicker() async {
-    await CustomCountryPicker.show(
-      context: context,
-      onCountrySelected: (country) {
-        setState(() {
-          _selectedCountry = country;
-          _countryCode = '+${country.dialCode}';
-        });
-        _fieldKey.currentState?.didChange(_effectiveController.text);
-      },
-      initialCountryCode: _selectedCountry.code,
-    );
-  }
-
-  Widget _buildCountrySelector() {
-    return GestureDetector(
-      onTap: _showCountryPicker,
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 9, horizontal: 2),
-        decoration: BoxDecoration(
-          border: Border(right: BorderSide(color: Colors.grey.shade300)),
-          color: Colors.white.withOpacity(0.9),
-          borderRadius: BorderRadius.circular(8)
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(_selectedCountry.flag, style: const TextStyle(fontSize: 20)),
-            const SizedBox(width: 4),
-            Text(
-              _countryCode,
-              style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w600),
-            ),
-            const Icon(Icons.arrow_drop_down, color: Colors.black54),
-          ],
-        ),
-      ),
-    );
   }
 
   @override
@@ -99,30 +48,111 @@ class CustomPhoneFieldState extends State<CustomPhoneField> {
     super.dispose();
   }
 
-  String get phoneNumber {
-    return _effectiveController.text;
-  }
+  String get fullPhoneNumber => _currentCountryCode != null
+      ? '$_currentCountryCode${_effectiveController.text.trim()}'
+      : '';
 
-  String get countryCode {
-    return _countryCode;
-  }
+  String get countryCode => _currentCountryCode ?? '';
 
-  Color _getDefaultColor() {
-    return Colors.white;
-    return Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87;
-  }
+  @override
+  Widget build(BuildContext context) {
+    final defaultLabelColor = widget.labelColor ?? Colors.white54;
+    final defaultTextColor = widget.textColor ??
+        (Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87);
 
-  String? _validatePhoneNumber(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter a valid phone number';
-    }
-    if (_selectedCountry.code == 'IN' && (value.length < 10 || value.length > 10)) {
-      return 'Phone number must be 10 digits for India';
-    }
-    if (!RegExp(r'^\d+$').hasMatch(value)) {
-      return 'Phone number must contain only digits';
-    }
-    return null;
+    final defaultDecoration = InputDecoration(
+      labelText: widget.label,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.black, width: 0.2),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.black, width: 0.2),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 0.2),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.red, width: 0.2),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.red, width: 0.2),
+      ),
+      disabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+      labelStyle: const TextStyle(color: Colors.black45),
+      prefixIcon: const Icon(Icons.phone, color: Colors.blue),
+    );
+
+    final effectiveDecoration = (widget.decoration ?? defaultDecoration).copyWith(
+      suffix: _buildMergedSuffix(),
+    );
+
+    return IntlPhoneField(
+      controller: _effectiveController,
+      initialCountryCode: widget.initialCountryCode,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      flagsButtonMargin: EdgeInsets.only(right: 10),
+      decoration: InputDecoration(
+        labelText: widget.label,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.black, width: 0.2),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.black, width: 0.2),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 0.2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.red, width: 0.2),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.red, width: 0.2),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+        labelStyle: const TextStyle(color: Colors.black45),
+        prefixIcon: const Icon(Icons.phone, color: Colors.blue),
+        suffix: _buildMergedSuffix(),
+      ),
+      validator: (value) => value?.number.isEmpty ?? true ? 'Please enter a valid phone number' : null,
+      style: TextStyle(color: defaultTextColor),
+      dropdownTextStyle: TextStyle(color: defaultTextColor),
+      dropdownDecoration: BoxDecoration(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(12),
+          bottomLeft: Radius.circular(12),
+        ),
+        border: Border.all(color: Colors.black, width: 0.2),
+      ),
+      // decoration: effectiveDecoration,
+      onChanged: (phone) {
+        setState(() {
+          _currentCountryCode = phone.countryCode;
+        });
+      },
+      onCountryChanged: (country) {
+        setState(() {
+          _currentCountryCode = '+${country.dialCode}';
+        });
+      },
+    );
   }
 
   Widget? _buildMergedSuffix() {
@@ -155,103 +185,6 @@ class CustomPhoneFieldState extends State<CustomPhoneField> {
           baseSuffix,
         ],
       ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final defaultLabelColor = widget.labelColor ?? Colors.white54;
-    final defaultTextColor = widget.textColor ?? _getDefaultColor();
-
-    // Get effective decoration (default or custom)
-    InputDecoration effectiveDecoration = widget.decoration ??
-        InputDecoration(
-          labelText: 'Phone Number',
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(0),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white),
-            borderRadius: BorderRadius.circular(0),
-          ),
-          focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white, width: 2.0),
-            borderRadius: BorderRadius.circular(0),
-          ),
-          errorBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.redAccent),
-            borderRadius: BorderRadius.circular(0),
-          ),
-          focusedErrorBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.redAccent, width: 2.0),
-            borderRadius: BorderRadius.circular(0),
-          ),
-          disabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.white.withOpacity(0.5)),
-            borderRadius: BorderRadius.circular(0),
-          ),
-          prefixStyle: const TextStyle(color: Colors.black),
-          filled: true,
-          fillColor: Colors.white.withOpacity(0.9),
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 10,
-            vertical: 12,
-          ),
-          errorStyle: const TextStyle(color: Colors.redAccent),
-        );
-
-    // Apply merged suffix to effective decoration
-    effectiveDecoration = effectiveDecoration.copyWith(
-      suffix: _buildMergedSuffix(),
-      labelStyle: effectiveDecoration.labelStyle?.copyWith(color: defaultLabelColor) ??
-          TextStyle(color: defaultLabelColor),
-    );
-
-    return Row(
-      children: [
-        _buildCountrySelector(),
-        const SizedBox(width: 2),
-        Expanded(
-          child: TextFormField(
-            key: _fieldKey,
-            controller: _effectiveController,
-            keyboardType: TextInputType.number,
-            style: TextStyle(color: defaultTextColor),
-            decoration: effectiveDecoration
-                .copyWith(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(0),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white),
-                borderRadius: BorderRadius.circular(0),
-              ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white, width: 2.0),
-                borderRadius: BorderRadius.circular(0),
-              ),
-              errorBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.redAccent),
-                borderRadius: BorderRadius.circular(0),
-              ),
-              focusedErrorBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.redAccent, width: 2.0),
-                borderRadius: BorderRadius.circular(0),
-              ),
-              disabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white.withOpacity(0.5)),
-                borderRadius: BorderRadius.circular(0),
-              ),
-            ),
-            onChanged: (value) {
-              setState(() {});
-            },
-            validator: _validatePhoneNumber,
-          ),
-        ),
-      ],
     );
   }
 }

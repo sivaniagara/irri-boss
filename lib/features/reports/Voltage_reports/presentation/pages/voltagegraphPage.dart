@@ -147,7 +147,6 @@ class VoltageGraphPage extends StatelessWidget {
         child: Row(
           children: [
             _timeBox(e.time),
-            const SizedBox(width: 8),
             _phaseBox("R", "RY", e.r,"C1",e.c1,Colors.red),
             _phaseBox("Y", "YB", e.y,"C2",e.c1,Colors.yellow),
             _phaseBox("B", "BR", e.b,"C3",e.c1,Colors.blue),
@@ -161,7 +160,7 @@ class VoltageGraphPage extends StatelessWidget {
   Widget _timeBox(String time) {
     return Text(
       time,
-      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 11),
     );
   }
 
@@ -207,7 +206,7 @@ class VoltageGraphPage extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(Icons.circle, size: 10, color: color),
-        const SizedBox(width: 6),
+        const SizedBox(width: 2),
         Text(
           text,
           style: TextStyle(
@@ -221,7 +220,7 @@ class VoltageGraphPage extends StatelessWidget {
   }
   Widget _wellLevel(String level, String percent) {
     return Container(
-      padding: const EdgeInsets.all(5),
+      padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: Colors.green,
         borderRadius: BorderRadius.circular(12),

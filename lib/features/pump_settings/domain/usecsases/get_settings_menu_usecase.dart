@@ -4,13 +4,14 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../domain/entities/settings_menu_entity.dart';
 import '../../domain/repositories/pump_settings_repository.dart';
+import '../entities/menu_item_entity.dart';
 
-class GetPumpSettingsMenuUsecase extends UseCase<List<SettingsMenuEntity>, GetPumpSettingsMenuParams> {
+class GetPumpSettingsMenuUsecase extends UseCase<List<MenuItemEntity>, GetPumpSettingsMenuParams> {
   final PumpSettingsRepository pumpSettingsRepository;
   GetPumpSettingsMenuUsecase({required this.pumpSettingsRepository});
 
   @override
-  Future<Either<Failure, List<SettingsMenuEntity>>> call(GetPumpSettingsMenuParams params) {
+  Future<Either<Failure, List<MenuItemEntity>>> call(GetPumpSettingsMenuParams params) {
     return pumpSettingsRepository.getSettingsMenuList(params.userId, params.subUserId, params.controllerId);
   }
 }

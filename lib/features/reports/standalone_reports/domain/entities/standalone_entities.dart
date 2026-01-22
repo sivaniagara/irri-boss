@@ -18,6 +18,19 @@ class StandaloneEntity {
     required this.controllerDuration,
     required this.controllerDuration1,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'code': code,
+      'message': message,
+      'data': data.map((e) => e.toJson()).toList(),
+      'totalDuration': totalDuration,
+      'totalFlow': totalFlow,
+      'powerDuration': powerDuration,
+      'controllerDuration': controllerDuration,
+      'controllerDuration1': controllerDuration1,
+    };
+  }
 }
 
 class StandaloneDatumEntity {
@@ -38,4 +51,16 @@ class StandaloneDatumEntity {
     required this.duration,
     required this.dateTime,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'date': date,
+      'zone': zone,
+      'onTime': onTime,
+      'offDate': offDate,
+      'offTime': offTime,
+      'duration': duration,
+      'dateTime': dateTime,
+    };
+  }
 }

@@ -117,15 +117,22 @@ class MotorCyclicPage extends StatelessWidget {
 
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.data_thresholding_sharp),
-          onPressed: () {
-            context.push(
-              ReportDownloadPageRoutes.ReportDownloadPage,
-              extra: {
-                "title": "Motor Cyclic Report",
-                "url": MotorCyclicPageUrls.getMotorCyclicUrl,
-              },
-            );
-          },
+            onPressed: () {
+              final state = context.read<MotorCyclicBloc>().state;
+
+              if (state is MotorCyclicLoaded) {
+                final List<Map<String, dynamic>> excelData =
+                state.data.data.map((e) => e.toJson()).toList();
+
+                context.push(
+                  ReportDownloadPageRoutes.ReportDownloadPage,
+                  extra: {
+                    "title": "MOTOR CYCLIC REPORT",
+                    "data": excelData,
+                  },
+                );
+              }
+            }
         ),
 
         // 🔹 BODY

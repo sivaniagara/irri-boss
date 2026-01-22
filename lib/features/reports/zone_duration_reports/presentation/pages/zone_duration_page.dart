@@ -36,16 +36,11 @@ class ZoneDurationPage extends StatelessWidget {
     return GlassyWrapper(
       child: Scaffold(
         appBar: AppBar(
-
-          // 🔹 TITLE CHANGE
+           // 🔹 TITLE CHANGE
           title: Text("ZONE DURATION REPORT"),
-
-
-          actions: [
+            actions: [
             // 🔹 GRID / LIST TOGGLE
-
-
-            IconButton(
+             IconButton(
               icon: const Icon(Icons.calendar_today,
                   color: Colors.black),
               onPressed: () async {
@@ -72,15 +67,22 @@ class ZoneDurationPage extends StatelessWidget {
 
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.data_thresholding_sharp),
-          onPressed: () {
-            context.push(
-              ReportDownloadPageRoutes.ReportDownloadPage,
-              extra: {
-                "title": "Motor Cyclic Report",
-                "url": ZoneDurationPageUrls.getZoneDurationUrl,
-              },
-            );
-          },
+            onPressed: () {
+              final state = context.read<ZoneDurationBloc>().state;
+
+              if (state is ZoneDurationLoaded) {
+                final List<Map<String, dynamic>> excelData =
+                state.data.data.map((e) => e.toJson()).toList();
+
+                context.push(
+                  ReportDownloadPageRoutes.ReportDownloadPage,
+                  extra: {
+                    "title": "ZONE DURATION REPORT",
+                    "data": excelData,
+                  },
+                );
+              }
+            }
         ),
 
         // 🔹 BODY

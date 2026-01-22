@@ -9,6 +9,7 @@ abstract class ControllerRepo {
   Future<Either<Failure, dynamic>> getControllerDetails(
       int userId,
       int controllerId,
+      String deviceId,
       );
   Future<Either<Failure, dynamic>> updateControllerDetails(
       UpdateControllerDetailsParams params,

@@ -4,9 +4,6 @@ import 'package:niagara_smart_drip_irrigation/features/reports/power_reports/pre
 
 import '../../domain/usecases/fetchpowergraphdata.dart';
 
-
-
-
 class PowerGraphBloc
     extends Bloc<PowerGraphEvent, PowerGraphState> {
   final FetchPowerGraphData fetchPowerGraphData;

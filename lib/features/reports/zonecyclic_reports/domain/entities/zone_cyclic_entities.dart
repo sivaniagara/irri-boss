@@ -18,7 +18,21 @@ class ZoneCyclicEntity {
     required this.controllerDuration,
     required this.controllerDuration1,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'code': code,
+      'message': message,
+      'data': data.map((e) => e.toJson()).toList(),
+      'totalDuration': totalDuration,
+      'totalFlow': totalFlow,
+      'powerDuration': powerDuration,
+      'controllerDuration': controllerDuration,
+      'controllerDuration1': controllerDuration1,
+    };
+  }
 }
+
 class ZoneProgramEntity {
   final String program;
   final List<ZoneCyclicDetailEntity> zoneList;
@@ -27,7 +41,15 @@ class ZoneProgramEntity {
     required this.program,
     required this.zoneList,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'program': program,
+      'zoneList': zoneList.map((e) => e.toJson()).toList(),
+    };
+  }
 }
+
 class ZoneCyclicDetailEntity {
   final String date;
   final String zone;
@@ -60,4 +82,23 @@ class ZoneCyclicDetailEntity {
     required this.wellPercentage,
     required this.ph,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'date': date,
+      'zone': zone,
+      'onTime': onTime,
+      'offDate': offDate,
+      'offTime': offTime,
+      'duration': duration,
+      'dateTime': dateTime,
+      'flow': flow,
+      'pressure': pressure,
+      'pressureIn': pressureIn,
+      'pressureOut': pressureOut,
+      'wellLevel': wellLevel,
+      'wellPercentage': wellPercentage,
+      'ph': ph,
+    };
+  }
 }
