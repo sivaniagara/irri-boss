@@ -168,6 +168,7 @@ class IrrigationSettingsPage extends StatelessWidget {
         const SizedBox(height: 10),
         CustomCard(
           child: Column(
+            spacing: 10,
             children: List.generate(items.length * 2 - 1, (index) {
               if (index.isOdd) {
                 return const Divider(thickness: 0.6);
@@ -191,7 +192,4 @@ class IrrigationSettingsPage extends StatelessWidget {
       ],
     );
   }
-
-
-
 }

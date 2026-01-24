@@ -20,6 +20,7 @@ import '../../features/controller_details/presentation/bloc/controller_details_b
 import '../../features/controller_details/presentation/bloc/controller_details_state.dart';
 import '../../features/dashboard/utils/dashboard_dispatcher.dart';
 import '../../features/dashboard/presentation/cubit/controller_context_cubit.dart';
+import '../../features/edit_program/di/edit_program_di.dart';
 import '../../features/fault_msg/di/faultmsg_di.dart';
 import '../../features/irrigation_settings/di/irrigation_settings_di.dart';
 import '../../features/pump_settings/utils/pump_settings_dispatcher.dart';
@@ -145,6 +146,9 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
 
   /// common id settings dependencies
   initCommonSettingDependencies();
+
+  /// edit program dependencies
+  initEditProgramDependencies();
 
   sl.registerLazySingleton<ControllerRemoteDataSource>(() => ControllerRemoteDataSourceImpl(apiClient: sl()));
   sl.registerLazySingleton<ControllerRepo>(() => ControllerRepoImpl(remoteDataSource: sl()));

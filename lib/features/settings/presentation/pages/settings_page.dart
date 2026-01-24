@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/utils/app_images.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/leaf_box.dart';
 import 'package:niagara_smart_drip_irrigation/features/common_id_settings/utils/common_id_settings_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
+import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../../irrigation_settings/utils/irrigation_settings_routes.dart';
 import '../../../mapping_and_unmapping_nodes/utils/mapping_and_unmapping_nodes_routes.dart';
 
@@ -17,7 +20,19 @@ class SettingsPage extends StatelessWidget {
             context: context,
             title: 'Pump Settings',
             iconPath: AppImages.pumpSettingIcon,
-            onTap: () {  }
+            onTap: () {
+              final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
+              context.push(
+                  PumpSettingsPageRoutes.pumpSettingMenuList,
+                extra: {
+                    'userId': int.parse(controllerContext.userId),
+                    'controllerId': int.parse(controllerContext.controllerId),
+                    'userType': int.parse(controllerContext.userType),
+                    'subUserId': int.parse(controllerContext.subUserId),
+                    'deviceId': controllerContext.deviceId,
+                }
+              );
+            }
         ),
         _buildSettingsItem(
             context: context,
