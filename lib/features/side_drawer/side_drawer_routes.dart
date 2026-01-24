@@ -166,7 +166,7 @@ final sideDrawerRoutes = <ShellRoute>[
         builder: (context, state) {
           final params = state.uri.queryParameters as Map<String, dynamic>;
 
-          return DashboardPage(userData: params,);
+          return DashboardPage(userData: params, child: null,);
         },
         routes: [
           ...controllerSettingGoRoutes,

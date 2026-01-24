@@ -415,10 +415,9 @@ var pumpConfiguration = {
       "TID": 1,
       "NAME": "Pump Configuration",
       "SETS": [
-        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "PUMPCONFIG,", "TT": "PUMP 1 FLOW;PUMP 2 FLOW;PUMP 3 FLOW;PUMP 4 FLOW", "HF": '1;1;1;1'},
+        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "PUMPCONFIG", "TT": "PUMP 1 FLOW;PUMP 2 FLOW;PUMP 3 FLOW;PUMP 4 FLOW", "HF": '1;1;1;1'},
       ]
     },
-
   ],
 };
 
@@ -473,18 +472,7 @@ var greenHouse = {
       "TID": 3,
       "NAME": "Program Cycle",
       "SETS": [
-        {"SN": 1, "WT": 9, "VAL": "0", "SF": "PROGCYCLE,", "TT": "Program Cycle 1", "HF": '1'},
-        {"SN": 2, "WT": 9, "VAL": "0", "SF": "PROGCYCLE", "TT": "Program Cycle 2", "HF": '1'},
-        {"SN": 3, "WT": 9, "VAL": "0", "SF": "PROGCYCLE", "TT": "Program Cycle 3", "HF": '1'},
-        {"SN": 4, "WT": 9, "VAL": "0", "SF": "PROGCYCLE", "TT": "Program Cycle 4", "HF": '1'},
-        {"SN": 5, "WT": 9, "VAL": "0", "SF": "PROGCYCLE", "TT": "Program Cycle 5", "HF": '1'},
-        {"SN": 6, "WT": 9, "VAL": "0", "SF": "PROGCYCLE", "TT": "Program Cycle 6", "HF": '1'},
-        {"SN": 7, "WT": 9, "VAL": "0", "SF": "PROGCYCLE", "TT": "Program Cycle 7", "HF": '1'},
-        {"SN": 8, "WT": 9, "VAL": "0", "SF": "PROGCYCLE", "TT": "Program Cycle 8", "HF": '1'},
-        {"SN": 9, "WT": 9, "VAL": "0", "SF": "PROGCYCLE", "TT": "Program Cycle 9", "HF": '1'},
-        {"SN": 10, "WT": 9, "VAL": "0", "SF": "PROGCYCLE", "TT": "Program Cycle 10", "HF": '1'},
-        {"SN": 11, "WT": 9, "VAL": "0", "SF": "PROGCYCLE", "TT": "Program Cycle 11", "HF": '1'},
-        {"SN": 12, "WT": 9, "VAL": "0", "SF": "PROGCYCLE", "TT": "Program Cycle 12", "HF": '1'},
+        {"SN": 1, "WT": 9, "VAL": "0", "SF": "PROGCYCLE,", "TT": "Program Cycle 1;Program Cycle 2;Program Cycle 3;Program Cycle 4;Program Cycle 5;Program Cycle 6;Program Cycle 7;Program Cycle 8;Program Cycle 9;Program Cycle 10;Program Cycle 11;Program Cycle 12", "HF": '1'},
       ]
     },
     {

@@ -1,9 +1,9 @@
-import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/common_id_settings/presentation/bloc/common_id_settings_event.dart';
-import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/common_id_settings/presentation/pages/common_id_setting_page.dart';
+import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presentation/bloc/common_id_settings_event.dart';
+import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presentation/pages/common_id_setting_page.dart';
 
 import '../../../core/di/injection.dart' as di;
 import '../../controller_settings/utils/controller_settings_routes.dart';
-import '../sub_module/common_id_settings/presentation/bloc/common_id_settings_bloc.dart';
+import '../../common_id_settings/presentation/bloc/common_id_settings_bloc.dart';
 import '../sub_module/edit_zone/presentation/bloc/edit_zone_bloc.dart';
 import '../sub_module/edit_zone/presentation/pages/edit_zone_page.dart';
 import '../../dashboard/presentation/cubit/controller_context_cubit.dart';

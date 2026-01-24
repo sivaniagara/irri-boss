@@ -7,6 +7,8 @@ class UnmappedCategoryNodeModel extends UnmappedCategoryNodeEntity {
     required super.qrCode,
     required super.modelName,
     required super.dateManufacture,
+    required super.userName,
+    required super.mobileNumber,
     super.select
   });
 
@@ -17,6 +19,8 @@ class UnmappedCategoryNodeModel extends UnmappedCategoryNodeEntity {
       qrCode: json['QRCode'],
       modelName: json['modelName'],
       dateManufacture: json['dateManufacture'],
+      userName: json['userName'],
+      mobileNumber: json['mobileNumber'],
     );
   }
 
@@ -27,6 +31,8 @@ class UnmappedCategoryNodeModel extends UnmappedCategoryNodeEntity {
       qrCode: entity.qrCode,
       modelName: entity.modelName,
       dateManufacture: entity.dateManufacture,
+      userName: entity.userName,
+      mobileNumber: entity.mobileNumber,
     );
   }
 

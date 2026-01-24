@@ -31,7 +31,7 @@ class SettingRow extends StatelessWidget {
           Expanded(child: Text(singleSettingItemEntity.titleText, style: Theme.of(context).textTheme.labelLarge,)),
           Container(
             padding: EdgeInsets.only(right: singleSettingItemEntity.widgetType == 2 ? 10 : 0),
-            width: singleSettingItemEntity.widgetType == 2 ? 80 : 150,
+            width: singleSettingItemEntity.widgetType == 2 ? 65 : 150,
             child: FindSuitableWidget(
               singleSettingItemEntity: singleSettingItemEntity,
               onChanged: onChanged, onTap: onTap,

@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 
 class CustomSwitch extends StatelessWidget {
   final bool value;
+  bool disable;
   final void Function(dynamic)? onChanged;
 
-  const CustomSwitch({
+  CustomSwitch({
     super.key,
     required this.value,
     required this.onChanged,
+    this.disable = false,
   });
 
   @override
@@ -21,7 +23,7 @@ class CustomSwitch extends StatelessWidget {
         padding: const EdgeInsets.all(3),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(17),
-          color: value ? Colors.green : Colors.grey.shade400,
+          color: value ? Colors.green : (disable ? Colors.grey.shade300 : Colors.red.shade800),
         ),
         child: Stack(
           children: [

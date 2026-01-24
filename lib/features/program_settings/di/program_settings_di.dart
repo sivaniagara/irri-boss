@@ -1,4 +1,4 @@
-import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/common_id_settings/data/repositories/common_id_settings_repository_impl.dart';
+import 'package:niagara_smart_drip_irrigation/features/common_id_settings/data/repositories/common_id_settings_repository_impl.dart';
 import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/edit_zone/domain/usecases/get_zone_configuration_usecase.dart';
 import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/edit_zone/domain/usecases/submit_while_edit_zone_configuration.dart';
 import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/edit_zone/domain/usecases/submit_zone_configuration_usecase.dart';
@@ -16,11 +16,11 @@ import '../../program_settings/data/repositories/program_repository_impl.dart';
 import '../../program_settings/domain/repositories/program_repository.dart';
 import '../../program_settings/domain/usecases/get_programs_usecase.dart';
 import '../../program_settings/presentation/bloc/program_bloc.dart';
-import '../sub_module/common_id_settings/data/data_source/common_id_settings_remote_source.dart';
-import '../sub_module/common_id_settings/domain/repositories/common_id_settings_repository.dart';
-import '../sub_module/common_id_settings/domain/usecases/get_common_id_settings_usecase.dart';
-import '../sub_module/common_id_settings/domain/usecases/submit_category_usecase.dart';
-import '../sub_module/common_id_settings/presentation/bloc/common_id_settings_bloc.dart';
+import '../../common_id_settings/data/data_source/common_id_settings_remote_source.dart';
+import '../../common_id_settings/domain/repositories/common_id_settings_repository.dart';
+import '../../common_id_settings/domain/usecases/get_common_id_settings_usecase.dart';
+import '../../common_id_settings/domain/usecases/submit_category_usecase.dart';
+import '../../common_id_settings/presentation/bloc/common_id_settings_bloc.dart';
 
 void initProgramSettingDependencies() async{
   sl.registerFactory(()=>ProgramBloc(getProgramsUseCase: sl(), deleteZoneUseCase: sl()));

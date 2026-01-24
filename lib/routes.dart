@@ -3,13 +3,17 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/dashboard_2_0.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/node_status_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/green_house_reports/utils/green_house_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/moisture_reports/utils/moisture_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/service_request/utils/service_request_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/settings/presentation/pages/settings_page.dart';
+import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/utils/standalone_routes.dart';
 import 'core/di/injection.dart';
+import 'features/common_id_settings/utils/common_id_settings_routes.dart';
 import 'features/controller_details/domain/usecase/controller_details_params.dart';
 import 'features/controller_details/presentation/bloc/controller_details_bloc.dart';
 import 'features/controller_details/presentation/bloc/controller_details_bloc_event.dart';
@@ -21,8 +25,10 @@ import 'features/dashboard/presentation/pages/dashboard_page.dart';
 import 'features/dashboard/presentation/pages/program_preview_page.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
 import 'features/dealer_dashboard/utils/dealer_routes.dart';
+import 'features/edit_program/utils/edit_program_routes.dart';
 import 'features/irrigation_settings/utils/irrigation_settings_routes.dart';
 import 'features/fault_msg/utils/faultmsg_routes.dart';
+import 'features/mapping_and_unmapping_nodes/utils/mapping_and_unmapping_nodes_routes.dart';
 import 'features/report_downloader/utils/report_downloaderRoute.dart';
 import 'features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
 import 'features/reports/Voltage_reports/utils/voltage_routes.dart';
@@ -162,22 +168,54 @@ class AppRouter {
             );
           },
         ),
-        GoRoute(
-          name: 'dashboard',
-          path: DashBoardRoutes.dashboard,
-          builder: (context, state) {
-            final params = state.uri.queryParameters as Map<String, dynamic>;
+        ShellRoute(
+            builder: (context, state, child){
+              return DashboardPage(userData: {}, child: child,);
+            },
+            routes: [
+              GoRoute(
+                  path: DashBoardRoutes.dashboard,
+                  builder: (context, state) {
+                    return Dashboard20();
+                  },
+              ),
+              GoRoute(
+                  path: DashBoardRoutes.report,
+                  builder: (context, state) {
+                    return Center(
+                      child: Text('Report'),
+                    );
+                  },
+                  routes: [
 
-            return DashboardPage(userData: params);
-          },
-          routes: [
-            ...controllerSettingGoRoutes,
-            ...programSettingsGoRoutes,
-            ...irrigationSettingGoRoutes,
-            ...standaloneRoutes,
+                  ]
+              ),
+              GoRoute(
+                  path: DashBoardRoutes.settings,
+                  builder: (context, state) {
+                    return SettingsPage();
+                  },
+                  routes: [
 
-          ],
+                  ]
+              ),
+              GoRoute(
+                  path: DashBoardRoutes.sentAndReceive,
+                  builder: (context, state) {
+                    return Center(
+                      child: Text('sentAndReceive'),
+                    );
+                  },
+                  routes: [
+
+                  ]
+              ),
+            ]
         ),
+        ...editProgramGoRoutes,
+        ...irrigationSettingGoRoutes,
+        ...mappingAndUnmappingNodesGoRoutes,
+        ...commonIdSettingsGoRoutes,
         GoRoute(
             name: 'ctrlLivePage',
             path: DashBoardRoutes.ctrlLivePage,

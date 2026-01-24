@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/gradiant_background.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_routes.dart';
-import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/utils/mapping_and_unmapping_nodes_routes.dart';
 
 import '../../../program_settings/utils/program_settings_routes.dart';
@@ -58,7 +57,7 @@ class ControllerAppBar extends StatelessWidget {
               context.pushReplacement('${DashBoardRoutes.dashboard}${ControllerSettingsRoutes.controllerDetails}');
               break;
             case ControllerTab.nodes:
-              context.pushReplacement('${DashBoardRoutes.dashboard}${MappingAndUnmappingNodesRoutes.nodes}');
+              context.go('${DashBoardRoutes.dashboard}${MappingAndUnmappingNodesRoutes.nodeSetting}');
               break;
             case ControllerTab.programs:
               context.pushReplacement('${DashBoardRoutes.dashboard}${ProgramSettingsRoutes.program}');

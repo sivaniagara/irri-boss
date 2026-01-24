@@ -12,6 +12,7 @@ import 'package:niagara_smart_drip_irrigation/features/reports/tdy_valve_status_
 import 'package:niagara_smart_drip_irrigation/features/service_request/di/service_request_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/valve_flow_settings/di/valve_flow_di.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../features/common_id_settings/di/common_id_settings_di.dart';
 import '../../features/controller_details/data/repositories/controller_details_repositories.dart';
 import '../../features/controller_details/domain/repositories/controller_details_repo.dart';
 import '../../features/controller_details/domain/usecase/controller_details_usercase.dart';
@@ -19,6 +20,7 @@ import '../../features/controller_details/presentation/bloc/controller_details_b
 import '../../features/controller_details/presentation/bloc/controller_details_state.dart';
 import '../../features/dashboard/utils/dashboard_dispatcher.dart';
 import '../../features/dashboard/presentation/cubit/controller_context_cubit.dart';
+import '../../features/edit_program/di/edit_program_di.dart';
 import '../../features/fault_msg/di/faultmsg_di.dart';
 import '../../features/irrigation_settings/di/irrigation_settings_di.dart';
 import '../../features/pump_settings/utils/pump_settings_dispatcher.dart';
@@ -141,6 +143,12 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
 
   /// irrigation template setting dependencies
   initIrrigationSettingsDependencies();
+
+  /// common id settings dependencies
+  initCommonSettingDependencies();
+
+  /// edit program dependencies
+  initEditProgramDependencies();
 
   sl.registerLazySingleton<ControllerRemoteDataSource>(() => ControllerRemoteDataSourceImpl(apiClient: sl()));
   sl.registerLazySingleton<ControllerRepo>(() => ControllerRepoImpl(remoteDataSource: sl()));
