@@ -60,7 +60,7 @@ class ControllerContextCubit extends Cubit<ControllerContextState>{
           controllerId: controllerId,
           userType: currentState.userType,
           subUserId: currentState.subUserId,
-          deviceId: currentState.deviceId,
+          deviceId: deviceId,
         ),
       );
     }
