@@ -44,7 +44,11 @@ class ValveFlowModel extends ValveFlowEntity {
       smsFormat: json['smsFormat']?.toString() ?? '',
       nodes: nodes,
       flowPercent: templateJsonData['FLOWPERCENT']?.toString() ?? '',
+<<<<<<< HEAD
       flowDeviation: templateJsonData['FLOWPERCENT']?.toString() ?? '0', 
+=======
+      flowDeviation: '0', 
+>>>>>>> d1429699b9e6a75b60f2d2f36b6708390758b021
     );
   }
 }
@@ -64,9 +68,15 @@ class ValveFlowNodeModel extends ValveFlowNodeEntity {
       nodeName: json['nodeName']?.toString() ?? '',
       nodeId: json['nodeId']?.toString() ?? '',
       serialNo: json['serialNo']?.toString() ?? '',
+<<<<<<< HEAD
       nodeValue: json['nodeValue']?.toString() ?? '0',
       qrCode: json['QRCode']?.toString() ?? '',
       flowDeviation: json['flowDeviation']?.toString() ?? '0',
+=======
+      nodeValue: '0', // Initial value as requested
+      qrCode: json['QRCode']?.toString() ?? '',
+      flowDeviation: '0', // Initial value as requested
+>>>>>>> d1429699b9e6a75b60f2d2f36b6708390758b021
     );
   }
 }

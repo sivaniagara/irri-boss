@@ -11,6 +11,10 @@ abstract class ValveFlowRemoteSource {
   Future<ValveFlowModel> getValveFlowSetting({required Map<String, dynamic> urlData});
   Future<List<dynamic>> getNodeList({required Map<String, dynamic> urlData});
   Future<void> publishMqttCommand({required String controllerId, required String command});
+<<<<<<< HEAD
+=======
+  Future<void> logHistory({required String userId, required int subUserId, required String controllerId, required String sentSms});
+>>>>>>> d1429699b9e6a75b60f2d2f36b6708390758b021
   Future<void> saveValveFlowSettings({required String endpoint, required Map<String, dynamic> body});
 }
 
@@ -59,11 +63,32 @@ class ValveFlowRemoteSourceImpl implements ValveFlowRemoteSource {
   }
 
   @override
+<<<<<<< HEAD
+=======
+  Future<void> logHistory({required String userId, required int subUserId, required String controllerId, required String sentSms}) async {
+    final historyEndpoint = buildUrl(ValveFlowUrls.logHistory, {
+      'userId': userId,
+      'subUserId': subUserId,
+      'controllerId': controllerId,
+    });
+    try {
+      await apiClient.post(historyEndpoint, body: {"sentSms": sentSms});
+    } catch (e) {
+      // Log failure but don't rethrow
+    }
+  }
+
+  @override
+>>>>>>> d1429699b9e6a75b60f2d2f36b6708390758b021
   Future<void> saveValveFlowSettings({required String endpoint, required Map<String, dynamic> body}) async {
     try {
       await apiClient.post(endpoint, body: body);
     } catch (e) {
+<<<<<<< HEAD
       rethrow;
+=======
+      throw Exception('Failed to save valve flow settings: $e');
+>>>>>>> d1429699b9e6a75b60f2d2f36b6708390758b021
     }
   }
 }

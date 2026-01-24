@@ -99,7 +99,11 @@ class ValveFlowPage extends StatelessWidget {
                                 children: [
                                   const Expanded(
                                     child: Text(
+<<<<<<< HEAD
                                       "FLOW DEVIATION (%)",
+=======
+                                      "COMMON DEVIATION (%)",
+>>>>>>> d1429699b9e6a75b60f2d2f36b6708390758b021
                                       style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
                                     ),
                                   ),
@@ -107,8 +111,12 @@ class ValveFlowPage extends StatelessWidget {
                                   SizedBox(
                                     width: 85,
                                     child: _ValveFlowInputField(
+<<<<<<< HEAD
                                       initialValue: entity.flowDeviation
                                       ,
+=======
+                                      initialValue: entity.flowDeviation,
+>>>>>>> d1429699b9e6a75b60f2d2f36b6708390758b021
                                       onChanged: (val) {
                                         context.read<ValveFlowBloc>().add(UpdateCommonFlowDeviationEvent(deviation: val));
                                       },
@@ -188,7 +196,11 @@ class ValveFlowPage extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
+<<<<<<< HEAD
                                     const Text("Flow Value", style: TextStyle(fontSize: 10, color: Colors.black, fontWeight: FontWeight.bold)),
+=======
+                                    const Text("Flow Value", style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+>>>>>>> d1429699b9e6a75b60f2d2f36b6708390758b021
                                     const SizedBox(height: 2),
                                     SizedBox(
                                       width: 85,
@@ -255,7 +267,11 @@ class ValveFlowPage extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             decoration: BoxDecoration(
+<<<<<<< HEAD
               color: isError ? Colors.red.withValues(alpha: 0.9) : Colors.green.withValues(alpha: 0.9),
+=======
+              color: isError ? Colors.red.withValues(alpha: 0.9) : const Color(0xFF2E7D32).withValues(alpha: 0.9),
+>>>>>>> d1429699b9e6a75b60f2d2f36b6708390758b021
               borderRadius: BorderRadius.circular(25),
             ),
             child: Text(
