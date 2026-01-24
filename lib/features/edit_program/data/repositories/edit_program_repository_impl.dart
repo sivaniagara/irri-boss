@@ -8,6 +8,7 @@ import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/entit
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/usecases/get_program_usecase.dart';
 
 import '../../domain/repositories/edit_program_repository.dart';
+import '../../domain/usecases/save_program_usecase.dart';
 import '../../domain/usecases/send_zone_configuration_payload_usecase.dart';
 import '../../domain/usecases/send_zone_set_payload_usecase.dart';
 import '../data_source/edit_program_remote_source.dart';
@@ -21,465 +22,13 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
   @override
   Future<Either<Failure, EditProgramEntity>> getProgram(GetProgramParams params) async{
     try {
-      final response = await remoteSource.getPrograms(
+      final response = await remoteSource.getProgram(
           urlData: {
             'userId' : params.userId,
             'controllerId' : params.controllerId,
             'subUserId' : params.subUserId,
             'programId' : params.programId.toString()
           });
-      // var response = {
-      //   "code": 200,
-      //   "message": "Node successfully listed",
-      //   "default" : {
-      //     "valves" : [
-      //       {
-      //         "QRCode": "151091229001",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5042,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "001",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229002",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5041,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "002",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229003",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5040,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "003",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229004",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5039,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "004",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229005",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5038,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "005",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229006",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5037,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "006",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229007",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5036,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "007",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229008",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5035,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "008",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "224097094001",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 4993,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "009",
-      //         "categoryId": 2,
-      //         "dateManufacture": "25/10/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "224097094002",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 4992,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "010",
-      //         "categoryId": 2,
-      //         "dateManufacture": "25/10/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "224097094003",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 4991,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "011",
-      //         "categoryId": 2,
-      //         "dateManufacture": "25/10/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "224097094004",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 4990,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "012",
-      //         "categoryId": 2,
-      //         "dateManufacture": "25/10/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "224097094005",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 4989,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "013",
-      //         "categoryId": 2,
-      //         "dateManufacture": "25/10/2021",
-      //         "modelName": "Valve Controller"
-      //       }
-      //     ],
-      //     "moistureSensors" : [
-      //       {
-      //         "QRCode": "151091229001",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5042,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "001",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229002",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5041,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "002",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229003",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5040,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "003",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229004",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5039,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "004",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229005",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5038,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "005",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229006",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5037,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "006",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229007",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5036,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "007",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229008",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5035,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "008",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "224097094001",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 4993,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "009",
-      //         "categoryId": 2,
-      //         "dateManufacture": "25/10/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "224097094002",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 4992,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "010",
-      //         "categoryId": 2,
-      //         "dateManufacture": "25/10/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "224097094003",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 4991,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "011",
-      //         "categoryId": 2,
-      //         "dateManufacture": "25/10/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "224097094004",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 4990,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "012",
-      //         "categoryId": 2,
-      //         "dateManufacture": "25/10/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "224097094005",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 4989,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "013",
-      //         "categoryId": 2,
-      //         "dateManufacture": "25/10/2021",
-      //         "modelName": "Valve Controller"
-      //       }
-      //     ],
-      //     "levelSensors" : [
-      //       {
-      //         "QRCode": "151091229001",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5042,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "001",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229002",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5041,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "002",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229003",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5040,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "003",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229004",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5039,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "004",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229005",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5038,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "005",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229006",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5037,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "006",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229007",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5036,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "007",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "151091229008",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 5035,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "008",
-      //         "categoryId": 2,
-      //         "dateManufacture": "20/09/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "224097094001",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 4993,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "009",
-      //         "categoryId": 2,
-      //         "dateManufacture": "25/10/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "224097094002",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 4992,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "010",
-      //         "categoryId": 2,
-      //         "dateManufacture": "25/10/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "224097094003",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 4991,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "011",
-      //         "categoryId": 2,
-      //         "dateManufacture": "25/10/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "224097094004",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 4990,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "012",
-      //         "categoryId": 2,
-      //         "dateManufacture": "25/10/2021",
-      //         "modelName": "Valve Controller"
-      //       },
-      //       {
-      //         "QRCode": "224097094005",
-      //         "nodeName": "",
-      //         "categoryName": "Valves",
-      //         "nodeId": 4989,
-      //         "userName": "Niagara Solutions",
-      //         "serialNo": "013",
-      //         "categoryId": 2,
-      //         "dateManufacture": "25/10/2021",
-      //         "modelName": "Valve Controller"
-      //       }
-      //     ],
-      //   },
-      //   "data" : {
-      //     "programId": 1,
-      //     "programName": "Program 1",
-      //     "timerAdjustPercent": 80.0,
-      //     "flowAdjustPercent": 80.0,
-      //     "moistureAdjustPercent": 80.0,
-      //     "fertilizerAdjustPercent": 80.0,
-      //     "zones": [
-      //     ]
-      //   },
-      // };
-      // await Future.delayed(Duration(seconds: 1));
       return Right(
           EditProgramModel.fromJson(response)
       );
@@ -487,6 +36,35 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
       print('getPrograms Fetching Failure: $e');
       print(stackTrace);
       return Left(ServerFailure('getPrograms Fetching Failure: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> saveProgram(SaveProgramParams params) async{
+    try {
+      EditProgramModel editProgramModel = EditProgramModel.fromEntity(params.editProgramEntity);
+      final response = await remoteSource.saveProgram(
+          urlData: {
+            'userId' : params.userId,
+            'controllerId' : params.controllerId,
+            'programId' : params.editProgramEntity.programId.toString()
+          },
+          bodyData: {
+            "setting" : editProgramModel.toJson()
+          }
+      );
+      if(response['code'] == 200){
+        return Right(
+            unit
+        );
+      }else{
+        return Left(ServerFailure('saveProgram Fetching Failure: ${response['message']}'));
+      }
+
+    } catch (e, stackTrace) {
+      print('saveProgram Fetching Failure: $e');
+      print(stackTrace);
+      return Left(ServerFailure('saveProgram Fetching Failure: $e'));
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_material_button.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_outlined_button.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/presentation/widgets/custom_card.dart';
@@ -37,7 +38,6 @@ class _PayloadPageState extends State<PayloadPage> {
         .map((e) => {'mode' : PayloadModeEnum.idle, 'value' : true}).toList();
     zoneSetSelection = splitIntoChunks(8);
   }
-
 
   List<Map<String, dynamic>> splitIntoChunks(int chunkSize) {
     List<Map<String, dynamic>> chunks = [];
@@ -107,7 +107,7 @@ class _PayloadPageState extends State<PayloadPage> {
                         CustomOutlinedButton(
                             title: 'Cancel',
                             onPressed: (){
-
+                              context.pop();
                             }
                         ),
                         CustomMaterialButton(
@@ -169,7 +169,6 @@ class _PayloadPageState extends State<PayloadPage> {
           }else{
             return Placeholder();
           }
-
         },
         listener: (context, state){}
     );
@@ -185,23 +184,20 @@ class _PayloadPageState extends State<PayloadPage> {
             strokeWidth: 2.5,
           ),
         );
-
       case PayloadModeEnum.success:
         return const Icon(
           Icons.check_circle,
           color: Colors.green,
           size: 26,
         );
-
       case PayloadModeEnum.failure:
         return const Icon(
           Icons.error_outline_rounded,
           color: Colors.redAccent,
           size: 26,
         );
-
       default:
-        return const SizedBox(width: 26); // empty space placeholder
+        return const SizedBox(width: 26);
     }
   }
 }

@@ -17,6 +17,19 @@ class GetProgramEvent extends EditProgramEvent{
   });
 }
 
+class SaveProgramEvent extends EditProgramEvent{
+  final String userId;
+  final String controllerId;
+  final String deviceId;
+  final EditProgramEntity editProgramEntity;
+  SaveProgramEvent({
+    required this.userId,
+    required this.controllerId,
+    required this.deviceId,
+    required this.editProgramEntity,
+  });
+}
+
 class UpdateTimerAdjustPercent extends EditProgramEvent{
   final double value;
   UpdateTimerAdjustPercent(this.value);

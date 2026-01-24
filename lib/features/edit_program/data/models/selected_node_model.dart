@@ -11,7 +11,7 @@ class SelectedNodeModel extends SelectedNodeEntity {
     return SelectedNodeModel(
       nodeId: json['nodeId'],
       serialNo: json['serialNo'] as String,
-      qrCode: json['QRCode'] as String,
+      qrCode: json['QRCode'].toString(),
     );
   }
 
@@ -21,6 +21,14 @@ class SelectedNodeModel extends SelectedNodeEntity {
       serialNo: entity.serialNo,
       qrCode: entity.qrCode,
     );
+  }
+
+  Map<String, dynamic> toJson(){
+    return {
+      "nodeId": nodeId,
+      "serialNo": serialNo,
+      "qrCode": qrCode
+    };
   }
 
   SelectedNodeEntity toEntity() => this;

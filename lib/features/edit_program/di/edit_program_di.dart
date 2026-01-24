@@ -3,6 +3,7 @@ import '../data/data_source/edit_program_remote_source.dart';
 import '../data/repositories/edit_program_repository_impl.dart';
 import '../domain/repositories/edit_program_repository.dart';
 import '../domain/usecases/get_program_usecase.dart';
+import '../domain/usecases/save_program_usecase.dart';
 import '../domain/usecases/send_zone_configuration_payload_usecase.dart';
 import '../domain/usecases/send_zone_set_payload_usecase.dart';
 import '../presentation/bloc/edit_program_bloc.dart';
@@ -10,10 +11,12 @@ import '../presentation/bloc/edit_program_bloc.dart';
 void initEditProgramDependencies() async{
   sl.registerFactory(()=> EditProgramBloc(
       getProgramUsecase: sl(),
+      saveProgramUsecase: sl(),
     sendZoneConfigurationPayloadUsecase: sl(),
     sendZoneSetPayloadUsecase: sl(),
   ));
   sl.registerLazySingleton(()=>GetProgramUsecase(repository: sl()));
+  sl.registerLazySingleton(()=>SaveProgramUsecase(repository: sl()));
   sl.registerLazySingleton(()=>SendZoneConfigurationPayloadUsecase(repository: sl()));
   sl.registerLazySingleton(()=>SendZoneSetPayloadUsecase(repository: sl()));
   sl.registerLazySingleton<EditProgramRepository>(

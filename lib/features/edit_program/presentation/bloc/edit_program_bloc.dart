@@ -5,6 +5,7 @@ import '../../../program_settings/sub_module/edit_zone/domain/entities/node_enti
 import '../../domain/entities/edit_program_entity.dart';
 import '../../domain/entities/zone_setting_entity.dart';
 import '../../domain/usecases/get_program_usecase.dart';
+import '../../domain/usecases/save_program_usecase.dart';
 import '../../domain/usecases/send_zone_configuration_payload_usecase.dart';
 import '../../domain/usecases/send_zone_set_payload_usecase.dart';
 import '../enums/add_remove_enum.dart';
@@ -14,10 +15,12 @@ part 'edit_program_state.dart';
 
 class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
   final GetProgramUsecase getProgramUsecase;
+  final SaveProgramUsecase saveProgramUsecase;
   final SendZoneConfigurationPayloadUsecase sendZoneConfigurationPayloadUsecase;
   final SendZoneSetPayloadUsecase sendZoneSetPayloadUsecase;
   EditProgramBloc({
     required this.getProgramUsecase,
+    required this.saveProgramUsecase,
     required this.sendZoneConfigurationPayloadUsecase,
     required this.sendZoneSetPayloadUsecase,
   }) : super(EditProgramInitial()){
@@ -29,7 +32,7 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
           userId: event.userId,
           controllerId: event.controllerId,
           subUserId: event.subUserId,
-          programId: 1
+          programId: event.programId
       );
       final result = await getProgramUsecase(params);
 
@@ -44,6 +47,30 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
                     subUserId: event.subUserId,
                     editProgramEntity: success, deviceId: event.deviceId
                 ));
+              }
+      );
+    });
+
+    on<SaveProgramEvent>((event, emit) async{
+      final current = state as EditProgramLoaded;
+
+      emit(current.copyWith(updatedSaveProgramStatus: SaveProgramStatus.loading));
+
+      SaveProgramParams params = SaveProgramParams(
+          userId: event.userId,
+          controllerId: event.controllerId,
+          deviceId: event.deviceId,
+          editProgramEntity: event.editProgramEntity,
+      );
+      final result = await saveProgramUsecase(params);
+
+      result.fold(
+              (failure){
+                emit(current.copyWith(updatedSaveProgramStatus: SaveProgramStatus.failure));
+          },
+              (success){
+                emit(current.copyWith(updatedSaveProgramStatus: SaveProgramStatus.success));
+                emit(current.copyWith(updatedSaveProgramStatus: SaveProgramStatus.idle));
               }
       );
     });

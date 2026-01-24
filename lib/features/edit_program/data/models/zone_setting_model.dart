@@ -116,6 +116,33 @@ class ZoneSettingModel extends ZoneSettingEntity {
     );
   }
 
+  Map<String, dynamic> toJson(){
+    return {
+      "zoneNumber": zoneNumber,
+      "valves": valves.map((e) => (e as SelectedNodeModel).toJson()).toList(),
+      "moistureSensors": moistureSensors.map((e) => (e as SelectedNodeModel).toJson()).toList(),
+      "levelSensors": levelSensors.map((e) => (e as SelectedNodeModel).toJson()).toList(),
+      "time": time,
+      "liters": liters,
+      "ch1Time": ch1Time,
+      "ch2Time": ch2Time,
+      "ch3Time": ch3Time,
+      "ch4Time": ch4Time,
+      "ch5Time": ch5Time,
+      "ch6Time": ch6Time,
+      "ch1Liters": ch1Liters,
+      "ch2Liters": ch2Liters,
+      "ch3Liters": ch3Liters,
+      "ch4Liters": ch4Liters,
+      "ch5Liters": ch5Liters,
+      "ch6Liters": ch6Liters,
+      "preTime": preTime,
+      "preLiters": preLiters,
+      "postTime": postTime,
+      "postLiters": postLiters
+    };
+  }
+
   List<Map<String, dynamic>> submitZone({required int programId}){
     int fixedNodeLength = 4;
     List<String> getBalanceEmptyNode (int count){

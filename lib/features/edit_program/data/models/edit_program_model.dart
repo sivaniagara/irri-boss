@@ -55,6 +55,18 @@ class EditProgramModel extends EditProgramEntity {
     );
   }
 
+  Map<String, dynamic> toJson(){
+    return {
+      "programId": programId,
+      "programName": programName,
+      "zones": zones.map((e) => (e as ZoneSettingModel).toJson()).toList(),
+      "timerAdjustPercent": timerAdjustPercent,
+      "flowAdjustPercent": flowAdjustPercent,
+      "moistureAdjustPercent": moistureAdjustPercent,
+      "fertilizerAdjustPercent": fertilizerAdjustPercent,
+    };
+  }
+
   // ---------------- COMMAND TEMPLATES ----------------
   static const _zoneTimeSetCommand = 'ZONETIMERSETP:programId:zoneSetId';
   static const _zoneFlowSetCommand = 'FLOWSETP:programId:zoneSetId';

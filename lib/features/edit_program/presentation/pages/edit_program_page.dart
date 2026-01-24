@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/app_alerts.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/presentation/enums/add_remove_enum.dart';
@@ -10,13 +11,12 @@ import 'package:niagara_smart_drip_irrigation/features/edit_program/presentation
 import 'package:niagara_smart_drip_irrigation/features/edit_program/presentation/widgets/sharp_radius_card.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/presentation/widgets/wrap_or_row.dart';
-import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/edit_zone/presentation/bloc/edit_zone_bloc.dart';
-
 import '../../../../core/services/time_picker_service.dart';
-import '../../../water_fertilizer_settings/domain/entities/zone_water_fertilizer_entity.dart';
+import '../../../../core/widgets/alert_dialog.dart';
 import '../../domain/entities/zone_setting_entity.dart';
 import '../bloc/edit_program_bloc.dart';
 import '../../../../core/widgets/tiny_text_form_field.dart';
+
 class EditProgramPage extends StatefulWidget {
   const EditProgramPage({super.key});
 
@@ -75,16 +75,42 @@ class _EditProgramPageState extends State<EditProgramPage> {
           )
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        child: Image.asset(
-            'assets/images/icons/send_icon.png',
-          width: 30,
-          color: Colors.white,
-        ),
-          onPressed: (){
+      floatingActionButton: BlocListener<EditProgramBloc, EditProgramState>(
+        listener: (BuildContext context, state) {
+          if(state is EditProgramLoaded && state.saveProgramStatus == SaveProgramStatus.loading){
+            showGradientLoadingDialog(context);
+          }else if(state is EditProgramLoaded && state.saveProgramStatus == SaveProgramStatus.success){
+            context.pop();
             showPayloadBottomSheet(context);
+          }else if(state is EditProgramLoaded && state.saveProgramStatus == SaveProgramStatus.failure){
+            context.pop();
+            showErrorAlert(
+                context: context,
+                message: 'Program Failed to Save!',
+            );
           }
+        },
+        child: FloatingActionButton(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          child: Image.asset(
+              'assets/images/icons/send_icon.png',
+            width: 30,
+            color: Colors.white,
+          ),
+            onPressed: (){
+              final currentState = context.read<EditProgramBloc>().state;
+              if(currentState is EditProgramLoaded){
+                context.read<EditProgramBloc>().add(
+                    SaveProgramEvent(
+                        userId: currentState.userId,
+                        controllerId: currentState.controllerId,
+                        deviceId: currentState.deviceId,
+                        editProgramEntity: currentState.editProgramEntity
+                    )
+                );
+              }
+            }
+        ),
       ),
       body: BlocConsumer<EditProgramBloc, EditProgramState>(
         builder: (BuildContext context, state) {

@@ -6,7 +6,8 @@ import '../../../../core/utils/api_urls.dart';
 import '../../utils/edit_program_urls.dart';
 
 abstract class EditProgramRemoteSource{
-  Future<Map<String, dynamic>> getPrograms({required Map<String, String> urlData});
+  Future<Map<String, dynamic>> getProgram({required Map<String, String> urlData});
+  Future<Map<String, dynamic>> saveProgram({required Map<String, String> urlData, required Map<String, dynamic> bodyData});
   Future<bool> sendZonePayload({
     required Map<String, String> urlData,
     required Map<String, dynamic> bodyData,
@@ -25,12 +26,28 @@ class EditProgramRemoteSourceImpl extends EditProgramRemoteSource{
   });
 
   @override
-  Future<Map<String, dynamic>> getPrograms({required Map<String, String> urlData})async {
+  Future<Map<String, dynamic>> getProgram({required Map<String, String> urlData})async {
     try{
       print('getPrograms => ${urlData}');
       String endPoint = buildUrl(EditProgramUrls.getProgram, urlData);
       final response = await apiClient.get(endPoint);
       print('getPrograms => $response');
+      return response;
+    }catch (e){
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> saveProgram({required Map<String, String> urlData, required Map<String, dynamic> bodyData})async {
+    try{
+      print('saveProgram => ${urlData}');
+      String endPoint = buildUrl(EditProgramUrls.getProgram, urlData);
+      final response = await apiClient.post(
+          endPoint,
+        body: bodyData
+      );
+      print('saveProgram => $response');
       return response;
     }catch (e){
       rethrow;
