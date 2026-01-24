@@ -58,35 +58,38 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
 
       if (setting.widgetType == SettingWidgetType.text) {
         final trimmed = newValue.trim();
-
-        if (trimmed.isEmpty) {
-          processedValue = trimmed;
-        } else if (trimmed.contains('.')) {
-          final parts = trimmed.split('.');
-          final integerStr = parts[0];
-          final decimalPart = parts.length > 1 ? parts[1] : '';
-
-          final intClean = integerStr.replaceAll(RegExp(r'^0+'), '');
-          final intValue = intClean.isEmpty ? 0 : int.tryParse(intClean) ?? -1;
-
-          String paddedInteger;
-          if (intValue >= 0 && intValue < 100) {
-            paddedInteger = intValue.toString().padLeft(3, '0');
-          } else {
-            paddedInteger = integerStr;
-          }
-
-          processedValue = '$paddedInteger.$decimalPart';
-        } else {
-          final number = int.tryParse(trimmed);
-          if (number != null) {
-            if (number < 100) {
-              processedValue = number.toString().padLeft(3, '0');
-            } else {
-              processedValue = number.toString();
-            }
-          } else {
+        if(setting.title == 'Dry Run Occurance Count') {
+          processedValue = newValue.contains('.') ? newValue.split('.')[0] : newValue;
+        }else {
+          if (trimmed.isEmpty) {
             processedValue = trimmed;
+          } else if (trimmed.contains('.')) {
+            final parts = trimmed.split('.');
+            final integerStr = parts[0];
+            final decimalPart = parts.length > 1 ? parts[1] : '0';
+
+            final intClean = integerStr.replaceAll(RegExp(r'^0+'), '');
+            final intValue = intClean.isEmpty ? 0 : int.tryParse(intClean) ?? -1;
+
+            String paddedInteger;
+            if (intValue >= 0 && intValue < 100) {
+              paddedInteger = intValue.toString().padLeft(3, '0');
+            } else {
+              paddedInteger = integerStr;
+            }
+
+            processedValue = '$paddedInteger.$decimalPart';
+          } else {
+            final number = int.tryParse(trimmed);
+            if (number != null) {
+              if (number < 100) {
+                processedValue = "${number.toString().padLeft(3, '0')}.0";
+              } else {
+                processedValue = "${number.toString()}.0";
+              }
+            } else {
+              processedValue = "$trimmed.0";
+            }
           }
         }
       }
@@ -123,7 +126,9 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
 
     try {
       final publishMessage = jsonEncode(PublishMessageHelper.settingsPayload(payload));
-      di.sl.get<MqttManager>().publish(deviceId, publishMessage);
+      if(payload.isNotEmpty) {
+        di.sl.get<MqttManager>().publish(deviceId, publishMessage);
+      }
       final result = await sendPumpSettingsUsecase(SendPumpSettingsParams(
         userId: userId,
         subUserId: subUserId,
@@ -154,12 +159,12 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     emit(SettingsSendStartedState());
     try {
       final result = await sendPumpSettingsUsecase(SendPumpSettingsParams(
-        userId: userId,
-        subUserId: subUserId,
-        controllerId: controllerId,
-        menuId: menuItemEntity.menu.menuSettingId,
-        menuItemEntity: menuItemEntity,
-        sentSms: sentSms
+          userId: userId,
+          subUserId: subUserId,
+          controllerId: controllerId,
+          menuId: menuItemEntity.menu.menuSettingId,
+          menuItemEntity: menuItemEntity,
+          sentSms: sentSms
       ));
 
       result.fold(
