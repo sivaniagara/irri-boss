@@ -35,7 +35,7 @@ import 'dashboard_2_0.dart';
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 
 
-enum BottomNavigationOption{home, report, setting, sentAndReceive}
+enum BottomNavigationOption{home, report, setting, sentAndReceive ,Manual}
 
 extension BottomNavivigationOptionExtension on BottomNavigationOption{
   String title(){
@@ -48,6 +48,8 @@ extension BottomNavivigationOptionExtension on BottomNavigationOption{
         return 'Setting';
       case BottomNavigationOption.sentAndReceive:
         return 'Sent And Receive';
+      case BottomNavigationOption.Manual:
+        return 'Manual';
     }
   }
 }
@@ -310,6 +312,12 @@ class _DashboardPageState extends State<DashboardPage> {
               inActiveItem: Image.asset(AppImages.inActiveReportIcon,),
               activeItem: Image.asset(AppImages.activeReportIcon),
               itemLabel: 'Report',
+            ),
+
+            BottomBarItem(
+              inActiveItem: Image.asset(AppImages.inActiveReportIcon,),
+              activeItem: Image.asset(AppImages.activeReportIcon),
+              itemLabel: 'Manual',
             ),
             BottomBarItem(
               inActiveItem: Image.asset(AppImages.inActiveSettingIcon,),
