@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/app_alerts.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/tiny_text_form_field.dart';
 import '../bloc/valve_flow_bloc.dart';
 import '../bloc/valve_flow_event.dart';
 import '../bloc/valve_flow_state.dart';
@@ -68,17 +69,13 @@ class ValveFlowPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: const BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withAlpha(15),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(15),
+                          topRight: Radius.circular(15),
+                        ),
                       ),
                       child: Row(
                         children: [
@@ -92,19 +89,25 @@ class ValveFlowPage extends StatelessWidget {
                               ),
                             ),
                           ),
-                          SizedBox(
+                          Container(
                             width: 80,
-                            height: 40,
-                            child: _ValveFlowInputField(
-                              initialValue: entity.flowDeviation,
-                              suffix: "%",
-                              onChanged: (val) {
-                                context.read<ValveFlowBloc>().add(
-                                    UpdateCommonFlowDeviationEvent(deviation: val));
-                              },
+                            decoration: BoxDecoration(
+                                borderRadius: const BorderRadius.only(
+                                  bottomLeft: Radius.circular(10),
+                                  topRight: Radius.circular(10),
+                                ),
+                                border: Border.all(width: 1, color: Theme.of(context).colorScheme.outline)
+                            ),
+                            child: TinyTextFormField(
+                                value: entity.flowDeviation,
+                                suffixText: '%', // Added % back as dynamic suffix
+                                onChanged: (val) {
+                                  context.read<ValveFlowBloc>().add(
+                                      UpdateCommonFlowDeviationEvent(deviation: val));
+                                }
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 24),
                           IconButton(
                             onPressed: () {
                               context.read<ValveFlowBloc>().add(SaveCommonDeviationEvent());
@@ -125,83 +128,78 @@ class ValveFlowPage extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withAlpha(15),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                      child: ListView.separated(
+                        itemCount: entity.nodes.length,
+                        separatorBuilder: (context, index) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final node = entity.nodes[index];
+                          return Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.only(
+                                bottomLeft: Radius.circular(15),
+                                topRight: Radius.circular(15),
+                              ),
                             ),
-                          ],
-                        ),
-                        child: ListView.separated(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          itemCount: entity.nodes.length,
-                          separatorBuilder: (context, index) => const Divider(
-                            height: 1,
-                            indent: 16,
-                            endIndent: 16,
-                            color: Color(0xFFEEEEEE),
-                          ),
-                          itemBuilder: (context, index) {
-                            final node = entity.nodes[index];
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.visibility_outlined,
-                                      color: Color(0xFF263238), size: 22),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: RichText(
-                                      text: TextSpan(
-                                        style: const TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold),
-                                        children: [
-                                          TextSpan(
-                                              text: node.serialNo.length > 9
-                                                  ? "${node.serialNo.substring(0, 9)}... "
-                                                  : "${node.serialNo} "),
-                                          TextSpan(
-                                            text: node.nodeId.padLeft(3, '0'),
-                                            style: const TextStyle(fontWeight: FontWeight.normal),
-                                          ),
-                                        ],
-                                      ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.visibility_outlined,
+                                    color: Color(0xFF263238), size: 22),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: RichText(
+                                    text: TextSpan(
+                                      style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold),
+                                      children: [
+                                        TextSpan(
+                                            text: node.serialNo.length > 9
+                                                ? "${node.serialNo.substring(0, 9)}... "
+                                                : "${node.serialNo} "),
+                                        TextSpan(
+                                          text: node.nodeId.padLeft(3, '0'),
+                                          style: const TextStyle(fontWeight: FontWeight.normal),
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  SizedBox(
-                                    width: 75,
-                                    height: 35,
-                                    child: _ValveFlowInputField(
-                                      initialValue: node.nodeValue,
+                                ),
+                                Container(
+                                  width: 80,
+                                  decoration: BoxDecoration(
+                                      borderRadius: const BorderRadius.only(
+                                        bottomLeft: Radius.circular(10),
+                                        topRight: Radius.circular(10),
+                                      ),
+                                      border: Border.all(width: 1, color: Theme.of(context).colorScheme.outline)
+                                  ),
+                                  child: TinyTextFormField(
+                                      value: node.nodeValue,
+                                      suffixText: '',
                                       onChanged: (val) {
                                         context.read<ValveFlowBloc>().add(
                                             UpdateValveFlowNodeEvent(
                                                 index: index, nodeValue: val));
-                                      },
-                                    ),
+                                      }
                                   ),
-                                  const SizedBox(width: 8),
-                                  IconButton(
-                                    onPressed: () {
-                                      context.read<ValveFlowBloc>().add(
-                                          SendValveFlowSmsEvent(index: index));
-                                    },
-                                    icon: const Icon(Icons.send_outlined, color: Colors.blue),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
+                                ),
+                                const SizedBox(width: 24),
+                                IconButton(
+                                  onPressed: () {
+                                    context.read<ValveFlowBloc>().add(
+                                        SendValveFlowSmsEvent(index: index));
+                                  },
+                                  icon: const Icon(Icons.send_outlined, color: Colors.blue),
+                                  padding: const EdgeInsets.all(8),
+                                  constraints: const BoxConstraints(),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -215,71 +213,6 @@ class ValveFlowPage extends StatelessWidget {
           }
           return const SizedBox();
         },
-      ),
-    );
-  }
-}
-
-class _ValveFlowInputField extends StatefulWidget {
-  final String initialValue;
-  final String? suffix;
-  final Function(String) onChanged;
-
-  const _ValveFlowInputField({
-    required this.initialValue,
-    this.suffix,
-    required this.onChanged,
-  });
-
-  @override
-  State<_ValveFlowInputField> createState() => _ValveFlowInputFieldState();
-}
-
-class _ValveFlowInputFieldState extends State<_ValveFlowInputField> {
-  late TextEditingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: widget.initialValue);
-  }
-
-  @override
-  void didUpdateWidget(covariant _ValveFlowInputField oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Only update if the value actually changed from the outside
-    if (widget.initialValue != oldWidget.initialValue && widget.initialValue != _controller.text) {
-      _controller.text = widget.initialValue;
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      controller: _controller,
-      keyboardType: TextInputType.number,
-      textAlign: TextAlign.center,
-      onChanged: widget.onChanged,
-      style: const TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w500),
-      decoration: InputDecoration(
-        isDense: true,
-        suffixText: widget.suffix,
-        suffixStyle: const TextStyle(color: Colors.black54),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFE0E0E0), width: 1),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Colors.blue, width: 1.5),
-        ),
       ),
     );
   }
