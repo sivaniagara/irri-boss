@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
-import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/gradiant_background.dart';
-import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/widgets/find_suitable_widget.dart';
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/widgets/setting_row.dart';
 
 import '../../../../core/services/time_picker_service.dart';
