@@ -45,7 +45,7 @@ final irrigationSettingGoRoutes = [
                     FetchValveFlowDataEvent(
                       userId: controllerContext.userId,
                       controllerId: controllerContext.controllerId,
-                      subUserId: controllerContext.subUserId,
+                      subUserId: controllerContext.subUserId, deviceId: '',
                     )
                   ),
                   child: const ValveFlowPage(),

@@ -57,16 +57,8 @@ class ValveFlowModel extends ValveFlowEntity {
       smsFormat: json['smsFormat']?.toString() ?? '',
       nodes: nodes,
       flowPercent: templateJsonData['FLOWPERCENT']?.toString() ?? '',
-<<<<<<< HEAD
       flowDeviation: templateJsonData['FLOWPERCENT']?.toString() ?? '0',
       deviceId: '', // Will be populated by copyWith in Bloc
-=======
-<<<<<<< HEAD
-      flowDeviation: templateJsonData['FLOWPERCENT']?.toString() ?? '0', 
-=======
-      flowDeviation: '0', 
->>>>>>> d1429699b9e6a75b60f2d2f36b6708390758b021
->>>>>>> f53e4531667ac4c3711603ecda53aaef4b0adbda
     );
   }
 }
@@ -82,28 +74,13 @@ class ValveFlowNodeModel extends ValveFlowNodeEntity {
   });
 
   factory ValveFlowNodeModel.fromJson(Map<String, dynamic> json) {
-    // Handling the case where the values might be under different keys or types
     return ValveFlowNodeModel(
       nodeName: json['nodeName']?.toString() ?? '',
-<<<<<<< HEAD
       nodeId: (json['nodeId'] ?? json['SN'] ?? '').toString(),
       serialNo: (json['serialNo'] ?? json['SF'] ?? '').toString(),
       nodeValue: (json['nodeValue'] ?? json['VAL'] ?? '0').toString(),
       qrCode: (json['QRCode'] ?? json['HF'] ?? '').toString(),
       flowDeviation: (json['flowDeviation'] ?? '0').toString(),
-=======
-      nodeId: json['nodeId']?.toString() ?? '',
-      serialNo: json['serialNo']?.toString() ?? '',
-<<<<<<< HEAD
-      nodeValue: json['nodeValue']?.toString() ?? '0',
-      qrCode: json['QRCode']?.toString() ?? '',
-      flowDeviation: json['flowDeviation']?.toString() ?? '0',
-=======
-      nodeValue: '0', // Initial value as requested
-      qrCode: json['QRCode']?.toString() ?? '',
-      flowDeviation: '0', // Initial value as requested
->>>>>>> d1429699b9e6a75b60f2d2f36b6708390758b021
->>>>>>> f53e4531667ac4c3711603ecda53aaef4b0adbda
     );
   }
 }

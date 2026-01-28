@@ -179,15 +179,12 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initZoneCyclic();
   initFlowGraph();
   initMoisture();
-<<<<<<< HEAD
   initValveFlowDependencies();
   initDealerDashboardDependencies();
   initFertilizer();
   initGreenHouse();
   initServiceRequestDependencies();
 
-=======
->>>>>>> d1429699b9e6a75b60f2d2f36b6708390758b021
 }
 
 // Reset all

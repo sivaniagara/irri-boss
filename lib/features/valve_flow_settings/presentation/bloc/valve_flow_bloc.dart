@@ -1,15 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-<<<<<<< HEAD
-
-
 import '../../domain/entities/valve_flow_entity.dart';
 import '../../domain/repositories/valve_flow_repository.dart';
-=======
-import 'package:niagara_smart_drip_irrigation/features/valve_flow_settings/domain/repositories/valve_flow_repository.dart';
-import '../../domain/entities/valve_flow_entity.dart';
->>>>>>> d1429699b9e6a75b60f2d2f36b6708390758b021
 import 'valve_flow_event.dart';
 import 'valve_flow_state.dart';
 
@@ -65,13 +58,7 @@ class ValveFlowBloc extends Bloc<ValveFlowEvent, ValveFlowState> {
       Map<String, dynamic> smsFormats = _parseSmsFormat(entity.smsFormat);
       final node = entity.nodes[event.index];
       final command = smsFormats['F001'] ?? 'FLOWVALSET';
-<<<<<<< HEAD
 
-=======
-<<<<<<< HEAD
-      
-      // Mirroring old app format: COMMAND,serialNo,value
->>>>>>> f53e4531667ac4c3711603ecda53aaef4b0adbda
       final payload = "$command,${node.serialNo},${node.nodeValue}".replaceAll(RegExp(r'\s+'), '');
 
       if (kDebugMode) {
@@ -83,14 +70,6 @@ class ValveFlowBloc extends Bloc<ValveFlowEvent, ValveFlowState> {
         controllerId: currentState.controllerId,
         subUserId: currentState.subUserId,
         entity: entity,
-=======
-      final payload = "$command,${node.serialNo},${node.nodeValue}".replaceAll(RegExp(r'\s+'), '');
-
-      final result = await repository.publishValveFlowSms(
-        userId: currentState.userId,
-        controllerId: currentState.controllerId,
-        subUserId: currentState.subUserId,
->>>>>>> d1429699b9e6a75b60f2d2f36b6708390758b021
         sentSms: payload,
       );
 
@@ -98,10 +77,6 @@ class ValveFlowBloc extends Bloc<ValveFlowEvent, ValveFlowState> {
             (failure) => emit(ValveFlowError(message: failure.message)),
             (_) => emit(ValveFlowSuccess(message: "Valve setting sent successfully", data: entity)),
       );
-<<<<<<< HEAD
-=======
-      // Re-emit loaded state
->>>>>>> d1429699b9e6a75b60f2d2f36b6708390758b021
       emit(currentState);
     });
 
@@ -112,13 +87,7 @@ class ValveFlowBloc extends Bloc<ValveFlowEvent, ValveFlowState> {
 
       Map<String, dynamic> smsFormats = _parseSmsFormat(entity.smsFormat);
       final command = smsFormats['F002'] ?? 'FLOWDEV';
-<<<<<<< HEAD
 
-=======
-<<<<<<< HEAD
-      
-      // Mirroring old app format: COMMAND,value
->>>>>>> f53e4531667ac4c3711603ecda53aaef4b0adbda
       final payload = "$command,${entity.flowDeviation}".replaceAll(RegExp(r'\s+'), '');
 
       if (kDebugMode) {
@@ -137,34 +106,6 @@ class ValveFlowBloc extends Bloc<ValveFlowEvent, ValveFlowState> {
             (failure) => emit(ValveFlowError(message: failure.message)),
             (_) => emit(ValveFlowSuccess(message: "Deviation sent and saved successfully", data: entity)),
       );
-=======
-      final payload = "$command,${entity.flowDeviation}".replaceAll(RegExp(r'\s+'), '');
-
-      // 1. Send SMS (Publish + Log History)
-      final smsResult = await repository.publishValveFlowSms(
-        userId: currentState.userId,
-        controllerId: currentState.controllerId,
-        subUserId: currentState.subUserId,
-        sentSms: payload,
-      );
-
-      if (smsResult.isRight()) {
-        // 2. Save to database
-        final saveResult = await repository.saveValveFlowSettings(
-          userId: currentState.userId,
-          controllerId: currentState.controllerId,
-          subUserId: currentState.subUserId,
-          entity: entity,
-        );
-
-        saveResult.fold(
-          (failure) => emit(ValveFlowError(message: failure.message)),
-          (_) => emit(ValveFlowSuccess(message: "Deviation sent and saved successfully", data: entity)),
-        );
-      } else {
-        smsResult.fold((f) => emit(ValveFlowError(message: f.message)), (_) {});
-      }
->>>>>>> d1429699b9e6a75b60f2d2f36b6708390758b021
       emit(currentState);
     });
 
@@ -172,22 +113,19 @@ class ValveFlowBloc extends Bloc<ValveFlowEvent, ValveFlowState> {
       if (state is! ValveFlowLoaded && state is! ValveFlowSuccess) return;
       final currentState = (state is ValveFlowLoaded)
           ? (state as ValveFlowLoaded)
-          : null; // Success state doesn't have deviceId info directly easily, but Loaded does.
+          : null;
 
       if (currentState == null) return;
 
       final entity = currentState.entity;
 
       try {
-        final statusMsg = "#VFLOWSET"; // Typical view command or mapping to your requirement
-        final cmd = json.encode({"sentSms": statusMsg});
+        final statusMsg = "#VFLOWSET";
 
         if (kDebugMode) {
-          print("VALVE FLOW VIEW MQTT: Topic: ${currentState.deviceId}, Cmd: $cmd");
+          print("VALVE FLOW VIEW MQTT: Topic: ${currentState.deviceId}, Cmd: $statusMsg");
         }
 
-        // We can reuse repository.publishMqttCommand if we add it or handle it via a new repository method
-        // For now, mirroring Standalone logic by hitting the MQTT publish logic
         await repository.saveValveFlowSettings(
           userId: currentState.userId,
           controllerId: currentState.controllerId,
