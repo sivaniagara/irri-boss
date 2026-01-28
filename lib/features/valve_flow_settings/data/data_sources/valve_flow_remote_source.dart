@@ -12,6 +12,12 @@ abstract class ValveFlowRemoteSource {
   Future<List<dynamic>> getNodeList({required Map<String, dynamic> urlData});
   Future<void> publishMqttCommand({required String controllerId, required String command});
   Future<void> saveValveFlowSettings({required String endpoint, required Map<String, dynamic> body});
+  Future<void> logHistory({
+    required String userId,
+    required String subuserId,
+    required String controllerId,
+    required String sentSms,
+  });
 }
 
 class ValveFlowRemoteSourceImpl implements ValveFlowRemoteSource {
@@ -64,6 +70,21 @@ class ValveFlowRemoteSourceImpl implements ValveFlowRemoteSource {
       await apiClient.post(endpoint, body: body);
     } catch (e) {
       rethrow;
+    }
+  }
+
+  @override
+  Future<void> logHistory({
+    required String userId,
+    required String subuserId,
+    required String controllerId,
+    required String sentSms,
+  }) async {
+    final historyEndpoint = 'user/$userId/subuser/$subuserId/controller/$controllerId/view/messages/';
+    try {
+      await apiClient.post(historyEndpoint, body: {"sentSms": sentSms});
+    } catch (e) {
+      // Log failure but don't rethrow to avoid blocking the main flow
     }
   }
 }

@@ -70,16 +70,18 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
       }
 
       List<dynamic> zoneListJson = [];
-      if (rawZoneList is List) {
-        zoneListJson = rawZoneList;
-      } else if (rawZoneList is Map) {
+      if (rawZoneList is Map) {
         final data = rawZoneList['data'];
-        final zones = rawZoneList['zones'];
         if (data is List) {
           zoneListJson = data;
-        } else if (zones is List) {
-          zoneListJson = zones;
+        } else if (data is Map && data['zoneList'] is List) {
+          // Fix for nested structure: data -> zoneList
+          zoneListJson = data['zoneList'];
+        } else if (rawZoneList['zones'] is List) {
+          zoneListJson = rawZoneList['zones'];
         }
+      } else if (rawZoneList is List) {
+        zoneListJson = rawZoneList;
       }
 
       return StandaloneModel.fromCombinedJson(
@@ -101,32 +103,29 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
     required StandaloneEntity config,
     required String sentSms,
   }) async {
-    final settingsEndpoint = 'user/$userId/subuser/$subuserId/controller/$controllerId/menu/$settingsId/settings';
-    final historyEndpoint = 'user/$userId/subuser/$subuserId/controller/$controllerId/view/messages/';
+    final settingsEndpoint = 'user/$userId/subuser/$subuserId/controller/$controllerId/menu/$menuId/settings';
 
     final Map<String, dynamic> sendDataMap = {
+      "toggleStatus": config.settingValue,
+      "driptoggleStatus": config.dripSettingValue,
       "type": "21",
       "zoneList": config.zones.map((z) => {
+        "time": z.time,
         "zoneNumber": "ZONE ${z.zoneNumber.padLeft(3, '0')}",
-        "status": z.status ? "1" : "0",
-        "time": z.time
+        "status": z.status ? "1" : "0"
       }).toList(),
-      "toggleStatus": config.settingValue,
-      "driptoggleStatus": config.dripSettingValue
     };
 
     final body = {
-      "menuSettingId": settingsId,
+      "menuSettingId": int.tryParse(settingsId) ?? 59,
       "receivedData": "",
       "sentSms": sentSms,
       "sendData": jsonEncode(sendDataMap)
     };
 
     try {
-      // 1. Save configuration
+      // Backend automatically logs history when 'sentSms' is in body
       await sl<ApiClient>().post(settingsEndpoint, body: body);
-      // 2. Log to history
-      await sl<ApiClient>().post(historyEndpoint, body: {"sentSms": sentSms});
     } catch (e) {
       throw Exception('Failed to send configuration: $e');
     }
@@ -158,7 +157,7 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
     try {
       await sl<ApiClient>().post(historyEndpoint, body: {"sentSms": sentSms});
     } catch (e) {
-      // Log failure but don't rethrow to avoid blocking the main flow
+      // Log failure but don't rethrow
     }
   }
 }

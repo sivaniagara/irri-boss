@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/app_alerts.dart';
 import '../bloc/valve_flow_bloc.dart';
 import '../bloc/valve_flow_event.dart';
 import '../bloc/valve_flow_state.dart';
@@ -10,275 +11,223 @@ class ValveFlowPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
+      backgroundColor: const Color(0xFFEAF2F2),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
         title: const Text(
-          "VALVE FLOW",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 20),
+          "Flow Valve and Percentage",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
+            fontSize: 20,
+          ),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black, size: 28),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.forum_rounded, color: Color(0xFF263238)),
+            onPressed: () {},
+          ),
+        ],
       ),
       body: BlocConsumer<ValveFlowBloc, ValveFlowState>(
         listener: (context, state) {
           if (state is ValveFlowSuccess) {
-            _showFloatingSnackBar(context, state.message);
+            showSuccessAlert(context: context, message: state.message);
           } else if (state is ValveFlowError) {
-            _showFloatingSnackBar(context, state.message, isError: true);
+            showErrorAlert(context: context, message: state.message);
           }
         },
         builder: (context, state) {
           if (state is ValveFlowLoading) {
             return const Center(child: CircularProgressIndicator(color: Colors.blue));
           } else if (state is ValveFlowLoaded || state is ValveFlowSuccess) {
-            final entity = (state is ValveFlowLoaded) 
-                ? state.entity 
+            final entity = (state is ValveFlowLoaded)
+                ? state.entity
                 : (state as ValveFlowSuccess).data;
 
-            return Container(
-              width: double.infinity,
-              height: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFFE3F2FD), Color(0xFF64B5F6)],
-                ),
-              ),
-              child: SafeArea(
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 10),
-                    // Header Card
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          boxShadow: [BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 4)],
-                        ),
-                        alignment: Alignment.center,
-                        child: const Text(
-                          "VALVE FLOW VALUE AND PERCENT",
-                          style: TextStyle(color: Color(0xFF1976D2), fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "Flow Percentage",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    // Deviation Settings
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(15),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          const Expanded(
+                            child: Text(
+                              "Flow Deviation (%)",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                          SizedBox(
+                            width: 80,
+                            height: 40,
+                            child: _ValveFlowInputField(
+                              initialValue: entity.flowDeviation,
+                              suffix: "%",
+                              onChanged: (val) {
+                                context.read<ValveFlowBloc>().add(
+                                    UpdateCommonFlowDeviationEvent(deviation: val));
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          IconButton(
+                            onPressed: () {
+                              context.read<ValveFlowBloc>().add(SaveCommonDeviationEvent());
+                            },
+                            icon: const Icon(Icons.send_outlined, color: Colors.blue),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Flow Valve",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
                       child: Container(
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF2196F3), width: 1.5),
-                        ),
-                        child: Column(
-                          children: [
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              alignment: Alignment.center,
-                              child: const Text(
-                                "Deviation Settings",
-                                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-                              ),
-                            ),
-                            const Divider(color: Colors.grey, height: 1),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                              child: Row(
-                                children: [
-                                  const Expanded(
-                                    child: Text(
-                                      "FLOW DEVIATION (%)",
-                                      style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  SizedBox(
-                                    width: 85,
-                                    child: _ValveFlowInputField(
-                                      initialValue: entity.flowDeviation
-                                      ,
-                                      onChanged: (val) {
-                                        context.read<ValveFlowBloc>().add(UpdateCommonFlowDeviationEvent(deviation: val));
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  SizedBox(
-                                    width: 75,
-                                    height: 35,
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        context.read<ValveFlowBloc>().add(SaveCommonDeviationEvent());
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF0288D1),
-                                        elevation: 0,
-                                        padding: EdgeInsets.zero,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                      ),
-                                      child: const Text(
-                                        "SEND",
-                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(15),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    // Node List
-                    Expanded(
-                      child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        itemCount: entity.nodes.length,
-                        itemBuilder: (context, index) {
-                          final node = entity.nodes[index];
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFF90CAF9), width: 1.5),
-                              boxShadow: [BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 4, offset: const Offset(0, 2))],
-                            ),
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(bottom: 4.0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      mainAxisAlignment: MainAxisAlignment.end,
-                                      children: [
-                                        Text(
-                                          "${node.serialNo} ${node.nodeName.isEmpty ? 'Valve' : node.nodeName}",
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          "ID: ${node.nodeId}", 
-                                          style: const TextStyle(color: Colors.black, fontSize: 13, fontWeight: FontWeight.bold)
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    const Text("Flow Value", style: TextStyle(fontSize: 10, color: Colors.black, fontWeight: FontWeight.bold)),
-                                    const SizedBox(height: 2),
-                                    SizedBox(
-                                      width: 85,
-                                      child: _ValveFlowInputField(
-                                        initialValue: node.nodeValue,
-                                        onChanged: (val) {
-                                          context.read<ValveFlowBloc>().add(UpdateValveFlowNodeEvent(index: index, nodeValue: val));
-                                        },
+                        child: ListView.separated(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          itemCount: entity.nodes.length,
+                          separatorBuilder: (context, index) => const Divider(
+                            height: 1,
+                            indent: 16,
+                            endIndent: 16,
+                            color: Color(0xFFEEEEEE),
+                          ),
+                          itemBuilder: (context, index) {
+                            final node = entity.nodes[index];
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.visibility_outlined,
+                                      color: Color(0xFF263238), size: 22),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: RichText(
+                                      text: TextSpan(
+                                        style: const TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold),
+                                        children: [
+                                          TextSpan(
+                                              text: node.serialNo.length > 9
+                                                  ? "${node.serialNo.substring(0, 9)}... "
+                                                  : "${node.serialNo} "),
+                                          TextSpan(
+                                            text: node.nodeId.padLeft(3, '0'),
+                                            style: const TextStyle(fontWeight: FontWeight.normal),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(width: 12),
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 1.0),
-                                  child: SizedBox(
+                                  ),
+                                  SizedBox(
                                     width: 75,
-                                    height: 35, 
-                                    child: ElevatedButton(
-                                      onPressed: () {
-                                        context.read<ValveFlowBloc>().add(SendValveFlowSmsEvent(index: index));
+                                    height: 35,
+                                    child: _ValveFlowInputField(
+                                      initialValue: node.nodeValue,
+                                      onChanged: (val) {
+                                        context.read<ValveFlowBloc>().add(
+                                            UpdateValveFlowNodeEvent(
+                                                index: index, nodeValue: val));
                                       },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF0288D1),
-                                        elevation: 0,
-                                        padding: EdgeInsets.zero,
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                                      ),
-                                      child: const Text(
-                                        "SEND", 
-                                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
+                                  const SizedBox(width: 8),
+                                  IconButton(
+                                    onPressed: () {
+                                      context.read<ValveFlowBloc>().add(
+                                          SendValveFlowSmsEvent(index: index));
+                                    },
+                                    icon: const Icon(Icons.send_outlined, color: Colors.blue),
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
             );
           } else if (state is ValveFlowError) {
-            return Center(child: Text(state.message, style: const TextStyle(color: Colors.white)));
+            return Center(
+                child: Text(state.message, style: const TextStyle(color: Colors.red)));
           }
           return const SizedBox();
         },
       ),
     );
   }
-
-  void _showFloatingSnackBar(BuildContext context, String message, {bool isError = false}) {
-    final overlay = Overlay.of(context);
-    final overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        top: MediaQuery.of(context).size.height * 0.55,
-        left: 50,
-        right: 50,
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              color: isError ? Colors.red.withValues(alpha: 0.9) : Colors.green.withValues(alpha: 0.9),
-              borderRadius: BorderRadius.circular(25),
-            ),
-            child: Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    overlay.insert(overlayEntry);
-    Future.delayed(const Duration(seconds: 2), () => overlayEntry.remove());
-  }
 }
 
 class _ValveFlowInputField extends StatefulWidget {
   final String initialValue;
+  final String? suffix;
   final Function(String) onChanged;
 
   const _ValveFlowInputField({
     required this.initialValue,
+    this.suffix,
     required this.onChanged,
   });
 
@@ -298,7 +247,8 @@ class _ValveFlowInputFieldState extends State<_ValveFlowInputField> {
   @override
   void didUpdateWidget(covariant _ValveFlowInputField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.initialValue != _controller.text && widget.initialValue != oldWidget.initialValue) {
+    // Only update if the value actually changed from the outside
+    if (widget.initialValue != oldWidget.initialValue && widget.initialValue != _controller.text) {
       _controller.text = widget.initialValue;
     }
   }
@@ -316,22 +266,19 @@ class _ValveFlowInputFieldState extends State<_ValveFlowInputField> {
       keyboardType: TextInputType.number,
       textAlign: TextAlign.center,
       onChanged: widget.onChanged,
-      onTap: () {
-        if (_controller.text == '0') {
-          _controller.clear();
-        }
-      },
+      style: const TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.w500),
       decoration: InputDecoration(
         isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)),
+        suffixText: widget.suffix,
+        suffixStyle: const TextStyle(color: Colors.black54),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
-          borderSide: const BorderSide(color: Colors.grey, width: 1),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Color(0xFFE0E0E0), width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(4),
-          borderSide: const BorderSide(color: Color(0xFF1976D2), width: 1.5),
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: Colors.blue, width: 1.5),
         ),
       ),
     );

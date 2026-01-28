@@ -9,6 +9,7 @@ class ValveFlowModel extends ValveFlowEntity {
     required super.templateJson,
     required super.smsFormat,
     required super.nodes,
+    required super.deviceId,
     super.flowPercent,
     super.flowDeviation,
   });
@@ -16,24 +17,36 @@ class ValveFlowModel extends ValveFlowEntity {
   factory ValveFlowModel.fromJson(Map<String, dynamic> json) {
     var rawSendData = json['sendData'];
     List<dynamic> sendDataList = [];
-    if (rawSendData is String) {
-      try {
-        sendDataList = jsonDecode(rawSendData);
-      } catch (_) {}
-    } else if (rawSendData is List) {
-      sendDataList = rawSendData;
+
+    if (rawSendData != null) {
+      if (rawSendData is String) {
+        try {
+          final decoded = jsonDecode(rawSendData);
+          if (decoded is List) {
+            sendDataList = decoded;
+          } else if (decoded is Map && decoded.containsKey('setting')) {
+            sendDataList = decoded['setting'] as List;
+          }
+        } catch (_) {}
+      } else if (rawSendData is List) {
+        sendDataList = rawSendData;
+      } else if (rawSendData is Map && rawSendData.containsKey('setting')) {
+        sendDataList = rawSendData['setting'] as List;
+      }
     }
-    
+
     var nodes = sendDataList.map((e) => ValveFlowNodeModel.fromJson(e)).toList();
 
     var rawTemplateJson = json['templateJson'];
     Map<String, dynamic> templateJsonData = {};
-    if (rawTemplateJson is String) {
-      try {
-        templateJsonData = jsonDecode(rawTemplateJson);
-      } catch (_) {}
-    } else if (rawTemplateJson is Map) {
-      templateJsonData = Map<String, dynamic>.from(rawTemplateJson);
+    if (rawTemplateJson != null) {
+      if (rawTemplateJson is String) {
+        try {
+          templateJsonData = jsonDecode(rawTemplateJson);
+        } catch (_) {}
+      } else if (rawTemplateJson is Map) {
+        templateJsonData = Map<String, dynamic>.from(rawTemplateJson);
+      }
     }
 
     return ValveFlowModel(
@@ -44,7 +57,8 @@ class ValveFlowModel extends ValveFlowEntity {
       smsFormat: json['smsFormat']?.toString() ?? '',
       nodes: nodes,
       flowPercent: templateJsonData['FLOWPERCENT']?.toString() ?? '',
-      flowDeviation: templateJsonData['FLOWPERCENT']?.toString() ?? '0', 
+      flowDeviation: templateJsonData['FLOWPERCENT']?.toString() ?? '0',
+      deviceId: '', // Will be populated by copyWith in Bloc
     );
   }
 }
@@ -60,13 +74,14 @@ class ValveFlowNodeModel extends ValveFlowNodeEntity {
   });
 
   factory ValveFlowNodeModel.fromJson(Map<String, dynamic> json) {
+    // Handling the case where the values might be under different keys or types
     return ValveFlowNodeModel(
       nodeName: json['nodeName']?.toString() ?? '',
-      nodeId: json['nodeId']?.toString() ?? '',
-      serialNo: json['serialNo']?.toString() ?? '',
-      nodeValue: json['nodeValue']?.toString() ?? '0',
-      qrCode: json['QRCode']?.toString() ?? '',
-      flowDeviation: json['flowDeviation']?.toString() ?? '0',
+      nodeId: (json['nodeId'] ?? json['SN'] ?? '').toString(),
+      serialNo: (json['serialNo'] ?? json['SF'] ?? '').toString(),
+      nodeValue: (json['nodeValue'] ?? json['VAL'] ?? '0').toString(),
+      qrCode: (json['QRCode'] ?? json['HF'] ?? '').toString(),
+      flowDeviation: (json['flowDeviation'] ?? '0').toString(),
     );
   }
 }

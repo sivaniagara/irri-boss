@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/utils/app_images.dart';
-import 'package:niagara_smart_drip_irrigation/core/widgets/leaf_box.dart';
 import 'package:niagara_smart_drip_irrigation/features/common_id_settings/utils/common_id_settings_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
 import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
@@ -69,16 +68,16 @@ class SettingsPage extends StatelessWidget {
     required void Function()? onTap,
   }){
     return Container(
-      margin: EdgeInsets.all(10),
+      margin: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
+          borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
           border: Border.all(width: 1, color: Theme.of(context).colorScheme.outline),
       ),
       child: ListTile(
         onTap: onTap,
         leading: Image.asset(iconPath, width: 20,),
         title: Text(title),
-        trailing: Icon(Icons.arrow_forward_ios, size: 20,),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 20,),
       ),
     );
   }

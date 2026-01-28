@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_manager.dart';
@@ -20,6 +21,7 @@ import '../../../../core/utils/app_images.dart';
 import '../../../controller_details/domain/usecase/controller_details_params.dart';
 import '../../../program_settings/utils/program_settings_routes.dart';
 import '../../../side_drawer/groups/presentation/widgets/app_drawer.dart';
+import '../../../standalone_settings/utils/standalone_routes.dart';
 import '../../utils/dashboard_routes.dart';
 import '../helper/get_sms_sync.dart';
 import '../widgets/actions_section.dart';
@@ -35,7 +37,7 @@ import 'dashboard_2_0.dart';
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 
 
-enum BottomNavigationOption{home, report, setting, sentAndReceive ,Manual}
+enum BottomNavigationOption{home, report, manual, setting, sentAndReceive}
 
 extension BottomNavivigationOptionExtension on BottomNavigationOption{
   String title(){
@@ -44,12 +46,12 @@ extension BottomNavivigationOptionExtension on BottomNavigationOption{
         return 'Home';
       case BottomNavigationOption.report:
         return 'Report';
+      case BottomNavigationOption.manual:
+        return 'Standalone';
       case BottomNavigationOption.setting:
         return 'Setting';
       case BottomNavigationOption.sentAndReceive:
         return 'Sent And Receive';
-      case BottomNavigationOption.Manual:
-        return 'Manual';
     }
   }
 }
@@ -77,28 +79,79 @@ class DashboardPage extends StatefulWidget {
 const int fakeGroupId = 0;
 
 class _DashboardPageState extends State<DashboardPage> {
-  BottomNavigationOption selectedBottomNavigation = BottomNavigationOption.home;
-  final NotchBottomBarController _controller = NotchBottomBarController(index: 0);
+  late BottomNavigationOption selectedBottomNavigation;
+  late NotchBottomBarController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedBottomNavigation = BottomNavigationOption.home;
+    _controller = NotchBottomBarController(index: 0);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _updateSelectedIndex();
+  }
+
+  void _updateSelectedIndex() {
+    if (!mounted) return;
+    
+    final location = GoRouterState.of(context).matchedLocation;
+    int index = 0;
+    if (location == DashBoardRoutes.report) {
+      index = 1;
+      selectedBottomNavigation = BottomNavigationOption.report;
+    } else if (location == DashBoardRoutes.standalone || location == DashBoardRoutes.configuration) {
+      index = 2;
+      selectedBottomNavigation = BottomNavigationOption.manual;
+    } else if (location == DashBoardRoutes.settings) {
+      index = 3;
+      selectedBottomNavigation = BottomNavigationOption.setting;
+    } else if (location == DashBoardRoutes.sentAndReceive) {
+      index = 4;
+      selectedBottomNavigation = BottomNavigationOption.sentAndReceive;
+    } else {
+      index = 0;
+      selectedBottomNavigation = BottomNavigationOption.home;
+    }
+    
+    // Safely update the controller using post-frame callback
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      if (mounted && _controller.index != index) {
+        _controller.jumpTo(index);
+      }
+    });
+  }
 
   @override
   void dispose() {
-    // TODO: implement dispose
-    super.dispose();
     _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final queryParams = GoRouterState.of(context).uri.queryParameters;
-    late int userId;
-    late int userType;
-    if (queryParams.containsKey('userId') && queryParams['userId'] != null) {
-      userId = int.parse(queryParams['userId']!);
-      userType = int.parse(queryParams['userType']!);
-    } else {
-      userId = int.parse(widget.userData['userId']!);
-      userType = int.parse(widget.userData['userType']!);
+    
+    String? userIdStr = queryParams['userId'] ?? widget.userData['userId']?.toString();
+    String? userTypeStr = queryParams['userType'] ?? widget.userData['userType']?.toString();
+    
+    if (userIdStr == null || userTypeStr == null) {
+      final authState = context.read<AuthBloc>().state;
+      if (authState is Authenticated) {
+        userIdStr = authState.user.userDetails.id.toString();
+        userTypeStr = authState.user.userDetails.userType.toString();
+      }
     }
+    
+    if (userIdStr == null || userTypeStr == null) {
+       return const Scaffold(body: Center(child: Text('Invalid session data')));
+    }
+    
+    final int userId = int.tryParse(userIdStr) ?? 0;
+    final int userType = int.tryParse(userTypeStr) ?? 0;
 
     final groupId = queryParams['groupId'];
 
@@ -174,8 +227,8 @@ class _DashboardPageState extends State<DashboardPage> {
       ) {
     if (state is DashboardLoading) {
       return GlassyWrapper(
-        child: Scaffold(
-          body: const Center(child: CircularProgressIndicator()),
+        child: const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
         ),
       );
     }
@@ -277,7 +330,6 @@ class _DashboardPageState extends State<DashboardPage> {
       child: Scaffold(
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         floatingActionButton: AnimatedNotchBottomBar(
-          /// Provide NotchBottomBarController
           notchBottomBarController: _controller,
           color: Colors.white,
           showLabel: true,
@@ -285,23 +337,11 @@ class _DashboardPageState extends State<DashboardPage> {
           maxLine: 1,
           shadowElevation: 5,
           kBottomRadius: 28.0,
-
-          // notchShader: const SweepGradient(
-          //   startAngle: 0,
-          //   endAngle: pi / 2,
-          //   colors: [Colors.red, Colors.green, Colors.orange],
-          //   tileMode: TileMode.mirror,
-          // ).createShader(Rect.fromCircle(center: Offset.zero, radius: 8.0)),
           notchColor: Colors.white,
-
-          /// restart app if you change removeMargins
           removeMargins: true,
           showShadow: false,
           durationInMilliSeconds: 300,
-
           itemLabelStyle: const TextStyle(fontSize: 10, color: Colors.black),
-
-          // elevation: 1,
           bottomBarItems: [
             BottomBarItem(
               inActiveItem: Image.asset(AppImages.inActiveHomeIcon,),
@@ -313,11 +353,10 @@ class _DashboardPageState extends State<DashboardPage> {
               activeItem: Image.asset(AppImages.activeReportIcon),
               itemLabel: 'Report',
             ),
-
             BottomBarItem(
-              inActiveItem: Image.asset(AppImages.inActiveReportIcon,),
-              activeItem: Image.asset(AppImages.activeReportIcon),
-              itemLabel: 'Manual',
+              inActiveItem: Image.asset(AppImages.inActiveManualIcon,),
+              activeItem: Image.asset(AppImages.activeManualIcon),
+              itemLabel: 'Standalone',
             ),
             BottomBarItem(
               inActiveItem: Image.asset(AppImages.inActiveSettingIcon,),
@@ -331,22 +370,30 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ],
           onTap: (index) {
-            if(index == 0){
-              selectedBottomNavigation = BottomNavigationOption.home;
-              context.pushReplacement("${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType");
-            }else if(index == 1){
-              selectedBottomNavigation = BottomNavigationOption.report;
-              context.pushReplacement("${DashBoardRoutes.report}?userId=$userId&userType=$userType");
-            }else if(index == 2){
-              selectedBottomNavigation = BottomNavigationOption.setting;
-              context.pushReplacement("${DashBoardRoutes.settings}?userId=$userId&userType=$userType");
-            }else if(index == 3){
-              selectedBottomNavigation = BottomNavigationOption.sentAndReceive;
-              context.pushReplacement("${DashBoardRoutes.sentAndReceive}?userId=$userId&userType=$userType");
-            }
-            setState(() {});
-            log('current selected index $index');
-            // _pageController.jumpToPage(index);
+            SchedulerBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              if (index == 0) {
+                context.go("${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType");
+              } else if (index == 1) {
+                context.go("${DashBoardRoutes.report}?userId=$userId&userType=$userType");
+              } else if (index == 2) {
+                final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
+                context.go(
+                  "${DashBoardRoutes.standalone}?userId=$userId&userType=$userType",
+                  extra: {
+                    'userId': controllerContext.userId,
+                    'controllerId': controllerContext.controllerId,
+                    'userType': controllerContext.userType,
+                    'subUserId': controllerContext.subUserId,
+                    'deviceId': controllerContext.deviceId,
+                  },
+                );
+              } else if (index == 3) {
+                context.go("${DashBoardRoutes.settings}?userId=$userId&userType=$userType");
+              } else if (index == 4) {
+                context.go("${DashBoardRoutes.sentAndReceive}?userId=$userId&userType=$userType");
+              }
+            });
           },
           kIconSize: 24.0,
         ),
@@ -361,12 +408,10 @@ class _DashboardPageState extends State<DashboardPage> {
           userType,
         ) : CustomAppBar(title: selectedBottomNavigation.title()),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        // drawer: userType == 1 ?),
         drawer: userType == 1 ? AppDrawer(userData: widget.userData,) : null,
         body: selectedController == null
             ? const Center(child: CircularProgressIndicator())
             : widget.child
-            // : _buildBody(selectedController, userId, userType),
       ),
     );
   }
@@ -453,10 +498,7 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Row(
           children: [
             _buildGroupSelector(state, selectedGroup, cubit, userId, context),
-
-            // Divider only when we have both group selector AND controller selector
             if (!fakeMode && state.groups.length > 1) const _Divider(),
-
             Expanded(
               child: _buildControllerSelector(
                 selectedController,
@@ -479,7 +521,6 @@ class _DashboardPageState extends State<DashboardPage> {
       BuildContext context,
       ) {
     if (_isFakeGroupMode(state)) {
-      // Dealer/special mode - static title, no dropdown
       return Expanded(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -496,7 +537,6 @@ class _DashboardPageState extends State<DashboardPage> {
       );
     }
 
-    // Normal user flow
     if (state.groups.length > 1) {
       return Expanded(
         child: PopupMenuButton<int>(
@@ -527,7 +567,6 @@ class _DashboardPageState extends State<DashboardPage> {
       );
     }
 
-    // Single real group - just show name
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -585,7 +624,6 @@ class _DashboardPageState extends State<DashboardPage> {
       );
     }
 
-    // Single controller
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Text(
@@ -597,163 +635,6 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
         overflow: TextOverflow.ellipsis,
       ),
-    );
-  }
-
-  Widget _buildBody(ControllerEntity controller, int userId, int userType) {
-    return RefreshIndicator(
-      onRefresh: () => _refreshLiveData(controller),
-      child: LayoutBuilder(
-        builder: (context, constraints) =>
-            _buildScaledContent(context, constraints, controller, userId, userType),
-      ),
-    );
-  }
-
-  static Future<void> _refreshLiveData(ControllerEntity controller) async {
-    final mqttManager = di.sl.get<MqttManager>();
-    final deviceId = controller.deviceId;
-    final publishMessage = jsonEncode(PublishMessageHelper.requestLive);
-    mqttManager.publish(deviceId, publishMessage);
-
-    if (kDebugMode) {
-      print("Live message requested for device: $deviceId");
-    }
-  }
-
-  Widget _buildScaledContent(
-      BuildContext context,
-      BoxConstraints constraints,
-      ControllerEntity controller,
-      int userId,
-      int userType,
-      ) {
-    final width = constraints.maxWidth;
-    final modelCheck = ([1, 5].contains(controller.modelId)) ? 300 : 120;
-    double scale(double size) => size * (width / modelCheck);
-    final router = GoRouterState.of(context);
-    print(router.extra != null && (router.extra as Map<String, dynamic>)['name'] != null
-        && (router.extra as Map<String, dynamic>)['name'] != DashBoardRoutes.dashboard);
-    if(userType == 2) {
-      userId = router.extra != null && (router.extra as Map<String, dynamic>)['name'] != null
-          && (router.extra as Map<String, dynamic>)['name'] != DashBoardRoutes.dashboard
-          ? int.parse((router.uri.queryParameters as Map<String, dynamic>)['dealerId']) : userId;
-    }
-    print(userId);
-
-    return CustomScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      slivers: [
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: Padding(
-            padding: EdgeInsets.all(scale(2)),
-            child: GestureDetector(
-              onTap: () {
-                context.pushNamed(
-                  'ctrlDetailsPage',
-                  extra: GetControllerDetailsParams(
-                    userId: controller.userId,
-                    controllerId: controller.userDeviceId,
-                    deviceId: controller.deviceId,
-                  ),
-                );
-              },
-              child: Container(
-                color: Colors.white,
-                padding: EdgeInsets.all(2),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    SizedBox(height: scale(2)),
-                    SyncSection(
-                      liveSync: "${controller.livesyncTime}\n${controller.livesyncDate}",
-                      smsSync: getSmsSync(controller.ctrlLatestMsg),
-                      model: controller.modelId,
-                      deviceId: controller.deviceId,
-                    ),
-                    SizedBox(height: scale(5)),
-                    GlassCard(
-                      child: CtrlDisplay(
-                        signal: controller.liveMessage.signal,
-                        battery: controller.liveMessage.batVolt,
-                        l1display: controller.liveMessage.liveDisplay1,
-                        l2display: controller.liveMessage.liveDisplay2,
-                      ),
-                    ),
-                    SizedBox(height: scale(5)),
-                    GestureDetector(
-                      onTap: () {
-                        context.push(
-                          '${DashBoardRoutes.dashboard}${ProgramSettingsRoutes.program}',
-                          extra: {
-                            "userId": '$userId',
-                            "controllerId": controller.userDeviceId.toString()
-                          },
-                        );
-                      },
-                      child: RYBSection(
-                        r: controller.liveMessage.rVoltage,
-                        y: controller.liveMessage.yVoltage,
-                        b: controller.liveMessage.bVoltage,
-                        c1: controller.liveMessage.rCurrent,
-                        c2: controller.liveMessage.yCurrent,
-                        c3: controller.liveMessage.bCurrent,
-                      ),
-                    ),
-                    SizedBox(height: scale(5)),
-                    MotorValveSection(
-                      motorOn: controller.liveMessage.motorOnOff,
-                      motorOn2: controller.liveMessage.valveOnOff,
-                      valveOn: controller.liveMessage.valveOnOff,
-                      model: controller.modelId,
-                      userData: {
-                        "userId": userId,
-                        "controllerId": controller.userDeviceId,
-                        "subUserId": 0,
-                        "deviceId": controller.deviceId
-                      },
-                    ),
-                    SizedBox(height: scale(5)),
-                    if ([1, 5].contains(controller.modelId)) ...[
-                      PressureSection(
-                        prsIn: controller.liveMessage.prsIn,
-                        prsOut: controller.liveMessage.prsOut,
-                        activeZone: controller.zoneNo,
-                        fertlizer: '',
-                      ),
-                      SizedBox(height: scale(8)),
-                      TimerSection(
-                        setTime: controller.setFlow,
-                        remainingTime: controller.remFlow,
-                      ),
-                      SizedBox(height: scale(8)),
-                    ],
-                    LatestMsgSection(
-                      msg: ([1, 5].contains(controller.modelId))
-                          ? controller.msgDesc
-                          : "${controller.msgDesc}\n${controller.ctrlLatestMsg}",
-                    ),
-                    SizedBox(height: scale(8)),
-                    ActionsSection(
-                      model: controller.modelId,
-                      data: {
-                        "userId": userId,
-                        "subUserId": userType == 1 ? 0 : userId,
-                        "controllerId": controller.userDeviceId,
-                        "deviceId": controller.deviceId
-                      },
-                    ),
-                    SizedBox(height: scale(3)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 

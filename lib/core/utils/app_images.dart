@@ -33,4 +33,10 @@ class AppImages {
   static const String pumpControlWithFlowIcon = '$iconPath/pump_control_with_flow_icon.png';
   static const String overHeadTankIcon = '$iconPath/over_head_tank_icon.png';
 
+  static const String activeStandaloneIcon = '$iconPath/active_setting_icon.png';
+  static const String inActiveStandaloneIcon = '$iconPath/inactive_setting_icon.png';
+  
+  static const String activeManualIcon = '$iconPath/active_report_icon.png';
+  static const String inActiveManualIcon = '$iconPath/inactive_report_icon.png';
+
 }

@@ -9,16 +9,16 @@ import 'package:niagara_smart_drip_irrigation/features/standalone_settings/prese
 
 void initStandaloneSettings() {
   // Use unique instance names to avoid collision with standalone_reports
-  
+
   // Data sources
   sl.registerLazySingleton<StandaloneRemoteDataSource>(
-    () => StandaloneRemoteDataSourceImpl(),
+        () => StandaloneRemoteDataSourceImpl(),
 
   );
 
   // Repository
   sl.registerLazySingleton<StandaloneRepository>(
-    () => StandaloneRepositoryImpl(remoteDataSource: sl()),
+        () => StandaloneRepositoryImpl(remoteDataSource: sl()),
   );
 
   // Use cases
@@ -27,7 +27,8 @@ void initStandaloneSettings() {
   sl.registerLazySingleton(() => PublishMqttCommand(sl()));
 
   // BLoC
-  sl.registerFactory(() => StandaloneBloc(
+  // Changed from registerFactory to registerLazySingleton to persist state across navigation
+  sl.registerLazySingleton(() => StandaloneBloc(
     getStandaloneStatus: sl(),
     sendStandaloneConfig: sl(),
     publishMqttCommand: sl(),
