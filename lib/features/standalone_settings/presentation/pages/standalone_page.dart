@@ -8,23 +8,46 @@ import 'package:niagara_smart_drip_irrigation/features/standalone_settings/prese
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/bloc/standalone_event.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/widgets/standalone_header.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/widgets/zone_item.dart';
-import 'package:niagara_smart_drip_irrigation/features/standalone_settings/utils/standalone_routes.dart';
 
-class StandalonePage extends StatelessWidget {
+class StandalonePage extends StatefulWidget {
   final Map<String, dynamic> data;
 
   const StandalonePage({super.key, required this.data});
 
   @override
-  Widget build(BuildContext context) {
-    final String controllerId = data['controllerId']?.toString() ?? '';
-    final String userId = data['userId']?.toString() ?? '';
-    final String deviceId = data['deviceId']?.toString() ?? '';
-    final String subUserId = data['subUserId']?.toString() ?? '0';
+  State<StandalonePage> createState() => _StandalonePageState();
+}
 
-    return Container(
-      color: const Color(0xffF5F7FA),
-      child: Column(
+class _StandalonePageState extends State<StandalonePage> {
+  int _selectedIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final String controllerId = widget.data['controllerId']?.toString() ?? '';
+    final String userId = widget.data['userId']?.toString() ?? '';
+    final String deviceId = widget.data['deviceId']?.toString() ?? '';
+    final String subUserId = widget.data['subUserId']?.toString() ?? '0';
+
+    return Scaffold(
+      backgroundColor: const Color(0xffF5F7FA),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        onPressed: () {
+          context.read<StandaloneBloc>().add(
+            ViewStandaloneEvent(
+              userId: userId,
+              controllerId: controllerId,
+              subUserId: subUserId,
+              deviceId: deviceId,
+              successMessage: _selectedIndex == 0 
+                  ? "Sending View Standalone..." 
+                  : "Sending View Configuration...",
+            ),
+          );
+        },
+        child: const Icon(Icons.visibility_outlined, color: Colors.white),
+      ),
+      body: Column(
         children: [
           const SizedBox(height: 16),
           // Custom Tab Bar
@@ -39,25 +62,32 @@ class StandalonePage extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          )
-                        ],
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "STANDALONE",
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold,
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedIndex = 0;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: _selectedIndex == 0 ? Colors.white : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: _selectedIndex == 0 ? [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            )
+                          ] : null,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          "STANDALONE",
+                          style: TextStyle(
+                            color: _selectedIndex == 0 ? Theme.of(context).colorScheme.primary : Colors.grey,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -65,16 +95,28 @@ class StandalonePage extends StatelessWidget {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        context.go(StandaloneRoutes.configuration, extra: data);
+                        setState(() {
+                          _selectedIndex = 1;
+                        });
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 10),
-                        color: Colors.transparent,
+                        decoration: BoxDecoration(
+                          color: _selectedIndex == 1 ? Colors.white : Colors.transparent,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: _selectedIndex == 1 ? [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            )
+                          ] : null,
+                        ),
                         alignment: Alignment.center,
-                        child: const Text(
+                        child: Text(
                           "CONFIGURATION",
                           style: TextStyle(
-                            color: Colors.grey,
+                            color: _selectedIndex == 1 ? Theme.of(context).colorScheme.primary : Colors.grey,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -104,132 +146,9 @@ class StandalonePage extends StatelessWidget {
                       ? (state as StandaloneLoaded).data
                       : (state as StandaloneSuccess).data;
 
-                  return ListView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    children: [
-                      // Standalone Settings Card
-                      _buildCard(
-                        context,
-                        child: Column(
-                          children: [
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              alignment: Alignment.center,
-                              child: Text(
-                                standaloneData.programName,
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            const Divider(height: 1),
-                            StandaloneHeader(
-                              title: "STANDALONE MODE",
-                              isOn: standaloneData.settingValue == "1",
-                              onChanged: (v) {
-                                context.read<StandaloneBloc>().add(ToggleStandalone(
-                                  userId: userId,
-                                  controllerId: controllerId,
-                                  deviceId: deviceId,
-                                  subUserId: subUserId,
-                                  menuId: "2",
-                                  settingsId: "59",
-                                  value: v,
-                                ));
-                              },
-                              onSend: () {
-                                context.read<StandaloneBloc>().add(
-                                  SendStandaloneConfigEvent(
-                                    userId: userId,
-                                    controllerId: controllerId,
-                                    deviceId: deviceId,
-                                    subUserId: subUserId,
-                                    menuId: "2",
-                                    settingsId: "59",
-                                    successMessage: "Settings updated successfully",
-                                    sendType: StandaloneSendType.mode,
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Zones Card
-                      _buildCard(
-                        context,
-                        padding: EdgeInsets.zero,
-                        child: Column(
-                          children: [
-                            ...standaloneData.zones.asMap().entries.map((entry) {
-                              return ZoneItem(index: entry.key, zone: entry.value);
-                            }),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            context.read<StandaloneBloc>().add(
-                              SendStandaloneConfigEvent(
-                                userId: userId,
-                                controllerId: controllerId,
-                                deviceId: deviceId,
-                                subUserId: subUserId,
-                                menuId: "2",
-                                settingsId: "59",
-                                successMessage: "Zones configured successfully",
-                                sendType: StandaloneSendType.zones,
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.send_rounded, size: 18, color: Colors.white),
-                          label: const Text("SEND ZONES", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.primary,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Drip Standalone Card
-                      _buildCard(
-                        context,
-                        child: StandaloneHeader(
-                          title: "DRIP STANDALONE",
-                          isOn: standaloneData.dripSettingValue == "1",
-                          onChanged: (v) {
-                            context.read<StandaloneBloc>().add(ToggleDripStandalone(
-                              userId: userId,
-                              controllerId: controllerId,
-                              deviceId: deviceId,
-                              subUserId: subUserId,
-                              menuId: "2",
-                              settingsId: "59",
-                              value: v,
-                            ));
-                          },
-                          onSend: () {
-                            context.read<StandaloneBloc>().add(
-                              SendStandaloneConfigEvent(
-                                userId: userId,
-                                controllerId: controllerId,
-                                deviceId: deviceId,
-                                subUserId: subUserId,
-                                menuId: "2",
-                                settingsId: "59",
-                                successMessage: "Drip settings updated",
-                                sendType: StandaloneSendType.drip,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-                  );
+                  return _selectedIndex == 0 
+                      ? _buildStandaloneContent(context, standaloneData, userId, controllerId, deviceId, subUserId)
+                      : _buildConfigurationContent(context, standaloneData, userId, controllerId, deviceId, subUserId);
                 } else if (state is StandaloneError) {
                   return Center(child: Text(state.message));
                 }
@@ -237,62 +156,229 @@ class StandalonePage extends StatelessWidget {
               },
             ),
           ),
-          // Bottom Action Bar
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => context.pop(),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      side: BorderSide(color: Theme.of(context).colorScheme.primary),
-                    ),
-                    child: Text(
-                      "Go Back",
-                      style: TextStyle(color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      context.read<StandaloneBloc>().add(
-                        ViewStandaloneEvent(
-                          userId: userId,
-                          controllerId: controllerId,
-                          subUserId: subUserId,
-                          deviceId: deviceId,
-                          successMessage: "Sending View Standalone...",
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      "VIEW",
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          // Bottom Navigation Padding
+          const SizedBox(height: 80),
         ],
       ),
+    );
+  }
+
+  Widget _buildStandaloneContent(BuildContext context, dynamic standaloneData, String userId, String controllerId, String deviceId, String subUserId) {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      children: [
+        _buildCard(
+          context,
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                alignment: Alignment.center,
+                child: Text(
+                  standaloneData.programName,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+              const Divider(height: 1),
+              StandaloneHeader(
+                title: "STANDALONE MODE",
+                isOn: standaloneData.settingValue == "1",
+                onChanged: (v) {
+                  context.read<StandaloneBloc>().add(ToggleStandalone(
+                    userId: userId,
+                    controllerId: controllerId,
+                    deviceId: deviceId,
+                    subUserId: subUserId,
+                    menuId: "2",
+                    settingsId: "59",
+                    value: v,
+                  ));
+                },
+                onSend: () {
+                  context.read<StandaloneBloc>().add(
+                    SendStandaloneConfigEvent(
+                      userId: userId,
+                      controllerId: controllerId,
+                      deviceId: deviceId,
+                      subUserId: subUserId,
+                      menuId: "2",
+                      settingsId: "59",
+                      successMessage: "Settings updated successfully",
+                      sendType: StandaloneSendType.mode,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildCard(
+          context,
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              ...standaloneData.zones.asMap().entries.map((entry) {
+                return ZoneItem(index: entry.key, zone: entry.value);
+              }),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Align(
+          alignment: Alignment.centerRight,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              context.read<StandaloneBloc>().add(
+                SendStandaloneConfigEvent(
+                  userId: userId,
+                  controllerId: controllerId,
+                  deviceId: deviceId,
+                  subUserId: subUserId,
+                  menuId: "2",
+                  settingsId: "59",
+                  successMessage: "Zones configured successfully",
+                  sendType: StandaloneSendType.zones,
+                ),
+              );
+            },
+            icon: const Icon(Icons.send_rounded, size: 18, color: Colors.white),
+            label: const Text("SEND ZONES", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildCard(
+          context,
+          child: StandaloneHeader(
+            title: "DRIP STANDALONE",
+            isOn: standaloneData.dripSettingValue == "1",
+            onChanged: (v) {
+              context.read<StandaloneBloc>().add(ToggleDripStandalone(
+                userId: userId,
+                controllerId: controllerId,
+                deviceId: deviceId,
+                subUserId: subUserId,
+                menuId: "2",
+                settingsId: "59",
+                value: v,
+              ));
+            },
+            onSend: () {
+              context.read<StandaloneBloc>().add(
+                SendStandaloneConfigEvent(
+                  userId: userId,
+                  controllerId: controllerId,
+                  deviceId: deviceId,
+                  subUserId: subUserId,
+                  menuId: "2",
+                  settingsId: "59",
+                  successMessage: "Drip settings updated",
+                  sendType: StandaloneSendType.drip,
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildConfigurationContent(BuildContext context, dynamic standaloneData, String userId, String controllerId, String deviceId, String subUserId) {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      children: [
+        _buildCard(
+          context,
+          child: Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                alignment: Alignment.center,
+                child: Text(
+                  "Config Mode",
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+              const Divider(height: 1),
+              StandaloneHeader(
+                title: "CONFIG MODE",
+                isOn: standaloneData.settingValue == "1",
+                onChanged: (v) {
+                  context.read<StandaloneBloc>().add(ToggleStandalone(
+                    userId: userId,
+                    controllerId: controllerId,
+                    deviceId: deviceId,
+                    subUserId: subUserId,
+                    menuId: "94",
+                    settingsId: "500",
+                    value: v,
+                  ));
+                },
+                onSend: () {
+                  context.read<StandaloneBloc>().add(
+                    SendStandaloneConfigEvent(
+                      userId: userId,
+                      controllerId: controllerId,
+                      deviceId: deviceId,
+                      subUserId: subUserId,
+                      menuId: "94",
+                      settingsId: "500",
+                      successMessage: "Configuration mode updated",
+                      sendType: StandaloneSendType.mode,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildCard(
+          context,
+          padding: EdgeInsets.zero,
+          child: Column(
+            children: [
+              ...standaloneData.zones.asMap().entries.map((entry) {
+                return ZoneItem(index: entry.key, zone: entry.value);
+              }),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Align(
+          alignment: Alignment.centerRight,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              context.read<StandaloneBloc>().add(
+                SendStandaloneConfigEvent(
+                  userId: userId,
+                  controllerId: controllerId,
+                  deviceId: deviceId,
+                  subUserId: subUserId,
+                  menuId: "94",
+                  settingsId: "500",
+                  successMessage: "Zone configuration saved",
+                  sendType: StandaloneSendType.zones,
+                ),
+              );
+            },
+            icon: const Icon(Icons.send_rounded, size: 18, color: Colors.white),
+            label: const Text("SEND ZONES", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
     );
   }
 

@@ -47,7 +47,7 @@ extension BottomNavivigationOptionExtension on BottomNavigationOption{
       case BottomNavigationOption.report:
         return 'Report';
       case BottomNavigationOption.manual:
-        return 'Standalone';
+        return 'Manual';
       case BottomNavigationOption.setting:
         return 'Setting';
       case BottomNavigationOption.sentAndReceive:
@@ -356,7 +356,7 @@ class _DashboardPageState extends State<DashboardPage> {
             BottomBarItem(
               inActiveItem: Image.asset(AppImages.inActiveManualIcon,),
               activeItem: Image.asset(AppImages.activeManualIcon),
-              itemLabel: 'Standalone',
+              itemLabel: 'Manual',
             ),
             BottomBarItem(
               inActiveItem: Image.asset(AppImages.inActiveSettingIcon,),

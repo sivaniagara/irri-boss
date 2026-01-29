@@ -21,7 +21,7 @@ android {
     }
 
     namespace = "com.niagaraautomations"
-    compileSdk = 35
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     // Load keystore properties if they exist
@@ -65,7 +65,7 @@ android {
 
     defaultConfig {
         minSdkVersion 27
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         multiDexEnabled true
