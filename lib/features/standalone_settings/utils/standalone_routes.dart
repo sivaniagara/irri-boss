@@ -1,16 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/di/injection.dart' as di;
 import '../../dashboard/utils/dashboard_routes.dart';
 import '../presentation/bloc/standalone_bloc.dart';
 import '../presentation/bloc/standalone_event.dart';
 import '../presentation/pages/standalone_page.dart';
-import '../presentation/pages/configuration_page.dart';
 
 abstract class StandaloneRoutes {
   static const String standalone = DashBoardRoutes.standalone;
-  static const String configuration = DashBoardRoutes.configuration;
 }
 
 final standaloneRoutes = <GoRoute>[
@@ -39,16 +37,6 @@ final standaloneRoutes = <GoRoute>[
             return StandalonePage(data: params);
           },
         ),
-      );
-    },
-  ),
-  GoRoute(
-    path: 'standalone/configuration',
-    builder: (context, state) {
-      final params = state.extra as Map<String, dynamic>;
-      return BlocProvider.value(
-        value: di.sl<StandaloneBloc>(),
-        child: ConfigurationPage(data: params),
       );
     },
   ),

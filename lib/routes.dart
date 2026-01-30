@@ -14,7 +14,6 @@ import 'package:niagara_smart_drip_irrigation/features/settings/presentation/pag
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/bloc/standalone_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/bloc/standalone_event.dart';
-import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/pages/configuration_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/pages/standalone_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/utils/standalone_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/valve_flow_settings/utils/valve_flow_routes.dart';
@@ -222,16 +221,6 @@ class AppRouter {
                       ),
                     );
                   },
-              ),
-              GoRoute(
-                path: DashBoardRoutes.configuration,
-                builder: (context, state) {
-                  final params = state.extra as Map<String, dynamic>;
-                  return BlocProvider.value(
-                    value: di.sl<StandaloneBloc>(),
-                    child: ConfigurationPage(data: params),
-                  );
-                },
               ),
               GoRoute(
                   path: DashBoardRoutes.settings,
