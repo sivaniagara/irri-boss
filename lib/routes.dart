@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/features/alarm_settings/utils/alarm_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/dashboard_2_0.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/node_status_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
@@ -340,6 +341,7 @@ class AppRouter {
         ...fertilizerRoutes,
         ...greenHouseReportRoutes,
         ...ValveFlowRoutes.routes,
+        ...AlarmRoutes.routes,
       ],
     );
   }

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_list_tile.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/gradiant_background.dart';
+import 'package:niagara_smart_drip_irrigation/features/alarm_settings/utils/alarm_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/presentation/widgets/custom_card.dart';
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
 import 'package:niagara_smart_drip_irrigation/features/valve_flow_settings/utils/valve_flow_routes.dart';
@@ -159,7 +160,15 @@ class IrrigationSettingsPage extends StatelessWidget {
                       'deviceId': controllerContext.deviceId,
                       'subUserId': controllerContext.subUserId,
                     });
-                  } else if(items[itemIndex].irrigationSettingsEnum != IrrigationSettingsEnum.irrigationFertigation){
+                  }else  if (items[itemIndex].irrigationSettingsEnum == IrrigationSettingsEnum.alarm) {
+                    final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
+                    context.push(AlarmRoutes.alarmSettings, extra: {
+                      'userId': controllerContext.userId,
+                      'controllerId': controllerContext.controllerId,
+                      'deviceId': controllerContext.deviceId,
+                      'subUserId': controllerContext.subUserId,
+                    });
+                  }else if(items[itemIndex].irrigationSettingsEnum != IrrigationSettingsEnum.irrigationFertigation){
                     context.push('${IrrigationSettingsRoutes.irrigationSettings}${IrrigationSettingsRoutes.templateSetting
                         .replaceAll(':settingName', items[itemIndex].name)
                         .replaceAll(':settingNo', items[itemIndex].irrigationSettingsEnum.settingId.toString())
