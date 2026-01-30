@@ -27,7 +27,9 @@ class StandaloneHeader extends StatelessWidget {
               color: const Color(0xffB4E7FF),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(Icons.touch_app, color: Theme.of(context).colorScheme.primary, size: 24),
+            child: title.contains("CONFIG") 
+                ? Image.asset("assets/images/icons/config_icon.png", width: 24, height: 24, color: Theme.of(context).colorScheme.primary)
+                : Icon(Icons.touch_app, color: Theme.of(context).colorScheme.primary, size: 24),
           ),
           const SizedBox(width: 12),
           Expanded(

@@ -36,7 +36,7 @@ class AppImages {
   static const String activeStandaloneIcon = '$iconPath/active_setting_icon.png';
   static const String inActiveStandaloneIcon = '$iconPath/inactive_setting_icon.png';
   
-  static const String activeManualIcon = '$iconPath/active_report_icon.png';
-  static const String inActiveManualIcon = '$iconPath/inactive_report_icon.png';
+  static const String activeManualIcon = '$iconPath/active_manual_icon.png';
+  static const String inActiveManualIcon = '$iconPath/inactive_manual_icon.png';
 
 }
