@@ -26,13 +26,8 @@ import '../../features/fault_msg/di/faultmsg_di.dart';
 import '../../features/irrigation_settings/di/irrigation_settings_di.dart';
 import '../../features/pump_settings/utils/pump_settings_dispatcher.dart';
 import '../../features/reports/green_house_reports/di/green_house_di.dart';
-import '../../features/set_serial_settings/data/datasources/set_serial_datasource.dart';
-import '../../features/set_serial_settings/data/repositories/set_serial_details_repositories.dart';
-import '../../features/set_serial_settings/domain/repositories/set_serial_details_repo.dart';
-import '../../features/set_serial_settings/domain/usecase/set_serial_details_params.dart';
-import '../../features/set_serial_settings/domain/usecase/set_serial_usercase.dart';
-import '../../features/set_serial_settings/presentation/bloc/set_serial_bloc.dart';
-import '../../features/set_serial_settings/presentation/bloc/set_serial_bloc_event.dart';
+
+import '../../features/serial_set/di/serial_set_di.dart';
 import '../services/mqtt/app_message_dispatcher.dart';
 import '../services/mqtt/mqtt_message_helper.dart';
 import '../../features/mapping_and_unmapping_nodes/di/mapping_and_unmapping_node_di.dart';
@@ -156,15 +151,6 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   sl.registerLazySingleton(() => GetControllerDetailsUsecase(controllerRepo: sl()));
   sl.registerLazySingleton(() => UpdateControllerUsecase(controllerRepo: sl()));
   sl.registerFactory(() => ControllerDetailsBloc(getControllerDetails: sl(), updateController: sl(),));
-  sl.registerLazySingleton<SetSerialDataSource>(
-          () => SetSerialDataSourceImpl(apiClient: sl()));
-  sl.registerLazySingleton<SetSerialRepository>(
-          () => SetSerialRepositoryImpl(remoteDataSource: sl()));
-  sl.registerFactory(() => SetSerialBloc(sl()));
-  sl.registerFactory(
-          () => SetSerialParams(userId: sl(), controllerId: sl(), type: sl(),deviceId: sl()));
-  sl.registerFactory(() => LoadSerialUsecase(sl()));
-  sl.registerFactory(() => LoadSerialEvent(userId: sl(), controllerId: sl()));
 
   initSendRev();
   initfaultmsg();
@@ -186,6 +172,7 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initGreenHouse();
   initServiceRequestDependencies();
   initAlarmDependencies();
+  initSerialSetDependencies();
 
 }
 

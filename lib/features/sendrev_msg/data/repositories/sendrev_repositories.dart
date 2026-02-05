@@ -24,7 +24,7 @@ class SendrevRepositoryImpl implements SendrevRepository {
       toDate: toDate,
     );
 
-    // Map model to entity
+    // Map model to entities
     return SendrevEntity(
       code: model.code,
       message: model.message,

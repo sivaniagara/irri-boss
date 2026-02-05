@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import '../../../../core/widgets/no_data.dart';
-import '../../../set_serial_settings/domain/usecase/set_serial_details_params.dart';
 import '../../domain/usecase/controller_details_params.dart';
 import '../bloc/controller_details_bloc.dart';
 import '../bloc/controller_details_bloc_event.dart';
@@ -74,37 +73,7 @@ class ControllerDetailsPage extends StatelessWidget {
 
                 const SizedBox(height: 16),
                  // ---------- ACTION BUTTONS ----------
-                Row(
-                  children: [
-                    TextButton(
-                      onPressed: () {
-                        context.pushNamed(
-                          'setSerialPage',
-                          extra: SetSerialParams(
-                            userId: params.userId,
-                            controllerId: params.controllerId,
-                            type: 1, deviceId: params.deviceId,
-                          ),
-                        );
-                      },
-                      child: const Text("Set Serial"),
-                    ),
-                    const SizedBox(width: 20),
-                    TextButton(
-                      onPressed: () {
-                        context.pushNamed(
-                          'setSerialPage',
-                          extra: SetSerialParams(
-                            userId: params.userId,
-                            controllerId: params.controllerId,
-                            type: 2, deviceId: params.deviceId,
-                          ),
-                        );
-                      },
-                      child: const Text("Common Calibration"),
-                    ),
-                  ],
-                ),
+
 
 
                 // ---------- DEVICE ID ----------
