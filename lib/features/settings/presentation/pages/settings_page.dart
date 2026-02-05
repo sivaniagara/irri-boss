@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/utils/app_images.dart';
 import 'package:niagara_smart_drip_irrigation/features/common_id_settings/utils/common_id_settings_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/serial_set/utils/serial_set_routes.dart';
 import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../../irrigation_settings/utils/irrigation_settings_routes.dart';
 import '../../../mapping_and_unmapping_nodes/utils/mapping_and_unmapping_nodes_routes.dart';
@@ -24,10 +25,10 @@ class SettingsPage extends StatelessWidget {
               context.push(
                   PumpSettingsPageRoutes.pumpSettingMenuList,
                 extra: {
-                    'userId': int.parse(controllerContext.userId),
-                    'controllerId': int.parse(controllerContext.controllerId),
-                    'userType': int.parse(controllerContext.userType),
-                    'subUserId': int.parse(controllerContext.subUserId),
+                    'userId': int.parse(controllerContext.userId).toString(),
+                    'controllerId': int.parse(controllerContext.controllerId).toString(),
+                    'userType': int.parse(controllerContext.userType).toString(),
+                    'subUserId': int.parse(controllerContext.subUserId).toString(),
                     'deviceId': controllerContext.deviceId,
                 }
               );
@@ -56,7 +57,24 @@ class SettingsPage extends StatelessWidget {
             onTap: () {
               context.push(CommonIdSettingsRoutes.commonIdSettings);
             }
-        )
+        ),
+        _buildSettingsItem(
+            context: context,
+            title: 'Serial Set',
+            iconPath: AppImages.setserialIcon,
+            onTap: () {
+              final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
+              context.push(
+                  SerialSetRoutes.serialSetMenu,
+                  extra: {
+                    'userId': controllerContext.userId,
+                    'controllerId': controllerContext.controllerId,
+                    'deviceId': controllerContext.deviceId,
+                    'subUserId': controllerContext.subUserId,
+                  }
+              );
+            }
+        ),
       ],
     );
   }

@@ -18,10 +18,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ),
       centerTitle: true,
+      elevation: 0,
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
     );
   }
 
-  // 👇 This tells Scaffold how tall the AppBar should be
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

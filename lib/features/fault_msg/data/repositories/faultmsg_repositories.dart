@@ -21,7 +21,7 @@ class faultmsgRepositoryImpl implements faultmsgRepository {
 
     );
 
-    // Map model to entity
+    // Map model to entities
     return faultmsgEntity(
       code: model.code,
       message: model.message,
