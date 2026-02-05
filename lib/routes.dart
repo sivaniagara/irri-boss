@@ -50,15 +50,13 @@ import 'features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
 import 'features/sendrev_msg/utils/senrev_routes.dart';
 import 'features/program_settings/utils/program_settings_routes.dart';
 
-import 'features/set_serial_settings/domain/usecase/set_serial_details_params.dart';
-import 'features/set_serial_settings/presentation/bloc/set_serial_bloc.dart';
-import 'features/set_serial_settings/presentation/bloc/set_serial_bloc_event.dart';
-import 'features/set_serial_settings/presentation/pages/set_serial_page.dart';
+
 import 'features/auth/utils/auth_routes.dart';
 
 import 'core/di/injection.dart' as di;
 import 'core/utils/route_constants.dart';
 import 'features/auth/auth.dart';
+import 'features/serial_set/utils/serial_set_routes.dart';
 import 'features/side_drawer/side_drawer_routes.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
@@ -328,17 +326,7 @@ class AppRouter {
             );
           },
         ),
-        GoRoute(
-          name: 'setSerialPage',
-          path: RouteConstants.setSerialPage,
-          builder: (context, state) {
-            final params = state.extra as SetSerialParams;
-            return BlocProvider(create: (_) => sl<SetSerialBloc>()
-              ..add(LoadSerialEvent(userId: params.userId,controllerId: params.controllerId,)),
-              child: SerialSetCalibrationPage(userId: params.userId,controllerId: params.controllerId, type: params.type,deviceId: params.deviceId,),
-            );
-          },
-        ),
+
         ...DealerRoutes.dealerRoutes,
         ...serviceRequestRoutes,
         ...sideDrawerRoutes,
@@ -359,6 +347,7 @@ class AppRouter {
         ...greenHouseReportRoutes,
         ...ValveFlowRoutes.routes,
         ...AlarmRoutes.routes,
+        ...SerialSetRoutes.routes,
       ],
     );
   }
