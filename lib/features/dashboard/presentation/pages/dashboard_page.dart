@@ -35,7 +35,7 @@ import 'dashboard_2_0.dart';
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 
 
-enum BottomNavigationOption{home, report, setting, sentAndReceive}
+enum BottomNavigationOption{home, report, manual, setting, sentAndReceive}
 
 extension BottomNavivigationOptionExtension on BottomNavigationOption{
   String title(){
@@ -44,6 +44,8 @@ extension BottomNavivigationOptionExtension on BottomNavigationOption{
         return 'Home';
       case BottomNavigationOption.report:
         return 'Report';
+      case BottomNavigationOption.manual:
+        return 'Manual';
       case BottomNavigationOption.setting:
         return 'Setting';
       case BottomNavigationOption.sentAndReceive:
@@ -335,9 +337,22 @@ class _DashboardPageState extends State<DashboardPage> {
               selectedBottomNavigation = BottomNavigationOption.report;
               context.pushReplacement("${DashBoardRoutes.report}?userId=$userId&userType=$userType");
             }else if(index == 2){
+              selectedBottomNavigation = BottomNavigationOption.manual;
+              final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+              context.pushReplacement(
+                  "${DashBoardRoutes.standalone}?userId=$userId&userType=$userType",
+                extra: {
+                    "userId": controllerContext.userId,
+                    "controllerId": controllerContext.controllerId,
+                    "userType": controllerContext.userType,
+                    "subUserId": controllerContext.subUserId,
+                    "deviceId": controllerContext.deviceId,
+                }
+              );
+            }else if(index == 3){
               selectedBottomNavigation = BottomNavigationOption.setting;
               context.pushReplacement("${DashBoardRoutes.settings}?userId=$userId&userType=$userType");
-            }else if(index == 3){
+            }else if(index == 4){
               selectedBottomNavigation = BottomNavigationOption.sentAndReceive;
               context.pushReplacement("${DashBoardRoutes.sentAndReceive}?userId=$userId&userType=$userType");
             }
