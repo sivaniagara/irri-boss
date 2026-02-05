@@ -18,8 +18,6 @@ class DashboardMessageDispatcher extends MessageDispatcher {
     // dashboardBloc.add(UpdateLiveMessageEvent(deviceId, liveMessage));
   }
 
-
-  @override
   void sendMotorCommand({
     required String deviceId,
     required String command,

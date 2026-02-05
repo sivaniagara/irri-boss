@@ -9,6 +9,8 @@ import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/de
 
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/services/api_client.dart';
+import '../../../../core/services/mqtt/mqtt_manager.dart';
+import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/utils/api_response_handler.dart';
 import '../../domain/dashboard_domain.dart';
 import '../../data/dashboard_data.dart';
@@ -18,12 +20,21 @@ abstract class DashboardRemoteDataSource {
   Future<List<ControllerEntity>> fetchControllers(int userId, int groupId, GoRouterState routeState);
   Future<void> motorOnOff({required int userId, required int controllerId, required String deviceId, required int subUserId, required String status, required bool dualPump,
   });
+  Future<bool> changeFrom({
+    required String userId,
+    required String controllerId,
+    required String programId,
+    required String deviceId,
+    required String payload,
+  });
 }
 
 class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
   final ApiClient apiClient;
 
-  DashboardRemoteDataSourceImpl({required this.apiClient});
+  DashboardRemoteDataSourceImpl({
+    required this.apiClient,
+  });
 
   @override
   Future<List<GroupDetailsEntity>> fetchDashboardGroups(int userId, GoRouterState routeState) async {
@@ -55,6 +66,9 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
         endpoint = buildUrl(DealerUrls.getDealerCustomerDeviceDetails, {'userId': queryParams['userId'], 'dealerId': queryParams['dealerId']});
       }
       final response = await apiClient.get(endpoint);
+      for(var i in response['data']){
+        print("controller response => $i");
+      }
       return handleListResponse<ControllerModel>(
         response,
         fromJson: (json) => ControllerModel.fromJson(json),
@@ -102,5 +116,38 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
     }
     showToast(response['message'],backgroundColor: Colors.green,textColor: Colors.white);
 
+  }
+
+  @override
+  Future<bool> changeFrom({
+    required String userId,
+    required String controllerId,
+    required String programId,
+    required String deviceId,
+    required String payload
+  }) async{
+    try{
+      String endPoint = buildUrl(
+        DashboardUrls.sentAndReceive,
+        {
+          'userId': userId,
+          'controllerId': controllerId,
+          'programId': programId,
+        }
+      );
+
+      final response = await apiClient.post(
+          endPoint,
+          body: {
+            "sentAndReceived": [
+              PublishMessageHelper.settingsPayload(payload)
+          ]}
+      );
+      // mqttManager.publish(deviceId, payload);
+      await Future.delayed(Duration(seconds: 3));
+      return true;
+    }catch (e){
+      rethrow;
+    }
   }
 }

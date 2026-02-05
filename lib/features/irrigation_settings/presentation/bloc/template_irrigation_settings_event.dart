@@ -5,11 +5,13 @@ abstract class TemplateIrrigationSettingsEvent{}
 class FetchTemplateSettingEvent extends TemplateIrrigationSettingsEvent{
   final String userId;
   final String controllerId;
+  final String deviceId;
   final String subUserId;
   final String settingNo;
   FetchTemplateSettingEvent({
     required this.userId,
     required this.controllerId,
+    required this.deviceId,
     required this.subUserId,
     required this.settingNo,
   });

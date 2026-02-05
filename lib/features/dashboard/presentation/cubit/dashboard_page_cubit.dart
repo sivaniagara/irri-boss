@@ -11,6 +11,9 @@ import '../../../../core/services/mqtt/mqtt_manager.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/services/selected_controller_persistence.dart';
 import '../../dashboard.dart';
+import '../../domain/usecases/update_change_from_usecase.dart';
+
+enum ChangeFromStatus {initial, loading, success, failure}
 
 abstract class DashboardState extends Equatable {
   @override
@@ -26,28 +29,36 @@ class DashboardGroupsLoaded extends DashboardState {
   final Map<int, List<ControllerEntity>> groupControllers;
   final int? selectedGroupId;
   final int? selectedControllerIndex;
+  final ChangeFromStatus changeFromStatus;
+  final String errorMsg;
 
   DashboardGroupsLoaded({
     required this.groups,
     this.groupControllers = const {},
     this.selectedGroupId,
     this.selectedControllerIndex,
+    this.changeFromStatus = ChangeFromStatus.initial,
+    this.errorMsg = '',
   });
 
   @override
-  List<Object?> get props => [groups, groupControllers, selectedGroupId, selectedControllerIndex];
+  List<Object?> get props => [groups, groupControllers, selectedGroupId, selectedControllerIndex, changeFromStatus, errorMsg];
 
   DashboardGroupsLoaded copyWith({
     List<GroupDetailsEntity>? groups,
     Map<int, List<ControllerEntity>>? groupControllers,
     int? selectedGroupId,
     int? selectedControllerIndex,
+    ChangeFromStatus? changeFromStatus,
+    String? errorMsg,
   }) {
     return DashboardGroupsLoaded(
       groups: groups ?? this.groups,
       groupControllers: groupControllers ?? this.groupControllers,
       selectedGroupId: selectedGroupId ?? this.selectedGroupId,
       selectedControllerIndex: selectedControllerIndex ?? this.selectedControllerIndex,
+      changeFromStatus: changeFromStatus ?? this.changeFromStatus,
+      errorMsg: errorMsg ?? this.errorMsg,
     );
   }
 }
@@ -63,10 +74,12 @@ class DashboardError extends DashboardState {
 class DashboardPageCubit extends Cubit<DashboardState> {
   final FetchDashboardGroups fetchDashboardGroups;
   final FetchControllers fetchControllers;
+  final UpdateChangeFromUsecase updateChangeFromUsecase;
 
   DashboardPageCubit({
     required this.fetchDashboardGroups,
     required this.fetchControllers,
+    required this.updateChangeFromUsecase,
   }) : super(DashboardInitial());
 
   Future<void> getGroups(int userId, GoRouterState routeState, int userType) async {
@@ -205,17 +218,20 @@ class DashboardPageCubit extends Cubit<DashboardState> {
   }
 
   void updateLiveMessage(String deviceId, dynamic liveMessage) {
+    print('liveMessage ::: $liveMessage');
+    print("state ==> ${state}");
     if (state is! DashboardGroupsLoaded) return;
 
     final currentState = state as DashboardGroupsLoaded;
     final updatedGroupControllers = Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
     bool updated = false;
 
-    sl.get<MqttService>().updates.listen((message) {
-      liveMessage = message;
-    });
-
+    // sl.get<MqttService>().updates.listen((message) {
+    //   liveMessage = message;
+    // });
+    print("updatedGroupControllers => ${updatedGroupControllers}");
     for (final entry in updatedGroupControllers.entries) {
+      print('entry.key ::: ${entry.key}');
       final groupId = entry.key;
       final controllers = entry.value;
       final updatedControllersList = <ControllerEntity>[];
@@ -225,6 +241,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       for (final ctrl in controllers) {
         if (ctrl.deviceId == deviceId) {
           final model = ctrl as ControllerModel;
+          print("liveMessage => $liveMessage");
           final updatedCtrl = model.copyWith(liveMessage: liveMessage);
           updatedControllersList.add(updatedCtrl);
           groupUpdated = true;
@@ -241,6 +258,73 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
     if (updated) {
       emit(currentState.copyWith(groupControllers: updatedGroupControllers));
+    }
+  }
+
+  void updateChangeFrom({
+    required String userId,
+    required String controllerId,
+    required String programId,
+    required String deviceId,
+    required String payload,
+  }) async {
+    if (state is! DashboardGroupsLoaded) return;
+
+    // 1. First — go to loading
+    var current = state as DashboardGroupsLoaded;
+    emit(current.copyWith(changeFromStatus: ChangeFromStatus.loading));
+
+    // Optional: small delay just to make loading visible (mostly for UX/debug)
+    // await Future.delayed(const Duration(milliseconds: 300));
+
+    try {
+      final param = UpdateChangeFromParam(
+        userId: userId,
+        controllerId: controllerId,
+        programId: programId,
+        deviceId: deviceId,
+        payload: payload,
+      );
+
+      // Send MQTT command
+      sl<MqttManager>().publish(
+        deviceId,
+        PublishMessageHelper.settingsPayload(payload),
+      );
+
+      // Call backend / confirmation logic
+      final result = await updateChangeFromUsecase(param);
+
+      result.fold(
+            (failure) {
+          emit(current.copyWith(
+            changeFromStatus: ChangeFromStatus.failure,
+            errorMsg: failure.message,
+          ));
+          emit(current.copyWith(
+            changeFromStatus: ChangeFromStatus.initial,
+            errorMsg: '',
+          ));
+        },
+            (success) {
+          emit(current.copyWith(
+            changeFromStatus: ChangeFromStatus.success,
+          ));
+          emit(current.copyWith(
+            changeFromStatus: ChangeFromStatus.initial,
+            errorMsg: '',
+          ));
+        },
+      );
+    } catch (e) {
+      emit(current.copyWith(
+        changeFromStatus: ChangeFromStatus.failure,
+        errorMsg: e.toString(),
+      ));
+      emit(current.copyWith(
+        changeFromStatus: ChangeFromStatus.initial,
+        errorMsg: '',
+      ));
     }
   }
 }

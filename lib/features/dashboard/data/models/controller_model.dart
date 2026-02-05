@@ -6,16 +6,24 @@ import '../../domain/dashboard_domain.dart';
 class ProgramModel extends ProgramEntity {
   const ProgramModel({
     required super.programId,
-    required super.programNameDefault,
     required super.programName,
+    required super.listOfZone,
   });
 
   factory ProgramModel.fromJson(Map<String, dynamic> json) {
     return ProgramModel(
       programId: json['programId'] as int,
-      programNameDefault: json['programNameDefault'] as String,
       programName: json['programName'] as String,
+      listOfZone: json['zones'].map<ZoneEntity>((e) => ZoneModel.fromJson(e)).toList(),
     );
+  }
+}
+
+class ZoneModel extends ZoneEntity{
+  ZoneModel({required super.zoneNumber});
+  
+  factory ZoneModel.fromJson(Map<String, dynamic> json) {
+    return ZoneModel(zoneNumber: json['zoneNumber']);
   }
 }
 
@@ -148,22 +156,12 @@ class ControllerModel extends Equatable implements ControllerEntity {
   });
 
   factory ControllerModel.fromJson(Map<String, dynamic> json) {
-    // Parse programList
     List<ProgramEntity> parsedProgramList = [];
     if (json['programList'] != null && json['programList'] !is List<dynamic>) {
       final List<dynamic> programJsonList = json['programList'];
       parsedProgramList = programJsonList
           .map((programJson) => ProgramModel.fromJson(programJson))
           .toList();
-    }
-
-    // Parse liveMessage
-    // print("liveMessage :: ${json['liveMessage']}");
-    try {
-    LiveMessageEntity parsedLiveMessage = LiveMessageModel.fromLiveMessage(json['liveMessage'] ?? {});
-    } catch (e, sta) {
-      print('Error ==> $e');
-      print('Stack trace ==> $sta');
     }
 
     return ControllerModel(

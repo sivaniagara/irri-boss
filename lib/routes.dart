@@ -20,12 +20,15 @@ import 'features/controller_details/presentation/bloc/controller_details_bloc_ev
 import 'features/controller_details/presentation/pages/controller_details_page.dart';
 import 'features/controller_settings/utils/controller_settings_routes.dart';
 import 'features/dashboard/domain/entities/livemessage_entity.dart';
+import 'features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'features/dashboard/presentation/pages/controller_live_page.dart';
 import 'features/dashboard/presentation/pages/dashboard_page.dart';
 import 'features/dashboard/presentation/pages/program_preview_page.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
 import 'features/dealer_dashboard/utils/dealer_routes.dart';
 import 'features/edit_program/utils/edit_program_routes.dart';
+import 'features/irrigation_settings/presentation/bloc/template_irrigation_settings_bloc.dart';
+import 'features/irrigation_settings/presentation/pages/template_setting_page.dart';
 import 'features/irrigation_settings/utils/irrigation_settings_routes.dart';
 import 'features/fault_msg/utils/faultmsg_routes.dart';
 import 'features/mapping_and_unmapping_nodes/utils/mapping_and_unmapping_nodes_routes.dart';
@@ -211,6 +214,31 @@ class AppRouter {
                   ]
               ),
             ]
+        ),
+        GoRoute(
+          path: DashBoardRoutes.programCommonSettings,
+          builder: (context, state) {
+            print("state.pathParameters => ${state.pathParameters}");
+            var settingName = state.pathParameters['settingName']!;
+            var settingNo = state.pathParameters['settingNo']!;
+            final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
+
+            return MultiBlocProvider(
+                providers: [
+                  BlocProvider(
+                    create: (context)=> di.sl<TemplateIrrigationSettingsBloc>()..add(
+                        FetchTemplateSettingEvent(
+                            userId: controllerContext.userId,
+                            controllerId: controllerContext.controllerId,
+                            subUserId: controllerContext.subUserId,
+                            settingNo: settingNo, deviceId: controllerContext.deviceId
+                        )
+                    ),
+                  )
+                ],
+                child: TemplateSettingPage(appBarTitle: settingName)
+            );
+          },
         ),
         ...editProgramGoRoutes,
         ...irrigationSettingGoRoutes,

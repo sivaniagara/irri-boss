@@ -99,8 +99,6 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   /// Flavor-specific services
   registerFlavorDependencies(sl);
 
-  initDashboardDependencies();
-
   sl.registerLazySingleton<AppMessageDispatcher>(
         () => AppMessageDispatcher(
       dashboard: sl<DashboardMessageDispatcher>(),
@@ -113,6 +111,8 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
     mqttService: sl<MqttService>(),
     dispatcher: sl<AppMessageDispatcher>(),
   ));
+
+  initDashboardDependencies();
 
   /// Auth Dependencies
   initAuthDependencies();

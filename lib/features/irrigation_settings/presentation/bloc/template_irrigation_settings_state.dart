@@ -7,6 +7,7 @@ class TemplateIrrigationSettingsLoading extends TemplateIrrigationSettingsState{
 class TemplateIrrigationSettingsLoaded extends TemplateIrrigationSettingsState{
   final String userId;
   final String controllerId;
+  final String deviceId;
   final String subUserId;
   final String settingId;
   final String message;
@@ -16,6 +17,7 @@ class TemplateIrrigationSettingsLoaded extends TemplateIrrigationSettingsState{
   TemplateIrrigationSettingsLoaded({
     required this.userId,
     required this.controllerId,
+    required this.deviceId,
     required this.subUserId,
     required this.settingId,
     this.message = '',
@@ -31,11 +33,12 @@ class TemplateIrrigationSettingsLoaded extends TemplateIrrigationSettingsState{
     return TemplateIrrigationSettingsLoaded(
         userId: userId,
         controllerId: controllerId,
+        deviceId: deviceId,
         subUserId: subUserId,
         settingId: settingId,
         message: msg ?? message,
         controllerIrrigationSettingEntity: updatedControllerIrrigationSettingEntity,
-      updateTemplateSettingStatus: status ?? updateTemplateSettingStatus
+        updateTemplateSettingStatus: status ?? updateTemplateSettingStatus
     );
   }
 }

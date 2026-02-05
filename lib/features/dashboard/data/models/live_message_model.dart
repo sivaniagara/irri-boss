@@ -3,6 +3,8 @@ import '../../domain/entities/livemessage_entity.dart';
 
 class LiveMessageModel extends LiveMessageEntity {
   const LiveMessageModel({
+    required super.cd,
+    required super.ct,
     required super.motorOnOff,
     required super.valveOnOff,
     required super.liveDisplay1,
@@ -48,9 +50,11 @@ class LiveMessageModel extends LiveMessageEntity {
   });
 
   /// Parse from liveMessage string (MQTT cM field)
-  factory LiveMessageModel.fromLiveMessage(String? message) {
+  factory LiveMessageModel.fromLiveMessage(String? message, {String? date, String? time}) {
     if (message == null || message.trim().isEmpty || message.trim().toUpperCase() == "NA") {
-      return const LiveMessageModel(
+      return LiveMessageModel(
+        cd: date ?? '',
+        ct: time ?? '',
         motorOnOff: '0',
         valveOnOff: '0',
         liveDisplay1: '',
@@ -78,7 +82,7 @@ class LiveMessageModel extends LiveMessageEntity {
         flowRate: '0.0',
         wellLevel: '0',
         wellPercent: '0',
-        fertStatus: <String>['0','0','0','0','0','0',],
+        fertStatus: const <String>['0','0','0','0','0','0',],
         ec: '0',
         ph: '0',
         totalMeterFlow: '0',
@@ -90,7 +94,7 @@ class LiveMessageModel extends LiveMessageEntity {
         moisture2: '0',
         energy: '0',
         powerFactor: '0',
-        fertValues: <String>['0','0','0','0','0','0',],
+        fertValues: const <String>['0','0','0','0','0','0',],
         versionModule: '',
         versionBoard: '',
       );
@@ -170,6 +174,8 @@ class LiveMessageModel extends LiveMessageEntity {
     final versionBoard = safeString(40, '');
 
     return LiveMessageModel(
+      cd: date ?? '',
+      ct: time ?? '',
       motorOnOff: motorOnOff,
       valveOnOff: valveOnOff,
       liveDisplay1: liveDisplay1,

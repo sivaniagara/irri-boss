@@ -57,12 +57,14 @@ class IrrigationSettingsRepositoryImpl extends IrrigationSettingsRepository{
             'controllerId' : params.controllerId,
             'subUserId' : params.subUserId,
           },
-        body: {
-          "sendData": jsonEncode(jsonData),
-          "receivedData": "",
-          "menuSettingId": params.settingNo,
-          "sentSms": mqttData
-        });
+          body: {
+            "sendData": jsonEncode(jsonData),
+            "receivedData": "",
+            "menuSettingId": params.settingNo,
+            "sentSms": mqttData
+          },
+          deviceId: params.deviceId
+      );
       if(response['code'] == 200){
         return Right(unit);
       }else{

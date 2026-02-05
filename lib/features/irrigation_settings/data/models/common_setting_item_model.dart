@@ -38,7 +38,7 @@ class SingleSettingItemModel extends SingleSettingItemEntity{
     );
   }
 
-  String mqttPayload(){
+  String mqttPayload({String? dependentValue}){
     if(widgetType == 2){
       return '$settingField$value';
     }else if(widgetType == 3){
@@ -52,7 +52,8 @@ class SingleSettingItemModel extends SingleSettingItemEntity{
         List<String> sfList = settingField.split(';');
         int index = option.indexOf(value);
         if(settingField.contains('MODEONP') || titleText == 'Dosing'){
-          return '${sfList[index]}${index+1}';
+          print('dddddddd');
+          return '${sfList[index]}$dependentValue';
         }
         return sfList[index];
       }

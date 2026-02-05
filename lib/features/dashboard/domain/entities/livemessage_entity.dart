@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 
 class LiveMessageEntity extends Equatable{
+  final String cd;
+  final String ct;
   final String motorOnOff;
   final String valveOnOff;
   final String liveDisplay1;
@@ -45,6 +47,8 @@ class LiveMessageEntity extends Equatable{
   final String versionBoard;
 
   const LiveMessageEntity({
+    required this.cd,
+    required this.ct,
     required this.motorOnOff,
     required this.valveOnOff,
     required this.liveDisplay1,

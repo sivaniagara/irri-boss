@@ -10,16 +10,16 @@ import '../domain/usecases/get_template_irrigation_setting_usecase.dart';
 import '../domain/usecases/update_template_irrigation_setting_usecase.dart';
 
 void initIrrigationSettingsDependencies()async{
- sl.registerFactory(() => TemplateIrrigationSettingsBloc(
-     getTemplateIrrigationSettingUsecase: sl(),
-     updateTemplateIrrigationSettingUsecase: sl(),
- ));
- 
- sl.registerLazySingleton(() => GetTemplateIrrigationSettingUsecase(repository: sl()));
- sl.registerLazySingleton(() => UpdateTemplateIrrigationSettingUsecase(repository: sl()));
+  sl.registerFactory(() => TemplateIrrigationSettingsBloc(
+    getTemplateIrrigationSettingUsecase: sl(),
+    updateTemplateIrrigationSettingUsecase: sl(),
+  ));
 
- sl.registerLazySingleton<IrrigationSettingsRepository>(() => IrrigationSettingsRepositoryImpl(dataSource: sl()));
+  sl.registerLazySingleton(() => GetTemplateIrrigationSettingUsecase(repository: sl()));
+  sl.registerLazySingleton(() => UpdateTemplateIrrigationSettingUsecase(repository: sl()));
 
- sl.registerLazySingleton<IrrigationSettingsRemoteSource>(() => IrrigationSettingsRemoteSourceImpl(apiClient: sl()));
+  sl.registerLazySingleton<IrrigationSettingsRepository>(() => IrrigationSettingsRepositoryImpl(dataSource: sl()));
+
+  sl.registerLazySingleton<IrrigationSettingsRemoteSource>(() => IrrigationSettingsRemoteSourceImpl(apiClient: sl(), mqttManager: sl()));
 
 }

@@ -142,7 +142,7 @@ class AppThemes {
       ),
     ),
     dividerTheme: DividerThemeData(
-        color: const Color(0xffadadad99),
+        color: const Color(0xffadadad),
         thickness: 0.5,
         radius: BorderRadius.circular(5),
         space: 1

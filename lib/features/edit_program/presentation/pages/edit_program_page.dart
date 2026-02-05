@@ -36,7 +36,6 @@ class _EditProgramPageState extends State<EditProgramPage> {
   int selectedZone = 0;
   DeleteMode deleteMode = DeleteMode.single;
 
-
   void showPayloadBottomSheet(BuildContext context) {
     final editProgramBloc = context.read<EditProgramBloc>();
     showModalBottomSheet(
@@ -71,7 +70,6 @@ class _EditProgramPageState extends State<EditProgramPage> {
               padding: EdgeInsets.all(10),
               child: Image.asset('assets/images/icons/sent_and_receive_icon.png'),
             ),
-
           )
         ],
       ),

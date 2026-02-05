@@ -102,7 +102,7 @@ class MqttMessageHelper {
     final type = MqttMessageType.fromCode(typeStr);
 
     if (type == MqttMessageType.live || type == MqttMessageType.liveExtended) {
-      liveModel = LiveMessageModel.fromLiveMessage(trimmedMsg);
+      liveModel = LiveMessageModel.fromLiveMessage(trimmedMsg, date: cd, time: ct);
       if (kDebugMode) print('Live message from MQTT: $liveModel');
       await prefs.setString('LIVEMSG_$qrCode', '$trimmedMsg$cd,$ct');
       dispatcher.onLiveUpdate(qrCode, liveModel);

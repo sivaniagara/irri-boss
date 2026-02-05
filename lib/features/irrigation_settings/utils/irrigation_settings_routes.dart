@@ -43,7 +43,7 @@ final irrigationSettingGoRoutes = [
                               userId: controllerContext.userId,
                               controllerId: controllerContext.controllerId,
                               subUserId: controllerContext.subUserId,
-                              settingNo: settingNo
+                              settingNo: settingNo, deviceId: controllerContext.deviceId
                           )
                       ),
                     )

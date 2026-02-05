@@ -35,6 +35,7 @@ Future<void> main() async {
     }
   }
 
+
   FlavorConfig.setupFromDartDefine();
   await appMain();
 }

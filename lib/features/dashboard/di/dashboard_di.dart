@@ -8,6 +8,7 @@ import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/program_p
 
 import '../../../core/di/injection.dart';
 import '../../../core/services/selected_controller_persistence.dart';
+import '../domain/usecases/update_change_from_usecase.dart';
 import '../presentation/cubit/dashboard_cubit.dart';
 import '../utils/dashboard_dispatcher.dart';
 import '../dashboard.dart';
@@ -17,15 +18,19 @@ void initDashboardDependencies() {
   persistence.init();
   sl.registerSingleton<SelectedControllerPersistence>(persistence);
 
-  sl.registerLazySingleton<DashboardRemoteDataSource>(() => DashboardRemoteDataSourceImpl(apiClient: sl()));
+  sl.registerLazySingleton<DashboardRemoteDataSource>(() => DashboardRemoteDataSourceImpl(
+      apiClient: sl(),
+  ));
   sl.registerLazySingleton<DashboardRepository>(() => DashboardRepositoryImpl(remote: sl()));
   sl.registerLazySingleton(() => FetchDashboardGroups(sl()));
   sl.registerLazySingleton(() => FetchControllers(sl()));
+  sl.registerLazySingleton(() => UpdateChangeFromUsecase(sl()));
 
-  sl.registerFactory<DashboardPageCubit>(
+  sl.registerLazySingleton<DashboardPageCubit>(
         () => DashboardPageCubit(
       fetchDashboardGroups: sl(),
       fetchControllers: sl(),
+      updateChangeFromUsecase: sl(),
     ),
   );
 

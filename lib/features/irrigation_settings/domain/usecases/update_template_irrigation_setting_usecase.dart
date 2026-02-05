@@ -8,6 +8,7 @@ import '../repositories/irrigation_settings_repository.dart';
 class UpdateTemplateIrrigationSettingParams{
   final String userId;
   final String controllerId;
+  final String deviceId;
   final String subUserId;
   final String settingNo;
   final ControllerIrrigationSettingEntity controllerIrrigationSettingEntity;
@@ -16,6 +17,7 @@ class UpdateTemplateIrrigationSettingParams{
   UpdateTemplateIrrigationSettingParams({
     required this.userId,
     required this.controllerId,
+    required this.deviceId,
     required this.subUserId,
     required this.settingNo,
     required this.controllerIrrigationSettingEntity,

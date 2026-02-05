@@ -1,5 +1,6 @@
 class DashBoardRoutes {
   static const String dashboard = "/dashboard";
+  static const String programCommonSettings = "/dashboard/programCommonSettings/:settingName/:settingNo";
   static const String report = "/report";
   static const String settings = "/settings";
   static const String sentAndReceive = "/sentAndReceive";

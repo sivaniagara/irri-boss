@@ -2,7 +2,8 @@ class AppImages {
   static const String basePath = 'assets/images/common/niagara';
   static const String commonPath = 'assets/images/common';
   static const String logoLarge = '$basePath/niagara_logo_large.png';
-  static const String logoSmall = '$basePath/niagara_logo_small.png';
+  static const String logoSmall = '$commonPath/logo.png';
+  static const String irriBoss = '$commonPath/irri_boss.png';
   static const String iconPath = 'assets/images/icons';
   static const String mountain = '$commonPath/mountain.png';
   static const String motorG = '$commonPath/motor_g.png';
@@ -32,5 +33,5 @@ class AppImages {
   static const String communicationNodeIcon = '$iconPath/communication_node_icon.png';
   static const String pumpControlWithFlowIcon = '$iconPath/pump_control_with_flow_icon.png';
   static const String overHeadTankIcon = '$iconPath/over_head_tank_icon.png';
-
+  static const String currentIcon = '$commonPath/current_icon.png';
 }
