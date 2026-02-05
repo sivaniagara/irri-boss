@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/custom_switch.dart';
 
 class StandaloneHeader extends StatelessWidget {
   final bool isOn;
@@ -17,84 +18,49 @@ class StandaloneHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          const Icon(Icons.touch_app, color: Colors.black, size: 28),
-          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xffB4E7FF),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: title.contains("CONFIG") 
+                ? Image.asset("assets/images/icons/config_icon.png", width: 24, height: 24, color: Theme.of(context).colorScheme.primary)
+                : Icon(Icons.touch_app, color: Theme.of(context).colorScheme.primary, size: 24),
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
               title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
+              ),
             ),
           ),
           const SizedBox(width: 8),
-          _PillToggle(value: isOn, onChanged: onChanged),
-          const SizedBox(width: 8),
-          IconButton(
-            onPressed: onSend,
-            icon: const Icon(Icons.send_outlined, color: Color(0xFF2196F3), size: 28),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
+          CustomSwitch(
+            value: isOn,
+            onChanged: (v) => onChanged(v as bool),
+          ),
+          const SizedBox(width: 12),
+          GestureDetector(
+            onTap: onSend,
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.send_rounded, color: Theme.of(context).colorScheme.primary, size: 22),
+            ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _PillToggle extends StatelessWidget {
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  const _PillToggle({required this.value, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => onChanged(!value),
-      child: Container(
-        width: 80,
-        height: 34,
-        decoration: BoxDecoration(
-          color: value ? const Color(0xFF2E7D32) : Colors.grey[400],
-          borderRadius: BorderRadius.circular(17),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: Stack(
-            children: [
-              AnimatedAlign(
-                duration: const Duration(milliseconds: 200),
-                alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-                child: Container(
-                  width: 26,
-                  height: 26,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-              Align(
-                alignment: value ? Alignment.centerLeft : Alignment.centerRight,
-                child: Padding(
-                  padding: EdgeInsets.only(left: value ? 10.0 : 0, right: value ? 0 : 10.0),
-                  child: Text(
-                    value ? "ON" : "OFF",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

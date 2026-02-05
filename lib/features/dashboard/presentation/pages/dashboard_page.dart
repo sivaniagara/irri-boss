@@ -184,7 +184,7 @@ class _DashboardPageState extends State<DashboardPage> {
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             title: Container(
-              width: 50,
+              width: 140,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: Colors.transparent,
@@ -312,6 +312,11 @@ class _DashboardPageState extends State<DashboardPage> {
               itemLabel: 'Report',
             ),
             BottomBarItem(
+              inActiveItem: Image.asset(AppImages.inActiveManualIcon,),
+              activeItem: Image.asset(AppImages.activeManualIcon),
+              itemLabel: 'Manual',
+            ),
+            BottomBarItem(
               inActiveItem: Image.asset(AppImages.inActiveSettingIcon,),
               activeItem: Image.asset(AppImages.activeSettingIcon),
               itemLabel: 'Settings',
@@ -390,13 +395,15 @@ class _DashboardPageState extends State<DashboardPage> {
       int userType,
       ) {
     return AppBar(
-      title: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        spacing: 5,
-        children: [
-          Image.asset(AppImages.logoSmall,height: 60,),
-          // Text('IRRI BOSS', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xff17861B)),)
-        ],
+      title: Container(
+        width: 140,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+        ),
+        alignment: Alignment.center,
+        child: Image.asset(AppImages.logoSmall),
       ),
       bottom: _buildAppBarBottom(
         selectedGroup,
@@ -622,18 +629,14 @@ class _DashboardPageState extends State<DashboardPage> {
     final modelCheck = ([1, 5].contains(controller.modelId)) ? 300 : 120;
     double scale(double size) => size * (width / modelCheck);
     final router = GoRouterState.of(context);
-    if (kDebugMode) {
-      print(router.extra != null && (router.extra as Map<String, dynamic>)['name'] != null
+    print(router.extra != null && (router.extra as Map<String, dynamic>)['name'] != null
         && (router.extra as Map<String, dynamic>)['name'] != DashBoardRoutes.dashboard);
-    }
     if(userType == 2) {
       userId = router.extra != null && (router.extra as Map<String, dynamic>)['name'] != null
           && (router.extra as Map<String, dynamic>)['name'] != DashBoardRoutes.dashboard
           ? int.parse((router.uri.queryParameters as Map<String, dynamic>)['dealerId']) : userId;
     }
-    if (kDebugMode) {
-      print(userId);
-    }
+    print(userId);
 
     return CustomScrollView(
       physics: const AlwaysScrollableScrollPhysics(),

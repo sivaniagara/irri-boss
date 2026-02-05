@@ -9,11 +9,23 @@ abstract class ValveFlowRepository {
     required String subUserId,
   });
 
+
+  Future<Either<Failure, void>> publishValveFlowSms({
+    required String userId,
+    required String controllerId,
+    required String subUserId,
+    required String sentSms,
+  });
+
+
   Future<Either<Failure, void>> saveValveFlowSettings({
     required String userId,
     required String controllerId,
     required String subUserId,
     required ValveFlowEntity entity,
+
     required String sentSms,
+
+
   });
 }

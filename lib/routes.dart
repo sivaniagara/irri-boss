@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/features/alarm_settings/utils/alarm_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/dashboard_2_0.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/node_status_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
@@ -11,7 +12,11 @@ import 'package:niagara_smart_drip_irrigation/features/reports/moisture_reports/
 import 'package:niagara_smart_drip_irrigation/features/service_request/utils/service_request_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/settings/presentation/pages/settings_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/bloc/standalone_bloc.dart';
+import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/bloc/standalone_event.dart';
+import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/pages/standalone_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/utils/standalone_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/valve_flow_settings/utils/valve_flow_routes.dart';
 import 'core/di/injection.dart';
 import 'features/common_id_settings/utils/common_id_settings_routes.dart';
 import 'features/controller_details/domain/usecase/controller_details_params.dart';
@@ -34,7 +39,6 @@ import 'features/fault_msg/utils/faultmsg_routes.dart';
 import 'features/mapping_and_unmapping_nodes/utils/mapping_and_unmapping_nodes_routes.dart';
 import 'features/report_downloader/utils/report_downloaderRoute.dart';
 import 'features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
-import 'features/reports/Voltage_reports/utils/voltage_routes.dart';
 import 'features/reports/fertilizer_reports/utils/fertilizer_routes.dart';
 import 'features/reports/flow_graph_reports/utils/flow_graph_routes.dart';
 import 'features/reports/power_reports/utils/Power_routes.dart';
@@ -194,6 +198,34 @@ class AppRouter {
                   ]
               ),
               GoRoute(
+                  path: DashBoardRoutes.standalone,
+                  builder: (context, state) {
+                    final params = state.extra as Map<String, dynamic>;
+                    final userId = params["userId"]?.toString() ?? '';
+                    final controllerId = params["controllerId"]?.toString() ?? '';
+                    final deviceId = params["deviceId"]?.toString() ?? '';
+                    final subUserId = params["subUserId"]?.toString() ?? '0';
+
+                    return BlocProvider.value(
+                      value: di.sl<StandaloneBloc>(),
+                      child: Builder(
+                        builder: (context) {
+                          final bloc = context.read<StandaloneBloc>();
+                          if (bloc.state is StandaloneInitial) {
+                            bloc.add(FetchStandaloneDataEvent(
+                                userId: userId,
+                                controllerId: controllerId,
+                                deviceId: deviceId,
+                                subUserId: subUserId
+                            ));
+                          }
+                          return StandalonePage(data: params);
+                        },
+                      ),
+                    );
+                  },
+              ),
+              GoRoute(
                   path: DashBoardRoutes.settings,
                   builder: (context, state) {
                     return SettingsPage();
@@ -314,7 +346,6 @@ class AppRouter {
         ...reportPageRoutes,
         ...sendRevPageRoutes,
         ...FaultMsgPagesRoutes,
-        ...voltGraphRoutes,
         ...PowerGraphRoutes,
         ...ReportDownloadRoutes,
         ...MotorCyclicRoutes,
@@ -326,6 +357,8 @@ class AppRouter {
         ...moistureRoutes,
         ...fertilizerRoutes,
         ...greenHouseReportRoutes,
+        ...ValveFlowRoutes.routes,
+        ...AlarmRoutes.routes,
       ],
     );
   }

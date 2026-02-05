@@ -12,6 +12,7 @@ import 'package:niagara_smart_drip_irrigation/features/reports/tdy_valve_status_
 import 'package:niagara_smart_drip_irrigation/features/service_request/di/service_request_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/valve_flow_settings/di/valve_flow_di.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../features/alarm_settings/di/alarm_di.dart';
 import '../../features/common_id_settings/di/common_id_settings_di.dart';
 import '../../features/controller_details/data/repositories/controller_details_repositories.dart';
 import '../../features/controller_details/domain/repositories/controller_details_repo.dart';
@@ -184,6 +185,7 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initFertilizer();
   initGreenHouse();
   initServiceRequestDependencies();
+  initAlarmDependencies();
 
 }
 

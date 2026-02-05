@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/custom_switch.dart';
 import '../../domain/entities/standalone_entity.dart';
 import '../bloc/standalone_bloc.dart';
 import '../bloc/standalone_event.dart';
@@ -16,40 +17,64 @@ class ZoneItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Ensure time is in HH:mm format for display
     String displayTime = zone.time;
     if (displayTime.split(':').length > 2) {
-      displayTime = displayTime.substring(0, 5); // Take only HH:mm
+      displayTime = displayTime.substring(0, 5);
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Colors.grey.shade100, width: 1),
+        ),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Expanded(
-            flex: 5,
-            child: Text(
-              "ZONE ${zone.zoneNumber.padLeft(3, '0')}",
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            flex: 3,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "ZONE ${zone.zoneNumber.padLeft(3, '0')}",
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                Text(
+                  "Irrigation Zone",
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                ),
+              ],
             ),
           ),
           Expanded(
-            flex: 4,
+            flex: 2,
             child: GestureDetector(
               onTap: () async {
                 final TimeOfDay? picked = await showTimePicker(
                   context: context,
                   initialTime: _parseTime(zone.time),
                   builder: (context, child) {
-                    return MediaQuery(
-                      data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-                      child: child!,
+                    return Theme(
+                      data: Theme.of(context).copyWith(
+                        timePickerTheme: TimePickerThemeData(
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                        ),
+                      ),
+                      child: MediaQuery(
+                        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
+                        child: child!,
+                      ),
                     );
                   },
                 );
                 if (picked != null) {
-                  final String formattedTime = 
+                  final String formattedTime =
                       "${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}";
                   context.read<StandaloneBloc>().add(UpdateZoneTime(index, formattedTime));
                 }
@@ -58,27 +83,27 @@ class ZoneItem extends StatelessWidget {
                 height: 40,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade400, width: 1.5),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.white,
+                  border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.3), width: 1),
+                  borderRadius: BorderRadius.circular(10),
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.05),
                 ),
                 child: Text(
                   displayTime,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold, 
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    letterSpacing: 1.2,
+                    color: Theme.of(context).colorScheme.primary,
+                    letterSpacing: 1.1,
                   ),
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          _PillToggle(
+          const SizedBox(width: 16),
+          CustomSwitch(
             value: zone.status,
             onChanged: (v) {
-              context.read<StandaloneBloc>().add(ToggleZone(index, v));
+              context.read<StandaloneBloc>().add(ToggleZone(index, v as bool));
             },
           ),
         ],
@@ -94,60 +119,5 @@ class ZoneItem extends StatelessWidget {
       }
     } catch (_) {}
     return const TimeOfDay(hour: 0, minute: 0);
-  }
-}
-
-class _PillToggle extends StatelessWidget {
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  const _PillToggle({required this.value, required this.onChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => onChanged(!value),
-      child: Container(
-        width: 70,
-        height: 32,
-        decoration: BoxDecoration(
-          color: value ? const Color(0xFF2E7D32) : Colors.redAccent[400],
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(3.0),
-          child: Stack(
-            children: [
-              AnimatedAlign(
-                duration: const Duration(milliseconds: 200),
-                alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-                child: Container(
-                  width: 24,
-                  height: 24,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-              ),
-              Align(
-                alignment: value ? Alignment.centerLeft : Alignment.centerRight,
-                child: Padding(
-                  padding: EdgeInsets.only(left: value ? 8.0 : 0, right: value ? 0 : 8.0),
-                  child: Text(
-                    value ? "ON" : "OFF",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

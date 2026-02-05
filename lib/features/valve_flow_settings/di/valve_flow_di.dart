@@ -6,10 +6,12 @@ import '../presentation/bloc/valve_flow_bloc.dart';
 
 void initValveFlowDependencies() {
   sl.registerFactory(() => ValveFlowBloc(repository: sl()));
-  
-  sl.registerLazySingleton<ValveFlowRepository>(() => ValveFlowRepositoryImpl(remoteSource: sl()),
+
+  sl.registerLazySingleton<ValveFlowRepository>(
+    () => ValveFlowRepositoryImpl(remoteSource: sl()),
   );
-  
-  sl.registerLazySingleton<ValveFlowRemoteSource>(() => ValveFlowRemoteSourceImpl(apiClient: sl()),
+
+  sl.registerLazySingleton<ValveFlowRemoteSource>(
+    () => ValveFlowRemoteSourceImpl(apiClient: sl()),
   );
 }

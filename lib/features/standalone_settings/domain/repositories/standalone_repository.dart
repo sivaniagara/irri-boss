@@ -23,6 +23,7 @@ abstract class StandaloneRepository {
     required String userId,
     required int subuserId,
     required String controllerId,
+    required String deviceId,
     required String command,
     required String sentSms,
   });

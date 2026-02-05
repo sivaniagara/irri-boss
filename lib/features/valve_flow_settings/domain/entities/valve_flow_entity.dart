@@ -7,6 +7,7 @@ class ValveFlowEntity {
   final List<ValveFlowNodeEntity> nodes;
   final String flowPercent;
   final String flowDeviation;
+  final String deviceId;
 
   ValveFlowEntity({
     required this.menuSettingId,
@@ -15,6 +16,7 @@ class ValveFlowEntity {
     required this.templateJson,
     required this.smsFormat,
     required this.nodes,
+    required this.deviceId,
     this.flowPercent = '',
     this.flowDeviation = '0',
   });
@@ -23,6 +25,7 @@ class ValveFlowEntity {
     List<ValveFlowNodeEntity>? nodes,
     String? flowPercent,
     String? flowDeviation,
+    String? deviceId,
   }) {
     return ValveFlowEntity(
       menuSettingId: menuSettingId,
@@ -33,6 +36,7 @@ class ValveFlowEntity {
       nodes: nodes ?? this.nodes,
       flowPercent: flowPercent ?? this.flowPercent,
       flowDeviation: flowDeviation ?? this.flowDeviation,
+      deviceId: deviceId ?? this.deviceId,
     );
   }
 }

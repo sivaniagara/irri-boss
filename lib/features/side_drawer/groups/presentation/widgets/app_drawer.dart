@@ -7,6 +7,7 @@ import 'package:niagara_smart_drip_irrigation/features/auth/utils/auth_routes.da
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/groups/utils/group_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/standalone_settings/utils/standalone_routes.dart';
 
 import '../../../../../core/utils/route_constants.dart';
 import '../../../../auth/presentation/bloc/auth_bloc.dart';
@@ -72,7 +73,7 @@ class AppDrawer extends StatelessWidget {
                                     fontWeight: FontWeight.bold,
                                     shadows: [
                                       Shadow(
-                                        offset: Offset(0, 1),
+                                        offset: const Offset(0, 1),
                                         blurRadius: 2,
                                         color: Colors.black.withOpacity(0.3),
                                       ),
@@ -126,6 +127,26 @@ class AppDrawer extends StatelessWidget {
                   },
                 ),
                 const Divider(indent: 10, endIndent: 10,),
+                // Standalone Settings
+                _buildDrawerItem(
+                  dialogContext,
+                  icon: Icons.settings_remote,
+                  title: 'Standalone Settings',
+                  onTap: () {
+                    dialogContext.push(
+                      StandaloneRoutes.standalone,
+                      extra: {
+                        'userId': userData['userId'],
+                        'controllerId': userData['controllerId'],
+                        'userType': userData['userType'],
+                        'subUserId': userData['subUserId'] ?? '0',
+                        'deviceId': userData['deviceId'] ?? '',
+                      },
+                    );
+                    Navigator.pop(dialogContext);
+                  },
+                ),
+                const Divider(indent: 10, endIndent: 10,),
                 // Groups (Dynamic Content)
                 _buildDrawerItem(
                   dialogContext,
@@ -166,7 +187,7 @@ class AppDrawer extends StatelessWidget {
               if (state is Authenticated) {
                 return ListTile(
                   tileColor: Colors.transparent,
-                  leading: Icon(Icons.logout, color: Colors.red,),
+                  leading: const Icon(Icons.logout, color: Colors.red,),
                   title: Text(
                     'Logout',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -190,7 +211,7 @@ class AppDrawer extends StatelessWidget {
               );
             },
           ),
-          SizedBox(height: 20,)
+          const SizedBox(height: 20,)
         ],
       ),
     );

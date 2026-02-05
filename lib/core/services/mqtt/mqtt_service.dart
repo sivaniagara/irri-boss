@@ -101,7 +101,9 @@ class MqttService {
       final topic = "$_publishTopic/$deviceId";
       final builder = MqttClientPayloadBuilder();
       builder.addString(message);
-      _client.publishMessage(topic, qos, builder.payload!);
+      if(message.isNotEmpty) {
+        _client.publishMessage(topic, qos, builder.payload!);
+      }
 
       //ShowToast Remove Production this is only for development purpose
       showToast(message);

@@ -6,6 +6,7 @@ class StandaloneModel extends StandaloneEntity {
     required super.zones,
     required super.settingValue,
     required super.dripSettingValue,
+    required super.programName,
   });
 
   factory StandaloneModel.fromCombinedJson({
@@ -14,66 +15,72 @@ class StandaloneModel extends StandaloneEntity {
   }) {
     String value = "0";
     String dripValue = "0";
+    String programName = "Standalone";
     List<ZoneEntity> finalZones = [];
 
-    // 1. Baseline: Load zones from hardware zonelistv2 API
+    // 1. Load Hardware Zones
     if (zoneJson.isNotEmpty) {
-      try {
-        finalZones = zoneJson.map((z) {
-          final map = Map<String, dynamic>.from(z as Map);
-          return ZoneModel.fromJson(map);
-        }).toList();
-      } catch (_) {}
+      finalZones = zoneJson.map((z) => ZoneModel.fromJson(Map<String, dynamic>.from(z as Map))).toList();
     }
 
-    // 2. Settings Overlay: Apply saved configuration if available
-    if (settingsJson['data'] != null && settingsJson['data'] is List && settingsJson['data'].isNotEmpty) {
+    // 2. Process Settings Data
+    if (settingsJson['data'] != null && (settingsJson['data'] as List).isNotEmpty) {
       final dataItem = settingsJson['data'][0];
-      
-      if (dataItem['sendData'] != null && dataItem['sendData'].toString().isNotEmpty) {
-        try {
-          final decodedSendData = json.decode(dataItem['sendData'].toString());
-          if (decodedSendData is Map<String, dynamic>) {
-            value = decodedSendData['toggleStatus']?.toString() ?? "0";
-            dripValue = decodedSendData['driptoggleStatus']?.toString() ?? value;
-            
-            // CRITICAL: Only overwrite finalZones if the saved config actually HAS zones.
-            // In Configuration API (500), zoneList is often [], so we must NOT overwrite the baseline.
-            if (decodedSendData['zoneList'] != null && 
-                decodedSendData['zoneList'] is List && 
-                (decodedSendData['zoneList'] as List).isNotEmpty) {
-              finalZones = (decodedSendData['zoneList'] as List).map((z) {
-                print("final zones${finalZones}");
-                return ZoneModel.fromJson(Map<String, dynamic>.from(z as Map));
+      programName = dataItem['menuItem']?.toString() ?? dataItem['templateName']?.toString() ?? programName;
 
-              }).toList();
+      final dynamic rawSendData = dataItem['sendData'];
+      if (rawSendData != null && rawSendData.toString().isNotEmpty) {
+        try {
+          final Map<String, dynamic> decoded = (rawSendData is String)
+              ? json.decode(rawSendData)
+              : Map<String, dynamic>.from(rawSendData);
+
+          value = decoded['toggleStatus']?.toString() ?? "0";
+          dripValue = decoded['driptoggleStatus']?.toString() ?? value;
+
+          final List<dynamic>? savedZones = decoded['zoneList'];
+          if (savedZones != null && savedZones.isNotEmpty) {
+            // If we have no hardware zones, use the saved ones as a base
+            if (finalZones.isEmpty) {
+              finalZones = savedZones.map((sz) => ZoneModel.fromJson(Map<String, dynamic>.from(sz as Map))).toList();
+            } else {
+              // Priority: Overlay saved times/status onto hardware structure using robust ID matching
+              for (var i = 0; i < finalZones.length; i++) {
+                final hwZone = finalZones[i];
+                final savedMatch = savedZones.firstWhere(
+                      (sz) => normalizeZoneId(sz['zoneNumber']) == hwZone.zoneNumber,
+                  orElse: () => null,
+                );
+                if (savedMatch != null) {
+                  finalZones[i] = ZoneEntity(
+                    zoneNumber: hwZone.zoneNumber,
+                    time: savedMatch['time']?.toString() ?? hwZone.time,
+                    status: savedMatch['status'].toString() == '1' || savedMatch['status'] == true,
+                  );
+                }
+              }
             }
           }
         } catch (_) {}
-      }
-
-      // 3. Toggle Fallback Logic
-      if (value == "0") {
-        if (dataItem['templateJson'] != null) {
-          try {
-            final template = json.decode(dataItem['templateJson'].toString());
-            if (template is Map<String, dynamic>) {
-              value = template['toggleStatus']?.toString() ?? "0";
-              dripValue = template['driptoggleStatus']?.toString() ?? value;
-            }
-          } catch (_) {}
-        } else if (dataItem['value'] != null) {
-          value = dataItem['value'].toString();
-          dripValue = value;
-        }
       }
     }
 
     return StandaloneModel(
       settingValue: value,
-      dripSettingValue: dripValue, 
+      dripSettingValue: dripValue,
       zones: finalZones,
+      programName: programName,
     );
+  }
+
+  /// Robustly extracts the numeric ID from strings like "ZONE 001", "Zone 1", or "1"
+  static String normalizeZoneId(dynamic raw) {
+    if (raw == null) return "0";
+    String s = raw.toString();
+    String digits = s.replaceAll(RegExp(r'[^0-9]'), '').trim();
+    if (digits.isEmpty) return s;
+    // Parse to int and back to string to remove leading zeros: "001" -> "1"
+    return int.tryParse(digits)?.toString() ?? digits;
   }
 }
 
@@ -85,26 +92,13 @@ class ZoneModel extends ZoneEntity {
   });
 
   factory ZoneModel.fromJson(Map<String, dynamic> json) {
-    // Extensive key checking to support different API response formats
-    final dynamic rawNum = json['zoneNumber'] ?? 
-                          json['zone_number'] ?? 
-                          json['zoneNo'] ?? 
-                          json['zone_id'] ?? 
-                          json['id'] ?? 
-                          '0';
-    
-    // Normalize zone number format
-    String formattedNum = rawNum.toString().replaceAll(RegExp(r'[^0-9]'), '').trim();
-    if (formattedNum.isEmpty) {
-      formattedNum = rawNum.toString();
-    }
-
+    final dynamic rawId = json['zoneNumber'] ?? json['zone_number'] ?? json['id'] ?? '0';
     return ZoneModel(
-      zoneNumber: formattedNum,
+      zoneNumber: StandaloneModel.normalizeZoneId(rawId),
       time: json['time']?.toString() ?? '00:00',
-      status: json['status'].toString() == '1' || 
-              json['status'] == true || 
-              json['status'].toString().toLowerCase() == 'true',
+      status: json['status'].toString() == '1' ||
+          json['status'] == true ||
+          json['status'].toString().toLowerCase() == 'true',
     );
   }
 }

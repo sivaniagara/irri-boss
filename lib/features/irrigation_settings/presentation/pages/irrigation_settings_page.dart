@@ -3,28 +3,18 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_list_tile.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/gradiant_background.dart';
+import 'package:niagara_smart_drip_irrigation/features/alarm_settings/utils/alarm_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/presentation/widgets/custom_card.dart';
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
-import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
-import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
-import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
-import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
-import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
-import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
-import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
-import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
-import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
-import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
-import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
-import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
-import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
-import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
+import 'package:niagara_smart_drip_irrigation/features/valve_flow_settings/utils/valve_flow_routes.dart';
 
+import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../../dashboard/utils/dashboard_routes.dart';
 import '../../../water_fertilizer_settings/utils/water_fertilizer_settings_routes.dart';
 import '../../domain/entities/setting_item_entity.dart';
 import '../../utils/irrigation_settings_routes.dart';
 import '../widgets/setting_card.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class IrrigationSettingsPage extends StatelessWidget {
   IrrigationSettingsPage({super.key});
@@ -85,8 +75,7 @@ class IrrigationSettingsPage extends StatelessWidget {
                 ],
               ),
               settingsSection(
-                context: context,
-                sectionTitle: 'Sensors & Field Conditions',
+                context: context, sectionTitle: 'Sensors & Field Conditions',
                 items: [
                   settings[8],
                   settings[13],
@@ -112,21 +101,6 @@ class IrrigationSettingsPage extends StatelessWidget {
           ),
         ),
       ),
-      // body: GradiantBackground(
-      //     child: GridView.builder(
-      //       padding: const EdgeInsets.all(16),
-      //       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-      //         crossAxisCount: 3,        // ✅ 3 per row
-      //         crossAxisSpacing: 14,
-      //         mainAxisSpacing: 14,
-      //         childAspectRatio: 0.8,   // perfect card ratio
-      //       ),
-      //       itemCount: settings.length,
-      //       itemBuilder: (context, index) {
-      //         return SettingCard(item: settings[index]);
-      //       },
-      //     )
-      // ),
     );
   }
 
@@ -178,7 +152,23 @@ class IrrigationSettingsPage extends StatelessWidget {
                 context,
                 items[itemIndex],
                 onTap: () {
-                  if(items[itemIndex].irrigationSettingsEnum != IrrigationSettingsEnum.irrigationFertigation){
+                  if (items[itemIndex].irrigationSettingsEnum == IrrigationSettingsEnum.valveFlow) {
+                    final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
+                    context.push(ValveFlowRoutes.valveFlow, extra: {
+                      'userId': controllerContext.userId,
+                      'controllerId': controllerContext.controllerId,
+                      'deviceId': controllerContext.deviceId,
+                      'subUserId': controllerContext.subUserId,
+                    });
+                  }else  if (items[itemIndex].irrigationSettingsEnum == IrrigationSettingsEnum.alarm) {
+                    final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
+                    context.push(AlarmRoutes.alarmSettings, extra: {
+                      'userId': controllerContext.userId,
+                      'controllerId': controllerContext.controllerId,
+                      'deviceId': controllerContext.deviceId,
+                      'subUserId': controllerContext.subUserId,
+                    });
+                  }else if(items[itemIndex].irrigationSettingsEnum != IrrigationSettingsEnum.irrigationFertigation){
                     context.push('${IrrigationSettingsRoutes.irrigationSettings}${IrrigationSettingsRoutes.templateSetting
                         .replaceAll(':settingName', items[itemIndex].name)
                         .replaceAll(':settingNo', items[itemIndex].irrigationSettingsEnum.settingId.toString())

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_manager.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_service.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/menu_item_entity.dart';
+import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/setting_widget_type.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/template_json_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/usecsases/send_settings_usecase.dart';
 
@@ -50,10 +51,52 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     final targetSection = newSections[sectionIndex];
     final newSettings = List<SettingsEntity>.from(targetSection.settings);
 
-    if (isHiddenFlag) {
-      newSettings[settingIndex] = newSettings[settingIndex].copyWith(hiddenFlag: newValue);
+    String processedValue = newValue;
+
+    if (!isHiddenFlag) {
+      final setting = newSettings[settingIndex];
+
+      if (setting.widgetType == SettingWidgetType.text) {
+        final trimmed = newValue.trim();
+        if(setting.title == 'Dry Run Occurance Count') {
+          processedValue = newValue.contains('.') ? newValue.split('.')[0] : newValue;
+        }else {
+          if (trimmed.isEmpty) {
+            processedValue = trimmed;
+          } else if (trimmed.contains('.')) {
+            final parts = trimmed.split('.');
+            final integerStr = parts[0];
+            final decimalPart = parts.length > 1 ? parts[1] : '0';
+
+            final intClean = integerStr.replaceAll(RegExp(r'^0+'), '');
+            final intValue = intClean.isEmpty ? 0 : int.tryParse(intClean) ?? -1;
+
+            String paddedInteger;
+            if (intValue >= 0 && intValue < 100) {
+              paddedInteger = intValue.toString().padLeft(3, '0');
+            } else {
+              paddedInteger = integerStr;
+            }
+
+            processedValue = '$paddedInteger.$decimalPart';
+          } else {
+            final number = int.tryParse(trimmed);
+            if (number != null) {
+              if (number < 100) {
+                processedValue = "${number.toString().padLeft(3, '0')}.0";
+              } else {
+                processedValue = "${number.toString()}.0";
+              }
+            } else {
+              processedValue = "$trimmed.0";
+            }
+          }
+        }
+      }
+
+      newSettings[settingIndex] = setting.copyWith(value: processedValue);
     } else {
-      newSettings[settingIndex] = newSettings[settingIndex].copyWith(value: newValue);
+      newSettings[settingIndex] = newSettings[settingIndex].copyWith(hiddenFlag: newValue);
     }
 
     newSections[sectionIndex] = targetSection.copyWith(settings: newSettings);
@@ -75,11 +118,17 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     emit(SettingSendingState(sectionIndex, settingIndex));
 
     final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
-    final payload = SmsPayloadBuilder.build(setting);
+    String payload = SmsPayloadBuilder.build(setting, deviceId);
+
+    if(menuItemEntity.menu.menuSettingId == 508 && menuItemEntity.template.sections[0].typeId == 1) {
+      payload = '';
+    }
 
     try {
       final publishMessage = jsonEncode(PublishMessageHelper.settingsPayload(payload));
-      di.sl.get<MqttManager>().publish(deviceId, publishMessage);
+      if(payload.isNotEmpty) {
+        di.sl.get<MqttManager>().publish(deviceId, publishMessage);
+      }
       final result = await sendPumpSettingsUsecase(SendPumpSettingsParams(
         userId: userId,
         subUserId: subUserId,
@@ -110,12 +159,12 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     emit(SettingsSendStartedState());
     try {
       final result = await sendPumpSettingsUsecase(SendPumpSettingsParams(
-        userId: userId,
-        subUserId: subUserId,
-        controllerId: controllerId,
-        menuId: menuItemEntity.menu.menuSettingId,
-        menuItemEntity: menuItemEntity,
-        sentSms: sentSms
+          userId: userId,
+          subUserId: subUserId,
+          controllerId: controllerId,
+          menuId: menuItemEntity.menu.menuSettingId,
+          menuItemEntity: menuItemEntity,
+          sentSms: sentSms
       ));
 
       result.fold(

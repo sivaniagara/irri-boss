@@ -16,6 +16,8 @@ class AppImages {
   static const String inActiveSettingIcon = '$iconPath/inactive_setting_icon.png';
   static const String activeSentIcon = '$iconPath/active_sent_icon.png';
   static const String inActiveSentIcon = '$iconPath/inactive_sent_icon.png';
+  static const String activeManualIcon = '$iconPath/inactive_manual_icon.png';
+  static const String inActiveManualIcon = '$iconPath/inactive_manual_icon.png';
   static const String programIcon = '$iconPath/program_icon.png';
   static const String pumpSettingIcon = '$iconPath/pump_setting_icon.png';
   static const String irrigationSettingIcon = '$iconPath/irrigation_setting_icon.png';

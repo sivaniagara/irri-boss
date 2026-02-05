@@ -3,8 +3,14 @@ abstract class ValveFlowEvent {}
 class FetchValveFlowDataEvent extends ValveFlowEvent {
   final String userId;
   final String controllerId;
+  final String deviceId;
   final String subUserId;
-  FetchValveFlowDataEvent({required this.userId, required this.controllerId, required this.subUserId});
+  FetchValveFlowDataEvent({
+    required this.userId,
+    required this.controllerId,
+    required this.deviceId,
+    required this.subUserId
+  });
 }
 
 class UpdateValveFlowNodeEvent extends ValveFlowEvent {
@@ -25,4 +31,9 @@ class SendValveFlowSmsEvent extends ValveFlowEvent {
 
 class SaveCommonDeviationEvent extends ValveFlowEvent {
   SaveCommonDeviationEvent();
+}
+
+class ViewValveFlowEvent extends ValveFlowEvent {
+  final String successMessage;
+  ViewValveFlowEvent({required this.successMessage});
 }

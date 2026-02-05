@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/standalone_entity.dart';
 import '../../domain/usecases/get_standalone_status.dart';
@@ -20,13 +21,19 @@ class StandaloneBloc extends Bloc<StandaloneEvent, StandaloneState> {
     required this.sendStandaloneConfig,
     required this.publishMqttCommand,
   }) : super(StandaloneInitial()) {
-    
+
     on<FetchStandaloneDataEvent>((event, emit) async {
+      // If we already have data and it's not a forced/background refresh,
+      // we don't overwrite the current state to preserve local changes.
+      if (state is StandaloneLoaded && !event.isBackground) {
+        return;
+      }
+
       emit(StandaloneLoading());
       try {
         final result = await getStandaloneStatus(
           userId: event.userId,
-          subuserId: 0,
+          subuserId: int.tryParse(event.subUserId) ?? 0,
           controllerId: event.controllerId,
           menuId: event.menuId,
           settingsId: event.settingsId,
@@ -42,11 +49,16 @@ class StandaloneBloc extends Bloc<StandaloneEvent, StandaloneState> {
         }
 
         emit(StandaloneLoaded(
-          StandaloneEntity(
-            zones: finalZones,
-            settingValue: result.settingValue,
-            dripSettingValue: result.dripSettingValue,
-          )
+            userId: event.userId,
+            controllerId: event.controllerId,
+            deviceId: event.deviceId,
+            subUserId: event.subUserId,
+            data: StandaloneEntity(
+              zones: finalZones,
+              settingValue: result.settingValue,
+              dripSettingValue: result.dripSettingValue,
+              programName: result.programName,
+            )
         ));
       } catch (e) {
         emit(StandaloneError("Unable to load live settings. Please check your connection."));
@@ -54,172 +66,185 @@ class StandaloneBloc extends Bloc<StandaloneEvent, StandaloneState> {
     });
 
     on<ToggleZone>((event, emit) {
-      if (state is StandaloneLoaded || state is StandaloneSuccess) {
-        final currentStateData = (state is StandaloneLoaded) 
-            ? (state as StandaloneLoaded).data 
-            : (state as StandaloneSuccess).data;
+      if (state is! StandaloneLoaded) return;
+      final currentState = state as StandaloneLoaded;
+      final currentStateData = currentState.data;
 
-        if (currentStateData.settingValue != "1" && event.value) return;
+      if (currentStateData.settingValue != "1" && event.value) return;
 
-        final updatedZones = List<ZoneEntity>.from(currentStateData.zones);
-        final oldZone = updatedZones[event.index];
-        
-        updatedZones[event.index] = ZoneEntity(
-          zoneNumber: oldZone.zoneNumber,
-          time: oldZone.time,
-          status: event.value,
-        );
+      final List<ZoneEntity> updatedZones = currentStateData.zones.asMap().entries.map((entry) {
+        if (entry.key == event.index) {
+          return ZoneEntity(
+            zoneNumber: entry.value.zoneNumber,
+            time: entry.value.time,
+            status: event.value,
+          );
+        } else {
+          return ZoneEntity(
+            zoneNumber: entry.value.zoneNumber,
+            time: entry.value.time,
+            status: event.value ? false : entry.value.status,
+          );
+        }
+      }).toList();
 
-        emit(StandaloneLoaded(
-          StandaloneEntity(
-            zones: updatedZones,
-            settingValue: currentStateData.settingValue,
-            dripSettingValue: currentStateData.dripSettingValue,
-          ),
-        ));
-      }
+      emit(currentState.copyWith(
+        newData: StandaloneEntity(
+          zones: updatedZones,
+          settingValue: currentStateData.settingValue,
+          dripSettingValue: currentStateData.dripSettingValue,
+          programName: currentStateData.programName,
+        ),
+      ));
     });
 
     on<UpdateZoneTime>((event, emit) {
-      if (state is StandaloneLoaded || state is StandaloneSuccess) {
-        final currentStateData = (state is StandaloneLoaded) 
-            ? (state as StandaloneLoaded).data 
-            : (state as StandaloneSuccess).data;
+      if (state is! StandaloneLoaded) return;
+      final currentState = state as StandaloneLoaded;
+      final currentStateData = currentState.data;
 
-        final updatedZones = List<ZoneEntity>.from(currentStateData.zones);
-        final oldZone = updatedZones[event.index];
-        
-        updatedZones[event.index] = ZoneEntity(
-          zoneNumber: oldZone.zoneNumber,
-          time: event.time,
-          status: oldZone.status,
-        );
+      final updatedZones = List<ZoneEntity>.from(currentStateData.zones);
+      final oldZone = updatedZones[event.index];
 
-        emit(StandaloneLoaded(
-          StandaloneEntity(
-            zones: updatedZones,
-            settingValue: currentStateData.settingValue,
-            dripSettingValue: currentStateData.dripSettingValue,
-          ),
-        ));
-      }
+      updatedZones[event.index] = ZoneEntity(
+        zoneNumber: oldZone.zoneNumber,
+        time: event.time,
+        status: oldZone.status,
+      );
+
+      emit(currentState.copyWith(
+        newData: StandaloneEntity(
+          zones: updatedZones,
+          settingValue: currentStateData.settingValue,
+          dripSettingValue: currentStateData.dripSettingValue,
+          programName: currentStateData.programName,
+        ),
+      ));
     });
 
     on<ToggleStandalone>((event, emit) {
-      if (state is StandaloneLoaded || state is StandaloneSuccess) {
-        final currentStateData = (state is StandaloneLoaded) 
-            ? (state as StandaloneLoaded).data 
-            : (state as StandaloneSuccess).data;
-        
-        List<ZoneEntity> updatedZones = currentStateData.zones;
-        if (!event.value) {
-          updatedZones = currentStateData.zones.map((zone) => ZoneEntity(
-            zoneNumber: zone.zoneNumber,
-            time: zone.time,
-            status: false,
-          )).toList();
-        }
+      if (state is! StandaloneLoaded) return;
+      final currentState = state as StandaloneLoaded;
+      final currentStateData = currentState.data;
 
-        emit(StandaloneLoaded(
-          StandaloneEntity(
-            zones: updatedZones,
-            settingValue: event.value ? "1" : "0",
-            dripSettingValue: currentStateData.dripSettingValue,
-          ),
-        ));
+      List<ZoneEntity> updatedZones = currentStateData.zones;
+      if (!event.value) {
+        updatedZones = currentStateData.zones.map((zone) => ZoneEntity(
+          zoneNumber: zone.zoneNumber,
+          time: zone.time,
+          status: false,
+        )).toList();
       }
+
+      emit(currentState.copyWith(
+        newData: StandaloneEntity(
+          zones: updatedZones,
+          settingValue: event.value ? "1" : "0",
+          dripSettingValue: currentStateData.dripSettingValue,
+          programName: currentStateData.programName,
+        ),
+      ));
     });
 
     on<ToggleDripStandalone>((event, emit) {
-      if (state is StandaloneLoaded || state is StandaloneSuccess) {
-        final currentStateData = (state is StandaloneLoaded) 
-            ? (state as StandaloneLoaded).data 
-            : (state as StandaloneSuccess).data;
+      if (state is! StandaloneLoaded) return;
+      final currentState = state as StandaloneLoaded;
+      final currentStateData = currentState.data;
 
-        emit(StandaloneLoaded(
-          StandaloneEntity(
-            zones: currentStateData.zones,
-            settingValue: currentStateData.settingValue,
-            dripSettingValue: event.value ? "1" : "0",
-          ),
-        ));
-      }
+      emit(currentState.copyWith(
+        newData: StandaloneEntity(
+          zones: currentStateData.zones,
+          settingValue: currentStateData.settingValue,
+          dripSettingValue: event.value ? "1" : "0",
+          programName: currentStateData.programName,
+        ),
+      ));
     });
 
     on<SendStandaloneConfigEvent>((event, emit) async {
-       if (state is StandaloneLoaded || state is StandaloneSuccess) {
-         final currentStateData = (state is StandaloneLoaded) 
-            ? (state as StandaloneLoaded).data 
-            : (state as StandaloneSuccess).data;
+      if (state is! StandaloneLoaded) return;
+      final currentState = state as StandaloneLoaded;
+      final currentStateData = currentState.data;
 
-         try {
-           String sentSms = "";
-           if (event.menuId == "94") {
-             sentSms = currentStateData.settingValue == "1" ? "CONFIGMODEON" : "CONFIGMODEOF";
-           } else {
-             sentSms = currentStateData.settingValue == "1" ? "STANDALONEMODEON" : "STANDALONEMODEOF";
-           }
+      try {
+        String sentSms = "";
+        bool doMqtt = true;
 
-           // MQTT Real-time Sync for individual zones - No history log here
-           for (var zone in currentStateData.zones) {
-             final timeParts = zone.time.split(':');
-             final cmd = json.encode({
-               "sentSms": "STZ,${zone.zoneNumber.padLeft(3, '0')},${zone.status ? 'ON' : 'OFF'},${timeParts[0].padLeft(2, '0')},${timeParts[1].padLeft(2, '0')}"
-             });
-             await publishMqttCommand(
-               userId: event.userId,
-               subuserId: 0,
-               controllerId: event.controllerId,
-               command: cmd,
-               sentSms: "", // PASS EMPTY to prevent multiple logs
-             );
-           }
+        if (event.sendType == StandaloneSendType.mode) {
+          if (event.menuId == "94") {
+            sentSms = currentStateData.settingValue == "1" ? "CONFIGMODEON" : "CONFIGMODEOF";
+          } else {
+            sentSms = currentStateData.settingValue == "1" ? "STANDALONEMODEON" : "STANDALONEMODEOF";
+          }
+        } else if (event.sendType == StandaloneSendType.drip) {
+          sentSms = currentStateData.dripSettingValue == "1" ? "DRIPMODEON" : "DRIPMODEOF";
+        } else if (event.sendType == StandaloneSendType.zones) {
+          ZoneEntity? activeZone;
+          try {
+            activeZone = currentStateData.zones.firstWhere((z) => z.status);
+          } catch (_) {}
 
-           // REST API Persistence - This will trigger the SINGLE history log
-           await sendStandaloneConfig(
-             userId: event.userId,
-             subuserId: 0,
-             controllerId: event.controllerId,
-             menuId: event.menuId,
-             settingsId: event.settingsId,
-             config: currentStateData,
-             sentSms: sentSms,
-           );
+          if (activeZone != null) {
+            final timeParts = activeZone.time.split(':');
+            final hh = timeParts[0].padLeft(2, '0');
+            final mm = timeParts.length > 1 ? timeParts[1].padLeft(2, '0') : '00';
+            sentSms = "STZ,${activeZone.zoneNumber.padLeft(3, '0')},ON,$hh,$mm,";
+          } else {
+            sentSms = "ZONESETUP";
+          }
+        }
 
-           emit(StandaloneSuccess(event.successMessage, currentStateData));
-           
-           add(FetchStandaloneDataEvent(
-             userId: event.userId,
-             controllerId: event.controllerId,
-             menuId: event.menuId,
-             settingsId: event.settingsId,
-           ));
+        if (doMqtt) {
+          await publishMqttCommand(
+            userId: event.userId,
+            subuserId: int.tryParse(event.subUserId) ?? 0,
+            controllerId: event.controllerId,
+            deviceId: event.deviceId,
+            command: json.encode({"sentSms": sentSms}),
+            sentSms: "",
+          );
+        }
 
-         } catch (e) {
-           emit(StandaloneError("Settings update failed. Please try again."));
-         }
-       }
+        await sendStandaloneConfig(
+          userId: event.userId,
+          subuserId: int.tryParse(event.subUserId) ?? 0,
+          controllerId: event.controllerId,
+          menuId: event.menuId,
+          settingsId: event.settingsId,
+          config: currentStateData,
+          sentSms: sentSms,
+        );
+
+        emit(StandaloneSuccess(event.successMessage, currentStateData));
+        emit(currentState.copyWith(newData: currentStateData));
+
+      } catch (e) {
+        emit(StandaloneError("Settings update failed. Please try again."));
+      }
     });
 
     on<ViewStandaloneEvent>((event, emit) async {
-      if (state is StandaloneLoaded || state is StandaloneSuccess) {
-        final currentStateData = (state is StandaloneLoaded) 
-            ? (state as StandaloneLoaded).data 
-            : (state as StandaloneSuccess).data;
+      if (state is! StandaloneLoaded && state is! StandaloneSuccess) return;
+      final currentStateData = (state is StandaloneLoaded)
+          ? (state as StandaloneLoaded).data
+          : (state as StandaloneSuccess).data;
 
-        try {
-          final statusMsg = "STANDALONE:${currentStateData.settingValue},DRIP:${currentStateData.dripSettingValue}";
-          await publishMqttCommand(
-            userId: "0",
-            subuserId: 0,
-            controllerId: event.controllerId,
-            command: json.encode({"sentSms": statusMsg}),
-            sentSms: "message deliverd",
-          );
-          emit(StandaloneSuccess(event.successMessage, currentStateData));
-        } catch (e) {
-          emit(StandaloneError("View status failed."));
-        }
+      try {
+        final statusMsg = "VSTANDALONEMODE";
+        final cmd = json.encode({"sentSms": statusMsg});
+
+        await publishMqttCommand(
+          userId: event.userId,
+          subuserId: int.tryParse(event.subUserId) ?? 0,
+          controllerId: event.controllerId,
+          deviceId: event.deviceId,
+          command: cmd,
+          sentSms: statusMsg,
+        );
+
+        emit(StandaloneSuccess(event.successMessage, currentStateData));
+      } catch (e) {
+        emit(StandaloneError("View status failed."));
       }
     });
   }
