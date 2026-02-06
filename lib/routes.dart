@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:niagara_smart_drip_irrigation/features/alarm_settings/utils/alarm_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/dashboard_2_0.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/node_status_page.dart';
@@ -39,9 +40,14 @@ import 'features/fault_msg/utils/faultmsg_routes.dart';
 import 'features/mapping_and_unmapping_nodes/utils/mapping_and_unmapping_nodes_routes.dart';
 import 'features/report_downloader/utils/report_downloaderRoute.dart';
 import 'features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
+import 'features/reports/Voltage_reports/utils/voltage_routes.dart';
 import 'features/reports/fertilizer_reports/utils/fertilizer_routes.dart';
 import 'features/reports/flow_graph_reports/utils/flow_graph_routes.dart';
 import 'features/reports/power_reports/utils/Power_routes.dart';
+import 'features/reports/reportMenu/bloc/report_menu_bloc.dart';
+import 'features/reports/reportMenu/bloc/report_menu_event.dart';
+import 'features/reports/reportMenu/bloc/report_menu_state.dart';
+import 'features/reports/reportMenu/presentation/reportmenu_page.dart';
 import 'features/reports/reportMenu/utils/report_routes.dart';
 import 'features/reports/standalone_reports/utils/standalone_report_routes.dart';
 import 'features/reports/tdy_valve_status_reports/utils/tdy_valve_status_routes.dart';
@@ -58,6 +64,7 @@ import 'core/utils/route_constants.dart';
 import 'features/auth/auth.dart';
 import 'features/serial_set/utils/serial_set_routes.dart';
 import 'features/side_drawer/side_drawer_routes.dart';
+import 'core/utils/type_parsers.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream stream) {
@@ -187,22 +194,43 @@ class AppRouter {
               GoRoute(
                   path: DashBoardRoutes.report,
                   builder: (context, state) {
-                    return Center(
-                      child: Text('Report'),
+                    /// Safe param extraction
+                    final extra = state.extra as Map<String, dynamic>? ?? {};
+
+                     final int userId = int.tryParse(extra['userId']) ?? 0;
+                    final int subUserId = int.tryParse(extra['subUserId']) ?? 0;
+                    final int controllerId = int.tryParse(extra['controllerId']) ?? 0;
+                    final String deviceId = extra['deviceId']?.toString() ?? "0";
+
+                    final String fromDate = extra['fromDate'] ??
+                        DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+                    final String toDate = extra['toDate'] ??
+                        DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+                    return BlocProvider.value(
+                      value: di.sl<ReportMenuBloc>(),
+                      child: ReportMenuPage(
+                        params: {
+                          "userId": userId,
+                          "subuserId": subUserId,
+                          "controllerId": controllerId,
+                          "deviceId": deviceId,
+                          "fromDate": fromDate,
+                          "toDate": toDate,
+                        },
+                      ),
                     );
                   },
-                  routes: [
-
-                  ]
               ),
               GoRoute(
                   path: DashBoardRoutes.standalone,
                   builder: (context, state) {
                     final params = state.extra as Map<String, dynamic>;
-                    final userId = params["userId"]?.toString() ?? '';
-                    final controllerId = params["controllerId"]?.toString() ?? '';
+                    final userId = params["userId"] ?? 0;
+                    final controllerId = params["controllerId"] ?? 0;
                     final deviceId = params["deviceId"]?.toString() ?? '';
-                    final subUserId = params["subUserId"]?.toString() ?? '0';
+                    final subUserId = params["subUserId"] ?? 0;
 
                     return BlocProvider.value(
                       value: di.sl<StandaloneBloc>(),
@@ -334,6 +362,7 @@ class AppRouter {
         ...reportPageRoutes,
         ...sendRevPageRoutes,
         ...FaultMsgPagesRoutes,
+        ...voltGraphRoutes,
         ...PowerGraphRoutes,
         ...ReportDownloadRoutes,
         ...MotorCyclicRoutes,

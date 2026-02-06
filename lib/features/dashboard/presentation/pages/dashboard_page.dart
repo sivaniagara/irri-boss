@@ -335,7 +335,15 @@ class _DashboardPageState extends State<DashboardPage> {
               context.pushReplacement("${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType");
             }else if(index == 1){
               selectedBottomNavigation = BottomNavigationOption.report;
-              context.pushReplacement("${DashBoardRoutes.report}?userId=$userId&userType=$userType");
+              final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+
+              context.pushReplacement("${DashBoardRoutes.report}?userId=$userId&userType=$userType",  extra: {
+                "userId": controllerContext.userId,
+                "controllerId": controllerContext.controllerId,
+                "userType": controllerContext.userType,
+                "subUserId": controllerContext.subUserId,
+                "deviceId": controllerContext.deviceId,
+              });
             }else if(index == 2){
               selectedBottomNavigation = BottomNavigationOption.manual;
               final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
