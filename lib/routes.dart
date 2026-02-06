@@ -64,7 +64,6 @@ import 'core/utils/route_constants.dart';
 import 'features/auth/auth.dart';
 import 'features/serial_set/utils/serial_set_routes.dart';
 import 'features/side_drawer/side_drawer_routes.dart';
-import 'core/utils/type_parsers.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream stream) {
