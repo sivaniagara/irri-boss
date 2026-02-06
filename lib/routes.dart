@@ -10,6 +10,7 @@ import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pa
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/green_house_reports/utils/green_house_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/moisture_reports/utils/moisture_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/selling_device/utils/selling_device_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/service_request/utils/service_request_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/settings/presentation/pages/settings_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
@@ -53,6 +54,7 @@ import 'features/reports/standalone_reports/utils/standalone_report_routes.dart'
 import 'features/reports/tdy_valve_status_reports/utils/tdy_valve_status_routes.dart';
 import 'features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
 import 'features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
+import 'features/sendrev_msg/presentation/pages/sendrevPage.dart';
 import 'features/sendrev_msg/utils/senrev_routes.dart';
 import 'features/program_settings/utils/program_settings_routes.dart';
 
@@ -262,13 +264,18 @@ class AppRouter {
               GoRoute(
                   path: DashBoardRoutes.sentAndReceive,
                   builder: (context, state) {
-                    return Center(
-                      child: Text('sentAndReceive'),
+                    final controllerContext = context.read<ControllerContextCubit>().state;
+                    if (controllerContext is ControllerContextLoaded) {
+                      return SendRevPage(params: {
+                        "userId": controllerContext.userId,
+                        "subuserId": controllerContext.subUserId,
+                        "controllerId": controllerContext.controllerId,
+                      });
+                    }
+                    return const Center(
+                      child: Text('Please select a controller first.'),
                     );
                   },
-                  routes: [
-
-                  ]
               ),
             ]
         ),
@@ -376,6 +383,7 @@ class AppRouter {
         ...ValveFlowRoutes.routes,
         ...AlarmRoutes.routes,
         ...SerialSetRoutes.routes,
+        ...SellingDeviceRoutes.sellingDeviceRoutes,
       ],
     );
   }

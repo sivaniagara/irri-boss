@@ -184,15 +184,15 @@ class _LoraKeyTileState extends State<_LoraKeyTile> {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -202,26 +202,31 @@ class _LoraKeyTileState extends State<_LoraKeyTile> {
             child: Text(
               'LORA Key value',
               style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
             ),
           ),
           Container(
-            width: 80,
-            height: 35,
+            width: 90,
+            height: 45,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade400),
-              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade400, width: 1),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(2),
+                topRight: Radius.circular(15),
+                bottomLeft: Radius.circular(15),
+                bottomRight: Radius.circular(2),
+              ),
             ),
             child: TextField(
               controller: _controller,
               textAlign: TextAlign.center,
               textAlignVertical: TextAlignVertical.center,
               keyboardType: TextInputType.number,
-              style: const TextStyle(fontSize: 14, height: 1.0),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               decoration: const InputDecoration(
                 isCollapsed: true,
                 border: InputBorder.none,
@@ -230,16 +235,20 @@ class _LoraKeyTileState extends State<_LoraKeyTile> {
               onChanged: (val) => context.read<SerialSetBloc>().add(UpdateLoraKeyEvent(val)),
             ),
           ),
-          const SizedBox(width: 8),
-          IconButton(
-            onPressed: () {
+          const SizedBox(width: 12),
+          GestureDetector(
+            onTap: () {
               context.read<SerialSetBloc>().add(SendSerialSetMqttEvent(
                 smsKey: "C008",
                 extraValue: _controller.text,
                 successMessage: "message delivered",
               ));
             },
-            icon: const Icon(Icons.send_outlined, color: Colors.blue, size: 28),
+            child: const Icon(
+              Icons.send_outlined,
+              color: Color(0xFF2196F3),
+              size: 32,
+            ),
           ),
         ],
       ),

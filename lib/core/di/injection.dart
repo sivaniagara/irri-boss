@@ -40,6 +40,7 @@ import '../../features/reports/power_reports/di/power_di.dart';
 import '../../features/reports/reportMenu/di/report_di.dart';
 import '../../features/reports/zone_duration_reports/di/zone_duration_di.dart';
 import '../../features/reports/zonecyclic_reports/di/zone_cyclic_di.dart';
+import '../../features/selling_device/di/selling_device_di.dart';
 import '../../features/sendrev_msg/di/sendrev_di.dart';
 import '../../features/auth/di/auth.di.dart';
 import '../../features/controller_settings/presentation/cubit/controller_tab_cubit.dart';
@@ -173,6 +174,7 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initServiceRequestDependencies();
   initAlarmDependencies();
   initSerialSetDependencies();
+  initSellingDeviceDependencies();
 
 }
 
