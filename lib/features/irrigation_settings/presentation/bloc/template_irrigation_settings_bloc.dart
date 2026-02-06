@@ -1,16 +1,20 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/domain/entities/common_setting_item_entity.dart';
+import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/domain/usecases/update_template_irrigation_setting_usecase.dart';
 import '../../domain/entities/common_setting_group_entity.dart';
 import '../../domain/entities/controller_irrigation_setting_entity.dart';
 import '../../domain/usecases/get_template_irrigation_setting_usecase.dart';
+import '../enums/update_template_setting_status.dart';
 part 'template_irrigation_settings_event.dart';
 part 'template_irrigation_settings_state.dart';
 
 
-  class TemplateIrrigationSettingsBloc extends Bloc<TemplateIrrigationSettingsEvent, TemplateIrrigationSettingsState>{
+class TemplateIrrigationSettingsBloc extends Bloc<TemplateIrrigationSettingsEvent, TemplateIrrigationSettingsState>{
   final GetTemplateIrrigationSettingUsecase getTemplateIrrigationSettingUsecase;
+  final UpdateTemplateIrrigationSettingUsecase updateTemplateIrrigationSettingUsecase;
   TemplateIrrigationSettingsBloc({
-    required this.getTemplateIrrigationSettingUsecase
+    required this.getTemplateIrrigationSettingUsecase,
+    required this.updateTemplateIrrigationSettingUsecase,
   }) : super(TemplateIrrigationSettingsInitial()){
 
     on<FetchTemplateSettingEvent>((event, emit) async{
@@ -26,19 +30,20 @@ part 'template_irrigation_settings_state.dart';
 
       result.fold(
               (failure){
-                emit(TemplateIrrigationSettingsFailure(message: failure.message));
-              },
+            emit(TemplateIrrigationSettingsFailure(message: failure.message));
+          },
               (success){
-                emit(
-                    TemplateIrrigationSettingsLoaded(
-                        userId: event.userId,
-                        controllerId: event.controllerId,
-                        subUserId: event.subUserId,
-                        settingId: event.settingNo,
-                        controllerIrrigationSettingEntity: success
-                    )
-                );
-              }
+            emit(
+                TemplateIrrigationSettingsLoaded(
+                    userId: event.userId,
+                    controllerId: event.controllerId,
+                    deviceId: event.deviceId,
+                    subUserId: event.subUserId,
+                    settingId: event.settingNo,
+                    controllerIrrigationSettingEntity: success
+                )
+            );
+          }
       );
     });
 
@@ -51,23 +56,24 @@ part 'template_irrigation_settings_state.dart';
                       .asMap()
                       .entries
                       .map((groupEntry){
-                        final index = groupEntry.key;
-                        CommonSettingGroupEntity e = groupEntry.value;
-                        if(index == event.groupIndex){
-                          return e.copyWith(
-                              updatedSets: e.sets.asMap().entries.map((settingEntry){
-                                final settingIndex = settingEntry.key;
-                                final setting = settingEntry.value;
-                                if(settingIndex == event.index && setting is SingleSettingItemEntity){
-                                  return setting.copyWith(updateValue: event.value);
-                                }
-                                return setting;
-                              }).toList()
-                          );
-                        }
-                        return e;
+                    final index = groupEntry.key;
+                    CommonSettingGroupEntity e = groupEntry.value;
+                    if(index == event.groupIndex){
+                      return e.copyWith(
+                          updatedSets: e.sets.asMap().entries.map((settingEntry){
+                            final settingIndex = settingEntry.key;
+                            final setting = settingEntry.value;
+                            if(settingIndex == event.index && setting is SingleSettingItemEntity){
+                              return setting.copyWith(updateValue: event.value);
+                            }
+                            return setting;
+                          }).toList()
+                      );
+                    }
+                    return e;
                   }).toList()
-              )
+              ),
+              status: UpdateTemplateSettingStatus.idle
           )
       );
     });
@@ -115,8 +121,52 @@ part 'template_irrigation_settings_state.dart';
       final newControllerEntity = currentEntity.copyWith(updatedSettings: newSettings);
 
       emit(currentState.copyWith(
-       updatedControllerIrrigationSettingEntity: newControllerEntity,
+          updatedControllerIrrigationSettingEntity: newControllerEntity,
+          status: UpdateTemplateSettingStatus.idle
       ));
+    });
+
+    on<UpdateTemplateSettingEvent>((event, emit)async{
+      if(state is! TemplateIrrigationSettingsLoaded){
+        return;
+      }
+
+      final currentState = state as TemplateIrrigationSettingsLoaded;
+      emit(currentState.copyWith(updatedControllerIrrigationSettingEntity: currentState.controllerIrrigationSettingEntity, status: UpdateTemplateSettingStatus.loading));
+      UpdateTemplateIrrigationSettingParams params = UpdateTemplateIrrigationSettingParams(
+          userId: currentState.userId,
+          controllerId: currentState.controllerId,
+          subUserId: currentState.subUserId,
+          settingNo: currentState.settingId,
+          controllerIrrigationSettingEntity: currentState.controllerIrrigationSettingEntity,
+          groupIndex: event.groupIndex,
+          settingIndex: event.settingIndex, deviceId: currentState.deviceId
+      );
+
+      final result = await updateTemplateIrrigationSettingUsecase(params);
+
+      result.fold(
+              (failure){
+            emit(
+                currentState
+                    .copyWith(
+                    updatedControllerIrrigationSettingEntity: currentState.controllerIrrigationSettingEntity,
+                    status: UpdateTemplateSettingStatus.failure,
+                    msg: failure.message
+                )
+            );
+          },
+              (success){
+            emit(
+                currentState
+                    .copyWith(
+                    updatedControllerIrrigationSettingEntity: currentState.controllerIrrigationSettingEntity,
+                    status: UpdateTemplateSettingStatus.success,
+                    msg: 'Setting Updated SuccessFully!'
+                )
+            );
+          }
+      );
     });
 
   }

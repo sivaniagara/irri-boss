@@ -7,6 +7,8 @@ class MappedNodeEntity {
   final String categoryName;
   final String modelName;
   final String dateManufacture;
+  final String userName;
+  final String mobileNumber;
   bool select;
 
   MappedNodeEntity({
@@ -18,6 +20,8 @@ class MappedNodeEntity {
     required this.categoryName,
     required this.modelName,
     required this.dateManufacture,
+    required this.userName,
+    required this.mobileNumber,
     this.select = false,
   });
 
@@ -31,6 +35,8 @@ class MappedNodeEntity {
         categoryName: categoryName,
         modelName: modelName,
         dateManufacture: dateManufacture,
+        userName: userName,
+        mobileNumber: mobileNumber,
       select: isSelect ?? select
     );
   }

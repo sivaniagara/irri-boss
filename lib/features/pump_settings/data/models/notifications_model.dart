@@ -19,7 +19,7 @@ class NotificationsModel extends NotificationsEntity {
 
   Map<String, dynamic> toJson() {
     return {
-      "msgCode": msgCode,
+      "msgCode": msgId,
       "checkStatus": checkFlag
     };
   }

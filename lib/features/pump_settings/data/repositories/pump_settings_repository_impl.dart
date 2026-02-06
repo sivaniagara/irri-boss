@@ -11,7 +11,7 @@ class PumpSettingsRepositoryImpl implements PumpSettingsRepository {
   PumpSettingsRepositoryImpl({required this.pumpSettingsDataSources});
 
   @override
-  Future<Either<Failure, List<SettingsMenuEntity>>> getSettingsMenuList(int userId, int subUserId, int controllerId) async{
+  Future<Either<Failure, List<MenuItemEntity>>> getSettingsMenuList(int userId, int subUserId, int controllerId) async{
     try {
       final menuList = await pumpSettingsDataSources.getSettingsMenuList(userId, subUserId, controllerId);
       return Right(menuList);

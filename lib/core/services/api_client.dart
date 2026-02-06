@@ -64,22 +64,23 @@ class ApiClient {
       };
 
       print("Request Method: $method | Endpoint: $endpoint");
-      // print("Request Body: $body");
+      print("Request Body: $body");
       // print("Encoded Body: ${jsonEncode(body)}");
 
       // Make the initial request
       final requestUri = Uri.parse('$baseUrl$endpoint');
+      final timeoutDuration = const Duration(seconds: 30);
       http.Response response;
       if (method.toUpperCase() == 'GET') {
-        response = await client.get(requestUri, headers: mergedHeaders).timeout(const Duration(seconds: 15));
+        response = await client.get(requestUri, headers: mergedHeaders).timeout(timeoutDuration);
       } else if (method.toUpperCase() == 'POST') {
         response = await client.post(requestUri, headers: mergedHeaders, body: body != null ? jsonEncode(body) : null)
-            .timeout(const Duration(seconds: 15));
+            .timeout(timeoutDuration);
       } else if (method.toUpperCase() == 'PUT') {
         response = await client.put(requestUri, headers: mergedHeaders, body: body != null ? jsonEncode(body) : null)
-            .timeout(const Duration(seconds: 15));
+            .timeout(timeoutDuration);
       } else if (method.toUpperCase() == 'DELETE') {
-        response = await client.delete(requestUri, headers: mergedHeaders).timeout(const Duration(seconds: 15));
+        response = await client.delete(requestUri, headers: mergedHeaders).timeout(timeoutDuration);
       } else {
         throw UnsupportedError('HTTP method $method not supported');
       }

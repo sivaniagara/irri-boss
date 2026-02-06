@@ -9,6 +9,7 @@ class PublishMqttCommand {
     required String userId,
     required int subuserId,
     required String controllerId,
+    required String deviceId,
     required String command,
     required String sentSms,
   }) async {
@@ -16,6 +17,7 @@ class PublishMqttCommand {
       userId: userId,
       subuserId: subuserId,
       controllerId: controllerId,
+      deviceId: deviceId,
       command: command,
       sentSms: sentSms,
     );

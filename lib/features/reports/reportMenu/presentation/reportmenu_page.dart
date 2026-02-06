@@ -11,6 +11,8 @@ import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_report
 import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
 import '../../../../core/theme/app_styles.dart';
  import '../../../../core/widgets/glassy_wrapper.dart';
+import '../../fert_live/fert_live_page.dart';
+import '../../fert_live/fertstate.dart';
 import '../../moisture_reports/utils/moisture_routes.dart';
 import '../../power_reports/utils/Power_routes.dart';
 import '../../standalone_reports/utils/standalone_report_routes.dart';
@@ -30,9 +32,7 @@ class ReportMenuPage extends StatelessWidget {
         body: SafeArea(
           child: Column(
             children: [
-              const SizedBox(height: 16),
-              _header(context),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
               Expanded(child: _gridMenu(context)),
             ],
           ),
@@ -147,13 +147,22 @@ class ReportMenuPage extends StatelessWidget {
           _reportCard(
             title: 'Fertilizer Live',
             icon: Icons.agriculture,
-            onTap: () {},
+            onTap: () {
+                 Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => FertilizerLivePage(
+                      deviceId: params['deviceID'].toString(),
+                    ),
+                  ),
+                );
+            },
           ),
           _reportCard(
             title: 'Green House',
             icon: Icons.house,
             onTap: () {
-               context.push(GreenHouseReportPageRoutes.greenHouseReportPage,extra: params);
+               // context.push(GreenHouseReportPageRoutes.greenHouseReportPage,extra: params);
             },
           ),
         ],

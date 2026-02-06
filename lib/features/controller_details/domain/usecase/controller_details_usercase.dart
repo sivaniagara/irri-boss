@@ -17,6 +17,7 @@ class GetControllerDetailsUsecase
     return controllerRepo.getControllerDetails(
       params.userId,
       params.controllerId,
+      params.deviceId,
     );
   }
 }

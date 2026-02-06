@@ -1,6 +1,4 @@
-
-// ---------------------- Fertilizer  Entity ----------------------
-
+// ---------------------- Fertilizer Entity ----------------------
 class FertilizerEntity {
   final int code;
   final String message;
@@ -21,7 +19,21 @@ class FertilizerEntity {
     required this.ctrlDuration,
     required this.ctrlDuration1,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'code': code,
+      'message': message,
+      'data': data.map((e) => e.toJson()).toList(),
+      'totDuration': totDuration,
+      'totFlow': totFlow,
+      'powerDuration': powerDuration,
+      'ctrlDuration': ctrlDuration,
+      'ctrlDuration1': ctrlDuration1,
+    };
+  }
 }
+
 // ---------------------- Fertilizer Datum Entity ----------------------
 class FertilizerDatumEntity {
   final String date;
@@ -33,7 +45,6 @@ class FertilizerDatumEntity {
   final String flow;
   final String zoneNumber;
 
-
   FertilizerDatumEntity({
     required this.date,
     required this.fertPump,
@@ -44,4 +55,17 @@ class FertilizerDatumEntity {
     required this.flow,
     required this.zoneNumber,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'date': date,
+      'fertPump': fertPump,
+      'onTime': onTime,
+      'offDate': offDate,
+      'offTime': offTime,
+      'duration': duration,
+      'flow': flow,
+      'zoneNumber': zoneNumber,
+    };
+  }
 }

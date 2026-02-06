@@ -1,19 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/widgets/find_suitable_widget.dart';
 
 import '../../domain/entities/common_setting_item_entity.dart';
+import '../bloc/template_irrigation_settings_bloc.dart';
 
 class SettingRow extends StatelessWidget {
   final SingleSettingItemEntity singleSettingItemEntity;
   final bool hideSendButton;
   final void Function(dynamic)? onChanged;
   final void Function()? onTap;
+  final int groupIndex;
+  final int settingIndex;
   const SettingRow({
     super.key,
     required this.singleSettingItemEntity,
     required this.hideSendButton,
     required this.onChanged,
     required this.onTap,
+    required this.groupIndex,
+    required this.settingIndex,
   });
 
   @override
@@ -22,9 +28,10 @@ class SettingRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         children: [
-          Expanded(child: Text(singleSettingItemEntity.titleText, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),)),
-          SizedBox(
-            width: 150,
+          Expanded(child: Text(singleSettingItemEntity.titleText, style: Theme.of(context).textTheme.labelLarge,)),
+          Container(
+            padding: EdgeInsets.only(right: singleSettingItemEntity.widgetType == 2 ? 10 : 0),
+            width: singleSettingItemEntity.widgetType == 2 ? 65 : 150,
             child: FindSuitableWidget(
               singleSettingItemEntity: singleSettingItemEntity,
               onChanged: onChanged, onTap: onTap,
@@ -32,18 +39,24 @@ class SettingRow extends StatelessWidget {
           ),
           if(!hideSendButton)
             ...[
-              SizedBox(width: 10,),
-              IconButton(
-                onPressed: (){
-
+              InkWell(
+                onTap: (){
+                  context.read<TemplateIrrigationSettingsBloc>().add(
+                      UpdateTemplateSettingEvent(
+                          groupIndex: groupIndex,
+                          settingIndex: settingIndex
+                      )
+                  );
                 },
-                icon: Icon(Icons.send_outlined, color: Theme.of(context).primaryColor,),
-                style: ButtonStyle(
-                    backgroundColor: WidgetStatePropertyAll(Theme.of(context).primaryColorLight.withValues(alpha: 0.3))
+                child: Container(
+                  padding: EdgeInsets.all(10),
+                  child: Image.asset(
+                      'assets/images/icons/send_icon.png',
+                    width: 25,
+                  ),
                 ),
               )
             ]
-
         ],
       ),
     );

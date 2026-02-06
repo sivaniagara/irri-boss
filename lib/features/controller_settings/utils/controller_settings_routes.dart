@@ -46,7 +46,7 @@ final controllerSettingGoRoutes = [
           ),
         ),
         GoRoute(
-            path: MappingAndUnmappingNodesRoutes.nodes,
+            path: MappingAndUnmappingNodesRoutes.nodeSetting,
             builder: (context, state){
               final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
               return MultiBlocProvider(

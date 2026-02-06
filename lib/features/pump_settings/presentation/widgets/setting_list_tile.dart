@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../utils/pump_settings_images.dart';
+
 class SettingListTile extends StatelessWidget {
   final String title;
   final String? subtitle;
-  final IconData? leadingIcon;
+  final String? leadingIcon;
   final Widget? trailing;
   final VoidCallback? onTap;
   final Color? iconColor;
@@ -59,27 +61,22 @@ class SettingListTile extends StatelessWidget {
               : null);
     }
 
+    // print("leadingIcon :: $leadingIcon");
     return ListTile(
-      leading: leadingIcon != null
-          ? Icon(
-        leadingIcon,
-        color: iconColor ?? theme.colorScheme.primary,
-        size: iconSize ?? 28,
-      )
-          : null,
+      leading: leadingIcon !=null ? Image.asset(leadingIcon!, width: 22, height: 22,) : null,
       title: Text(
         title,
+        style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
       ),
       subtitle: subtitle != null
           ? Text(
         subtitle!,
-        // style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
       )
           : null,
       trailing: IntrinsicWidth(child: trailingWidget),
       onTap: onTap,
       minTileHeight: 45,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      contentPadding: EdgeInsets.symmetric(horizontal: leadingIcon != null ? 5 : 16, vertical: 2),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       minVerticalPadding: 0,
     );

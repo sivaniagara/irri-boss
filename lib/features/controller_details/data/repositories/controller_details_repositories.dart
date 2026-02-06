@@ -14,12 +14,14 @@ class ControllerRepoImpl implements ControllerRepo {
   Future<Either<Failure, dynamic>> getControllerDetails(
       int userId,
       int controllerId,
+      String deviceId,
       ) async {
     try {
       final result = await remoteDataSource.getControllerDetails(
         GetControllerDetailsParams(
           userId: userId,
           controllerId: controllerId,
+          deviceId: deviceId,
         ),
       );
 

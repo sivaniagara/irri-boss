@@ -3,12 +3,17 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:niagara_smart_drip_irrigation/features/controller_details/data/datasources/controller_datasource.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/program_preview_dispatcher.dart';
+import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/di/dealer_dashboard_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/fertilizer_reports/di/fertilizer_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/flow_graph_reports/di/flow_graph_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/moisture_reports/di/moisture_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/standalone_reports/di/standalone_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/tdy_valve_status_reports/di/tdy_valve_status_di.dart';
+import 'package:niagara_smart_drip_irrigation/features/service_request/di/service_request_di.dart';
+import 'package:niagara_smart_drip_irrigation/features/valve_flow_settings/di/valve_flow_di.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../features/alarm_settings/di/alarm_di.dart';
+import '../../features/common_id_settings/di/common_id_settings_di.dart';
 import '../../features/controller_details/data/repositories/controller_details_repositories.dart';
 import '../../features/controller_details/domain/repositories/controller_details_repo.dart';
 import '../../features/controller_details/domain/usecase/controller_details_usercase.dart';
@@ -16,17 +21,13 @@ import '../../features/controller_details/presentation/bloc/controller_details_b
 import '../../features/controller_details/presentation/bloc/controller_details_state.dart';
 import '../../features/dashboard/utils/dashboard_dispatcher.dart';
 import '../../features/dashboard/presentation/cubit/controller_context_cubit.dart';
+import '../../features/edit_program/di/edit_program_di.dart';
 import '../../features/fault_msg/di/faultmsg_di.dart';
 import '../../features/irrigation_settings/di/irrigation_settings_di.dart';
 import '../../features/pump_settings/utils/pump_settings_dispatcher.dart';
 import '../../features/reports/green_house_reports/di/green_house_di.dart';
-import '../../features/set_serial_settings/data/datasources/set_serial_datasource.dart';
-import '../../features/set_serial_settings/data/repositories/set_serial_details_repositories.dart';
-import '../../features/set_serial_settings/domain/repositories/set_serial_details_repo.dart';
-import '../../features/set_serial_settings/domain/usecase/set_serial_details_params.dart';
-import '../../features/set_serial_settings/domain/usecase/set_serial_usercase.dart';
-import '../../features/set_serial_settings/presentation/bloc/set_serial_bloc.dart';
-import '../../features/set_serial_settings/presentation/bloc/set_serial_bloc_event.dart';
+
+import '../../features/serial_set/di/serial_set_di.dart';
 import '../services/mqtt/app_message_dispatcher.dart';
 import '../services/mqtt/mqtt_message_helper.dart';
 import '../../features/mapping_and_unmapping_nodes/di/mapping_and_unmapping_node_di.dart';
@@ -39,6 +40,7 @@ import '../../features/reports/power_reports/di/power_di.dart';
 import '../../features/reports/reportMenu/di/report_di.dart';
 import '../../features/reports/zone_duration_reports/di/zone_duration_di.dart';
 import '../../features/reports/zonecyclic_reports/di/zone_cyclic_di.dart';
+import '../../features/selling_device/di/selling_device_di.dart';
 import '../../features/sendrev_msg/di/sendrev_di.dart';
 import '../../features/auth/di/auth.di.dart';
 import '../../features/controller_settings/presentation/cubit/controller_tab_cubit.dart';
@@ -56,7 +58,7 @@ import '../services/mqtt/mqtt_service.dart';
 import '../services/network_info.dart';
 import '../services/notification_service.dart';
 import '../theme/theme_provider.dart';
-import '../../features/standalone_settings/di/standalone_di.dart' as settings_di;
+import '../../features/standalone_settings/di/standalone_settings_di.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -94,8 +96,6 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   /// Flavor-specific services
   registerFlavorDependencies(sl);
 
-  initDashboardDependencies();
-
   sl.registerLazySingleton<AppMessageDispatcher>(
         () => AppMessageDispatcher(
       dashboard: sl<DashboardMessageDispatcher>(),
@@ -108,6 +108,8 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
     mqttService: sl<MqttService>(),
     dispatcher: sl<AppMessageDispatcher>(),
   ));
+
+  initDashboardDependencies();
 
   /// Auth Dependencies
   initAuthDependencies();
@@ -139,20 +141,17 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   /// irrigation template setting dependencies
   initIrrigationSettingsDependencies();
 
+  /// common id settings dependencies
+  initCommonSettingDependencies();
+
+  /// edit program dependencies
+  initEditProgramDependencies();
+
   sl.registerLazySingleton<ControllerRemoteDataSource>(() => ControllerRemoteDataSourceImpl(apiClient: sl()));
   sl.registerLazySingleton<ControllerRepo>(() => ControllerRepoImpl(remoteDataSource: sl()));
   sl.registerLazySingleton(() => GetControllerDetailsUsecase(controllerRepo: sl()));
   sl.registerLazySingleton(() => UpdateControllerUsecase(controllerRepo: sl()));
   sl.registerFactory(() => ControllerDetailsBloc(getControllerDetails: sl(), updateController: sl(),));
-  sl.registerLazySingleton<SetSerialDataSource>(
-          () => SetSerialDataSourceImpl(apiClient: sl()));
-  sl.registerLazySingleton<SetSerialRepository>(
-          () => SetSerialRepositoryImpl(remoteDataSource: sl()));
-  sl.registerFactory(() => SetSerialBloc(sl()));
-  sl.registerFactory(
-          () => SetSerialParams(userId: sl(), controllerId: sl(), type: sl()));
-  sl.registerFactory(() => LoadSerialUsecase(sl()));
-  sl.registerFactory(() => LoadSerialEvent(userId: sl(), controllerId: sl()));
 
   initSendRev();
   initfaultmsg();
@@ -163,13 +162,19 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initReportDownloadDependencies();
   initZoneDuration();
   initStandalone();
-  settings_di.initStandaloneSettings();
+  initStandaloneSettings();
   initTdyValveStatus();
   initZoneCyclic();
   initFlowGraph();
   initMoisture();
+  initValveFlowDependencies();
+  initDealerDashboardDependencies();
   initFertilizer();
   initGreenHouse();
+  initServiceRequestDependencies();
+  initAlarmDependencies();
+  initSerialSetDependencies();
+  initSellingDeviceDependencies();
 
 }
 

@@ -37,6 +37,7 @@ class LoginPage extends StatelessWidget {
               child: BlocConsumer<AuthBloc, AuthState>(
                 listener: (context, authState) => LoginPageListener.handleAuthState(context, authState),
                 builder: (context, authState) {
+                  print("authState :: $authState");
                   final cubit = context.watch<LoginPageCubit>();
                   final state = cubit.state;
 
@@ -72,7 +73,7 @@ class LoginPage extends StatelessWidget {
                               child: Padding(
                                 padding: const EdgeInsets.all(16),
                                 child: Image.asset(
-                                  NiagaraCommonImages.logoLarge,
+                                  AppImages.logoLarge,
                                   height: 140,
                                   width: 140,
                                   fit: BoxFit.contain,

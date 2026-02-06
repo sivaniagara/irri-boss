@@ -66,15 +66,22 @@ class StandaloneReportPage extends StatelessWidget {
 
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.data_thresholding_sharp),
-          onPressed: () {
-            context.push(
-              ReportDownloadPageRoutes.ReportDownloadPage,
-              extra: {
-                "title": "Stand Alone Report",
-                "url": StandaloneReportPageUrls.getStandaloneUrl,
-              },
-            );
-          },
+            onPressed: () {
+              final state = context.read<StandaloneBloc>().state;
+
+              if (state is StandaloneLoaded) {
+                final List<Map<String, dynamic>> excelData =
+                state.data.data.map((e) => e.toJson()).toList();
+
+                context.push(
+                  ReportDownloadPageRoutes.ReportDownloadPage,
+                  extra: {
+                    "title": "StandAlone Reports",
+                    "data": excelData,
+                  },
+                );
+              }
+            }
         ),
 
         // 🔹 BODY

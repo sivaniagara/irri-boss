@@ -10,6 +10,8 @@ class MappedNodeModel extends MappedNodeEntity {
     required super.categoryName,
     required super.modelName,
     required super.dateManufacture,
+    required super.userName,
+    required super.mobileNumber,
     super.select,
   });
 
@@ -24,6 +26,8 @@ class MappedNodeModel extends MappedNodeEntity {
       categoryName: json['categoryName'],
       modelName: json['modelName'],
       dateManufacture: json['dateManufacture'],
+      userName: json['userName'],
+      mobileNumber: json['mobileNumber'],
     );
   }
 
@@ -36,7 +40,9 @@ class MappedNodeModel extends MappedNodeEntity {
         serialNo: entity.serialNo,
         categoryName: entity.categoryName,
         modelName: entity.modelName,
-        dateManufacture: entity.dateManufacture
+        dateManufacture: entity.dateManufacture,
+        userName: entity.userName,
+        mobileNumber: entity.mobileNumber
     );
   }
 

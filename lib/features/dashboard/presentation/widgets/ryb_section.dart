@@ -46,7 +46,14 @@ class RYBSection extends StatelessWidget {
             Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Icon(Icons.ac_unit,color: Colors.white70),
-                Text(line3,style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.black)),
+                Expanded(
+                  child: Text(
+                      line3,
+                      style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.black),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
             SizedBox(height: 5,),

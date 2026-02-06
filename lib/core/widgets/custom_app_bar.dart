@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
+  final List<Widget>? actions;
+  
   const CustomAppBar({
     super.key,
     required this.title,
+    this.actions,
   });
 
   @override
@@ -17,12 +20,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           fontWeight: FontWeight.bold,
         ),
       ),
+      actions: actions,
       centerTitle: true,
-      backgroundColor: const Color(0xffC6DDFF),
+      elevation: 0,
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
     );
   }
 
-  // 👇 This tells Scaffold how tall the AppBar should be
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

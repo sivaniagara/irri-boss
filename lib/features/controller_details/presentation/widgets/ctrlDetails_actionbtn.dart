@@ -10,10 +10,9 @@ class ControllerActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Wrap(
-        alignment: WrapAlignment.center,
+    return Center(
+       child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
         spacing: 12,
         runSpacing: 8,
         children: buttons

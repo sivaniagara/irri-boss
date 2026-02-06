@@ -1,4 +1,5 @@
 enum SettingWidgetType {
+  nothing(0),
   text(1),
   toggle(2),
   time(3),
@@ -19,7 +20,7 @@ enum SettingWidgetType {
   static SettingWidgetType fromInt(int val) {
     return SettingWidgetType.values.firstWhere(
           (e) => e.value == val,
-      orElse: () => SettingWidgetType.text, // default fallback
+      orElse: () => SettingWidgetType.nothing
     );
   }
 }

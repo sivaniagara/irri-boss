@@ -100,7 +100,7 @@ class ZoneConfigurationModel extends ZoneConfigurationEntity{
       ...selectedLevel.map((valve) => valve.serialNo),
       ...getBalanceEmptyNode(fixedNodeLength - selectedLevel.length)
     ].join(',');
-    String rtcAndDaysPayload = '0000,0000,0,0,0,0,0,0,0';
+    String rtcAndDaysPayload = '00,00,00,00,0,0,0,0,0,0,0';
     return {
       "moistureSensor" : selectedMoisture.map((e) => {"nodeId" : e.nodeId}).toList(),
       "sensorSms" : "IDZLMSETP$programId$moistureSerialNoInZone,$levelSerialNoInZone",

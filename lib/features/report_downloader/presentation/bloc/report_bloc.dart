@@ -38,20 +38,31 @@ class ReportDownloadBloc extends Cubit<ReportDownloadState> {
   ReportDownloadBloc(this.usecase)
       : super(const ReportDownloadState());
 
-  Future<void> download(String title, String url) async {
+  Future<void> download({
+    required String title,
+    required List<Map<String, dynamic>> data,
+  }) async {
     emit(state.copyWith(status: DownloadStatus.loading));
+
     try {
       final path = await usecase(
         reportTitle: title,
-        url: url,
+        data: data,
       );
+
       emit(state.copyWith(
-          status: DownloadStatus.success, filePath: path));
+        status: DownloadStatus.success,
+        filePath: path,
+      ));
     } catch (e) {
       emit(state.copyWith(
-          status: DownloadStatus.error, error: e.toString()));
+        status: DownloadStatus.error,
+        error: e.toString(),
+      ));
     }
   }
+
+
 
   Future<void> openFile() async {
     if (state.filePath != null) {

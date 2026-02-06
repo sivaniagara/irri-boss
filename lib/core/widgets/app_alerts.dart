@@ -47,6 +47,7 @@ void showSuccessAlert({required BuildContext context, required String message, v
               Text(message, style: TextStyle(color: Colors.black, fontSize: 16),)
             ],
           ),
+          actionsAlignment: MainAxisAlignment.center,
           actions: [
             CustomMaterialButton(
                 onPressed: onPressed ?? ()=> context.pop(),

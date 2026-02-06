@@ -9,7 +9,7 @@ class SingleSettingItemModel extends SingleSettingItemEntity{
     required super.settingField,
     required super.titleText,
     required super.hf,
-    required super.optionSno
+    required super.option
   });
 
   factory SingleSettingItemModel.fromJson({required Map<String, dynamic> json}){
@@ -22,10 +22,74 @@ class SingleSettingItemModel extends SingleSettingItemEntity{
         settingField: json['SF'],
         titleText: json['TT'],
         hf: json['HF'],
-        optionSno: json['OPTION'] != null ? (json['OPTION'].split(';')) : ['']
+        option: json['OPTION'] != null ? (json['OPTION'].split(';')) : []
     );
   }
 
+  factory SingleSettingItemModel.fromEntity({required SingleSettingItemEntity entity}){
+    return SingleSettingItemModel(
+        sNo: entity.sNo,
+        widgetType: entity.widgetType,
+        value: entity.value,
+        settingField: entity.settingField,
+        titleText: entity.titleText,
+        hf: entity.hf,
+        option: entity.option
+    );
+  }
+
+  String mqttPayload({String? dependentValue}){
+    if(widgetType == 2){
+      return '$settingField$value';
+    }else if(widgetType == 3){
+      return '$settingField${value.replaceAll(':', '')}';
+    }else if(widgetType == 10){
+      return '$settingField${formatTo0000_0(double.parse(value.isEmpty ? '0' : value))}';
+    }else if(widgetType == 9){
+      return '$settingField${formatTo000(int.parse(value.isEmpty ? '0' : value))}';
+    }else{
+      if(settingField.contains(';')){
+        List<String> sfList = settingField.split(';');
+        int index = option.indexOf(value);
+        if(settingField.contains('MODEONP') || titleText == 'Dosing'){
+          print('dddddddd');
+          return '${sfList[index]}$dependentValue';
+        }
+        return sfList[index];
+      }
+      return '$settingField$value';
+    }
+  }
+
+  Map<String, dynamic> toJson(){
+    return {
+      "SN": sNo,
+      "WT": widgetType,
+      "VAL": value,
+      "SF": settingField,
+      "TT": titleText,
+      "HF": hf,
+      if(option.isNotEmpty)
+        "OPTION" : option.join(';')
+    };
+  }
+
+}
+
+String formatTo0000_0(num value) {
+  // Always keep one decimal place
+  String formatted = value.toStringAsFixed(1);
+
+  // Ensure at least 5 characters total (e.g., "0000.0")
+  return formatted.padLeft(5, '0');
+}
+
+String formatTo000(int value) {
+  // Always keep one decimal place
+  String formatted = value.toString();
+
+  // Ensure at least 3 characters total (e.g., "0000.0")
+  return formatted.padLeft(3, '0');
 }
 
 
@@ -53,5 +117,73 @@ class MultipleSettingItemModel extends MultipleSettingItemEntity{
           return SingleSettingItemModel.fromJson(json: e);
         }).toList()
     );
+  }
+
+  factory MultipleSettingItemModel.fromEntity({required MultipleSettingItemEntity entity}) {
+    return MultipleSettingItemModel(
+        listOfSingleSettingItemEntity: entity.listOfSingleSettingItemEntity.map((singleEntity){
+          return SingleSettingItemModel.fromEntity(entity: singleEntity);
+        }).toList()
+    );
+  }
+
+
+  // String mqttPayload(){
+  //   if(widgetType == 2){
+  //     return '$settingField$value';
+  //   }else if(widgetType == 3){
+  //     return '$settingField${value.replaceAll(':', '')}';
+  //   }else if(widgetType == 10){
+  //     return '$settingField${formatTo0000_0(double.parse(value.isEmpty ? '0' : value))}';
+  //   }else if(widgetType == 9){
+  //     return '$settingField${formatTo000(int.parse(value.isEmpty ? '0' : value))}';
+  //   }else{
+  //     if(settingField.contains(';')){
+  //       List<String> sfList = settingField.split(';');
+  //       int index = option.indexOf(value);
+  //       if(settingField.contains('MODEONP') || titleText == 'Dosing'){
+  //         return '${sfList[index]}${index+1}';
+  //       }
+  //       return sfList[index];
+  //     }
+  //     return '$settingField$value';
+  //   }
+  // }
+  String mqttPayload({String? firstDependent}){
+    if(listOfSingleSettingItemEntity.first.widgetType == 2){
+      return '${listOfSingleSettingItemEntity.first.settingField},${listOfSingleSettingItemEntity.map((set) => set.value).join(',')}';
+    }else if(listOfSingleSettingItemEntity.first.widgetType == 10){
+      return '${listOfSingleSettingItemEntity.first.settingField}'
+          '${listOfSingleSettingItemEntity.first.titleText == 'F1' ? (firstDependent ?? '') : ''},'
+          '${listOfSingleSettingItemEntity.map((set) => formatTo0000_0(double.parse(set.value.isEmpty ? '0' : set.value))).join(',')}';
+    }else if(listOfSingleSettingItemEntity.first.widgetType == 9){
+      return '${listOfSingleSettingItemEntity.first.settingField},${listOfSingleSettingItemEntity.map((set) => formatTo000(int.parse(set.value.isEmpty ? '0' : set.value))).join(',')}';
+    }else if(listOfSingleSettingItemEntity.first.widgetType == 3){
+      return '${listOfSingleSettingItemEntity.first.settingField},${listOfSingleSettingItemEntity.map((set) => set.value.replaceAll(':', '')).join(',')}';
+    }else{
+      return 'N/A';
+    }
+  }
+
+  Map<String, dynamic> toJson(){
+    List<String> formSf = listOfSingleSettingItemEntity.map((single) => single.settingField).toList();
+    String payloadSf = '';
+    if(formSf.length == 1){
+      payloadSf = formSf.first;
+    }else if(formSf.length > 1 && (formSf[0] == formSf[1])){
+      payloadSf = formSf.first;
+    }else{
+      payloadSf = formSf.join(';');
+    }
+    return {
+      "SN": listOfSingleSettingItemEntity.first.sNo,
+      "WT": listOfSingleSettingItemEntity.first.widgetType,
+      "VAL": listOfSingleSettingItemEntity.map((single) => single.value).join(';'),
+      "SF": payloadSf,
+      "TT": listOfSingleSettingItemEntity.map((single) => single.titleText).join(';'),
+      "HF": listOfSingleSettingItemEntity.map((single) => single.hf).join(';'),
+      if(listOfSingleSettingItemEntity.first.option.isNotEmpty)
+        "OPTION": listOfSingleSettingItemEntity.first.option.join(';')
+    };
   }
 }

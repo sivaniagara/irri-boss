@@ -10,6 +10,15 @@ class TdyValveStatusEntity {
     required this.totalFlow,
     required this.data,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'code': code,
+      'message': message,
+      'totalFlow': totalFlow,
+      'data': data.map((e) => e.toJson()).toList(),
+    };
+  }
 }
 
 class TdyValveStatusDatumEntity {
@@ -26,4 +35,14 @@ class TdyValveStatusDatumEntity {
     required this.zonePlace,
     this.totalFlow,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'zone': zone,
+      'duration': duration,
+      'litres': litres,
+      'zonePlace': zonePlace,
+      if (totalFlow != null) 'totalFlow': totalFlow,
+    };
+  }
 }

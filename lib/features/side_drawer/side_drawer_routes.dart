@@ -11,13 +11,19 @@ import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/pre
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/presentation/pages/sub_users.dart';
 
 import '../../core/di/injection.dart';
+import '../../core/utils/app_images.dart';
 import '../../core/utils/route_constants.dart';
 import '../../core/widgets/glassy_wrapper.dart';
-import '../auth/domain/entities/user_entity.dart';
 import '../auth/presentation/bloc/auth_bloc.dart';
 import '../auth/presentation/bloc/auth_state.dart';
+import '../controller_settings/utils/controller_settings_routes.dart';
+import '../dashboard/presentation/pages/dashboard_page.dart';
+import '../dashboard/utils/dashboard_routes.dart';
 import '../dealer_dashboard/presentation/pages/dealer_dashboard_page.dart';
 import '../dealer_dashboard/utils/dealer_routes.dart';
+import '../irrigation_settings/utils/irrigation_settings_routes.dart';
+import '../program_settings/utils/program_settings_routes.dart';
+import '../standalone_settings/utils/standalone_routes.dart';
 import 'groups/domain/usecases/add_group_usecase.dart';
 import 'groups/domain/usecases/delete_group_usecase.dart';
 import 'groups/domain/usecases/edit_group_usecase.dart';
@@ -34,7 +40,7 @@ final sideDrawerRoutes = <ShellRoute>[
   ShellRoute(
     builder: (context, state, child) {
       final location = state.matchedLocation;
-      String title = 'Dealer Dashboard';
+      String title = 'Home';
       if (location == GroupRoutes.groups) {
         title = 'Groups';
       } else if (location == SubUserRoutes.subUsers) {
@@ -48,34 +54,46 @@ final sideDrawerRoutes = <ShellRoute>[
       return BlocProvider.value(
         value: sl.get<AuthBloc>(),
         child: Scaffold(
-          appBar: AppBar(centerTitle: true, title: Text(title)),
-          drawer: const AppDrawer(),
-          body: GlassyWrapper(
-            child: NotificationListener<OverscrollIndicatorNotification>(
-              onNotification: (notification) {
-                notification.disallowIndicator();
-                return true;
-              },
-              child: child,
-            ),
+          appBar: AppBar(
+              backgroundColor: (sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType == 2
+                  ? Theme.of(context).primaryColorDark : null,
+              centerTitle: true,
+              title: Text(title),
+              foregroundColor: (sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType == 2
+                  ? Colors.white
+                  : Colors.black,
+              iconTheme: IconThemeData(color:  (sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType == 2
+                  ? Colors.white : Colors.black)
+            /* title: (sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType == 2 ? Container(
+                width: 140,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                alignment: Alignment.center,
+                child: Image.asset(NiagaraCommonImages.logoSmall),
+              ) : Text(title)*/
           ),
+          drawer: AppDrawer(userData: {"userId": '${(sl.get<AuthBloc>().state as Authenticated).user.userDetails.id}', "userType": '${(sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType}'},),
+          body: child,
         ),
       );
     },
     routes: [
       GoRoute(
-        name: 'dealerDashboard',
+        name: "dealerDashboard",
         path: DealerRoutes.dealerDashboard,
-        builder: (context, state) => BlocProvider.value(
-          value: sl.get<AuthBloc>(),
-          child: const DealerDashboardPage(),
-        ),
+        builder: (context, state) {
+          final params = state.uri.queryParameters as Map<String, dynamic>;
+          return DealerDashboardPage(userData: params);
+        },
       ),
       GoRoute(
         name: 'groups',
         path: GroupRoutes.groups,
         builder: (context, state) {
-          final authData = _getAuthData();
+          final authData = (sl.get<AuthBloc>().state as Authenticated).user.userDetails;
           final groupFetchingUseCase = sl<GroupFetchingUsecase>();
           final groupAddingUseCase = sl<GroupAddingUsecase>();
           final editGroupUsecase = sl<EditGroupUsecase>();
@@ -91,87 +109,73 @@ final sideDrawerRoutes = <ShellRoute>[
           );
         },
       ),
-      _authRoute(
+      GoRoute(
         name: 'subUsers',
         path: SubUserRoutes.subUsers,
         builder: (context, state) {
-          final authData = _getAuthData();
+          final authData = (sl.get<AuthBloc>().state as Authenticated).user.userDetails;
           final getSubUserUsecase = sl<GetSubUsersUsecase>();
           final getSubUserDetailsUsecase = sl<GetSubUserDetailsUsecase>();
           final updateSubUserDetailsUsecase = sl<UpdateSubUserDetailsUseCase>();
           final getSubUserByPhoneUseCase = sl<GetSubUserByPhoneUsecase>();
-          return BlocProvider(
-            create: (context) => SubUsersBloc(
-              getSubUsersUsecase: getSubUserUsecase,
-              getSubUserDetailsUsecase: getSubUserDetailsUsecase,
-              updateSubUserDetailsUseCase: updateSubUserDetailsUsecase,
-              getSubUserByPhoneUsecase: getSubUserByPhoneUseCase,
-            )..add(GetSubUsersEvent(userId: authData.id)),
-            child: SubUsers(userId: authData.id),
+          return BlocProvider.value(
+            value: sl.get<AuthBloc>(),
+            child: BlocProvider(
+              create: (context) => SubUsersBloc(
+                getSubUsersUsecase: getSubUserUsecase,
+                getSubUserDetailsUsecase: getSubUserDetailsUsecase,
+                updateSubUserDetailsUseCase: updateSubUserDetailsUsecase,
+                getSubUserByPhoneUsecase: getSubUserByPhoneUseCase,
+              )..add(GetSubUsersEvent(userId: authData.id)),
+              child: SubUsers(userId: authData.id),
+            ),
           );
         },
       ),
-      _authRoute(
+      GoRoute(
         name: 'subUserDetails',
         path: SubUserRoutes.subUserDetails,
         builder: (context, state) {
           final params = state.extra is Map ? state.extra as Map : null;
           final SubUsersBloc existingBloc = params?['existingBloc'] as SubUsersBloc;
           return BlocProvider.value(
-            value: existingBloc,
-            child: SubUserDetailsScreen(
-              subUserDetailsParams: GetSubUserDetailsParams(
-                  userId: params?['userId'],
-                  subUserCode: params?['subUserCode'],
-                  isNewSubUser: params?['isNewSubUser']
+            value: sl.get<AuthBloc>(),
+            child: BlocProvider.value(
+              value: existingBloc,
+              child: SubUserDetailsScreen(
+                subUserDetailsParams: GetSubUserDetailsParams(
+                    userId: params?['userId'],
+                    subUserCode: params?['subUserCode'],
+                    isNewSubUser: params?['isNewSubUser']
+                ),
               ),
             ),
           );
         },
       ),
-      _authRoute(
+      GoRoute(
         name: 'chat',
         path: RouteConstants.chat,
-        builder: (context, state) => const Chat(),
+        builder: (context, state) => BlocProvider.value(
+            value: sl.get<AuthBloc>(),
+            child:  const Chat()
+        ),
       ),
       GoRoute(
-        path: DealerRoutes.dealerDashboard,
-        builder: (context, state) => BlocProvider.value(
-          value: sl.get<AuthBloc>(),
-          child: const DealerDashboardPage(),
-        ),
-      )
+        path: DashBoardRoutes.dashboard,
+        builder: (context, state) {
+          final params = state.uri.queryParameters as Map<String, dynamic>;
+
+          return DashboardPage(userData: params, child: null,);
+        },
+        routes: [
+          ...controllerSettingGoRoutes,
+          ...programSettingsGoRoutes,
+          ...irrigationSettingGoRoutes,
+          ...standaloneRoutes,
+
+        ],
+      ),
     ],
-  ),
+  )
 ];
-
-UserEntity _getAuthData() {
-  final authState = sl.get<AuthBloc>().state;
-  if (authState is Authenticated) {
-    return authState.user.userDetails;
-  }
-  return UserEntity(
-    id: 0,
-    name: '',
-    mobile: '',
-    userType: 0,
-    deviceToken: '',
-    mobCctv: '',
-    webCctv: '',
-    altPhoneNum: [],
-  );
-}
-
-Widget _buildWithAuthBloc(Widget child) => BlocProvider.value(value: sl.get<AuthBloc>(), child: child);
-
-GoRoute _authRoute({
-  required String name,
-  required String path,
-  required Widget Function(BuildContext, GoRouterState) builder,
-}) {
-  return GoRoute(
-    name: name,
-    path: path,
-    builder: (context, state) => _buildWithAuthBloc(builder(context, state)),
-  );
-}

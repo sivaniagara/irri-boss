@@ -9,7 +9,7 @@ class TemplateJsonModel extends TemplateJsonEntity {
   });
 
   factory TemplateJsonModel.fromJson(Map<String, dynamic> json) {
-    final sections = json['setting'] as List<dynamic>;
+    final sections = (json['setting'] ?? []) as List<dynamic>;
 
     return TemplateJsonModel(
       sections: sections

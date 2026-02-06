@@ -4,18 +4,18 @@ import '../flavor/flavor_config.dart';
 class AppThemes {
   static ThemeData get lightTheme {
     switch (FlavorConfig.instance.flavor) {
-      case Flavor.agritel:
-        return _agritelLightTheme;
-      case Flavor.niagara:
-        return _niagaraLightTheme;
+      case Flavor.irriBossDevelopment:
+        return _irriBossLightTheme;
+      case Flavor.irriBossProduction:
+        return _irriBossLightTheme;
     }
   }
 
   static ThemeData get darkTheme {
     switch (FlavorConfig.instance.flavor) {
-      case Flavor.agritel:
+      case Flavor.irriBossDevelopment:
         return _agritelDarkTheme;
-      case Flavor.niagara:
+      case Flavor.irriBossProduction:
         return _niagaraDarkTheme;
     }
   }
@@ -35,9 +35,9 @@ class AppThemes {
     colorScheme: ColorScheme.dark(primary: Colors.green),
   );
 
-  // Niagara Theme Variants
-  static const Color primaryColor = Color(0xFF016DB5);
-  static const Color secondaryColor = Color(0xFF00AFF0);
+  // Irri Boss Theme Variants
+  static const Color primaryColor = Color(0xFF5385B2);
+  static const Color secondaryColor = Color(0xFFC1E2FF);
 
 
 
@@ -64,13 +64,15 @@ class AppThemes {
     },
   );
 
+  static Color scaffoldBackGround = Color(0xffE1EEEE);
+
   // Light Theme
-  static final ThemeData _niagaraLightTheme = ThemeData(
-    scaffoldBackgroundColor: Colors.transparent,
+  static final ThemeData _irriBossLightTheme = ThemeData(
+    scaffoldBackgroundColor: scaffoldBackGround,
     brightness: Brightness.light,
     primarySwatch: primarySwatch,
     primaryColor: primaryColor,
-    primaryColorLight: Color(0xff6DA8F5),
+    primaryColorLight: Color(0xffC1E2FF),
     iconTheme: IconThemeData(color: Colors.white),
     colorScheme: ColorScheme.fromSeed(
       primary: primaryColor,
@@ -83,12 +85,13 @@ class AppThemes {
       onBackground: primaryColor.withOpacity(0.1),
       onError: Colors.white,
       seedColor: primaryColor,
+      outline: Color(0xffABABAB)
     ),
-    appBarTheme: const AppBarTheme(
-      iconTheme: IconThemeData(
+    appBarTheme: AppBarTheme(
+      iconTheme: const IconThemeData(
         color: Colors.black
       ),
-      backgroundColor: Colors.transparent,
+      backgroundColor: scaffoldBackGround,
       /*foregroundColor: Colors.white,
       elevation: 0,*/
     ),
@@ -106,14 +109,16 @@ class AppThemes {
       // titleTextStyle: TextStyle(color: Colors.black, fontSize: 20)
     ),
     textTheme: TextTheme(
-     /* titleMedium: TextStyle(color: Colors.white),
-      titleSmall: TextStyle(color: Colors.white),
-      titleLarge: TextStyle(color: Colors.white),
-      bodySmall: TextStyle(color: Colors.white),
-      bodyLarge: TextStyle(color: Colors.white),
-      bodyMedium: TextStyle(color: Colors.white),*/
+      titleLarge: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500), // use
+      labelMedium: TextStyle(color: Colors.black),
+      labelSmall: TextStyle(fontSize: 14,color: Colors.black, fontWeight: FontWeight.w500), // use
+      labelLarge: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.w500), // use
+      bodySmall: TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.w500),
+      bodyLarge: TextStyle(color: Colors.black),
+      bodyMedium: TextStyle(color: Colors.black),
     ),
     inputDecorationTheme: InputDecorationTheme(
+      labelStyle: TextStyle(color: Color(0xffB6AAAA), fontWeight: FontWeight.w400),
       border: UnderlineInputBorder(
         borderRadius: BorderRadius.circular(0),
       ),
@@ -136,76 +141,37 @@ class AppThemes {
         borderRadius: BorderRadius.circular(0),
       ),
     ),
-    /*checkboxTheme: CheckboxThemeData(
-      fillColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-        if (states.contains(WidgetState.selected)) {
-          return Colors.white;
-        }
-        if (states.contains(WidgetState.disabled)) {
-          return primaryColor.withOpacity(0.1);
-        }
-        return Colors.white.withOpacity(0.05);
-      }),
-      checkColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-        if (states.contains(WidgetState.selected) || states.contains(WidgetState.disabled)) {
-          return primaryColor;
-        }
-        return null;
-      }),
-      overlayColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-        if (states.contains(WidgetState.selected)) {
-          return Colors.white.withOpacity(0.1);
-        }
-        if (states.contains(WidgetState.hovered)) {
-          return Colors.white.withOpacity(0.08);
-        }
-        if (states.contains(WidgetState.focused) || states.contains(WidgetState.pressed)) {
-          return Colors.white.withOpacity(0.12);
-        }
-        return null;
-      }),
-      side: BorderSide(color: Colors.white54, width: 2),
-      splashRadius: 24.0,
+    dividerTheme: DividerThemeData(
+        color: const Color(0xffadadad),
+        thickness: 0.5,
+        radius: BorderRadius.circular(5),
+        space: 1
     ),
     switchTheme: SwitchThemeData(
-      thumbColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-        if (states.contains(WidgetState.selected) || states.contains(WidgetState.disabled)) {
-          return primaryColor;
-        }
-        return Colors.white.withOpacity(0.3);
-      }),
-      trackColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
+      thumbColor: WidgetStateProperty.all(Colors.white),
+      trackColor: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return Colors.white.withOpacity(0.6);
+          return Colors.green;
         }
-        if (states.contains(WidgetState.disabled)) {
-          return primaryColor.withOpacity(0.1);
-        }
-        return Colors.white.withOpacity(0.1);
+        return Colors.grey.shade400;
       }),
-      overlayColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-        if (states.contains(WidgetState.hovered)) {
-          return Colors.white.withOpacity(0.06);
-        }
-        if (states.contains(WidgetState.focused) || states.contains(WidgetState.pressed)) {
-          return Colors.white.withOpacity(0.1);
-        }
-        return Colors.white;
-      }),
-      trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((Set<WidgetState> states) {
-        if(states.contains(WidgetState.selected)) {
-          return Colors.white;
-        }
-        return Colors.white54;
-      }),
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-    ),*/
-    dividerTheme: DividerThemeData(
-      color: const Color(0xff727272),
-      thickness: 1
+      trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
     ),
-
-
+    checkboxTheme: CheckboxThemeData(
+      fillColor: MaterialStateProperty.resolveWith((states) {
+        if (states.contains(MaterialState.selected)) {
+          return Colors.green;
+        }
+        return Colors.transparent;
+      }),
+      splashRadius: 5,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      checkColor: MaterialStateProperty.all(Colors.white),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(2),
+      ),
+      side: BorderSide(color: Colors.grey.shade400, width: 0.5),
+    )
   );
   // Dark Theme
   static final ThemeData _niagaraDarkTheme = ThemeData(

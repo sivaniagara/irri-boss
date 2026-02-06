@@ -5,17 +5,22 @@ import 'livemessage_entity.dart';
 
 class ProgramEntity extends Equatable {
   final int programId;
-  final String programNameDefault;
   final String programName;
+  final List<ZoneEntity> listOfZone;
 
   const ProgramEntity({
     required this.programId,
-    required this.programNameDefault,
     required this.programName,
+    required this.listOfZone,
   });
 
   @override
-  List<Object> get props => [programId, programNameDefault, programName];
+  List<Object> get props => [programId, programName];
+}
+
+class ZoneEntity {
+  final String zoneNumber;
+  ZoneEntity({required this.zoneNumber});
 }
 
 class ControllerEntity extends Equatable {

@@ -18,7 +18,7 @@ import '../../domain/entities/settings_menu_entity.dart';
 import '../../../../core/services/api_client.dart';
 
 abstract class PumpSettingsDataSources {
-  Future<List<SettingsMenuEntity>> getSettingsMenuList(int userId, int subuserId, int controllerId);
+  Future<List<MenuItemEntity>> getSettingsMenuList(int userId, int subuserId, int controllerId);
   Future<MenuItemEntity> getPumpSettings(int userId, int subuserId, int controllerId, int menuId);
   Future<List<NotificationsEntity>> getNotifications(int userId, int subuserId, int controllerId);
   Future<String> subscribeNotifications(int userId, int subuserId, int controllerId, Map<String, dynamic> body);
@@ -45,19 +45,21 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
   }
 
   @override
-  Future<List<SettingsMenuEntity>> getSettingsMenuList(int userId, int subuserId, int controllerId) async{
+  Future<List<MenuItemEntity>> getSettingsMenuList(int userId, int subuserId, int controllerId) async{
     try {
       final endPoint = buildUrl(
           PumpSettingsUrls.getSettingsMenu,
           _baseParams(userId: userId, controllerId: controllerId, subuserId: 0)
       );
       final response = await apiClient.get(endPoint);
-      return handleListResponse<SettingsMenuModel>(response, fromJson: (json) => SettingsMenuModel.fromJson(json))
+      return handleListResponse<MenuItemModel>(response, fromJson: (json) => MenuItemModel.fromJson(json))
           .fold(
             (failure) => throw ServerException(message: failure.message),
-            (groups) => groups.cast<SettingsMenuEntity>(),
+            (groups) => groups.cast<MenuItemEntity>(),
       );
-    } catch (e) {
+    } catch (e, s) {
+      print(e);
+      print(s);
       rethrow;
     }
   }

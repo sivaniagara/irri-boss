@@ -29,7 +29,7 @@ class ViewPumpSettingsPage extends StatelessWidget {
     return BlocProvider(
       create: (_) {
         final cubit = ViewPumpSettingsCubit();
-        final dispatcher = PumpSettingsDispatcher(cubit);
+        final dispatcher = PumpSettingsDispatcher(cubit: cubit);
         di.sl<AppMessageDispatcher>().pumpSettings = dispatcher;
         cubit.requestSettings(deviceId, userId, subuserId, controllerId);
         cubit.loadSettingLabels(userId, subuserId, controllerId);
@@ -61,72 +61,158 @@ class _ViewPumpSettingsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GlassyWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text("View Settings"),
-        ),
-        body: BlocBuilder<ViewPumpSettingsCubit, ViewPumpSettingsState>(
-          builder: (context, state) {
-            if (state.isLoading) {
-              return const Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 16),
-                    Text("Loading settings..."),
-                  ],
-                ),
-              );
-            }
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("View Settings"),
+      ),
+      body: BlocBuilder<ViewPumpSettingsCubit, ViewPumpSettingsState>(
+        builder: (context, state) {
+          if (state.isLoading) {
+            return const Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text("Loading settings..."),
+                ],
+              ),
+            );
+          }
 
-            if (state.errorMessage != null || state.settingsJson == null) {
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.error_outline, size: 64, color: Colors.red),
-                    SizedBox(height: 16),
-                    Text("Controller is not responding", style: const TextStyle(color: Colors.red)),
-                    SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: () => context.read<ViewPumpSettingsCubit>().requestSettings(
-                        deviceId,
-                        userId,
-                        controllerId,
-                        subuserId,
-                      ),
-                      child: const Text("Retry"),
+          if (state.errorMessage != null || state.settingsJson == null) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.error_outline, size: 64, color: Colors.red),
+                  SizedBox(height: 16),
+                  Text("Controller is not responding", style: const TextStyle(color: Colors.red)),
+                  SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: () => context.read<ViewPumpSettingsCubit>().requestSettings(
+                      deviceId,
+                      userId,
+                      controllerId,
+                      subuserId,
                     ),
-                  ],
-                ),
-              );
+                    child: const Text("Retry"),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          if (state.settingLabels == null || state.settingLabels!.isEmpty) {
+            return const Center(child: Text("No templates available"));
+          }
+
+          final excludedIds = {502, 509, 510, 511, 513, 514, 515};
+          final filteredLabels = state.settingLabels!
+              .where((template) => !excludedIds.contains(template['menuSettingId']))
+              .toList();
+
+          if (filteredLabels.isEmpty) {
+            return const Center(child: Text("No available templates"));
+          }
+
+          final List<String> allValues = state.settingsJson!.split(',');
+
+          final List<int> templateSettingCounts = [];
+          for (final template in filteredLabels) {
+            final int menuId = int.tryParse(template['menuSettingId'].toString()) ?? 0;
+            Map<String, dynamic> config;
+
+            if (menuId == 508) {
+              config = {
+                "setting": [
+                  {
+                    "NAME": "Signal & Connection Status",
+                    "SETS": [
+                      {"SN": 1, "TT": "Signal Strength"},
+                      {"SN": 2, "TT": "Mqtt Connection"},
+                      {"SN": 3, "TT": "Data connection"},
+                      {"SN": 4, "TT": "Communication Mode"},
+                    ]
+                  },
+                  {
+                    "NAME": "WIFI Settings",
+                    "SETS": [
+                      {"SN": 1, "TT": "WIFI SSID"},
+                      {"SN": 2, "TT": "WIFI PASSWORD"},
+                      {"SN": 3, "TT": "WLAN IP"},
+                      {"SN": 4, "TT": "WLAN PORT NUMBER"},
+                    ]
+                  },
+                  {
+                    "NAME": "Mobile / APN Settings",
+                    "SETS": [
+                      {"SN": 1, "TT": "MY WIFI SSID"},
+                      {"SN": 2, "TT": "MY WIFI PASSWORD"},
+                      {"SN": 3, "TT": "MY WIFI IP"},
+                      {"SN": 4, "TT": "MY WIFI PORT NUMBER"},
+                      {"SN": 5, "TT": "APN"},
+                    ]
+                  },
+                ]
+              };
+            } else {
+              try {
+                config = jsonDecode(template['sendData']) as Map<String, dynamic>;
+              } catch (e) {
+                templateSettingCounts.add(0);
+                continue;
+              }
             }
 
-            if (state.settingLabels == null || state.settingLabels!.isEmpty) {
-              return const Center(child: Text("No templates available"));
+            int visibleCount = 0;
+            for (final section in config['setting']) {
+              final List<dynamic> sets = section['SETS'] ?? [];
+              for (final set in sets) {
+                final String rawTitle = (set['TT']?.toString() ?? '').trim();
+                if (rawTitle.isEmpty) continue;
+
+                bool skip = false;
+                if (menuId == 505) {
+                  final int? tid = int.tryParse(section['TID']?.toString() ?? '');
+                  final int? sn = int.tryParse(set['SN']?.toString() ?? '');
+
+                  if (tid == 1 && sn != null && [3, 4].contains(sn)) skip = true;
+                  if (tid == 2 && sn != null && [1, 2].contains(sn)) skip = true;
+                }
+
+                if (!skip) visibleCount++;
+              }
             }
+            templateSettingCounts.add(visibleCount);
+          }
 
-            final excludedIds = {508, 509, 510, 512};
-            final filteredLabels = state.settingLabels!
-                .where((template) => !excludedIds.contains(template['menuSettingId']))
-                .toList();
+          final List<int> cumulativeOffsets = [];
+          int offset = 0;
+          for (int count in templateSettingCounts) {
+            cumulativeOffsets.add(offset);
+            offset += count;
+          }
 
-            if (filteredLabels.isEmpty) {
-              return const Center(child: Text("No available templates"));
-            }
+          int selectedIndex = 0;
 
-            final List<String> allValues = state.settingsJson!.split(',');
+          return StatefulBuilder(
+            builder: (context, setStateLocal) {
+              final int startOffset = cumulativeOffsets[selectedIndex];
+              final int settingsCount = templateSettingCounts[selectedIndex];
 
-            final List<int> templateSettingCounts = [];
-            for (final template in filteredLabels) {
-              final int menuId = int.tryParse(template['menuSettingId'].toString()) ?? 0;
-              Map<String, dynamic> config;
+              final List<String> templateValues = settingsCount > 0
+                  ? allValues.sublist(startOffset, startOffset + settingsCount)
+                  : <String>[];
 
-              if (menuId == 507) {
-                config = {
+              final selectedTemplate = filteredLabels[selectedIndex];
+              final int currentMenuSettingId =
+                  int.tryParse(selectedTemplate['menuSettingId'].toString()) ?? 0;
+
+              late Map<String, dynamic> templateConfig;
+
+              if (currentMenuSettingId == 508) {
+                templateConfig = {
                   "setting": [
                     {
                       "NAME": "Signal & Connection Status",
@@ -160,206 +246,116 @@ class _ViewPumpSettingsView extends StatelessWidget {
                 };
               } else {
                 try {
-                  config = jsonDecode(template['templateJson']) as Map<String, dynamic>;
+                  templateConfig = jsonDecode(selectedTemplate['sendData']) as Map<String, dynamic>;
                 } catch (e) {
-                  templateSettingCounts.add(0);
-                  continue;
+                  return const Center(child: Text("Invalid template configuration"));
                 }
               }
 
-              int visibleCount = 0;
-              for (final section in config['setting']) {
-                final List<dynamic> sets = section['SETS'] ?? [];
+              final List<Map<String, dynamic>> visibleSettings = [];
+              int valueIndex = 0;
+
+              for (final section in templateConfig['setting']) {
+                final List<dynamic> sets = section['SETS'];
+
                 for (final set in sets) {
-                  final String rawTitle = (set['TT']?.toString() ?? '').trim();
+                  final String rawTitle = set['TT'];
                   if (rawTitle.isEmpty) continue;
 
-                  bool skip = false;
-                  if (menuId == 505) {
-                    final int? tid = int.tryParse(section['TID']?.toString() ?? '');
-                    final int? sn = int.tryParse(set['SN']?.toString() ?? '');
+                  if (currentMenuSettingId == 505) {
+                    final int tid = section['TID'];
+                    final int sn = set['SN'];
 
-                    if (tid == 1 && sn != null && [3, 4].contains(sn)) skip = true;
-                    if (tid == 2 && sn != null && [1, 2].contains(sn)) skip = true;
+                    if (tid == 1 && [3, 4].contains(sn)) continue;
+                    if (tid == 2 && [1, 2].contains(sn)) continue;
                   }
 
-                  if (!skip) visibleCount++;
+                  visibleSettings.add({
+                    'setting': set,
+                    'valueIndex': valueIndex++,
+                    'sectionTitle': section['NAME'],
+                  });
                 }
               }
-              templateSettingCounts.add(visibleCount);
-            }
 
-            final List<int> cumulativeOffsets = [];
-            int offset = 0;
-            for (int count in templateSettingCounts) {
-              cumulativeOffsets.add(offset);
-              offset += count;
-            }
-
-            int selectedIndex = 0;
-
-            return StatefulBuilder(
-              builder: (context, setStateLocal) {
-                final int startOffset = cumulativeOffsets[selectedIndex];
-                final int settingsCount = templateSettingCounts[selectedIndex];
-
-                final List<String> templateValues = settingsCount > 0
-                    ? allValues.sublist(startOffset, startOffset + settingsCount)
-                    : <String>[];
-
-                final selectedTemplate = filteredLabels[selectedIndex];
-                final int currentMenuSettingId =
-                    int.tryParse(selectedTemplate['menuSettingId'].toString()) ?? 0;
-
-                late Map<String, dynamic> templateConfig;
-
-                // Use static config for 507, otherwise parse from JSON
-                if (currentMenuSettingId == 507) {
-                  templateConfig = {
-                    "setting": [
-                      {
-                        "NAME": "Signal & Connection Status",
-                        "SETS": [
-                          {"SN": 1, "TT": "Signal Strength"},
-                          {"SN": 2, "TT": "Mqtt Connection"},
-                          {"SN": 3, "TT": "Data connection"},
-                          {"SN": 4, "TT": "Communication Mode"},
-                        ]
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: DropdownButton<int>(
+                      isExpanded: true,
+                      value: selectedIndex,
+                      hint: const Text("Select Configuration Template"),
+                      items: filteredLabels.asMap().entries.map((e) {
+                        return DropdownMenuItem(
+                          value: e.key,
+                          child: Text(
+                            e.value['menuItem'] ?? 'Template ${e.key + 1}',
+                            style: const TextStyle(color: Colors.black),
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setStateLocal(() => selectedIndex = value);
+                        }
                       },
-                      {
-                        "NAME": "WIFI Settings",
-                        "SETS": [
-                          {"SN": 1, "TT": "WIFI SSID"},
-                          {"SN": 2, "TT": "WIFI PASSWORD"},
-                          {"SN": 3, "TT": "WLAN IP"},
-                          {"SN": 4, "TT": "WLAN PORT NUMBER"},
-                        ]
-                      },
-                      {
-                        "NAME": "Mobile / APN Settings",
-                        "SETS": [
-                          {"SN": 1, "TT": "MY WIFI SSID"},
-                          {"SN": 2, "TT": "MY WIFI PASSWORD"},
-                          {"SN": 3, "TT": "MY WIFI IP"},
-                          {"SN": 4, "TT": "MY WIFI PORT NUMBER"},
-                          {"SN": 5, "TT": "APN"},
-                        ]
-                      },
-                    ]
-                  };
-                } else {
-                  try {
-                    templateConfig = jsonDecode(selectedTemplate['templateJson'])
-                    as Map<String, dynamic>;
-                  } catch (e) {
-                    return const Center(child: Text("Invalid template configuration"));
-                  }
-                }
-
-                final List<Map<String, dynamic>> visibleSettings = [];
-                int valueIndex = 0;
-
-                for (final section in templateConfig['setting']) {
-                  final List<dynamic> sets = section['SETS'];
-
-                  for (final set in sets) {
-                    final String rawTitle = set['TT'];
-                    if (rawTitle.isEmpty) continue;
-
-                    if (currentMenuSettingId == 505) {
-                      final int tid = section['TID'];
-                      final int sn = set['SN'];
-
-                      if (tid == 1 && [3, 4].contains(sn)) continue;
-                      if (tid == 2 && [1, 2].contains(sn)) continue;
-                    }
-
-                    visibleSettings.add({
-                      'setting': set,
-                      'valueIndex': valueIndex++,
-                      'sectionTitle': section['NAME'],
-                    });
-                  }
-                }
-
-                return Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: DropdownButton<int>(
-                        isExpanded: true,
-                        value: selectedIndex,
-                        hint: const Text("Select Configuration Template"),
-                        items: filteredLabels.asMap().entries.map((e) {
-                          return DropdownMenuItem(
-                            value: e.key,
-                            child: Text(
-                              e.value['menuItem'] ?? 'Template ${e.key + 1}',
-                              style: const TextStyle(color: Colors.black),
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          if (value != null) {
-                            setStateLocal(() => selectedIndex = value);
-                          }
-                        },
-                      ),
                     ),
-                    Expanded(
-                      child: visibleSettings.isEmpty
-                          ? const Center(child: Text("No settings to display"))
-                          : RefreshIndicator(
-                        onRefresh: () async {
-                          context.read<ViewPumpSettingsCubit>().requestSettings(
-                            deviceId,
-                            userId,
-                            controllerId,
-                            subuserId,
-                          );
-                        },
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: visibleSettings.length,
-                          itemBuilder: (context, index) {
-                            final visibleSetting = visibleSettings[index];
-                            final setting = visibleSetting['setting'] as Map<String, dynamic>;
-                            final int valueIndex = visibleSetting['valueIndex'] as int;
-                            final String sectionTitle = visibleSetting['sectionTitle'];
+                  ),
+                  Expanded(
+                    child: visibleSettings.isEmpty
+                        ? const Center(child: Text("No settings to display"))
+                        : RefreshIndicator(
+                      onRefresh: () async {
+                        context.read<ViewPumpSettingsCubit>().requestSettings(
+                          deviceId,
+                          userId,
+                          controllerId,
+                          subuserId,
+                        );
+                      },
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: visibleSettings.length,
+                        itemBuilder: (context, index) {
+                          final visibleSetting = visibleSettings[index];
+                          final setting = visibleSetting['setting'] as Map<String, dynamic>;
+                          final int valueIndex = visibleSetting['valueIndex'] as int;
+                          final String sectionTitle = visibleSetting['sectionTitle'];
 
-                            final String value = templateValues[valueIndex];
+                          final String value = templateValues[valueIndex];
 
-                            if (index == 0 || visibleSettings[index - 1]['sectionTitle'] != sectionTitle) {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding:
-                                    const EdgeInsets.fromLTRB(0, 16, 0, 8),
-                                    child: Text(
-                                      sectionTitle,
-                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
-                                      ),
+                          if (index == 0 || visibleSettings[index - 1]['sectionTitle'] != sectionTitle) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Padding(
+                                  padding:
+                                  const EdgeInsets.fromLTRB(0, 16, 0, 8),
+                                  child: Text(
+                                    sectionTitle,
+                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        fontSize: 14,
+                                        color: Color(0xff303030),
+                                        fontWeight: FontWeight.w400
                                     ),
                                   ),
-                                  _buildDedicativeWidget(context, setting, value),
-                                ],
-                              );
-                            }
+                                ),
+                                _buildDedicativeWidget(context, setting, value),
+                              ],
+                            );
+                          }
 
-                            return _buildDedicativeWidget(context, setting, value);
-                          },
-                        ),
+                          return _buildDedicativeWidget(context, setting, value);
+                        },
                       ),
                     ),
-                  ],
-                );
-              },
-            );
-          },
-        ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -374,19 +370,34 @@ class _ViewPumpSettingsView extends StatelessWidget {
         );
     }
 
-    if(data['TT'].contains(";")) {
+    if (data['TT'].contains(';')) {
+      final ttItems = data['TT'].split(';');
+      final valueItems = value.split(data['WT'] == 7 ? ':' : ';');
+
+      // Determine the maximum length to avoid index errors
+      final maxLength = ttItems.length > valueItems.length
+          ? ttItems.length
+          : valueItems.length;
+
       return GlassCard(
-        margin: EdgeInsets.symmetric(vertical: 4),
+        margin: const EdgeInsets.symmetric(vertical: 4),
         padding: EdgeInsets.zero,
         blur: 0,
         opacity: 1,
         child: Column(
           children: [
-            for(int i = 0; i < data['TT'].split(';').length; i++)
+            for (int i = 0; i < maxLength; i++)
               SettingListTile(
-                title: data['TT'].split(';')[i],
-                trailing: Text(value.split(data['WT'] == 7 ? ':' : ';')[i], style: Theme.of(context).textTheme.bodyMedium,),
-              )
+                title: i < ttItems.length
+                    ? ttItems[i].trim()
+                    : '', // Safe access with fallback
+                trailing: Text(
+                  i < valueItems.length
+                      ? valueItems[i].trim()
+                      : '',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
           ],
         ),
       );

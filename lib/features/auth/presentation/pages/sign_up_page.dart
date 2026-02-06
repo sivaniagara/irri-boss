@@ -20,7 +20,6 @@ class UserProfileForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext dialogContext) {
-    // Reuse existing AuthBloc from DI instead of creating new one
     return _UserProfileFormBody(isEdit: isEdit, initialData: initialData);
   }
 }
@@ -35,7 +34,6 @@ class _UserProfileFormBody extends StatelessWidget {
   Widget build(BuildContext dialogContext) {
     final formKey = GlobalKey<FormState>();
 
-    // Controllers
     final nameCtrl = TextEditingController(text: initialData?.name ?? '');
     final address1Ctrl = TextEditingController(text: initialData?.addressOne ?? '');
     final address2Ctrl = TextEditingController(text: initialData?.addressTwo ?? '');
@@ -149,177 +147,174 @@ class _UserProfileFormBody extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text(isEdit ? 'Edit Profile' : 'Sign Up'),
         leading: isEdit
             ? IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
+          icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(dialogContext),
         )
             : null,
       ),
       body: SafeArea(
-        child: GlassyWrapper(
-          child: Form(
-            key: formKey,
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Personal Information',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                  const SizedBox(height: 20),
+        child: Form(
+          key: formKey,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Personal Information',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 20),
 
-                  // Mobile Number with intl_phone_field
-                  IntlPhoneField(
-                    initialCountryCode: _detectInitialCountry(initialData?.mobile),
-                    initialValue: _extractPhoneNumber(initialData?.mobile),
-                    decoration: _inputDecoration('Mobile Number *', Icons.phone),
-                    onChanged: (phone) {
-                      phoneNumber = phone.completeNumber;
-                      phoneCountryCode = phone.countryISOCode;
-                      phoneWithoutCountry = phone.number;
-                    },
-                    onCountryChanged: (country) {
-                      selectedCountry.value = country.name;
-                    },
-                    validator: (phone) {
-                      if (phone == null || phone.number.isEmpty || phone.number.length < 10) {
-                        return 'Enter valid mobile number';
+                // Mobile Number with intl_phone_field
+                IntlPhoneField(
+                  initialCountryCode: _detectInitialCountry(initialData?.mobile),
+                  initialValue: _extractPhoneNumber(initialData?.mobile),
+                  decoration: _inputDecoration('Mobile Number *', Icons.phone),
+                  onChanged: (phone) {
+                    phoneNumber = phone.completeNumber;
+                    phoneCountryCode = phone.countryISOCode;
+                    phoneWithoutCountry = phone.number;
+                  },
+                  onCountryChanged: (country) {
+                    selectedCountry.value = country.name;
+                  },
+                  validator: (phone) {
+                    if (phone == null || phone.number.isEmpty || phone.number.length < 10) {
+                      return 'Enter valid mobile number';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                _buildField(nameCtrl, 'User Name *', Icons.person,
+                    validator: (v) => v!.trim().isEmpty ? 'Name is required' : null),
+                const SizedBox(height: 16),
+
+                // User Type Dropdown
+                ValueListenableBuilder<String?>(
+                  valueListenable: selectedUserType,
+                  builder: (_, value, __) {
+                    return DropdownButtonFormField<String>(
+                      value: value,
+                      decoration: _inputDecoration('User Type *', Icons.person_outline),
+                      validator: (_) => value == null ? 'Please select user type' : null,
+                      items: const [
+                        DropdownMenuItem(value: 'Customer', child: Text('Customer')),
+                        DropdownMenuItem(value: 'Dealer', child: Text('Dealer')),
+                        DropdownMenuItem(value: 'Admin', child: Text('Admin')),
+                      ],
+                      onChanged: (v) => selectedUserType.value = v,
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
+
+                const Text(
+                  'Address',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 16),
+
+                _buildField(address1Ctrl, 'Address Line 1', Icons.home),
+                const SizedBox(height: 16),
+                _buildField(address2Ctrl, 'Address Line 2 (Optional)', Icons.home),
+                const SizedBox(height: 16),
+                _buildField(townCtrl, 'Town', Icons.location_on),
+                const SizedBox(height: 16),
+                _buildField(villageCtrl, 'Village', Icons.location_on),
+                const SizedBox(height: 16),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: ValueListenableBuilder<String?>(
+                        valueListenable: selectedCountry,
+                        builder: (_, value, __) {
+                          return DropdownButtonFormField<String>(
+                            value: value,
+                            decoration: _inputDecoration('Country', Icons.public),
+                            items: const [
+                              DropdownMenuItem(value: 'India', child: Text('India')),
+                              DropdownMenuItem(value: 'USA', child: Text('USA')),
+                              DropdownMenuItem(value: 'UK', child: Text('UK')),
+                            ],
+                            onChanged: (v) => selectedCountry.value = v,
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ValueListenableBuilder<String?>(
+                        valueListenable: selectedState,
+                        builder: (_, value, __) {
+                          return DropdownButtonFormField<String>(
+                            value: value,
+                            decoration: _inputDecoration('State', Icons.map),
+                            items: const [
+                              DropdownMenuItem(value: 'State 1', child: Text('State 1')),
+                              DropdownMenuItem(value: 'State 2', child: Text('State 2')),
+                              DropdownMenuItem(value: 'State 3', child: Text('State 3')),
+                            ],
+                            onChanged: (v) => selectedState.value = v,
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                _buildField(cityCtrl, 'City', Icons.location_city),
+                const SizedBox(height: 16),
+                _buildField(postalCodeCtrl, 'Postal Code', Icons.mail),
+                const SizedBox(height: 16),
+                _buildField(altPhoneCtrl, 'Alternate Phone (Optional)', Icons.phone),
+                const SizedBox(height: 16),
+
+                _buildField(emailCtrl, 'Email (Optional)', Icons.email,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (v) {
+                      if (v!.isNotEmpty && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
+                        return 'Enter valid email';
                       }
                       return null;
-                    },
+                    }),
+                const SizedBox(height: 16),
+
+                if (!isEdit)
+                  TextFormField(
+                    controller: passwordCtrl,
+                    obscureText: true,
+                    decoration: _inputDecoration('Password *', Icons.lock),
+                    validator: (_) => passwordCtrl.text.isEmpty ? 'Password required' : null,
                   ),
-                  const SizedBox(height: 16),
 
-                  _buildField(nameCtrl, 'User Name *', Icons.person,
-                      validator: (v) => v!.trim().isEmpty ? 'Name is required' : null),
-                  const SizedBox(height: 16),
+                const SizedBox(height: 32),
 
-                  // User Type Dropdown
-                  ValueListenableBuilder<String?>(
-                    valueListenable: selectedUserType,
-                    builder: (_, value, __) {
-                      return DropdownButtonFormField<String>(
-                        value: value,
-                        decoration: _inputDecoration('User Type *', Icons.person_outline),
-                        validator: (_) => value == null ? 'Please select user type' : null,
-                        items: const [
-                          DropdownMenuItem(value: 'Customer', child: Text('Customer')),
-                          DropdownMenuItem(value: 'Dealer', child: Text('Dealer')),
-                          DropdownMenuItem(value: 'Admin', child: Text('Admin')),
-                        ],
-                        onChanged: (v) => selectedUserType.value = v,
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 24),
-
-                  const Text(
-                    'Address',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.white),
-                  ),
-                  const SizedBox(height: 16),
-
-                  _buildField(address1Ctrl, 'Address Line 1', Icons.home),
-                  const SizedBox(height: 16),
-                  _buildField(address2Ctrl, 'Address Line 2 (Optional)', Icons.home),
-                  const SizedBox(height: 16),
-                  _buildField(townCtrl, 'Town', Icons.location_on),
-                  const SizedBox(height: 16),
-                  _buildField(villageCtrl, 'Village', Icons.location_on),
-                  const SizedBox(height: 16),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ValueListenableBuilder<String?>(
-                          valueListenable: selectedCountry,
-                          builder: (_, value, __) {
-                            return DropdownButtonFormField<String>(
-                              value: value,
-                              decoration: _inputDecoration('Country', Icons.public),
-                              items: const [
-                                DropdownMenuItem(value: 'India', child: Text('India')),
-                                DropdownMenuItem(value: 'USA', child: Text('USA')),
-                                DropdownMenuItem(value: 'UK', child: Text('UK')),
-                              ],
-                              onChanged: (v) => selectedCountry.value = v,
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ValueListenableBuilder<String?>(
-                          valueListenable: selectedState,
-                          builder: (_, value, __) {
-                            return DropdownButtonFormField<String>(
-                              value: value,
-                              decoration: _inputDecoration('State', Icons.map),
-                              items: const [
-                                DropdownMenuItem(value: 'State 1', child: Text('State 1')),
-                                DropdownMenuItem(value: 'State 2', child: Text('State 2')),
-                                DropdownMenuItem(value: 'State 3', child: Text('State 3')),
-                              ],
-                              onChanged: (v) => selectedState.value = v,
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  _buildField(cityCtrl, 'City', Icons.location_city),
-                  const SizedBox(height: 16),
-                  _buildField(postalCodeCtrl, 'Postal Code', Icons.mail),
-                  const SizedBox(height: 16),
-                  _buildField(altPhoneCtrl, 'Alternate Phone (Optional)', Icons.phone),
-                  const SizedBox(height: 16),
-
-                  _buildField(emailCtrl, 'Email (Optional)', Icons.email,
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (v) {
-                        if (v!.isNotEmpty && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
-                          return 'Enter valid email';
-                        }
-                        return null;
-                      }),
-                  const SizedBox(height: 16),
-
-                  if (!isEdit)
-                    TextFormField(
-                      controller: passwordCtrl,
-                      obscureText: true,
-                      decoration: _inputDecoration('Password *', Icons.lock),
-                      validator: (_) => passwordCtrl.text.isEmpty ? 'Password required' : null,
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(dialogContext).primaryColor,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
-
-                  const SizedBox(height: 32),
-
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(dialogContext).primaryColor,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: Text(
-                        isEdit ? 'Update Profile' : 'Sign Up',
-                        style: const TextStyle(fontSize: 16, color: Colors.white),
-                      ),
+                    child: Text(
+                      isEdit ? 'Update Profile' : 'Sign Up',
+                      style: const TextStyle(fontSize: 16, color: Colors.white),
                     ),
                   ),
-                  const SizedBox(height: 20),
-                ],
-              ),
+                ),
+                const SizedBox(height: 20),
+              ],
             ),
           ),
         ),
@@ -366,12 +361,12 @@ class _UserProfileFormBody extends StatelessWidget {
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, color: Colors.white70),
+      prefixIcon: Icon(icon),
       enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white70)),
       focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white, width: 2)),
       errorBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.redAccent)),
       focusedErrorBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.redAccent, width: 2)),
-      labelStyle: const TextStyle(color: Colors.white70),
+      // labelStyle: const TextStyle(color: Colors.white70),
       errorStyle: const TextStyle(color: Colors.redAccent),
     );
   }

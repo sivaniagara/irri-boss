@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:niagara_smart_drip_irrigation/core/utils/app_images.dart';
 
 class CustomListTile extends StatelessWidget {
   void Function()? onTap;
   IconData? iconData;
   final String title;
+  String? image;
   CustomListTile({
     super.key,
     this.iconData,
     required this.onTap,
-    required this.title
+    required this.title,
+    this.image,
   });
 
   @override
@@ -20,6 +23,11 @@ class CustomListTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: ListTile(
+        leading: image != null ? Image.asset(
+            image!,
+          width: 25,
+          height: 25,
+        ) : null,
         onTap: onTap,
         title: Text(
           title,

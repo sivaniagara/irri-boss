@@ -8,14 +8,16 @@ abstract class ControllerDetailsEvent extends Equatable {
 class GetControllerDetailsEvent extends ControllerDetailsEvent {
   final int userId;
   final int controllerId;
+  final String deviceId;
 
   GetControllerDetailsEvent({
     required this.userId,
     required this.controllerId,
+    required this.deviceId,
   });
 
   @override
-  List<Object?> get props => [userId, controllerId];
+  List<Object?> get props => [userId, controllerId,deviceId];
 }
 class ToggleSwitchEvent extends ControllerDetailsEvent {
   // final int controllerId;

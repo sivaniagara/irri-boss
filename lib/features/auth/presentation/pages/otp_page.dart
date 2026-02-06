@@ -74,7 +74,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                   if(state.user.userDetails.userType == 2) {
                     context.go(DealerRoutes.dealerDashboard);
                   } else if (state.user.userDetails.userType == 1){
-                    context.go(DashBoardRoutes.dashboard);
+                    context.go(DashBoardRoutes.dashboard, extra: state.user.userDetails);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -137,7 +137,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                                   child: Padding(
                                     padding: const EdgeInsets.all(16),
                                     child: Image.asset(
-                                      NiagaraCommonImages.logoLarge,
+                                      AppImages.logoLarge,
                                       height: 140,
                                       width: 140,
                                       fit: BoxFit.contain,

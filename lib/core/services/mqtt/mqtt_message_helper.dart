@@ -61,6 +61,7 @@ abstract class MessageDispatcher {
   void onPumpWaterPumpSettings(String deviceId, String message) {}
   void onScheduleOne(String deviceId, Map<String, dynamic> message) {}
   void onScheduleTwo(String deviceId, Map<String, dynamic> message) {}
+  void onViewSettings(String deviceId, Map<String, dynamic> message) {}
 }
 
 class MqttMessageHelper {
@@ -101,7 +102,7 @@ class MqttMessageHelper {
     final type = MqttMessageType.fromCode(typeStr);
 
     if (type == MqttMessageType.live || type == MqttMessageType.liveExtended) {
-      liveModel = LiveMessageModel.fromLiveMessage(trimmedMsg);
+      liveModel = LiveMessageModel.fromLiveMessage(trimmedMsg, date: cd, time: ct);
       if (kDebugMode) print('Live message from MQTT: $liveModel');
       await prefs.setString('LIVEMSG_$qrCode', '$trimmedMsg$cd,$ct');
       dispatcher.onLiveUpdate(qrCode, liveModel);
@@ -123,7 +124,13 @@ class MqttMessageHelper {
 
     if(type == MqttMessageType.scheduleTwo) {
       print("schedule Two");
+      print("mqttMsg");
       dispatcher.onScheduleTwo(qrCode, jsonDecode(mqttMsg));
+    }
+
+    if(type == MqttMessageType.sms) {
+      print("pump settings view");
+      dispatcher.onViewSettings(qrCode, jsonDecode(mqttMsg));
     }
 
     // Switch for type-specific storage (use type?.code)

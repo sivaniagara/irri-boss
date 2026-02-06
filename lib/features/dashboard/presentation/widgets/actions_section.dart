@@ -72,7 +72,7 @@ class ActionsSection extends StatelessWidget {
           Expanded(
             child: MenuButton(
               icon: Icons.settings,
-              title: "Irrigation",
+              title: "Irrigation\nSettings",
               onTap: () {
                 dialogContext.push('${DashBoardRoutes.dashboard}${IrrigationSettingsRoutes.irrigationSettings}');
               },
@@ -188,6 +188,8 @@ class MenuButton extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color:
                 isEnabled ? AppThemes.primaryColor : Colors.grey,

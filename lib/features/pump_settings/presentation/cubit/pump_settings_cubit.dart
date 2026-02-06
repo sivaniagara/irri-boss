@@ -2,11 +2,14 @@ import 'dart:convert';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_manager.dart';
+import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_service.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/menu_item_entity.dart';
+import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/setting_widget_type.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/template_json_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/usecsases/send_settings_usecase.dart';
 
 import '../../../../core/di/injection.dart' as di;
+import '../../../../core/di/injection.dart';
 import '../../../../core/services/mqtt/mqtt_message_helper.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../domain/usecsases/get_menu_items.dart';
@@ -29,7 +32,6 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     required int menuId,
   }) async {
     if (state is GetPumpSettingsLoaded) return;
-    emit(GetPumpSettingsInitial());
 
     final result = await getPumpSettingsUsecase(GetPumpSettingsParams(
       userId: userId,
@@ -49,10 +51,52 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     final targetSection = newSections[sectionIndex];
     final newSettings = List<SettingsEntity>.from(targetSection.settings);
 
-    if (isHiddenFlag) {
-      newSettings[settingIndex] = newSettings[settingIndex].copyWith(hiddenFlag: newValue);
+    String processedValue = newValue;
+
+    if (!isHiddenFlag) {
+      final setting = newSettings[settingIndex];
+
+      if (setting.widgetType == SettingWidgetType.text) {
+        final trimmed = newValue.trim();
+        if(setting.title == 'Dry Run Occurance Count') {
+          processedValue = newValue.contains('.') ? newValue.split('.')[0] : newValue;
+        }else {
+          if (trimmed.isEmpty) {
+            processedValue = trimmed;
+          } else if (trimmed.contains('.')) {
+            final parts = trimmed.split('.');
+            final integerStr = parts[0];
+            final decimalPart = parts.length > 1 ? parts[1] : '0';
+
+            final intClean = integerStr.replaceAll(RegExp(r'^0+'), '');
+            final intValue = intClean.isEmpty ? 0 : int.tryParse(intClean) ?? -1;
+
+            String paddedInteger;
+            if (intValue >= 0 && intValue < 100) {
+              paddedInteger = intValue.toString().padLeft(3, '0');
+            } else {
+              paddedInteger = integerStr;
+            }
+
+            processedValue = '$paddedInteger.$decimalPart';
+          } else {
+            final number = int.tryParse(trimmed);
+            if (number != null) {
+              if (number < 100) {
+                processedValue = "${number.toString().padLeft(3, '0')}.0";
+              } else {
+                processedValue = "${number.toString()}.0";
+              }
+            } else {
+              processedValue = "$trimmed.0";
+            }
+          }
+        }
+      }
+
+      newSettings[settingIndex] = setting.copyWith(value: processedValue);
     } else {
-      newSettings[settingIndex] = newSettings[settingIndex].copyWith(value: newValue);
+      newSettings[settingIndex] = newSettings[settingIndex].copyWith(hiddenFlag: newValue);
     }
 
     newSections[sectionIndex] = targetSection.copyWith(settings: newSettings);
@@ -74,11 +118,17 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     emit(SettingSendingState(sectionIndex, settingIndex));
 
     final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
-    final payload = SmsPayloadBuilder.build(setting);
+    String payload = SmsPayloadBuilder.build(setting, deviceId);
+
+    if(menuItemEntity.menu.menuSettingId == 508 && menuItemEntity.template.sections[0].typeId == 1) {
+      payload = '';
+    }
 
     try {
       final publishMessage = jsonEncode(PublishMessageHelper.settingsPayload(payload));
-      di.sl.get<MqttManager>().publish(deviceId, publishMessage);
+      if(payload.isNotEmpty) {
+        di.sl.get<MqttManager>().publish(deviceId, publishMessage);
+      }
       final result = await sendPumpSettingsUsecase(SendPumpSettingsParams(
         userId: userId,
         subUserId: subUserId,
@@ -99,11 +149,6 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     }
   }
 
-  Future<void> sendSetting(String payload, String deviceId) async {
-    final publishMessage = jsonEncode(PublishMessageHelper.settingsPayload(payload));
-    di.sl.get<MqttManager>().publish(deviceId, publishMessage);
-  }
-
   Future<void> updateHiddenFlags({
     required int userId,
     required int subUserId,
@@ -114,12 +159,12 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     emit(SettingsSendStartedState());
     try {
       final result = await sendPumpSettingsUsecase(SendPumpSettingsParams(
-        userId: userId,
-        subUserId: subUserId,
-        controllerId: controllerId,
-        menuId: menuItemEntity.menu.menuSettingId,
-        menuItemEntity: menuItemEntity,
-        sentSms: sentSms
+          userId: userId,
+          subUserId: subUserId,
+          controllerId: controllerId,
+          menuId: menuItemEntity.menu.menuSettingId,
+          menuItemEntity: menuItemEntity,
+          sentSms: sentSms
       ));
 
       result.fold(
@@ -131,5 +176,20 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     } finally {
       emit(GetPumpSettingsLoaded(settings: menuItemEntity));
     }
+  }
+
+  void getViewSettings(Map<String, dynamic> message) {
+    final prettyString = message['cM'];
+
+    final timestamp = DateTime.now().toString().substring(0, 19);
+    final displayText = '[$timestamp] Device response:\n$prettyString';
+
+    print("state :: $state");
+    if (state is GetPumpSettingsLoaded) {
+      final current = state as GetPumpSettingsLoaded;
+      emit(current.copyWith(lastReceivedViewMessage: displayText));
+    }
+
+    print("Device view settings received:\n$prettyString");
   }
 }

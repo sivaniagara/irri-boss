@@ -112,17 +112,18 @@ class _GroupsView extends StatelessWidget {
               GlassCard(
                 padding: EdgeInsets.zero,
                 borderRadius: borderRadius,
+                opacity: 1,
+                blur: 0,
                 child: ListTile(
                   contentPadding: const EdgeInsets.only(left: 10, right: 5),
                   title: Text(group.groupName),
                   leading: CircleAvatar(
+                    radius: 20,
                     backgroundColor: Theme.of(context).primaryColorLight,
                     child: Text(
                       '${index + 1}',
-                      style: TextStyle(color: Theme.of(context).primaryColor),
                     ),
                   ),
-                  shape: RoundedRectangleBorder(borderRadius: borderRadius),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [

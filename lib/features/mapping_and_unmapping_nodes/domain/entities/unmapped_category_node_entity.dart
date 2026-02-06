@@ -4,6 +4,8 @@ class UnmappedCategoryNodeEntity {
   final String qrCode;
   final String modelName;
   final String dateManufacture;
+  final String userName;
+  final String mobileNumber;
   bool select;
 
   UnmappedCategoryNodeEntity({
@@ -12,6 +14,8 @@ class UnmappedCategoryNodeEntity {
     required this.qrCode,
     required this.modelName,
     required this.dateManufacture,
+    required this.userName,
+    required this.mobileNumber,
     this.select = false
   });
 
@@ -21,7 +25,9 @@ class UnmappedCategoryNodeEntity {
         categoryId: categoryId,
         qrCode: qrCode,
         modelName: modelName,
-        dateManufacture: dateManufacture
+        dateManufacture: dateManufacture,
+        userName: userName,
+        mobileNumber: mobileNumber,
     );
   }
 }

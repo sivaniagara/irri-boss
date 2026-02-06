@@ -1,17 +1,20 @@
 import '../repositories/report_repository.dart';
 
-class DownloadReportExcel {
+
+
+  class DownloadReportExcel {
   final ReportRepository repository;
 
   DownloadReportExcel(this.repository);
 
   Future<String> call({
-    required String reportTitle,
-    required String url,
+  required String reportTitle,
+  required List<Map<String, dynamic>> data,
   }) {
-    return repository.downloadExcel(
-      reportTitle: reportTitle,
-      url: url,
-    );
+  return repository.downloadExcel(
+  reportTitle: reportTitle,
+  data: data,
+  );
   }
-}
+  }
+

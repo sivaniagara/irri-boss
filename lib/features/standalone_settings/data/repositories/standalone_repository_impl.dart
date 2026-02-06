@@ -40,6 +40,7 @@ class StandaloneRepositoryImpl implements StandaloneRepository {
     required String sentSms,
   }) async {
     try {
+      // Configuration save: history is logged automatically by the backend via 'sentSms' in the body.
       await remoteDataSource.sendStandaloneConfig(
         userId: userId,
         subuserId: subuserId,
@@ -59,17 +60,19 @@ class StandaloneRepositoryImpl implements StandaloneRepository {
     required String userId,
     required int subuserId,
     required String controllerId,
+    required String deviceId,
     required String command,
     required String sentSms,
   }) async {
     try {
-      // 1. Publish command to hardware
+      // 1. Hardware Control (MQTT)
       await remoteDataSource.publishMqttCommand(
-        controllerId: controllerId,
+        controllerId: deviceId,
         command: command,
       );
 
-      // 2. Log message to history if provided
+      // 2. Log message to history manually for individual MQTT commands (like STZ)
+      // This ensures they show up in the Send & Receive page.
       if (sentSms.isNotEmpty) {
         await remoteDataSource.logHistory(
           userId: userId,

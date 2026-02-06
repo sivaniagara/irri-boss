@@ -4,9 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
-
- import '../../../../core/widgets/no_data.dart';
-  import '../../../set_serial_settings/domain/usecase/set_serial_details_params.dart';
+import '../../../../core/widgets/no_data.dart';
 import '../../domain/usecase/controller_details_params.dart';
 import '../bloc/controller_details_bloc.dart';
 import '../bloc/controller_details_bloc_event.dart';
@@ -16,7 +14,6 @@ import '../widgets/ctrlDetails_infoRow.dart';
 import '../widgets/ctrlDetails_switchRow.dart';
 import '../widgets/ctrlDetails_actionbtn.dart';
 import '../widgets/ctrldetails_header_section.dart';
-import '../widgets/commondropdown.dart';
 
 class ControllerDetailsPage extends StatelessWidget {
   final GetControllerDetailsParams params;
@@ -64,55 +61,27 @@ class ControllerDetailsPage extends StatelessWidget {
 
       return GlassyWrapper(
         child: Scaffold(
-           appBar: AppBar(
-             centerTitle: true,
-            title: const Text(
-              "CONTROLLER DETAILS",
-              style: TextStyle(color: Colors.white),
-            ),
+          appBar: AppBar(
+            centerTitle: true,
+            title: const Text("CONTROLLER DETAILS"),
           ),
-
           body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Center(
-                  child: ControllerSectionHeader(title: "Controller Details"),
-                ),
+
                 const SizedBox(height: 16),
-                Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        context.pushNamed(
-                          'setSerialPage',
-                          extra: SetSerialParams(userId: params.userId, controllerId: params.controllerId,type: 1),
-                        );
-                      },
-                      child: const Center(
-                        child: Text("Set Serial"),
-                      ),
-                    ),
-                    //
-                    SizedBox(width: 20,),
-                    GestureDetector(
-                      onTap: () {
-                        context.pushNamed(
-                          'setSerialPage',
-                          extra: SetSerialParams(userId: params.userId, controllerId: params.controllerId,type: 2),
-                        );
-                      },
-                      child: const Center(
-                        child: Text("Common Calibration"),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                 // ---------- ACTION BUTTONS ----------
+
+
+
+                // ---------- DEVICE ID ----------
                 GestureDetector(
                   onTap: () {
-                    Clipboard.setData(ClipboardData(text: controller.deviceId));
+                    Clipboard.setData(
+                      ClipboardData(text: controller.deviceId),
+                    );
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text("Copied to clipboard")),
                     );
@@ -122,110 +91,107 @@ class ControllerDetailsPage extends StatelessWidget {
                     value: controller.deviceId,
                   ),
                 ),
-                const SizedBox(height: 16),
 
-                    Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Group Name", style: TextStyle(color: Colors.white70)),
-                      DropdownButton<String>(
-                        dropdownColor: AppThemes.primaryColor,
-                        value: controller.groupName,
-                        items: groupList.map((g) {
-                          return DropdownMenuItem(
-                            value: g.groupName,
-                            child: Text(g.groupName, style: const TextStyle(color: Colors.white)),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          // Add event if you want update API
-                        },
-                      ),
-                    ],
 
-                ),
-
-                const SizedBox(height: 16),
-                TextField(
-                  controller: devicenameController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
-                    labelText: "Device Name",
-                    labelStyle: TextStyle(color: Colors.white70),
-                    enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white38),
-                    ),
-                    focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
-                    ),
-                  ),
-                ),
-                 const SizedBox(height: 20),
-                  Row(
-                  children: [
-                    Container(width: 100,
-                      child: TextField(
-                        controller: countrycodeController,
-                        style: const TextStyle(color: Colors.white),
-                        keyboardType: TextInputType.phone,
-                        decoration: const InputDecoration(
-                          labelText: "Country Code",
-                          labelStyle: TextStyle(color: Colors.white70),
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white38),
-                          ),
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.lightBlueAccent),
+                // ---------- GROUP NAME ----------
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            "Group Name",
+                            style: TextStyle(
+                              fontSize: 16,
+                               color: Colors.black,
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: TextField(
-                        controller: simController,
-                        style: const TextStyle(color: Colors.white),
-                        keyboardType: TextInputType.phone,
-                        decoration: const InputDecoration(
-                          labelText: "SIM Number",
-                          labelStyle: TextStyle(color: Colors.white70),
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.white38),
-                          ),
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(color: Colors.lightBlueAccent),
+                        DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: controller.groupName,
+                            dropdownColor: AppThemes.primaryColor,
+                            items: groupList.map((g) {
+                              return DropdownMenuItem(
+                                value: g.groupName,
+                                child: Text(
+                                  g.groupName,
+                                  style: const TextStyle(color: Colors.black),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (value) {},
                           ),
                         ),
+                      ],
+                    ),
+                  ),
+                ),
+
+
+                // ---------- DEVICE NAME ----------
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: TextField(
+                      controller: devicenameController,
+                      decoration: const InputDecoration(
+                        labelText: "Device Name",
+                        border: InputBorder.none,
                       ),
                     ),
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-
-                 ControllerInfoRow(
-                  label: "Operation Mode",
-                  valueWidget: IconButton(
-                    icon: const Icon(Icons.visibility, color: Colors.white),
-                    onPressed: () {},
                   ),
                 ),
 
-                ControllerInfoRow(
-                  label: "WiFi Reset",
-                  valueWidget: IconButton(
-                    icon: const Icon(Icons.wifi_protected_setup_sharp, color: Colors.white),
-                    onPressed: () {},
+
+                // ---------- COUNTRY CODE + SIM ----------
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 90,
+                          child: TextField(
+                            controller: countrycodeController,
+                            keyboardType: TextInputType.phone,
+                            decoration: const InputDecoration(
+                              labelText: "Code",
+                              border: InputBorder.none,
+                            ),
+                            style: TextStyle(color: AppThemes.primaryColor),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextField(
+                            controller: simController,
+                            keyboardType: TextInputType.phone,
+                            decoration: const InputDecoration(
+                              labelText: "SIM Number",
+                              border: InputBorder.none,
+                            ),
+                            style: TextStyle(color: AppThemes.primaryColor),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                //------------------------------------------------
+
+
+                // ---------- ICON ACTIONS ----------
+
+
+                // ---------- SWITCHES ----------
                 ControllerSwitchRow(
                   title: "INTERNET 4G",
                   value: controller.gprsMode == "4",
                   onChanged: (val) {
                     context.read<ControllerDetailsBloc>().add(
                       ToggleSwitchEvent(
-                         switchName: "gprsMode",
+                        switchName: "gprsMode",
                         isOn: val,
                       ),
                     );
@@ -238,48 +204,72 @@ class ControllerDetailsPage extends StatelessWidget {
                   onChanged: (val) {
                     context.read<ControllerDetailsBloc>().add(
                       ToggleSwitchEvent(
-                         switchName: "gprsMode",
-                        isOn: !val,        // reverse logic
+                        switchName: "gprsMode",
+                        isOn: !val,
                       ),
                     );
                   },
                 ),
 
-          ControllerSwitchRow(
-            title: "DND",
-            value: controller.dndStatus == "1",
-            onChanged: (val) {
-              context.read<ControllerDetailsBloc>().add(
-                ToggleSwitchEvent(
-                   switchName: "dndStatus",
-                  isOn: val,
+                ControllerSwitchRow(
+                  title: "DND",
+                  value: controller.dndStatus == "1",
+                  onChanged: (val) {
+                    context.read<ControllerDetailsBloc>().add(
+                      ToggleSwitchEvent(
+                        switchName: "dndStatus",
+                        isOn: val,
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-                const SizedBox(height: 20),
+
+
+                // ---------- INFO ----------
+                ControllerInfoRow(
+                  label: "Operation Mode",
+                  valueWidget: IconButton(
+                    icon: const Icon(Icons.visibility, color: AppThemes.primaryColor),
+                    onPressed: () {},
+                  ),
+                ),
+
+                ControllerInfoRow(
+                  label: "WiFi Reset",
+                  valueWidget: IconButton(
+                    icon: const Icon(Icons.wifi_protected_setup_sharp,
+                        color: AppThemes.primaryColor),
+                    onPressed: () {},
+                  ),
+                ),
                 ControllerInfoRow(label: "Dealer Name", value: controller.dealerName),
                 ControllerInfoRow(label: "Model", value: controller.modelName),
-                ControllerInfoRow(label: "Customer Name", value: controller.customerName),
-                ControllerInfoRow(label: "Customer Number", value: controller.customerNumber),
+                ControllerInfoRow(
+                    label: "Customer Name", value: controller.customerName),
+                ControllerInfoRow(
+                    label: "Customer Number",
+                    value: controller.customerNumber),
 
                 const SizedBox(height: 24),
 
+                // ---------- ACTION BUTTONS ----------
                 ControllerActionButtons(
                   buttons: [
                     ControllerButtonData(
                       title: "Submit",
                       color: Colors.blue,
                       onPressed: () {
-                        final bloc = context.read<ControllerDetailsBloc>();
-                         bloc.add(
+                        context.read<ControllerDetailsBloc>().add(
                           UpdateControllerEvent(
                             userId: '${params.userId}',
                             controllerId: params.controllerId,
                             countryCode: countrycodeController.text,
                             simNumber: simController.text,
                             deviceName: devicenameController.text,
-                            groupId: groupList.firstWhere((g) => g.groupName == controller.groupName).userGroupId,
+                            groupId: groupList
+                                .firstWhere((g) =>
+                            g.groupName == controller.groupName)
+                                .userGroupId,
                             operationMode: controller.operationMode,
                             gprsMode: controller.gprsMode,
                             appSmsMode: controller.appSmsMode,
@@ -289,16 +279,16 @@ class ControllerDetailsPage extends StatelessWidget {
                         );
                       },
                     ),
-                    ControllerButtonData(
-                      title: "Replace",
-                      color: Colors.orange,
-                      onPressed: () {},
-                    ),
-                    ControllerButtonData(
-                      title: "Delete",
-                      color: Colors.red,
-                      onPressed: () {},
-                    ),
+                    // ControllerButtonData(
+                    //   title: "Replace",
+                    //   color: Colors.orange,
+                    //   onPressed: () {},
+                    // ),
+                    // ControllerButtonData(
+                    //   title: "Delete",
+                    //   color: Colors.red,
+                    //   onPressed: () {},
+                    // ),
                     ControllerButtonData(
                       title: "Cancel",
                       color: Colors.grey,
@@ -313,6 +303,7 @@ class ControllerDetailsPage extends StatelessWidget {
           ),
         ),
       );
+
     }
 
     return  GlassyWrapper(

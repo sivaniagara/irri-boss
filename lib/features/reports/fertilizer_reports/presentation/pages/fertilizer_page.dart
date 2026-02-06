@@ -66,15 +66,22 @@ class FertilizerPage extends StatelessWidget {
 
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.data_thresholding_sharp),
-          onPressed: () {
-            context.push(
-              ReportDownloadPageRoutes.ReportDownloadPage,
-              extra: {
-                "title": "Fertilizer Report",
-                "url": FertilizerPageUrls.getFertilizerUrl,
-              },
-            );
-          },
+            onPressed: () {
+              final state = context.read<FertilizerBloc>().state;
+
+              if (state is FertilizerLoaded) {
+                final List<Map<String, dynamic>> excelData =
+                state.data.data.map((e) => e.toJson()).toList();
+
+                context.push(
+                  ReportDownloadPageRoutes.ReportDownloadPage,
+                  extra: {
+                    "title": "Fertilizer Reports",
+                    "data": excelData,
+                  },
+                );
+              }
+            }
         ),
 
         // 🔹 BODY

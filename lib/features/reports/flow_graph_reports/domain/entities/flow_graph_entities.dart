@@ -8,6 +8,14 @@ class FlowGraphEntities {
     required this.message,
     required this.data,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'code': code,
+      'message': message,
+      'data': data.map((e) => e.toJson()).toList(),
+    };
+  }
 }
 
 class FlowGraphDataEntity {
@@ -26,4 +34,15 @@ class FlowGraphDataEntity {
     required this.total2PhaseOnTime,
     required this.totalPowerOnTime,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'date': date,
+      'totalFlow': totalFlow,
+      'totalRunTime': totalRunTime,
+      'total3PhaseOnTime': total3PhaseOnTime,
+      'total2PhaseOnTime': total2PhaseOnTime,
+      'totalPowerOnTime': totalPowerOnTime,
+    };
+  }
 }

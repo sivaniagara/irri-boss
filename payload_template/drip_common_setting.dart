@@ -43,8 +43,8 @@ var dripCommonSettings = {
       "NAME": "Calculated Flow",
       "SETS": [
         {"SN": 1, "WT": 2, "VAL": 'OF', "SF": "CALFLOWRATE", "TT": "Calculated Flow", "HF": '1'},
-        {"SN": 2, "WT": 9, "VAL": '0', "SF": "CALFLOW2", "TT": "2 Phase", "HF": '1'},
-        {"SN": 3, "WT": 9, "VAL": '0', "SF": "CALFLOW3", "TT": "3 Phase", "HF": '1'},
+        {"SN": 2, "WT": 10, "VAL": '0', "SF": "CALFLOW2", "TT": "2 Phase", "HF": '1'},
+        {"SN": 3, "WT": 10, "VAL": '0', "SF": "CALFLOW3", "TT": "3 Phase", "HF": '1'},
       ]
     },
     {
@@ -95,7 +95,7 @@ var programCommonSettings = {
       "TID": 2,
       "NAME": "Fertilizer",
       "SETS": [
-        {"SN": 1, "WT": 2, "VAL": "0;0;0;0;0;0", "SF": "FERTOBOF", "TT": "F1;F2;F3;F4;F5;F6", "HF": '1;1;1;1;1;1'},
+        {"SN": 1, "WT": 2, "VAL": "OF;OF;OF;OF;OF;OF", "SF": "FERTONOF", "TT": "F1;F2;F3;F4;F5;F6", "HF": '1;1;1;1;1;1'},
       ]
     },
     {
@@ -109,7 +109,7 @@ var programCommonSettings = {
       "TID": 3,
       "NAME": "Blower Settings",
       "SETS": [
-        {"SN": 1, "WT": 2, "VAL": '0', "SF": "FANRTC", "TT": "Blower RTC Mode", "HF": '1'},
+        {"SN": 1, "WT": 2, "VAL": 'OF', "SF": "FANRTC", "TT": "Blower RTC Mode", "HF": '1'},
         {"SN": 2, "WT": 3, "VAL": '00:00;00:00', "SF": "FANRTCTIM", "TT": "RTC On Time;RTC Off Time", "HF": '1;1'},
         {"SN": 3, "WT": 3, "VAL": '00:00;00:00', "SF": "FANCYCLICTIM", "TT": "Cyclic On Time;Cyclic Off Time", "HF": '1;1'},
       ]
@@ -123,42 +123,42 @@ var adjustPercent = {
       "TID": 1,
       "NAME": "Program 1",
       "SETS": [
-        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP1,", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
+        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP1", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
       ]
     },
     {
       "TID": 2,
       "NAME": "Program 2",
       "SETS": [
-        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP2,", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
+        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP2", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
       ]
     },
     {
       "TID": 3,
       "NAME": "Program 3",
       "SETS": [
-        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP3,", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
+        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP3", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
       ]
     },
     {
       "TID": 4,
       "NAME": "Program 4",
       "SETS": [
-        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP4,", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
+        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP4", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
       ]
     },
     {
       "TID": 5,
       "NAME": "Program 5",
       "SETS": [
-        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP5,", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
+        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP5", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
       ]
     },
     {
       "TID": 6,
       "NAME": "Program 6",
       "SETS": [
-        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP6,", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
+        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "ADJPERCENTP6", "TT": "Timer;Flow;Moisture;Fertilizer", "HF": '1;1;1;1'},
       ]
     },
   ],
@@ -183,7 +183,7 @@ var backwash = {
       "NAME": "Filter Settings",
       "SETS": [
         {"SN": 1, "WT": 2, "VAL": "OF;OF;OF;OF", "SF": "REFRESHONOF", "TT": "SAN filter 1;SAN filter 2;DISK filter 1;DISK filter 2", "HF": '1;1;1;1'},
-        {"SN": 2, "WT": 2, "VAL": "OF", "SF": "CYCLICFILTEROF", "TT": "Cyclic Filter", "HF": '1'},
+        {"SN": 2, "WT": 2, "VAL": "OF", "SF": "CYCLICFILTER", "TT": "Cyclic Filter", "HF": '1'},
         {"SN": 3, "WT": 2, "VAL": "OF", "SF": "AUTOBCKWASH", "TT": "Auto Back Wash", "HF": '1'},
         {"SN": 4, "WT": 10, "VAL": "0.0", "SF": "PRESSURELIMIT", "TT": "Pressure Limit", "HF": '1'},
       ]
@@ -415,10 +415,9 @@ var pumpConfiguration = {
       "TID": 1,
       "NAME": "Pump Configuration",
       "SETS": [
-        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "PUMPCONFIG,", "TT": "PUMP 1 FLOW;PUMP 2 FLOW;PUMP 3 FLOW;PUMP 4 FLOW", "HF": '1;1;1;1'},
+        {"SN": 1, "WT": 9, "VAL": "0;0;0;0", "SF": "PUMPCONFIG", "TT": "PUMP 1 FLOW;PUMP 2 FLOW;PUMP 3 FLOW;PUMP 4 FLOW", "HF": '1;1;1;1'},
       ]
     },
-
   ],
 };
 
@@ -441,6 +440,162 @@ var alarm = {
 
   ],
 };
+
+var greenHouse = {
+  "settings" : [
+    {
+      "TID": 1,
+      "NAME": "Program Cycle OnOff",
+      "SETS": [
+        {"SN": 1, "WT": 2, "VAL": "OF", "SF": "GREENRTC", "TT": "Green Program Cycle", "HF": '1'},
+      ]
+    },
+    {
+      "TID": 2,
+      "NAME": "RTC Timer",
+      "SETS": [
+        {"SN": 1, "WT": 3, "VAL": "00:00;00:00", "SF": "GREENRTCTIM01", "TT": "01 On Time;01 Off Time", "HF": '1;1'},
+        {"SN": 2, "WT": 3, "VAL": "00:00;00:00", "SF": "GREENRTCTIM02", "TT": "02 On Time;02 Off Time", "HF": '1;1'},
+        {"SN": 3, "WT": 3, "VAL": "00:00;00:00", "SF": "GREENRTCTIM03", "TT": "03 On Time;03 Off Time", "HF": '1;1'},
+        {"SN": 4, "WT": 3, "VAL": "00:00;00:00", "SF": "GREENRTCTIM04", "TT": "04 On Time;04 Off Time", "HF": '1;1'},
+        {"SN": 5, "WT": 3, "VAL": "00:00;00:00", "SF": "GREENRTCTIM05", "TT": "05 On Time;05 Off Time", "HF": '1;1'},
+        {"SN": 6, "WT": 3, "VAL": "00:00;00:00", "SF": "GREENRTCTIM06", "TT": "06 On Time;06 Off Time", "HF": '1;1'},
+        {"SN": 7, "WT": 3, "VAL": "00:00;00:00", "SF": "GREENRTCTIM07", "TT": "07 On Time;07 Off Time", "HF": '1;1'},
+        {"SN": 8, "WT": 3, "VAL": "00:00;00:00", "SF": "GREENRTCTIM08", "TT": "08 On Time;08 Off Time", "HF": '1;1'},
+        {"SN": 9, "WT": 3, "VAL": "00:00;00:00", "SF": "GREENRTCTIM09", "TT": "09 On Time;09 Off Time", "HF": '1;1'},
+        {"SN": 10, "WT": 3, "VAL": "00:00;00:00", "SF": "GREENRTCTIM10", "TT": "10 On Time;10 Off Time", "HF": '1;1'},
+        {"SN": 11, "WT": 3, "VAL": "00:00;00:00", "SF": "GREENRTCTIM11", "TT": "11 On Time;11 Off Time", "HF": '1;1'},
+        {"SN": 12, "WT": 3, "VAL": "00:00;00:00", "SF": "GREENRTCTIM12", "TT": "12 On Time;12 Off Time", "HF": '1;1'},
+      ]
+    },
+    {
+      "TID": 3,
+      "NAME": "Program Cycle",
+      "SETS": [
+        {"SN": 1, "WT": 9, "VAL": "0", "SF": "PROGCYCLE,", "TT": "Program Cycle 1;Program Cycle 2;Program Cycle 3;Program Cycle 4;Program Cycle 5;Program Cycle 6;Program Cycle 7;Program Cycle 8;Program Cycle 9;Program Cycle 10;Program Cycle 11;Program Cycle 12", "HF": '1'},
+      ]
+    },
+    {
+      "TID": 4,
+      "NAME": "Program Start From",
+      "SETS": [
+        {"SN": 1, "WT": 9, "VAL": "0;0", "SF": "#PROGSTART", "TT": "Program Number;Zone", "HF": '1;1'},
+      ]
+    },
+    {
+      "TID": 5,
+      "NAME": "Humidity Set",
+      "SETS": [
+        {"SN": 1, "WT": 9, "VAL": "0;0", "SF": "HUMONOFLEVEL", "TT": "Min;Max", "HF": '1;1'},
+      ]
+    },
+    {
+      "TID": 6,
+      "NAME": "Temperature Set",
+      "SETS": [
+        {"SN": 1, "WT": 9, "VAL": "0;0", "SF": "TEMPONOFLEVEL", "TT": "Min;Max", "HF": '1;1'},
+      ]
+    },
+    {
+      "TID": 7,
+      "NAME": "Light Density Set",
+      "SETS": [
+        {"SN": 1, "WT": 9, "VAL": "0;0", "SF": "LDENSONOFLEVEL", "TT": "Min;Max", "HF": '1;1'},
+      ]
+    },
+    {
+      "TID": 8,
+      "NAME": "Fogger RTC",
+      "SETS": [
+        {"SN": 1, "WT": 2, "VAL": "OF", "SF": "FOGGERRTC", "TT": "Fogger On Off", "HF": '1'},
+        {"SN": 2, "WT": 3, "VAL": "00:00;00:00", "SF": "FOGGERRTCTIM", "TT": "From;To", "HF": '1;1'},
+      ]
+    },
+    {
+      "TID": 9,
+      "NAME": "Fan RTC",
+      "SETS": [
+        {"SN": 1, "WT": 2, "VAL": "OF", "SF": "FANRTC", "TT": "Fogger On Off", "HF": '1'},
+        {"SN": 2, "WT": 3, "VAL": "00:00;00:00", "SF": "FANRTCTIM", "TT": "From;To", "HF": '1;1'},
+      ]
+    },
+    {
+      "TID": 10,
+      "NAME": "Night Light RTC",
+      "SETS": [
+        {"SN": 1, "WT": 2, "VAL": "OF", "SF": "NIGHTLIGHTRTC", "TT": "Fogger On Off", "HF": '1'},
+        {"SN": 2, "WT": 3, "VAL": "00:00;00:00", "SF": "NIGHTLIGHTRTCTIM", "TT": "From;To", "HF": '1;1'},
+      ]
+    },
+    {
+      "TID": 11,
+      "NAME": "Light RTC",
+      "SETS": [
+        {"SN": 1, "WT": 2, "VAL": "OF", "SF": "LIGHTRTC", "TT": "Fogger On Off", "HF": '1'},
+        {"SN": 2, "WT": 3, "VAL": "00:00;00:00", "SF": "LIGHTRTCTIM", "TT": "From;To", "HF": '1;1'},
+      ]
+    },
+    {
+      "TID": 12,
+      "NAME": "Fan Cyclic Timer",
+      "SETS": [
+        {"SN": 1, "WT": 3, "VAL": "00:00;00:00", "SF": "FANCYCLICTIM", "TT": "On Time;Off Time", "HF": '1;1'},
+      ]
+    },
+    {
+      "TID": 13,
+      "NAME": "Light Cyclic Timer",
+      "SETS": [
+        {"SN": 1, "WT": 3, "VAL": "00:00;00:00", "SF": "LIGHTCYCLICTIM", "TT": "On Time;Off Time", "HF": '1;1'},
+      ]
+    },
+    {
+      "TID": 14,
+      "NAME": "Fogger Cyclic Restart",
+      "SETS": [
+        {"SN": 1, "WT": 2, "VAL": "OF", "SF": "FOGCYCRST", "TT": "Fogger Restart On Off", "HF": '1'},
+        {"SN": 2, "WT": 3, "VAL": "00:00", "SF": "FOGRESTARTTIM", "TT": "Restart Timer", "HF": '1'},      ]
+    },
+    {
+      "TID": 15,
+      "NAME": "Fogger Valve Timer",
+      "SETS": [
+        {"SN": 1, "WT": 3, "VAL": "00:00;00:00;00:00;00:00", "SF": "FOGVALTIM", "TT": "Valve 1;Valve 2;Valve 3;Valve 4", "HF": '1;1;1;1'},
+        {"SN": 2, "WT": 2, "VAL": "OF", "SF": "VALFOGFB", "TT": "Valve Feedback", "HF": '1'},
+      ]
+    },
+    {
+      "TID": 16,
+      "NAME": "Green House Calibration",
+      "SETS": [
+        {"SN": 1, "WT": 10, "VAL": "0.0;0.0;0.0;0.0", "SF": "FOGVALTIM", "TT": "Humidity;Temperature;Light Density;Extra", "HF": '1;1;1;1'},
+      ]
+    },
+    {
+      "TID": 17,
+      "NAME": "Co2 On Off Level",
+      "SETS": [
+        {"SN": 1, "WT": 10, "VAL": "0.0;0.0", "SF": "CO2ONOFLEVEL", "TT": "Min;Max", "HF": '1;1'},
+      ]
+    },
+    {
+      "TID": 18,
+      "NAME": "Temp On Off Level",
+      "SETS": [
+        {"SN": 1, "WT": 10, "VAL": "0.0;0.0", "SF": "TEMPONOFLEVEL", "TT": "Min;Max", "HF": '1;1'},
+      ]
+    },
+    {
+      "TID": 19,
+      "NAME": "Humidity On Off Level",
+      "SETS": [
+        {"SN": 1, "WT": 10, "VAL": "0.0;0.0", "SF": "HUMONOFLEVEL", "TT": "Min;Max", "HF": '1;1'},
+      ]
+    },
+
+  ],
+};
+
 
 
 // text field int = 9;
