@@ -17,8 +17,11 @@ import '../../../../core/di/injection.dart' as di;
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/theme/app_themes.dart';
 import '../../../../core/utils/app_images.dart';
+import '../../../../core/utils/common_date_picker.dart';
 import '../../../controller_details/domain/usecase/controller_details_params.dart';
 import '../../../program_settings/utils/program_settings_routes.dart';
+import '../../../sendrev_msg/presentation/bloc/sendrev_bloc.dart';
+import '../../../sendrev_msg/presentation/bloc/sendrev_bloc_event.dart';
 import '../../../side_drawer/groups/presentation/widgets/app_drawer.dart';
 import '../../utils/dashboard_routes.dart';
 import '../helper/get_sms_sync.dart';
@@ -82,7 +85,6 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     _controller.dispose();
   }
@@ -277,7 +279,6 @@ class _DashboardPageState extends State<DashboardPage> {
       child: Scaffold(
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         floatingActionButton: AnimatedNotchBottomBar(
-          /// Provide NotchBottomBarController
           notchBottomBarController: _controller,
           color: Colors.white,
           showLabel: true,
@@ -285,23 +286,11 @@ class _DashboardPageState extends State<DashboardPage> {
           maxLine: 1,
           shadowElevation: 5,
           kBottomRadius: 28.0,
-
-          // notchShader: const SweepGradient(
-          //   startAngle: 0,
-          //   endAngle: pi / 2,
-          //   colors: [Colors.red, Colors.green, Colors.orange],
-          //   tileMode: TileMode.mirror,
-          // ).createShader(Rect.fromCircle(center: Offset.zero, radius: 8.0)),
           notchColor: Colors.white,
-
-          /// restart app if you change removeMargins
           removeMargins: true,
           showShadow: false,
           durationInMilliSeconds: 300,
-
           itemLabelStyle: const TextStyle(fontSize: 10, color: Colors.black),
-
-          // elevation: 1,
           bottomBarItems: [
             BottomBarItem(
               inActiveItem: Image.asset(AppImages.inActiveHomeIcon,),
@@ -358,7 +347,6 @@ class _DashboardPageState extends State<DashboardPage> {
             }
             setState(() {});
             log('current selected index $index');
-            // _pageController.jumpToPage(index);
           },
           kIconSize: 24.0,
         ),
@@ -371,14 +359,55 @@ class _DashboardPageState extends State<DashboardPage> {
           context,
           userId,
           userType,
-        ) : CustomAppBar(title: selectedBottomNavigation.title()),
+        ) : CustomAppBar(
+            title: selectedBottomNavigation.title(),
+            actions: selectedBottomNavigation == BottomNavigationOption.sentAndReceive ? [
+              IconButton(
+                icon: const Icon(Icons.calendar_today, color: AppThemes.primaryColor),
+                onPressed: () async {
+                  final result = await pickReportDate(
+                    context: context,
+                    allowRange: false,
+                  );
+
+                  if (result == null) return;
+
+                  final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+                  
+                  // Try to find the Bloc and trigger update
+                  try {
+                    final bloc = di.sl<SendrevBloc>();
+                    bloc.add(StopPollingEvent());
+                    bloc.add(
+                      LoadMessagesEvent(
+                        userId: int.parse(controllerContext.userId),
+                        subuserId: int.parse(controllerContext.subUserId),
+                        controllerId: int.parse(controllerContext.controllerId),
+                        fromDate: result.fromDate,
+                        toDate: result.toDate,
+                      ),
+                    );
+                    bloc.add(
+                      StartPollingEvent(
+                        userId: int.parse(controllerContext.userId),
+                        subuserId: int.parse(controllerContext.subUserId),
+                        controllerId: int.parse(controllerContext.controllerId),
+                        fromDate: result.fromDate,
+                        toDate: result.toDate,
+                      ),
+                    );
+                  } catch (e) {
+                    debugPrint("Error updating SendrevBloc: $e");
+                  }
+                },
+              )
+            ] : null,
+        ),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        // drawer: userType == 1 ?),
         drawer: userType == 1 ? AppDrawer(userData: widget.userData,) : null,
         body: selectedController == null
             ? const Center(child: CircularProgressIndicator())
-            : widget.child
-            // : _buildBody(selectedController, userId, userType),
+            : widget.child,
       ),
     );
   }
@@ -466,7 +495,6 @@ class _DashboardPageState extends State<DashboardPage> {
           children: [
             _buildGroupSelector(state, selectedGroup, cubit, userId, context),
 
-            // Divider only when we have both group selector AND controller selector
             if (!fakeMode && state.groups.length > 1) const _Divider(),
 
             Expanded(
@@ -491,7 +519,6 @@ class _DashboardPageState extends State<DashboardPage> {
       BuildContext context,
       ) {
     if (_isFakeGroupMode(state)) {
-      // Dealer/special mode - static title, no dropdown
       return Expanded(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -508,7 +535,6 @@ class _DashboardPageState extends State<DashboardPage> {
       );
     }
 
-    // Normal user flow
     if (state.groups.length > 1) {
       return Expanded(
         child: PopupMenuButton<int>(
@@ -539,7 +565,6 @@ class _DashboardPageState extends State<DashboardPage> {
       );
     }
 
-    // Single real group - just show name
     return Expanded(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -597,7 +622,6 @@ class _DashboardPageState extends State<DashboardPage> {
       );
     }
 
-    // Single controller
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Text(
@@ -609,163 +633,6 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
         overflow: TextOverflow.ellipsis,
       ),
-    );
-  }
-
-  Widget _buildBody(ControllerEntity controller, int userId, int userType) {
-    return RefreshIndicator(
-      onRefresh: () => _refreshLiveData(controller),
-      child: LayoutBuilder(
-        builder: (context, constraints) =>
-            _buildScaledContent(context, constraints, controller, userId, userType),
-      ),
-    );
-  }
-
-  static Future<void> _refreshLiveData(ControllerEntity controller) async {
-    final mqttManager = di.sl.get<MqttManager>();
-    final deviceId = controller.deviceId;
-    final publishMessage = jsonEncode(PublishMessageHelper.requestLive);
-    mqttManager.publish(deviceId, publishMessage);
-
-    if (kDebugMode) {
-      print("Live message requested for device: $deviceId");
-    }
-  }
-
-  Widget _buildScaledContent(
-      BuildContext context,
-      BoxConstraints constraints,
-      ControllerEntity controller,
-      int userId,
-      int userType,
-      ) {
-    final width = constraints.maxWidth;
-    final modelCheck = ([1, 5].contains(controller.modelId)) ? 300 : 120;
-    double scale(double size) => size * (width / modelCheck);
-    final router = GoRouterState.of(context);
-    print(router.extra != null && (router.extra as Map<String, dynamic>)['name'] != null
-        && (router.extra as Map<String, dynamic>)['name'] != DashBoardRoutes.dashboard);
-    if(userType == 2) {
-      userId = router.extra != null && (router.extra as Map<String, dynamic>)['name'] != null
-          && (router.extra as Map<String, dynamic>)['name'] != DashBoardRoutes.dashboard
-          ? int.parse((router.uri.queryParameters as Map<String, dynamic>)['dealerId']) : userId;
-    }
-    print(userId);
-
-    return CustomScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      slivers: [
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: Padding(
-            padding: EdgeInsets.all(scale(2)),
-            child: GestureDetector(
-              onTap: () {
-                context.pushNamed(
-                  'ctrlDetailsPage',
-                  extra: GetControllerDetailsParams(
-                    userId: controller.userId,
-                    controllerId: controller.userDeviceId,
-                    deviceId: controller.deviceId,
-                  ),
-                );
-              },
-              child: Container(
-                color: Colors.white,
-                padding: EdgeInsets.all(2),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    SizedBox(height: scale(2)),
-                    SyncSection(
-                      liveSync: "${controller.livesyncTime}\n${controller.livesyncDate}",
-                      smsSync: getSmsSync(controller.ctrlLatestMsg),
-                      model: controller.modelId,
-                      deviceId: controller.deviceId,
-                    ),
-                    SizedBox(height: scale(5)),
-                    GlassCard(
-                      child: CtrlDisplay(
-                        signal: controller.liveMessage.signal,
-                        battery: controller.liveMessage.batVolt,
-                        l1display: controller.liveMessage.liveDisplay1,
-                        l2display: controller.liveMessage.liveDisplay2,
-                      ),
-                    ),
-                    SizedBox(height: scale(5)),
-                    GestureDetector(
-                      onTap: () {
-                        context.push(
-                          '${DashBoardRoutes.dashboard}${ProgramSettingsRoutes.program}',
-                          extra: {
-                            "userId": '$userId',
-                            "controllerId": controller.userDeviceId.toString()
-                          },
-                        );
-                      },
-                      child: RYBSection(
-                        r: controller.liveMessage.rVoltage,
-                        y: controller.liveMessage.yVoltage,
-                        b: controller.liveMessage.bVoltage,
-                        c1: controller.liveMessage.rCurrent,
-                        c2: controller.liveMessage.yCurrent,
-                        c3: controller.liveMessage.bCurrent,
-                      ),
-                    ),
-                    SizedBox(height: scale(5)),
-                    MotorValveSection(
-                      motorOn: controller.liveMessage.motorOnOff,
-                      motorOn2: controller.liveMessage.valveOnOff,
-                      valveOn: controller.liveMessage.valveOnOff,
-                      model: controller.modelId,
-                      userData: {
-                        "userId": userId,
-                        "controllerId": controller.userDeviceId,
-                        "subUserId": 0,
-                        "deviceId": controller.deviceId
-                      },
-                    ),
-                    SizedBox(height: scale(5)),
-                    if ([1, 5].contains(controller.modelId)) ...[
-                      PressureSection(
-                        prsIn: controller.liveMessage.prsIn,
-                        prsOut: controller.liveMessage.prsOut,
-                        activeZone: controller.zoneNo,
-                        fertlizer: '',
-                      ),
-                      SizedBox(height: scale(8)),
-                      TimerSection(
-                        setTime: controller.setFlow,
-                        remainingTime: controller.remFlow,
-                      ),
-                      SizedBox(height: scale(8)),
-                    ],
-                    LatestMsgSection(
-                      msg: ([1, 5].contains(controller.modelId))
-                          ? controller.msgDesc
-                          : "${controller.msgDesc}\n${controller.ctrlLatestMsg}",
-                    ),
-                    SizedBox(height: scale(8)),
-                    ActionsSection(
-                      model: controller.modelId,
-                      data: {
-                        "userId": userId,
-                        "subUserId": userType == 1 ? 0 : userId,
-                        "controllerId": controller.userDeviceId,
-                        "deviceId": controller.deviceId
-                      },
-                    ),
-                    SizedBox(height: scale(3)),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 

@@ -48,6 +48,7 @@ import 'features/reports/standalone_reports/utils/standalone_report_routes.dart'
 import 'features/reports/tdy_valve_status_reports/utils/tdy_valve_status_routes.dart';
 import 'features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
 import 'features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
+import 'features/sendrev_msg/presentation/pages/sendrevPage.dart';
 import 'features/sendrev_msg/utils/senrev_routes.dart';
 import 'features/program_settings/utils/program_settings_routes.dart';
 
@@ -236,13 +237,18 @@ class AppRouter {
               GoRoute(
                   path: DashBoardRoutes.sentAndReceive,
                   builder: (context, state) {
-                    return Center(
-                      child: Text('sentAndReceive'),
+                    final controllerContext = context.read<ControllerContextCubit>().state;
+                    if (controllerContext is ControllerContextLoaded) {
+                      return SendRevPage(params: {
+                        "userId": controllerContext.userId,
+                        "subuserId": controllerContext.subUserId,
+                        "controllerId": controllerContext.controllerId,
+                      });
+                    }
+                    return const Center(
+                      child: Text('Please select a controller first.'),
                     );
                   },
-                  routes: [
-
-                  ]
               ),
             ]
         ),
