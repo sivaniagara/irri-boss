@@ -4,9 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_manager.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
-import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/auth.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/controller_context_cubit.dart';
@@ -33,8 +33,8 @@ import '../widgets/pressure_section.dart';
 import '../widgets/ryb_section.dart';
 import '../widgets/sync_section.dart';
 import '../widgets/timer_section.dart';
-import '../../dashboard.dart';
-import 'dashboard_2_0.dart';
+import '../../domain/entities/controller_entity.dart';
+import '../../domain/entities/group_entity.dart';
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 
 
@@ -98,8 +98,8 @@ class _DashboardPageState extends State<DashboardPage> {
       userId = int.parse(queryParams['userId']!);
       userType = int.parse(queryParams['userType']!);
     } else {
-      userId = int.parse(widget.userData['userId']!);
-      userType = int.parse(widget.userData['userType']!);
+      userId = int.parse(widget.userData['userId']?.toString() ?? '0');
+      userType = int.parse(widget.userData['userType']?.toString() ?? '1');
     }
 
     final groupId = queryParams['groupId'];
@@ -108,12 +108,14 @@ class _DashboardPageState extends State<DashboardPage> {
       return const Center(child: Text('Invalid user session. Please log in again.'));
     }
 
-    return BlocProvider(
-      create: (_) => sl<DashboardPageCubit>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => sl<DashboardPageCubit>()),
+        BlocProvider(create: (_) => sl<SendrevBloc>()),
+      ],
       child: Builder(
         builder: (context) {
           final cubit = context.read<DashboardPageCubit>();
-
           _initializeCubit(cubit, context, userId, userType, groupId);
 
           return BlocBuilder<DashboardPageCubit, DashboardState>(
@@ -176,8 +178,8 @@ class _DashboardPageState extends State<DashboardPage> {
       ) {
     if (state is DashboardLoading) {
       return GlassyWrapper(
-        child: Scaffold(
-          body: const Center(child: CircularProgressIndicator()),
+        child: const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
         ),
       );
     }
@@ -354,7 +356,6 @@ class _DashboardPageState extends State<DashboardPage> {
               context.pushReplacement("${DashBoardRoutes.sentAndReceive}?userId=$userId&userType=$userType");
             }
             setState(() {});
-            log('current selected index $index');
           },
           kIconSize: 24.0,
         ),
@@ -381,32 +382,27 @@ class _DashboardPageState extends State<DashboardPage> {
                   if (result == null) return;
 
                   final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+                  final bloc = context.read<SendrevBloc>();
                   
-                  // Try to find the Bloc and trigger update
-                  try {
-                    final bloc = di.sl<SendrevBloc>();
-                    bloc.add(StopPollingEvent());
-                    bloc.add(
-                      LoadMessagesEvent(
-                        userId: int.parse(controllerContext.userId),
-                        subuserId: int.parse(controllerContext.subUserId),
-                        controllerId: int.parse(controllerContext.controllerId),
-                        fromDate: result.fromDate,
-                        toDate: result.toDate,
-                      ),
-                    );
-                    bloc.add(
-                      StartPollingEvent(
-                        userId: int.parse(controllerContext.userId),
-                        subuserId: int.parse(controllerContext.subUserId),
-                        controllerId: int.parse(controllerContext.controllerId),
-                        fromDate: result.fromDate,
-                        toDate: result.toDate,
-                      ),
-                    );
-                  } catch (e) {
-                    debugPrint("Error updating SendrevBloc: $e");
-                  }
+                  bloc.add(StopPollingEvent());
+                  bloc.add(
+                    LoadMessagesEvent(
+                      userId: int.parse(controllerContext.userId),
+                      subuserId: int.parse(controllerContext.subUserId),
+                      controllerId: int.parse(controllerContext.controllerId),
+                      fromDate: result.fromDate,
+                      toDate: result.toDate,
+                    ),
+                  );
+                  bloc.add(
+                    StartPollingEvent(
+                      userId: int.parse(controllerContext.userId),
+                      subuserId: int.parse(controllerContext.subUserId),
+                      controllerId: int.parse(controllerContext.controllerId),
+                      fromDate: result.fromDate,
+                      toDate: result.toDate,
+                    ),
+                  );
                 },
               )
             ] : null,
