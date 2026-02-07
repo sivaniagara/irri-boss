@@ -89,15 +89,7 @@ class _SendRevPageState extends State<SendRevPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9),
-        image: const DecorationImage(
-          image: AssetImage('assets/images/common/mountain.png'),
-          repeat: ImageRepeat.repeat,
-          opacity: 0.08,
-          scale: 1.5,
-        ),
-      ),
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: BlocConsumer<SendrevBloc, SendrevState>(
         listener: (context, state) {
           if (state is SendrevLoaded) {
@@ -111,11 +103,14 @@ class _SendRevPageState extends State<SendRevPage> {
           }
 
           if (state is SendrevLoaded) {
+            // Filter out live messages (LD codes)
+            final filteredMessages = state.messages.where((m) => !m.msgCode.startsWith('LD')).toList();
+
             return RefreshIndicator(
               onRefresh: () async {
                 _refreshData();
               },
-              child: state.messages.isEmpty
+              child: filteredMessages.isEmpty
                   ? SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: Container(
@@ -130,13 +125,13 @@ class _SendRevPageState extends State<SendRevPage> {
                   : ListView.builder(
                       controller: _scrollController,
                       physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: state.messages.length + 1,
+                      itemCount: filteredMessages.length + 1,
                       padding: const EdgeInsets.only(bottom: 20, top: 10),
                       itemBuilder: (context, index) {
-                        if (index == state.messages.length) {
+                        if (index == filteredMessages.length) {
                           return const SizedBox(height: 100);
                         }
-                        final m = state.messages[index];
+                        final m = filteredMessages[index];
                         return ChatBubble(
                           msg: SendrevDatum(
                             date: m.date,

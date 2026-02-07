@@ -28,7 +28,7 @@ class _StandalonePageState extends State<StandalonePage> {
     final String subUserId = widget.data['subUserId']?.toString() ?? '0';
 
     return Scaffold(
-      backgroundColor: const Color(0xffF5F7FA),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       floatingActionButton: FloatingActionButton(
         backgroundColor: Theme.of(context).colorScheme.primary,
         onPressed: () {
@@ -38,8 +38,8 @@ class _StandalonePageState extends State<StandalonePage> {
               controllerId: controllerId,
               subUserId: subUserId,
               deviceId: deviceId,
-              successMessage: _selectedIndex == 0 
-                  ? "Sending View Standalone..." 
+              successMessage: _selectedIndex == 0
+                  ? "Sending View Standalone..."
                   : "Sending View Configuration...",
             ),
           );
@@ -145,7 +145,7 @@ class _StandalonePageState extends State<StandalonePage> {
                       ? (state as StandaloneLoaded).data
                       : (state as StandaloneSuccess).data;
 
-                  return _selectedIndex == 0 
+                  return _selectedIndex == 0
                       ? _buildStandaloneContent(context, standaloneData, userId, controllerId, deviceId, subUserId)
                       : _buildConfigurationContent(context, standaloneData, userId, controllerId, deviceId, subUserId);
                 } else if (state is StandaloneError) {
