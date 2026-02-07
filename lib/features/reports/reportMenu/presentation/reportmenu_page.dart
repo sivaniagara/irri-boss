@@ -32,9 +32,7 @@ class ReportMenuPage extends StatelessWidget {
         body: SafeArea(
           child: Column(
             children: [
-              const SizedBox(height: 16),
-              _header(context),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
               Expanded(child: _gridMenu(context)),
             ],
           ),
