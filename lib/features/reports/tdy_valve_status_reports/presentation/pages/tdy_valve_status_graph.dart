@@ -13,9 +13,7 @@ class TdyZoneStatusGraph extends StatelessWidget {
     return Expanded(
       child: Column(
         children: [
-          // 🔹 LEGEND
-
-
+          // 🔹 LEGENDs
           Expanded(
             child: Row(
               children: [
@@ -146,7 +144,7 @@ class TdyZoneStatusGraph extends StatelessWidget {
       leftTitles: AxisTitles(
         sideTitles: SideTitles(
           showTitles: true,
-          reservedSize: 42,
+          reservedSize: 20,
           getTitlesWidget: (value, meta) {
             return Text(
               value.toStringAsFixed(1),

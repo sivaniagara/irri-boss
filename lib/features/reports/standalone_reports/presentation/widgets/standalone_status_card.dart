@@ -12,7 +12,7 @@ class ZoneStatusCardStandAlone extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: Colors.green.shade500,
+        color: Colors.white,
       ),
       child: Column(
         children: [
@@ -21,7 +21,7 @@ class ZoneStatusCardStandAlone extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(6),
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: Colors.green,
               borderRadius: BorderRadius.vertical(
                 top: Radius.circular(12),
               ),
@@ -30,18 +30,27 @@ class ZoneStatusCardStandAlone extends StatelessWidget {
               zone.zone,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Colors.black,
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ),
-              Expanded(child: Icon(Icons.touch_app,)),
+
+          Expanded(
+            child: Image.asset(
+              "assets/images/icons/standalone_report.png",
+              width: 40,
+              height: 40,
+              color: Colors.blue,
+            ),
+          ),
+
            // 🔹 FLOW
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(6),
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: Colors.green,
               borderRadius: BorderRadius.vertical(
                 bottom: Radius.circular(12),
               ),
@@ -50,7 +59,7 @@ class ZoneStatusCardStandAlone extends StatelessWidget {
               "${zone.duration}",
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Colors.black,
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
