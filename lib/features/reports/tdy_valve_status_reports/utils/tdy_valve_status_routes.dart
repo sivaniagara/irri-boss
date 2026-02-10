@@ -34,14 +34,8 @@ final TdyValveStatusRoutes = <GoRoute>[
       final int controllerId = 3827;
       final String fromDate = params['fromDate'] ??
           DateFormat('yyyy-MM-dd').format(DateTime.now());
-      final String program = "2";
+      final String program = "1";
 
-//http://3.1.62.165:8080/api/v1/user/2411/subuser/0/controller/4985/zone/graph?&fromDate=2025-12-24&programName=p1
-//        final int userId = 2411;
-//       final int subuserId = 0;
-//       final int controllerId = 4985;
-//       final String fromDate = '2025-12-24';
-//       final String program = '1';
 
      return  MultiBlocProvider(
       providers: [
