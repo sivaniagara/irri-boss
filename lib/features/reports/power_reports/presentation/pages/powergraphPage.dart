@@ -4,11 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/utils/api_urls.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/no_data.dart';
 import '../../../../../../core/theme/app_gradients.dart';
+import '../../../../../core/utils/common_date_picker.dart';
 import '../../../../../core/widgets/glassy_wrapper.dart';
 import '../../../../report_downloader/utils/report_downloaderRoute.dart';
 import '../../utils/Power_routes.dart';
 import '../bloc/date_tab_cubit.dart';
 import '../bloc/power_bloc.dart';
+import '../bloc/power_bloc_event.dart';
 import '../bloc/power_bloc_state.dart';
 import '../widgets/barpie_chart.dart';
 import '../widgets/power_details_card.dart';
@@ -37,33 +39,59 @@ class PowerGraphPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassyWrapper(
       child: Scaffold(
-         appBar: AppBar(
+        appBar: AppBar(
           title: const Text("POWER AND MOTOR"),
-         ),
+          actions: [
+            Row(
+              children: [
+                Text(fromDate, style: const TextStyle(color: Colors.black)),
+                IconButton(
+                  icon: const Icon(Icons.calendar_today, color: Colors.black),
+                  onPressed: () async {
+                    final result = await pickReportDate(
+                      context: context,
+                      allowRange: true, // 👈 SAME DATE
+                    );
+
+                    if (result == null) return;
+
+                    context.read<PowerGraphBloc>().add(
+                      FetchPowerGraphEvent(
+                        userId: userId,
+                        subuserId: subuserId,
+                        controllerId: controllerId,
+                        fromDate: result.fromDate,
+                        toDate: result.toDate, sum: 0,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
 
         floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.data_thresholding_sharp),
-        onPressed: () {
-          final state = context.read<PowerGraphBloc>().state;
+            child: const Icon(Icons.data_thresholding_sharp),
+            onPressed: () {
+              final state = context.read<PowerGraphBloc>().state;
 
-          if (state is PowerGraphLoaded) {
-            final List<Map<String, dynamic>> excelData =
-            state.data.data.map((e) => e.toJson()).toList();
+              if (state is PowerGraphLoaded) {
+                final List<Map<String, dynamic>> excelData =
+                state.data.data.map((e) => e.toJson()).toList();
 
-            context.push(
-              ReportDownloadPageRoutes.ReportDownloadPage,
-              extra: {
-                "title": "Power Motor Report",
-                "data": excelData,
-              },
-            );
-          }
-        }
-      ),
+                context.push(
+                  ReportDownloadPageRoutes.ReportDownloadPage,
+                  extra: {
+                    "title": "Power Motor Report",
+                    "data": excelData,
+                  },
+                );
+              }
+            }
+        ),
         body: Container(
-          decoration: BoxDecoration(
-            gradient: AppGradients.commonGradient,
-          ),
+
           child: BlocBuilder<PowerGraphBloc, PowerGraphState>(
             builder: (context, state) {
               if (state is PowerGraphLoading) {
@@ -79,13 +107,7 @@ class PowerGraphPage extends StatelessWidget {
               if (state is PowerGraphLoaded) {
                 return Column(
                   children: [
-                    /// ✅ DATE FILTER (ONLY ONCE)
-                    DateTabs(
-                      userId: userId,
-                      subuserId: subuserId,
-                      controllerId: controllerId,
-                      // selectedTab: selectedTab,
-                    ),
+
                     const SizedBox(height: 8),
                     /// ✅ LIST OF DATA
                     Expanded(

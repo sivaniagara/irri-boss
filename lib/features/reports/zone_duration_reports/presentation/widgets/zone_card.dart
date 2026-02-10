@@ -62,29 +62,18 @@ Widget zoneCardDuration(ZoneDurationDatumEntity zone) {
                     const SizedBox(width: 12),
 
                     const Text("CR  "),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                      color: Colors.red.shade200,
-                      child: Text(zone.c1, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    ),
+                    Text(zone.c1, style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.red)),
 
                     const SizedBox(width: 8),
 
                     const Text("CY  "),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                      color: Colors.yellow.shade200,
-                      child: Text(zone.c2, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    ),
+                    Text(zone.c2, style: const TextStyle(fontWeight: FontWeight.bold,color: Color(
+                        0xF0FAC501))),
 
                     const SizedBox(width: 8),
 
                     const Text("CB  "),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                      color: Colors.blue.shade200,
-                      child: Text(zone.c3, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    ),
+                    Text(zone.c3, style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.blue)),
                   ],
                 ),
               )

@@ -113,6 +113,7 @@ flutter:
     - assets/images/controller_status_check/
     - assets/images/communication_config_icons/
     - assets/ic_launcher.png
+    - assets/images/report_menu/
 
 
 flutter_launcher_icons:
