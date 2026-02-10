@@ -27,6 +27,7 @@ class ReportMenuPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("params:$params");
     return GlassyWrapper(
       child: Scaffold(
         body: SafeArea(
@@ -41,7 +42,6 @@ class ReportMenuPage extends StatelessWidget {
       ),
     );
   }
-
 
    Widget _sectionTitle(String title) {
      return Padding(
@@ -73,7 +73,6 @@ class ReportMenuPage extends StatelessWidget {
        child: Column(children: children),
      );
    }
-
 
    Widget _menuList(BuildContext context) {
      return ListView(

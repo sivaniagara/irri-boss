@@ -30,10 +30,11 @@ final TdyValveStatusRoutes = <GoRoute>[
 
       final int userId = params['userId'] ?? 0;
       final int subuserId = params['subuserId'] ?? 0;
-      final int controllerId = params['controllerId'] ?? 0;
+      // final int controllerId = params['controllerId'] ?? 0;
+      final int controllerId = 3827;
       final String fromDate = params['fromDate'] ??
           DateFormat('yyyy-MM-dd').format(DateTime.now());
-      final String program = "1";
+      final String program = "2";
 
 //http://3.1.62.165:8080/api/v1/user/2411/subuser/0/controller/4985/zone/graph?&fromDate=2025-12-24&programName=p1
 //        final int userId = 2411;

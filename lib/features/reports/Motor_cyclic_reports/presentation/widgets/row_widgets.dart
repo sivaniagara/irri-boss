@@ -29,85 +29,106 @@ Widget infoRow(String title, String value,IconData vIcon) {
   );
 }
 
-Widget zoneCard(int index, dynamic zone,) {
+Widget zoneCard(int index, dynamic zone) {
   return Container(
-    margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    margin: const EdgeInsets.symmetric(vertical: 8),
     decoration: BoxDecoration(
-      color: Colors.grey.shade200,
-      borderRadius: BorderRadius.circular(8),
-      border: Border.all(color: Colors.grey.shade400),
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(14),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.06),
+          blurRadius: 8,
+        )
+      ],
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 🔹 ZONE HEADER
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(8),
-          color: Colors.grey.shade300,
-          child: Text(
-            "ZONE ${index.toString().padLeft(3, '0')}",
-            style: const TextStyle(
-              color: Colors.blue,
-              fontWeight: FontWeight.bold,
-            ),
+        // Zone Header
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.blue,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  "Zone ${index.toString().padLeft(3, '0')}",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Text(
+                "${zone.onTime} - ${zone.offTime}",
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+            ],
           ),
         ),
 
-         _zoneRow("On Time:", zone.onTime, "Off Time:", zone.offTime),
-        _zoneRow("Duration:", zone.duration, "Flow:", "${zone.flow} Lts"),
-        _zoneRow("EC:", zone.ec, "pH:", zone.ph),
-        _zoneRow("Pressure In:", zone.pressureIn,"Pressure Out:", zone.pressureOut),
+        const Divider(),
+
+        _zoneRow(Icons.timer, "Duration", "${zone.duration} Hrs",
+            Icons.science, "pH", "${zone.ph}"),
+        _zoneRow(Icons.water, "Total Flow", "${zone.flow} Liters",
+            Icons.flash_on, "EC", "${zone.ec}"),
+        _zoneRow(Icons.speed, "Pressure In", "${zone.pressureIn}",
+            Icons.speed, "Pressure Out", "${zone.pressureOut} Bar"),
+
+        const SizedBox(height: 8),
       ],
     ),
   );
 }
 
-
 Widget _zoneRow(
+    IconData i1,
     String t1,
     String v1,
+    IconData i2,
     String t2,
     String v2,
     ) {
   return Padding(
-    padding: const EdgeInsets.all(8),
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
     child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        Expanded(
-          child: RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: "$t1  ",
-                  style: const TextStyle(color: Colors.black54,fontWeight: FontWeight.bold),
-                ),
-                TextSpan(
-                  text: v1,
-                  style: const TextStyle(color: Colors.black,fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-        ),
-        if (t2.isNotEmpty)
-          Expanded(
-            child: RichText(
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: "$t2  ",
-                    style: const TextStyle(color: Colors.black54,fontWeight: FontWeight.bold),
-                  ),
-                  TextSpan(
-                    text: v2,
-                    style: const TextStyle(color: Colors.black,fontWeight: FontWeight.bold),
-                  ),
-                ],
-              ),
-            ),
-          ),
+        Expanded(child: _zoneItem(i1, t1, v1)),
+        Spacer(),
+        Expanded(child: _zoneItem(i2, t2, v2)),
       ],
     ),
+  );
+}
+
+Widget _zoneItem(IconData icon, String title, String value) {
+  return Row(
+    children: [
+      CircleAvatar(
+        radius: 16,
+        backgroundColor: Colors.blue.shade50,
+        child: Icon(icon, size: 16, color: Colors.blue),
+      ),
+      const SizedBox(width: 8),
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: const TextStyle(fontSize: 12)),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
+      )
+    ],
   );
 }
