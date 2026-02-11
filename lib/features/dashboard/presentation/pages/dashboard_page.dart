@@ -327,7 +327,7 @@ class _DashboardPageState extends State<DashboardPage> {
             }else if(index == 1){
               selectedBottomNavigation = BottomNavigationOption.report;
               final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
-
+print("controllerContext.userId:${controllerContext.userId},controllerContext.controllerId:${controllerContext.controllerId},");
               context.pushReplacement("${DashBoardRoutes.report}?userId=$userId&userType=$userType",  extra: {
                 "userId": controllerContext.userId,
                 "controllerId": controllerContext.controllerId,
@@ -556,7 +556,10 @@ class _DashboardPageState extends State<DashboardPage> {
             ],
           ),
           onSelected: (groupId) {
-            cubit.selectGroup(groupId, userId, GoRouterState.of(context));
+            print("groupId change ");
+            print(groupId);
+            print(userId);
+             cubit.selectGroup(groupId, userId, GoRouterState.of(context));
             context.read<ControllerContextCubit>().toInitial();
           },
           itemBuilder: (context) => state.groups.map((group) {
@@ -611,6 +614,10 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
         onSelected: (index) {
+          print("controller change ");
+          print(index);
+          print(controllers[index].userDeviceId);
+          print(controllers[index].deviceId);
           cubit.selectController(index);
           context.read<ControllerContextCubit>().updateController(
             controllerId: controllers[index].userDeviceId.toString(),

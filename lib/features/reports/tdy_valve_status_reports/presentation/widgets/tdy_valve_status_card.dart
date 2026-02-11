@@ -38,7 +38,7 @@ class ZoneStatusCardTdyValveStatus extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: Colors.green.shade500,
+        color: Colors.white,
       ),
       child: Column(
         children: [
@@ -47,7 +47,7 @@ class ZoneStatusCardTdyValveStatus extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(6),
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: Colors.green,
               borderRadius: BorderRadius.vertical(
                 top: Radius.circular(12),
               ),
@@ -56,7 +56,7 @@ class ZoneStatusCardTdyValveStatus extends StatelessWidget {
               data.duration ?? "00:00",
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Colors.black,
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -64,17 +64,18 @@ class ZoneStatusCardTdyValveStatus extends StatelessWidget {
 
           Expanded(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Image.asset(
-                  "assets/images/common/valve_zone.png",
-                  width: 60,
-                  height: 60,
+                 Image.asset(
+                  "assets/images/common/valve.png",
+                  width: 50,
+                  height: 50,
                 ),
                 Text(
                   "${data.zone} ",
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -87,16 +88,16 @@ class ZoneStatusCardTdyValveStatus extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(6),
             decoration: const BoxDecoration(
-              color: Colors.white,
+              color: Colors.green,
               borderRadius: BorderRadius.vertical(
                 bottom: Radius.circular(12),
               ),
             ),
             child: Text(
-              "${data.litres} ",
+              "${data.litres} Lts",
               textAlign: TextAlign.center,
               style: const TextStyle(
-                color: Colors.black,
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),

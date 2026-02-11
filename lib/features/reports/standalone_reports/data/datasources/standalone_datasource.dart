@@ -49,7 +49,7 @@ class StandaloneRemoteDataSourceImpl extends StandaloneRemoteDataSource {
           .replaceAll(':toDate', toDate);
 
       /// Make API call
-      final response = await apiClient.get(endpoint);
+       final response = await apiClient.get(endpoint);
        print("endpoint--->$endpoint");
 
       if (response == null) {

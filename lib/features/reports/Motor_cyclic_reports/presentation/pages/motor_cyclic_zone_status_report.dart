@@ -33,81 +33,10 @@ class MotorCyclicPageReport extends StatelessWidget {
             ),
             margin: const EdgeInsets.only(bottom: 16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // 🔹 PROGRAM HEADER
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 10),
-                  decoration: const BoxDecoration(
-                    color: AppThemes.primaryColor,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(12),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Program ${program.program}",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        data.data[index].zoneList[0].date,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // 🔹 CYCLIC SUMMARY
-                infoRow(
-                    "Total Cyclic Duration",
-                    programDuration,
-                    Icons.timer_outlined
-                ),
-                infoRow(
-                    "Cyclic Flow",
-                    "$programFlow",
-                    Icons.water_outlined
-                ),
-                infoRow(
-                    "Cyclic Time",
-                    "${program.zoneList.first.onTime} To ${program.zoneList.last.offTime}",
-                    Icons.punch_clock
-                ),
-
+                 programSummaryCard(totalRuntime: programDuration, cyclicTime: "${program.zoneList.first.onTime} To ${program.zoneList.last.offTime}", totalFlow: programFlow.toString(),program: program.program),
                 const SizedBox(height: 12),
-
-                // 🔹 STATUS MESSAGE
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      program.ctrlMsg,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
                 // 🔹 ZONE LIST
                 ...program.zoneList.asMap().entries.map(
                       (entry) {
@@ -117,7 +46,6 @@ class MotorCyclicPageReport extends StatelessWidget {
                     return zoneCard(i, zone);
                   },
                 ),
-
                 const SizedBox(height: 12),
               ],
             ),
@@ -126,3 +54,80 @@ class MotorCyclicPageReport extends StatelessWidget {
       );
     }
  }
+
+Widget programSummaryCard({
+  required String totalRuntime,
+  required String cyclicTime,
+  required String totalFlow,
+  required String program,
+}) {
+  return Container(
+    padding: const EdgeInsets.all(16),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.08),
+          blurRadius: 10,
+        )
+      ],
+    ),
+    child: Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _summaryItem(Icons.timer, "Total Runtime", totalRuntime),
+            _summaryItem(Icons.refresh, "Cyclic Time", cyclicTime),
+            _summaryItem(Icons.water, "Total Flow", totalFlow),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children:  [
+            Icon(
+              Icons.check_circle,
+              color: Colors.green,
+              size: 28,
+            ),
+            SizedBox(width: 8),
+            Text(
+              "Program $program Cycle is completed",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _summaryItem(IconData icon, String title, String value) {
+  return Column(
+    children: [
+      CircleAvatar(
+        radius: 22,
+        backgroundColor: Colors.blue.shade50,
+        child: Icon(icon, color: Colors.blue),
+      ),
+      const SizedBox(height: 6),
+      Text(title, style: const TextStyle(fontSize: 12)),
+      const SizedBox(height: 4),
+      Text(
+        value,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ],
+  );
+}
+

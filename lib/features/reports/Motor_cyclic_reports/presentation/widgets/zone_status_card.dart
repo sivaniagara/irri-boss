@@ -38,7 +38,7 @@ class ZoneStatusCard extends StatelessWidget {
           const SizedBox(height: 8),
 
           // 🔹 VALVE ICON
-          Image.asset("assets/images/common/valve_zone.png",width: 60,height: 60,),
+          Image.asset("assets/images/common/valve.png",width: 60,height: 60,),
 
           const SizedBox(height: 6),
 

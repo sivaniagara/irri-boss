@@ -102,11 +102,12 @@ class TdyValveStatusPage extends StatelessWidget {
         /// 🔹 BODY → Bloc State (API)
         body: BlocBuilder<TdyValveStatusBloc, TdyValveStatusState>(
           builder: (context, state) {
+            print("state:$state");
             if (state is TdyValveStatusLoading) {
               return const Center(child: CircularProgressIndicator());
             }
              if (state is TdyValveStatusError) {
-      
+
               return Column(
                 children: [
                   _programDropdown(context),
@@ -125,9 +126,7 @@ class TdyValveStatusPage extends StatelessWidget {
       
                   BlocBuilder<TdyValveStatusCubit, TdyValveViewState>(
             builder: (context, viewState) {
-              print("viewState.viewMode${viewState.viewMode}");
-              print("TdyValveStatusViewMode${TdyValveStatusViewMode.zoneStatus}");
-            return viewState.viewMode == TdyValveStatusViewMode.zoneStatus ? ZoneStatusCardTdyValveStatus(state.data) : TdyZoneStatusGraph(zones: state.data) ;
+             return viewState.viewMode == TdyValveStatusViewMode.zoneStatus ? ZoneStatusCardTdyValveStatus(state.data) : TdyZoneStatusGraph(zones: state.data) ;
             },
             ),
                  ],
