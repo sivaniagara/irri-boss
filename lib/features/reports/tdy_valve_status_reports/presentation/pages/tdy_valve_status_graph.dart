@@ -39,7 +39,7 @@ class TdyZoneStatusGraph extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: SizedBox(
-                        width: zones.data.length * 120,
+                        width: zones.data.length * 150,
                         child: BarChart(
                           BarChartData(
                             alignment: BarChartAlignment.spaceAround,

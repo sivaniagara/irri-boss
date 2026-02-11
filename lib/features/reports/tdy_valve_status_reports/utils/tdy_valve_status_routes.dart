@@ -30,8 +30,8 @@ final TdyValveStatusRoutes = <GoRoute>[
 
       final int userId = params['userId'] ?? 0;
       final int subuserId = params['subuserId'] ?? 0;
-      // final int controllerId = params['controllerId'] ?? 0;
-      final int controllerId = 3827;
+      final int controllerId = params['controllerId'] ?? 0;
+      // final int controllerId = 3827;
       final String fromDate = params['fromDate'] ??
           DateFormat('yyyy-MM-dd').format(DateTime.now());
       final String program = "1";
