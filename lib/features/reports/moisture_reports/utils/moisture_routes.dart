@@ -28,7 +28,7 @@ final moistureRoutes = <GoRoute>[
 
       final int userId = params['userId'] ?? 0;
       final int subuserId = params['subuserId'] ?? 0;
-      final int controllerId = 8008;
+      final int controllerId = params['controllerId'] ?? 0;
       // final int userId = 7215;
       // final int subuserId = 0;
       // final int controllerId = 16032;
