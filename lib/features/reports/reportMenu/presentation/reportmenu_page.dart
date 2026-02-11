@@ -9,10 +9,8 @@ import 'package:niagara_smart_drip_irrigation/features/reports/tdy_valve_status_
 import 'package:niagara_smart_drip_irrigation/features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
 import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
-import '../../../../core/theme/app_styles.dart';
  import '../../../../core/widgets/glassy_wrapper.dart';
 import '../../fert_live/fert_live_page.dart';
-import '../../fert_live/fertstate.dart';
 import '../../moisture_reports/utils/moisture_routes.dart';
 import '../../power_reports/utils/Power_routes.dart';
 import '../../standalone_reports/utils/standalone_report_routes.dart';
@@ -27,7 +25,6 @@ class ReportMenuPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("params:$params");
     return GlassyWrapper(
       child: Scaffold(
         body: SafeArea(
@@ -181,11 +178,11 @@ class ReportMenuPage extends StatelessWidget {
              icon: 'assets/images/report_menu/fertilizer_live.png',
              title: 'Fertilizer Live',
              onTap: () {
-               Navigator.push(
-                 context,
+               // Using rootNavigator: true to bypass the parent Dashboard shell app bar
+               Navigator.of(context, rootNavigator: true).push(
                  MaterialPageRoute(
                    builder: (_) => FertilizerLivePage(
-                     deviceId: params['deviceID'].toString(),
+                     deviceId: params['deviceId'].toString(), 
                    ),
                  ),
                );
@@ -222,7 +219,10 @@ class ReportMenuPage extends StatelessWidget {
            _menuItem(
              icon: 'assets/images/report_menu/green_house.png',
              title: 'Green House',
-             onTap: () {},
+             onTap: () => context.push(
+               GreenHouseReportPageRoutes.greenHouseReportPage,
+               extra: params,
+             ),
            ),
          ]),
        ],
@@ -230,7 +230,6 @@ class ReportMenuPage extends StatelessWidget {
    }
 
    Widget _menuItem({
-     // required IconData icon,
      required String icon,
      required String title,
      required VoidCallback onTap,
@@ -240,7 +239,7 @@ class ReportMenuPage extends StatelessWidget {
          icon,
          width: 20,
          height: 20,
-         color: AppThemes.primaryColor, // remove if you want original colors
+         color: AppThemes.primaryColor,
        ),
        title: Text(
          title,
