@@ -6,9 +6,6 @@ import '../presentation/bloc/flow_graph_bloc.dart';
 import '../presentation/bloc/flow_graph_bloc_event.dart';
 import '../presentation/pages/flow_graph_page.dart';
 
-
- 
-
 /// Page Route Name Constants
 abstract class FlowGraphPageRoutes {
   static const String FlowGraphpage = '/FlowGraph';
@@ -16,15 +13,9 @@ abstract class FlowGraphPageRoutes {
 
 class FlowGraphPageUrls {
   static const String getFlowGraphUrl = "user/:userId/subuser/:subuserId/controller/:controllerId/report?fromDate=':fromDate'&toDate=':toDate'&type=dripdatadaywise";
-
 }
-/// API URL Pattern
-// class FlowGraphPageUrls {
-//   static const String getFlowGraphUrl =
-//       'user/:userId/subuser/:subuserId/controller/:controllerId/report?&fromDate=:fromDate&toDate=:toDate&type=FlowGraph';
-//   //report?&fromDate=2025-12-18&toDate=2025-12-24&type=FlowGraph
-//  }
- /// GoRouter config
+
+/// GoRouter config
 final FlowGraphRoutes = <GoRoute>[
   GoRoute(
     path: FlowGraphPageRoutes.FlowGraphpage,
@@ -33,41 +24,38 @@ final FlowGraphRoutes = <GoRoute>[
       /// Safe param extraction
       final params = state.extra as Map<String, dynamic>? ?? {};
 
-      final int userId = params['userId'] ?? 0;
-      final int subuserId = params['subuserId'] ?? 0;
-      final int controllerId = params['controllerId'] ?? 0;
+      // Parse values safely since they might be passed as Strings from other pages
+      final int userId = int.tryParse(params['userId']?.toString() ?? '') ?? 0;
+      final int subuserId = int.tryParse(params['subuserId']?.toString() ?? '') ?? 0;
+      final int controllerId = int.tryParse(params['controllerId']?.toString() ?? '') ?? 0;
+      
       final String fromDate = params['fromDate'] ??
           DateFormat('yyyy-MM-dd').format(DateTime.now());
       final String toDate = params['toDate'] ??
           DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-
-
-
-
-     return  MultiBlocProvider(
-      providers: [
-        BlocProvider<FlowGraphBloc>(
-          create: (_) => di.sl<FlowGraphBloc>()
-            ..add(
-              FetchFlowGraphEvent(
-                userId: userId,
-                subuserId: subuserId,
-                controllerId: controllerId,
-                fromDate: fromDate,
-                toDate: toDate,
+      return MultiBlocProvider(
+        providers: [
+          BlocProvider<FlowGraphBloc>(
+            create: (_) => di.sl<FlowGraphBloc>()
+              ..add(
+                FetchFlowGraphEvent(
+                  userId: userId,
+                  subuserId: subuserId,
+                  controllerId: controllerId,
+                  fromDate: fromDate,
+                  toDate: toDate,
+                ),
               ),
-            ),
-        ),
-
-       ],
-         child: FlowGraphPage(
-           userId: userId,
-           subuserId: subuserId,
-           controllerId: controllerId,
-           fromDate: fromDate,
-           toDate: toDate,
           ),
+        ],
+        child: FlowGraphPage(
+          userId: userId,
+          subuserId: subuserId,
+          controllerId: controllerId,
+          fromDate: fromDate,
+          toDate: toDate,
+        ),
       );
     },
   ),

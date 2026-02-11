@@ -74,7 +74,7 @@ class ReportDownloadPage extends StatelessWidget {
                 case DownloadStatus.error:
                   return Column(
                     children: [
-                      Expanded(child: noData),
+                      Expanded(child: noDataNew),
                       Expanded(child: Text("Error: ${state.error}")),
                     ],
                   );

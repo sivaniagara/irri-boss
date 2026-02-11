@@ -17,7 +17,7 @@ class ZoneCyclicGraph extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return zoneList.isEmpty
-        ? noData
+        ? noDataNew
         : Column(
             children: [
               const SizedBox(height: 20),

@@ -35,7 +35,7 @@ class AppImages {
   static const String communicationNodeIcon = '$iconPath/communication_node_icon.png';
   static const String pumpControlWithFlowIcon = '$iconPath/pump_control_with_flow_icon.png';
   static const String overHeadTankIcon = '$iconPath/over_head_tank_icon.png';
-
+  static const String downloadIcon = '$iconPath/download-arrow-down.png';
   static const String activeStandaloneIcon = '$iconPath/active_setting_icon.png';
   static const String inActiveStandaloneIcon = '$iconPath/inactive_setting_icon.png';
   static const String setserialIcon = '$iconPath/set_serial_icon.png';

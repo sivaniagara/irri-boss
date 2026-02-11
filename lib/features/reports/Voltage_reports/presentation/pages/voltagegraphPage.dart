@@ -65,7 +65,7 @@ class VoltageGraphPage extends StatelessWidget {
                 );
               }
       
-              return noData;
+              return noDataNew;
             },
           ),
         ),

@@ -114,7 +114,7 @@ class PowerGraphPage extends StatelessWidget {
                   ],
                 );
               }
-              return noData;
+              return noDataNew;
             },
           ),
         ),

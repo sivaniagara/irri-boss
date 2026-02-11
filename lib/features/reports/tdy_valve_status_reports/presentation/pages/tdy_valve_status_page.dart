@@ -110,7 +110,7 @@ class TdyValveStatusPage extends StatelessWidget {
               return Column(
                 children: [
                   _programDropdown(context),
-                  noData,
+                  noDataNew,
                 ],
               );
             }
@@ -134,7 +134,7 @@ class TdyValveStatusPage extends StatelessWidget {
               );
             }
       
-            return noData;
+            return noDataNew;
           },
         ),
       ),

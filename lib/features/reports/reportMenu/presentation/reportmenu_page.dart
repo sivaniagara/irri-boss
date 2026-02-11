@@ -12,7 +12,6 @@ import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
 import '../../../../core/theme/app_styles.dart';
  import '../../../../core/widgets/glassy_wrapper.dart';
 import '../../fert_live/fert_live_page.dart';
-import '../../fert_live/fertstate.dart';
 import '../../moisture_reports/utils/moisture_routes.dart';
 import '../../power_reports/utils/Power_routes.dart';
 import '../../standalone_reports/utils/standalone_report_routes.dart';
@@ -37,31 +36,6 @@ class ReportMenuPage extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _header(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back),
-            color: Colors.black,
-            onPressed: () => Navigator.pop(context),
-          ),
-          const Spacer(),
-           Text(
-            'REPORTS',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.black
-            ),
-          ),
-          const Spacer(flex: 2),
-        ],
       ),
     );
   }
@@ -148,11 +122,11 @@ class ReportMenuPage extends StatelessWidget {
             title: 'Fertilizer Live',
             icon: Icons.agriculture,
             onTap: () {
-                 Navigator.push(
-                  context,
+                 // Use rootNavigator: true to push outside the Dashboard shell
+                 Navigator.of(context, rootNavigator: true).push(
                   MaterialPageRoute(
                     builder: (_) => FertilizerLivePage(
-                      deviceId: params['deviceID'].toString(),
+                      deviceId: params['deviceId'].toString(), 
                     ),
                   ),
                 );
@@ -162,15 +136,13 @@ class ReportMenuPage extends StatelessWidget {
             title: 'Green House',
             icon: Icons.house,
             onTap: () {
-               // context.push(GreenHouseReportPageRoutes.greenHouseReportPage,extra: params);
+               context.push(GreenHouseReportPageRoutes.greenHouseReportPage, extra: params);
             },
           ),
         ],
       ),
     );
   }
-
-
 
   Widget _reportCard({
     required String title,

@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
+import 'package:lottie/lottie.dart';
 
-Widget get noData => Center(
-  child: Image.asset(
-    "assets/images/common/nodata.png",
-    width: 160,
-    height: 160,
+Widget get noDataNew => Center(
+  child: Lottie.asset(
+    "assets/lottie/No_data_current.json",
+    width: 250,
+    height: 250,
+    fit: BoxFit.contain,
   ),
 );

@@ -93,14 +93,14 @@ class StandaloneReportPage extends StatelessWidget {
             }
 
             if (state is StandaloneError) {
-              return noData;
+              return noDataNew;
             }
 
             if (state is StandaloneLoaded) {
               return StandaloneZoneStatusView(
                 data: state.data,);
              }
-             return noData;
+             return noDataNew;
           },
         ),
       ),

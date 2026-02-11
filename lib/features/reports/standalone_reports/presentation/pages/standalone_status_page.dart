@@ -21,7 +21,7 @@ class StandaloneZoneStatusView extends StatelessWidget {
           children: [
               Expanded(
               child: allZones.isEmpty
-                  ?  noData
+                  ?  noDataNew
                   : GridView.builder(
                 padding: const EdgeInsets.all(12),
                 gridDelegate:

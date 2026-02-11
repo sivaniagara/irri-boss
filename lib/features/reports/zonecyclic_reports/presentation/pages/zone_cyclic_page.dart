@@ -1,12 +1,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lottie/lottie.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_reports/presentation/pages/zone_cyclic_graph.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/zonecyclic_reports/presentation/pages/zone_cyclic_reports.dart';
 
 import '../../../../../core/utils/common_date_picker.dart';
 import '../../../../../core/widgets/glassy_wrapper.dart';
-import '../../../../../core/widgets/no_data.dart';
 import '../../domain/entities/zone_cyclic_entities.dart';
 import '../bloc/zone_cyclic_bloc.dart';
 import '../bloc/zone_cyclic_bloc_event.dart';
@@ -111,12 +111,21 @@ class ZoneCyclicPage extends StatelessWidget {
               return Column(
                 children: [
                   _programDropdown(context, fromDate, toDate),
-                  noData,
+                  Expanded(child: _buildNoDataView()),
                 ],
               );
             }
       
             if (state is ZoneCyclicLoaded) {
+               if (state.data.data.isEmpty) {
+                return Column(
+                  children: [
+                    _dateHeader(context, state.fromDate, state.toDate),
+                    Expanded(child: _buildNoDataView()),
+                  ],
+                );
+              }
+
                return Column(
                 children: [
                   _dateHeader(context, state.fromDate, state.toDate),
@@ -151,6 +160,8 @@ class ZoneCyclicPage extends StatelessWidget {
                               final selectedProgramZones =
                               matchingPrograms.isNotEmpty ? matchingPrograms.first.zoneList : <ZoneCyclicDetailEntity>[];
                               
+                              if (selectedProgramZones.isEmpty) return _buildNoDataView();
+
                               return ZoneCyclicGraph(
                                       zoneList: selectedProgramZones,
                                       totalFlow: state.data.totalFlow,
@@ -164,9 +175,20 @@ class ZoneCyclicPage extends StatelessWidget {
                 ],
               );
             }
-            return noData;
+            return _buildNoDataView();
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildNoDataView() {
+    return Center(
+      child: Lottie.asset(
+        "assets/lottie/No_data_current.json",
+        width: 250,
+        height: 250,
+        fit: BoxFit.contain,
       ),
     );
   }
