@@ -368,44 +368,10 @@ print("controllerContext.userId:${controllerContext.userId},controllerContext.co
           context,
           userId,
           userType,
-        ) : CustomAppBar(
-            title: selectedBottomNavigation.title(),
-            actions: selectedBottomNavigation == BottomNavigationOption.sentAndReceive ? [
-              IconButton(
-                icon: const Icon(Icons.calendar_today, color: AppThemes.primaryColor),
-                onPressed: () async {
-                  final result = await pickReportDate(
-                    context: context,
-                    allowRange: false,
-                  );
-
-                  if (result == null) return;
-
-                  final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
-                  final bloc = context.read<SendrevBloc>();
-                  
-                  bloc.add(StopPollingEvent());
-                  bloc.add(
-                    LoadMessagesEvent(
-                      userId: int.parse(controllerContext.userId),
-                      subuserId: int.parse(controllerContext.subUserId),
-                      controllerId: int.parse(controllerContext.controllerId),
-                      fromDate: result.fromDate,
-                      toDate: result.toDate,
-                    ),
-                  );
-                  bloc.add(
-                    StartPollingEvent(
-                      userId: int.parse(controllerContext.userId),
-                      subuserId: int.parse(controllerContext.subUserId),
-                      controllerId: int.parse(controllerContext.controllerId),
-                      fromDate: result.fromDate,
-                      toDate: result.toDate,
-                    ),
-                  );
-                },
-              )
-            ] : null,
+        ) : selectedBottomNavigation == BottomNavigationOption.sentAndReceive
+            ? null
+            : CustomAppBar(
+                title: selectedBottomNavigation.title(),
         ),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         drawer: userType == 1 ? AppDrawer(userData: widget.userData,) : null,

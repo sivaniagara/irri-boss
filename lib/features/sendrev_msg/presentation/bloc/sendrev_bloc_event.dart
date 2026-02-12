@@ -1,5 +1,6 @@
 abstract class SendrevEvent {}
 
+
 class LoadMessagesEvent extends SendrevEvent {
   final int userId;
   final int subuserId;
@@ -15,21 +16,3 @@ class LoadMessagesEvent extends SendrevEvent {
     required this.toDate,
   });
 }
-
-class StartPollingEvent extends SendrevEvent {
-  final int userId;
-  final int subuserId;
-  final int controllerId;
-  final String fromDate;
-  final String toDate;
-
-  StartPollingEvent({
-    required this.userId,
-    required this.subuserId,
-    required this.controllerId,
-    required this.fromDate,
-    required this.toDate,
-  });
-}
-
-class StopPollingEvent extends SendrevEvent {}
