@@ -5,14 +5,21 @@ abstract class MappingAndUnmappingNodesEvent{}
 class FetchMappingAndUnmappingEvent extends MappingAndUnmappingNodesEvent{
   final String userId;
   final String controllerId;
-  FetchMappingAndUnmappingEvent({required this.userId, required this.controllerId});
+  final String deviceId;
+  FetchMappingAndUnmappingEvent({required this.userId, required this.controllerId, required this.deviceId});
 }
 
 class DeleteMappedNodeEvent extends MappingAndUnmappingNodesEvent{
   final String userId;
   final String controllerId;
+  final String deviceId;
   final MappedNodeEntity mappedNodeEntity;
-  DeleteMappedNodeEvent({required this.userId, required this.controllerId, required this.mappedNodeEntity});
+  DeleteMappedNodeEvent({
+    required this.userId,
+    required this.controllerId,
+    required this.deviceId,
+    required this.mappedNodeEntity
+  });
 }
 
 class UnMappedNodeToMappedEvent extends MappingAndUnmappingNodesEvent{
@@ -26,4 +33,10 @@ class UnMappedNodeToMappedEvent extends MappingAndUnmappingNodesEvent{
     required this.categoryId,
     required this.unmappedCategoryEntity
   });
+}
+
+class ViewNodeDetailsMqttEvent extends MappingAndUnmappingNodesEvent {
+  final MappedNodeEntity mappedNodeEntity;
+
+  ViewNodeDetailsMqttEvent({required this.mappedNodeEntity});
 }

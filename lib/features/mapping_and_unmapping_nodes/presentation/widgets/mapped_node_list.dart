@@ -90,136 +90,75 @@ class _MappedNodeListState extends State<MappedNodeList> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               ListTile(
+                                onTap: (){
+                                  _showNodeDetailsBottomSheet(context, node);
+                                },
                                 dense: true,
-                                visualDensity: VisualDensity.compact,
-                                minLeadingWidth: 30,
-                                horizontalTitleGap: 12,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
 
-                                leading: Container(
-                                  width: 50,
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    node.serialNo ?? '—',
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.grey[900],
-                                      letterSpacing: 0.4,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                ),
-
-                                title: Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: node.categoryName ?? '—',
-                                        style: TextStyle(
+                                title: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        'Node: ${node.serialNo ?? "—"}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
                                           fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.teal[800],
                                         ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      const TextSpan(
-                                        text: '   •   ',
-                                        style: TextStyle(
-                                          color: Colors.grey,
-                                          fontWeight: FontWeight.w300,
-                                          fontSize: 14,
-                                        ),
+                                    ),
+                                    Text(
+                                      node.qrCode ?? '—',
+                                      style: TextStyle(
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.blueGrey[700],
                                       ),
-                                      TextSpan(
-                                        text: node.qrCode ?? '—',
-                                        style: TextStyle(
-                                          fontSize: 14.5,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.blueGrey[800],
-                                          letterSpacing: 0.3,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                  maxLines: 1,
+                                    ),
+                                  ],
                                 ),
 
                                 subtitle: Padding(
-                                  padding: const EdgeInsets.only(top: 3),
-                                  child: Text.rich(
-                                    TextSpan(
-                                      children: [
-                                        TextSpan(
-                                          text: 'Mfg: ',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
-                                            fontSize: 12.5,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        TextSpan(
-                                          text: node.dateManufacture ?? '??',
-                                          style: TextStyle(
-                                            color: Colors.green[800],
-                                            fontSize: 12.5,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        TextSpan(
-                                          text: '   •   ',
-                                          style: TextStyle(color: Colors.grey[400], fontSize: 12),
-                                        ),
-                                        TextSpan(
-                                          text: node.userName ?? '—',
-                                          style: TextStyle(
-                                            color: Colors.indigo[700],
-                                            fontSize: 12.5,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        if (node.mobileNumber != null) ...[
-                                          TextSpan(
-                                            text: '   •   ',
-                                            style: TextStyle(color: Colors.grey[400], fontSize: 12),
-                                          ),
-                                          TextSpan(
-                                            text: node.mobileNumber!,
-                                            style: TextStyle(
-                                              color: Colors.deepPurple[700],
-                                              fontSize: 12.5,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ],
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    '${node.categoryName ?? "—"}  •  ${node.userName ?? "—"}',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.grey[700],
                                     ),
                                     overflow: TextOverflow.ellipsis,
-                                    maxLines: 2,
                                   ),
                                 ),
 
-                                trailing: IconButton(
-                                  onPressed: () {
-                                    final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
-                                    context.read<MappingAndUnmappingNodesBloc>().add(
-                                      DeleteMappedNodeEvent(
-                                        userId: controllerContext.userId,
-                                        controllerId: controllerContext.controllerId,
-                                        mappedNodeEntity: node,
-                                      ),
-                                    );
-                                  },
-                                  icon: const Icon(Icons.link_off_rounded, size: 22),
-                                  tooltip: 'Unmap / Remove node',
-                                  visualDensity: VisualDensity.compact,
-                                  padding: const EdgeInsets.all(8),
-                                  constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-                                  style: IconButton.styleFrom(
-                                    backgroundColor: const Color(0xFFEDF8FF),
-                                    foregroundColor: Theme.of(context).primaryColor,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                  ),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.visibility_outlined),
+                                      tooltip: "View Details",
+                                      onPressed: () {
+                                        context.read<MappingAndUnmappingNodesBloc>().add(ViewNodeDetailsMqttEvent(mappedNodeEntity: node));
+                                      },
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.link_off_rounded),
+                                      tooltip: "Unmap Node",
+                                      onPressed: () {
+                                        final controllerContext =
+                                        context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+
+                                        context.read<MappingAndUnmappingNodesBloc>().add(
+                                          DeleteMappedNodeEvent(
+                                            userId: controllerContext.userId,
+                                            controllerId: controllerContext.controllerId,
+                                            mappedNodeEntity: node,
+                                            deviceId: controllerContext.deviceId,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
                                 ),
                               ),
 
@@ -270,4 +209,107 @@ class _MappedNodeListState extends State<MappedNodeList> {
       ),
     );
   }
+
+  void _showNodeDetailsBottomSheet(
+      BuildContext context,
+      MappedNodeEntity node,
+      ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.65,
+          maxChildSize: 0.9,
+          minChildSize: 0.4,
+          builder: (_, controller) {
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: SingleChildScrollView(
+                controller: controller,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+
+                    /// Drag Handle
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[400],
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    /// Header
+                    Text(
+                      "Node Details",
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    _detailTile("Node Number", node.serialNo),
+                    _detailTile("QR Code", node.qrCode),
+                    _detailTile("Category", node.categoryName),
+                    _detailTile("Manufacture Date", node.dateManufacture),
+                    _detailTile("User Name", node.userName),
+                    _detailTile("Mobile Number", node.mobileNumber),
+
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+Widget _detailTile(String label, String? value) {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: Colors.grey[100],
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 3,
+          child: Text(
+            value ?? "—",
+            style: const TextStyle(
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.right,
+          ),
+        ),
+      ],
+    ),
+  );
 }

@@ -8,12 +8,16 @@ import '../repositories/mapping_and_unmapping_nodes_repository.dart';
 class UnmappedNodeToMappedNodeParams{
   final String userId;
   final String controllerId;
+  final String deviceId;
   final String categoryId;
+  final int mappedNodeLength;
   final List<UnmappedCategoryNodeEntity> listOfUnmappedCategoryNodeEntity;
   UnmappedNodeToMappedNodeParams({
     required this.userId,
     required this.controllerId,
+    required this.deviceId,
     required this.categoryId,
+    required this.mappedNodeLength,
     required this.listOfUnmappedCategoryNodeEntity
   });
 }

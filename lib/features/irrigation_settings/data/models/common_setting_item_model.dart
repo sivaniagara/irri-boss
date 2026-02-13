@@ -44,15 +44,22 @@ class SingleSettingItemModel extends SingleSettingItemEntity{
     }else if(widgetType == 3){
       return '$settingField${value.replaceAll(':', '')}';
     }else if(widgetType == 10){
+      if(['LOWPRESS', 'HIGHPRESS'].contains(settingField)){
+        return '$settingField${formatTo000_0(double.parse(value.isEmpty ? '0' : value))}';
+      }else if(['IDCALSET001,', 'IDCALSET002,' ,'IDCALSET003,', 'IDCALSET004,', 'IDCALSET005,'].contains(settingField)){
+        return '$settingField${formatTo0_000(double.parse(value.isEmpty ? '0' : value))}';
+      }
       return '$settingField${formatTo0000_0(double.parse(value.isEmpty ? '0' : value))}';
     }else if(widgetType == 9){
+      if(['SKIPDAYS', 'RUNDAYS'].contains(settingField)){
+        return '$settingField${int.parse(value.isEmpty ? '0' : value)}';
+      }
       return '$settingField${formatTo000(int.parse(value.isEmpty ? '0' : value))}';
     }else{
       if(settingField.contains(';')){
         List<String> sfList = settingField.split(';');
         int index = option.indexOf(value);
         if(settingField.contains('MODEONP') || titleText == 'Dosing'){
-          print('dddddddd');
           return '${sfList[index]}$dependentValue';
         }
         return sfList[index];
@@ -77,11 +84,16 @@ class SingleSettingItemModel extends SingleSettingItemEntity{
 }
 
 String formatTo0000_0(num value) {
-  // Always keep one decimal place
   String formatted = value.toStringAsFixed(1);
-
-  // Ensure at least 5 characters total (e.g., "0000.0")
   return formatted.padLeft(5, '0');
+}
+String formatTo000_0(num value) {
+  String formatted = value.toStringAsFixed(1);
+  return formatted.padLeft(4, '0');
+}
+String formatTo0_000(num value) {
+  String formatted = value.toStringAsFixed(3);
+  return formatted;
 }
 
 String formatTo000(int value) {
@@ -128,40 +140,37 @@ class MultipleSettingItemModel extends MultipleSettingItemEntity{
   }
 
 
-  // String mqttPayload(){
-  //   if(widgetType == 2){
-  //     return '$settingField$value';
-  //   }else if(widgetType == 3){
-  //     return '$settingField${value.replaceAll(':', '')}';
-  //   }else if(widgetType == 10){
-  //     return '$settingField${formatTo0000_0(double.parse(value.isEmpty ? '0' : value))}';
-  //   }else if(widgetType == 9){
-  //     return '$settingField${formatTo000(int.parse(value.isEmpty ? '0' : value))}';
-  //   }else{
-  //     if(settingField.contains(';')){
-  //       List<String> sfList = settingField.split(';');
-  //       int index = option.indexOf(value);
-  //       if(settingField.contains('MODEONP') || titleText == 'Dosing'){
-  //         return '${sfList[index]}${index+1}';
-  //       }
-  //       return sfList[index];
-  //     }
-  //     return '$settingField$value';
-  //   }
-  // }
   String mqttPayload({String? firstDependent}){
     if(listOfSingleSettingItemEntity.first.widgetType == 2){
+      if(['FERTOBOF', 'REFRESHONOF', 'FERTONOF'].contains(listOfSingleSettingItemEntity.first.settingField)){
+        List<String> channelPayloadList = List.generate(listOfSingleSettingItemEntity.length, (index){
+          return '${index+1}${listOfSingleSettingItemEntity[index].value == 'ON' ? '1' : '0'}';
+        });
+        return '${listOfSingleSettingItemEntity.first.settingField},${channelPayloadList.join(',')}';
+      }
       return '${listOfSingleSettingItemEntity.first.settingField},${listOfSingleSettingItemEntity.map((set) => set.value).join(',')}';
     }else if(listOfSingleSettingItemEntity.first.widgetType == 10){
+      if(['PHSET', 'ECSET'].contains(listOfSingleSettingItemEntity.first.settingField)){
+        return '${listOfSingleSettingItemEntity.first.settingField}'
+            '${listOfSingleSettingItemEntity.first.titleText == 'F1' ? (firstDependent ?? '') : ''},'
+            '${listOfSingleSettingItemEntity.map((set) => formatTo0_000(double.parse(set.value.isEmpty ? '0' : set.value))).join(',')}';
+      }
       return '${listOfSingleSettingItemEntity.first.settingField}'
           '${listOfSingleSettingItemEntity.first.titleText == 'F1' ? (firstDependent ?? '') : ''},'
           '${listOfSingleSettingItemEntity.map((set) => formatTo0000_0(double.parse(set.value.isEmpty ? '0' : set.value))).join(',')}';
     }else if(listOfSingleSettingItemEntity.first.widgetType == 9){
+      if(['#PROGSTART'].contains(listOfSingleSettingItemEntity.first.settingField)){
+        String program = '${int.parse(listOfSingleSettingItemEntity[0].value.isEmpty ? '0' : listOfSingleSettingItemEntity[0].value)}'.padLeft(2, '0');
+        String zone = '${int.parse(listOfSingleSettingItemEntity[1].value.isEmpty ? '000' : listOfSingleSettingItemEntity[1].value)}'.padLeft(3, '0');
+        return '${listOfSingleSettingItemEntity.first.settingField}$program,$zone';
+      }
       return '${listOfSingleSettingItemEntity.first.settingField},${listOfSingleSettingItemEntity.map((set) => formatTo000(int.parse(set.value.isEmpty ? '0' : set.value))).join(',')}';
     }else if(listOfSingleSettingItemEntity.first.widgetType == 3){
-      return '${listOfSingleSettingItemEntity.first.settingField},${listOfSingleSettingItemEntity.map((set) => set.value.replaceAll(':', '')).join(',')}';
+      return '${listOfSingleSettingItemEntity.first.settingField}'
+          '${['REFTIMON'].contains(listOfSingleSettingItemEntity.first.settingField) ? '' : ','}'
+          '${listOfSingleSettingItemEntity.map((set) => set.value.replaceAll(':', '')).join(',')}';
     }else{
-      return 'N/A';
+      return '${listOfSingleSettingItemEntity.first.settingField},${listOfSingleSettingItemEntity.map((set) => set.value).join(',')}';
     }
   }
 

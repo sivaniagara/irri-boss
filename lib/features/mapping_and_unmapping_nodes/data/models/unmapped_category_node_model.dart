@@ -36,10 +36,10 @@ class UnmappedCategoryNodeModel extends UnmappedCategoryNodeEntity {
     );
   }
 
-  Map<String, dynamic> formPayload(String categoryId){
+  Map<String, dynamic> formPayload(String categoryId, String serialNo){
     return {
       'nodeId' : nodeId,
-      'sentSms' : 'IDSET,${splitQrCode(qrCode)}',
+      'sentSms' : 'IDSET$serialNo,${splitQrCode(qrCode)}',
       'categoryId' : categoryId
     };
   }

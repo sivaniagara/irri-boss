@@ -31,7 +31,6 @@ class _Dashboard20State extends State<Dashboard20> {
   Widget build(BuildContext context) {
     return BlocConsumer<DashboardPageCubit, DashboardState>(
         builder: (context, state){
-          print("state in ui :: ${state}");
           if(state is! DashboardGroupsLoaded) return Placeholder();
           ControllerEntity controllerEntity = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!];
           LiveMessageEntity liveMessageEntity = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!].liveMessage;
@@ -40,7 +39,8 @@ class _Dashboard20State extends State<Dashboard20> {
               spacing: 20,
               children: [
                 if([11, 27].contains(controllerEntity.modelId)) ...pumpDashboard(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity)
-                else ...dripDashboard(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity)
+                else ...dripDashboard(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity),
+
               ],
             ),
           );
@@ -48,6 +48,7 @@ class _Dashboard20State extends State<Dashboard20> {
         listener: (context, state){
           print('listening state :: ${state}');
           if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.loading){
+            print('state.changeFromStatus ${state.changeFromStatus}');
             showGradientLoadingDialog(context);
           }else if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.success){
             context.pop();
@@ -61,8 +62,32 @@ class _Dashboard20State extends State<Dashboard20> {
                 context: context,
                 message: state.errorMsg
             );
+          }else if(state is DashboardGroupsLoaded && state.controlMotorStatus == ControlMotorStatus.loading){
+            print('state.controlMotorStatus ${state.controlMotorStatus}');
+            showGradientLoadingDialog(context);
+          }else if(state is DashboardGroupsLoaded && state.controlMotorStatus == ControlMotorStatus.success){
+            context.pop();
+            showSuccessAlert(
+                context: context,
+                message: 'Motor command Send Success'
+            );
+          }else if(state is DashboardGroupsLoaded && state.controlMotorStatus == ControlMotorStatus.failure){
+            context.pop();
+            showErrorAlert(
+                context: context,
+                message: state.errorMsg
+            );
           }
-        });
+        },
+        listenWhen: (previous, current){
+            if(previous is DashboardGroupsLoaded && previous.controlMotorStatus == ControlMotorStatus.loading){
+              if(current is DashboardGroupsLoaded && current.controlMotorStatus == ControlMotorStatus.loading){
+                return false;
+              }
+            }
+            return true;
+        }
+        );
   }
 
   Widget mountainWidget(LiveMessageEntity liveMessageEntity){
@@ -212,7 +237,7 @@ class _Dashboard20State extends State<Dashboard20> {
                 rybWidget(backgroundColor: Color(0xffFEC106), value: liveMessageEntity.yVoltage, phase: 'Y Phase'),
                 rybWidget(backgroundColor: Color(0xff6C8DB7), value: liveMessageEntity.bVoltage, phase: 'B Phase'),
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -238,15 +263,28 @@ class _Dashboard20State extends State<Dashboard20> {
                           'Motor',
                           style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
                         ),
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(5),
-                            border: Border.all(width: 2, color: liveMessageEntity.motorOnOff == '1' ? Colors.green : Colors.red),
-                          ),
-                          child: Image.asset(
-                            'assets/images/icons/switch_${liveMessageEntity.motorOnOff == '1' ? 'on' : 'off'}_icon.png',
-                            width: 20,
+                        InkWell(
+                          onTap: (){
+                            final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+                            String payload = liveMessageEntity.motorOnOff == '1' ? 'MTROF,' : 'MTRON,';
+                            context.read<DashboardPageCubit>().controlMotorStatus(
+                                userId: controllerContext.userId,
+                                controllerId: controllerContext.controllerId,
+                                programId: liveMessageEntity.programName.split('program')[1],
+                                deviceId: controllerContext.deviceId,
+                                payload: payload
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(width: 2, color: liveMessageEntity.motorOnOff == '1' ? Colors.green : Colors.red),
+                            ),
+                            child: Image.asset(
+                              'assets/images/icons/switch_${liveMessageEntity.motorOnOff == '1' ? 'on' : 'off'}_icon.png',
+                              width: 20,
+                            ),
                           ),
                         )
                       ],
@@ -333,6 +371,13 @@ class _Dashboard20State extends State<Dashboard20> {
                     'assets/images/icons/program_icon.png',
                     width: 20,
                   ),
+                ),
+                IconButton(
+                    onPressed: (){
+                      final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+                      context.push(DashBoardRoutes.programPreview, extra: controllerContext.deviceId);
+                    },
+                    icon: Icon(Icons.visibility_sharp, color: Colors.black,)
                 ),
                 const Spacer(),
                 PopupMenuButton(

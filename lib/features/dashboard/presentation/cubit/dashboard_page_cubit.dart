@@ -11,9 +11,11 @@ import '../../../../core/services/mqtt/mqtt_manager.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/services/selected_controller_persistence.dart';
 import '../../dashboard.dart';
+import '../../domain/usecases/control_motor_usecase.dart';
 import '../../domain/usecases/update_change_from_usecase.dart';
 
 enum ChangeFromStatus {initial, loading, success, failure}
+enum ControlMotorStatus {initial, loading, success, failure}
 
 abstract class DashboardState extends Equatable {
   @override
@@ -30,6 +32,7 @@ class DashboardGroupsLoaded extends DashboardState {
   final int? selectedGroupId;
   final int? selectedControllerIndex;
   final ChangeFromStatus changeFromStatus;
+  final ControlMotorStatus controlMotorStatus;
   final String errorMsg;
 
   DashboardGroupsLoaded({
@@ -38,11 +41,12 @@ class DashboardGroupsLoaded extends DashboardState {
     this.selectedGroupId,
     this.selectedControllerIndex,
     this.changeFromStatus = ChangeFromStatus.initial,
+    this.controlMotorStatus = ControlMotorStatus.initial,
     this.errorMsg = '',
   });
 
   @override
-  List<Object?> get props => [groups, groupControllers, selectedGroupId, selectedControllerIndex, changeFromStatus, errorMsg];
+  List<Object?> get props => [groups, groupControllers, selectedGroupId, selectedControllerIndex, changeFromStatus, controlMotorStatus, errorMsg];
 
   DashboardGroupsLoaded copyWith({
     List<GroupDetailsEntity>? groups,
@@ -50,6 +54,7 @@ class DashboardGroupsLoaded extends DashboardState {
     int? selectedGroupId,
     int? selectedControllerIndex,
     ChangeFromStatus? changeFromStatus,
+    ControlMotorStatus? controlMotorStatus,
     String? errorMsg,
   }) {
     return DashboardGroupsLoaded(
@@ -58,6 +63,7 @@ class DashboardGroupsLoaded extends DashboardState {
       selectedGroupId: selectedGroupId ?? this.selectedGroupId,
       selectedControllerIndex: selectedControllerIndex ?? this.selectedControllerIndex,
       changeFromStatus: changeFromStatus ?? this.changeFromStatus,
+      controlMotorStatus: controlMotorStatus ?? this.controlMotorStatus,
       errorMsg: errorMsg ?? this.errorMsg,
     );
   }
@@ -75,11 +81,13 @@ class DashboardPageCubit extends Cubit<DashboardState> {
   final FetchDashboardGroups fetchDashboardGroups;
   final FetchControllers fetchControllers;
   final UpdateChangeFromUsecase updateChangeFromUsecase;
+  final ControlMotorUsecase controlMotorUsecase;
 
   DashboardPageCubit({
     required this.fetchDashboardGroups,
     required this.fetchControllers,
     required this.updateChangeFromUsecase,
+    required this.controlMotorUsecase,
   }) : super(DashboardInitial());
 
   Future<void> getGroups(int userId, GoRouterState routeState, int userType) async {
@@ -274,9 +282,6 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     var current = state as DashboardGroupsLoaded;
     emit(current.copyWith(changeFromStatus: ChangeFromStatus.loading));
 
-    // Optional: small delay just to make loading visible (mostly for UX/debug)
-    // await Future.delayed(const Duration(milliseconds: 300));
-
     try {
       final param = UpdateChangeFromParam(
         userId: userId,
@@ -323,6 +328,70 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       ));
       emit(current.copyWith(
         changeFromStatus: ChangeFromStatus.initial,
+        errorMsg: '',
+      ));
+    }
+  }
+
+  void controlMotorStatus({
+    required String userId,
+    required String controllerId,
+    required String programId,
+    required String deviceId,
+    required String payload,
+  }) async {
+    if (state is! DashboardGroupsLoaded) return;
+
+    // 1. First — go to loading
+    var current = state as DashboardGroupsLoaded;
+    emit(current.copyWith(controlMotorStatus: ControlMotorStatus.loading));
+
+    try {
+      final param = ControlMotorParams(
+        userId: userId,
+        controllerId: controllerId,
+        programId: programId,
+        deviceId: deviceId,
+        payload: payload,
+      );
+
+      // Send MQTT command
+      sl<MqttManager>().publish(
+        deviceId,
+        PublishMessageHelper.settingsPayload(payload),
+      );
+
+      // Call backend / confirmation logic
+      final result = await controlMotorUsecase(param);
+
+      result.fold(
+            (failure) {
+          emit(current.copyWith(
+            controlMotorStatus: ControlMotorStatus.failure,
+            errorMsg: failure.message,
+          ));
+          emit(current.copyWith(
+            controlMotorStatus: ControlMotorStatus.initial,
+            errorMsg: '',
+          ));
+        },
+            (success) {
+          emit(current.copyWith(
+            controlMotorStatus: ControlMotorStatus.success,
+          ));
+          emit(current.copyWith(
+            controlMotorStatus: ControlMotorStatus.initial,
+            errorMsg: '',
+          ));
+        },
+      );
+    } catch (e) {
+      emit(current.copyWith(
+        controlMotorStatus: ControlMotorStatus.failure,
+        errorMsg: e.toString(),
+      ));
+      emit(current.copyWith(
+        controlMotorStatus: ControlMotorStatus.initial,
         errorMsg: '',
       ));
     }

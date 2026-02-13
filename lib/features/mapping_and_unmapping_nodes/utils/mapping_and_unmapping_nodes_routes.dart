@@ -20,7 +20,13 @@ final mappingAndUnmappingNodesGoRoutes = [
         return MultiBlocProvider(
             providers: [
               BlocProvider(
-                create: (context)=> di.sl<MappingAndUnmappingNodesBloc>()..add(FetchMappingAndUnmappingEvent(userId: controllerContext.userId, controllerId: controllerContext.controllerId)),
+                create: (context)=> di.sl<MappingAndUnmappingNodesBloc>()..add(
+                    FetchMappingAndUnmappingEvent(
+                        userId: controllerContext.userId,
+                        controllerId: controllerContext.controllerId,
+                        deviceId: controllerContext.deviceId,
+                    )
+                ),
               ),
             ],
             child: MappingAndUnmappingPage()

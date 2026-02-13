@@ -8,6 +8,7 @@ class MappingAndUnmappingNodesLoading extends MappingAndUnmappingNodesState{}
 class MappingAndUnmappingNodesLoaded extends MappingAndUnmappingNodesState{
   final String userId;
   final String controllerId;
+  final String deviceId;
   DeleteMappedNodeEnum deleteMappedNodeEnum;
   UnmappedNodeToMappedEnum unmappedNodeToMappedEnum;
   String message;
@@ -16,6 +17,7 @@ class MappingAndUnmappingNodesLoaded extends MappingAndUnmappingNodesState{
   MappingAndUnmappingNodesLoaded({
     required this.userId,
     required this.controllerId,
+    required this.deviceId,
     required this.mappingAndUnmappingNodeEntity,
     this.deleteMappedNodeEnum = DeleteMappedNodeEnum.idle,
     this.unmappedNodeToMappedEnum = UnmappedNodeToMappedEnum.idle,
@@ -31,10 +33,11 @@ class MappingAndUnmappingNodesLoaded extends MappingAndUnmappingNodesState{
     return MappingAndUnmappingNodesLoaded(
         userId: userId,
         controllerId: controllerId,
+        deviceId: deviceId,
         mappingAndUnmappingNodeEntity: entity ?? mappingAndUnmappingNodeEntity,
-      deleteMappedNodeEnum: deleteStatus ?? deleteMappedNodeEnum,
-      unmappedNodeToMappedEnum: unMapToMapStatus ?? unmappedNodeToMappedEnum,
-      message: msg ?? message
+        deleteMappedNodeEnum: deleteStatus ?? deleteMappedNodeEnum,
+        unmappedNodeToMappedEnum: unMapToMapStatus ?? unmappedNodeToMappedEnum,
+        message: msg ?? message
     );
   }
 }

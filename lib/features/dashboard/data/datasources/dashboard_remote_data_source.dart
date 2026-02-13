@@ -27,6 +27,13 @@ abstract class DashboardRemoteDataSource {
     required String deviceId,
     required String payload,
   });
+  Future<bool> controlMotor({
+    required String userId,
+    required String controllerId,
+    required String programId,
+    required String deviceId,
+    required String payload,
+  });
 }
 
 class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
@@ -143,7 +150,38 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
               PublishMessageHelper.settingsPayload(payload)
           ]}
       );
-      // mqttManager.publish(deviceId, payload);
+      await Future.delayed(Duration(seconds: 3));
+      return true;
+    }catch (e){
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> controlMotor({
+    required String userId,
+    required String controllerId,
+    required String programId,
+    required String deviceId,
+    required String payload
+  }) async{
+    try{
+      String endPoint = buildUrl(
+          DashboardUrls.sentAndReceive,
+          {
+            'userId': userId,
+            'controllerId': controllerId,
+            'programId': programId,
+          }
+      );
+
+      final response = await apiClient.post(
+          endPoint,
+          body: {
+            "sentAndReceived": [
+              PublishMessageHelper.settingsPayload(payload)
+            ]}
+      );
       await Future.delayed(Duration(seconds: 3));
       return true;
     }catch (e){

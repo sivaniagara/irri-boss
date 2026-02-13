@@ -134,227 +134,215 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return GlassyWrapper(
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(title: const Text("Program Preview")),
-          body: const Center(child: CircularProgressIndicator()),
-        ),
+      return Scaffold(
+        appBar: AppBar(title: const Text("Program Preview")),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_error != null) {
-      return GlassyWrapper(
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(title: const Text("Program Preview")),
-          body: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                const SizedBox(height: 16),
-                Text(_error!, style: const TextStyle(color: Colors.white)),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    setState(() {
-                      _isLoading = true;
-                      _error = null;
-                    });
-                    _requestMessage(widget.deviceId);
-                  },
-                  child: const Text("Retry"),
-                ),
-              ],
-            ),
+      return Scaffold(
+        appBar: AppBar(title: const Text("Program Preview")),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              Text(_error!, style: const TextStyle(color: Colors.white)),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    _isLoading = true;
+                    _error = null;
+                  });
+                  _requestMessage(widget.deviceId);
+                },
+                child: const Text("Retry"),
+              ),
+            ],
           ),
         ),
       );
     }
 
     if (_program == null) {
-      return GlassyWrapper(
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(title: const Text("Program Preview")),
-          body: const Center(
-            child: Text("No program data received yet", style: TextStyle(color: Colors.white70)),
-          ),
+      return Scaffold(
+        appBar: AppBar(title: const Text("Program Preview")),
+        body: const Center(
+          child: Text("No program data received yet", style: TextStyle(color: Colors.white70)),
         ),
       );
     }
 
-    return GlassyWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: Text(_program!.programName),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text("Last Sync:", style: TextStyle(fontSize: 12)),
-                  Text(_lastSync ?? "-"),
-                ],
-              ),
-            ),
-          ],
-        ),
-        body: RefreshIndicator(
-          onRefresh: () async => _requestMessage(widget.deviceId),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.only(bottom: 20, top: 10),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_program!.programName),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                ConfigSection(
-                  title: "Basic Program Settings",
-                  children: [
-                    const SizedBox(height: 8),
-                    GridView.count(
-                      crossAxisCount: 2,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: EdgeInsets.zero,
-                      childAspectRatio: 2.6,
-                      mainAxisSpacing: 10,
-                      crossAxisSpacing: 10,
-                      children: [
-                        _buildInfoCard(label: "Program Name", value: _program!.programName),
-                        _buildInfoCard(label: "Irrigation Mode", value: _program!.irrigationMode),
-                        _buildInfoCard(label: "Valve Status", value: _program!.valveStatus, isBoolean: true),
-                        _buildInfoCard(label: "Dosing Mode", value: _program!.dosingMode),
-                        _buildInfoCard(label: "Decide Last", value: _program!.decideLast),
-                        _buildInfoCard(label: "Feedback Last", value: _program!.decideFeedbackLast),
-                        _buildInfoCard(label: "Delay Valve", value: _program!.delayValve),
-                        _buildInfoCard(label: "Feedback Time", value: _program!.feedbackTime),
-                        _buildInfoCard(label: "Drip Cyclic Restart", value: _program!.dripCycRst, isBoolean: true),
-                        _buildInfoCard(label: "Drip Restart Timer", value: _program!.dripCycRstTime),
-                        _buildInfoCard(label: "Zone Cyclic Restart", value: _program!.zoneCycRst, isBoolean: true),
-                        _buildInfoCard(label: "Start from", value: "Program:- ${_program!.programStartNumber.split(":")[0]} , Zone:- ${_program!.programStartNumber.split(":")[1]}"),
-                        _buildInfoCard(label: "Sump", value: _program!.sumpStatus, isBoolean: true),
-                        _buildInfoCard(label: "Drip Sump Restart", value: _program!.dripSumpStatus, isBoolean: true),
-                        _buildInfoCard(label: "Day count RTC", value: _program!.dayCountRtcTimer),
-                        _buildInfoCard(label: "Skip Days", value: _program!.skipDays, booleanValue: _program!.skipDaysStatus == "1"),
-                      ],
-                    ),
-                  ],
-                ),
-                ConfigSection(
-                  title: "RTC Timers",
-                  children: [
-                    ConfigRow(label: "RTC Timer", value: _program!.rtcOnOff, isBoolean: true,),
-                    Row(
-                      children: const [
-                        SizedBox(width: 120),
-                        Expanded(child: Center(child: Text("On Time", style: TextStyle(fontWeight: FontWeight.bold)))),
-                        Expanded(child: Center(child: Text("Off Time", style: TextStyle(fontWeight: FontWeight.bold)))),
-                      ],
-                    ),
-                    ...List.generate(_program!.rtcTimers.length, (i) =>
-                        ConfigRow(
-                          label: "Timer ${i + 1}",
-                          value: _program!.rtcTimers[i],
-                          splitBy: ";",
-                        ),
-                    ),
-                  ],
-                ),
-                ConfigSection(
-                  title: "",
-                  children: [
-                    ConfigGridRow(
-                      label: "Adjust Percent",
-                      values: _program!.adjustPercent,
-                      columnLabels: ["Time", "Flow", "Moisture", "Fert"],
-                    ),
-                  ],
-                ),
-                ConfigSection(
-                  title: "Fertilizer Settings",
-                  children: [
-                    Row(
-                      spacing: 10,
-                      children: [
-                        SizedBox(width: 120),
-                        for(int i = 0; i < _program!.fertilizerRates[0].split(",")[0].split(":").length; i++)
-                          Expanded(child: Center(child: Text("F${i+1}", style: TextStyle(fontWeight: FontWeight.bold)))),
-                      ],
-                    ),
-                    ...List.generate(3, (i) =>
-                        ConfigRow(
-                          label: ["Fertilizer", "Fert Rate", "Vent Flow"][i],
-                          value: _program!.fertilizerRates[i],
-                          splitBy: ":",
-                        ),
-                    ),
-                    SizedBox(height: 10,),
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        _buildContainer(child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("Pre Quantity: ${_program!.preQty}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                        )),
-                        _buildContainer(child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("Post Quantity: ${_program!.postQty}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                        )),
-                        _buildContainer(child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("Pre Time: ${_program!.preTime}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                        )),
-                        _buildContainer(child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("Post Time(%): ${_program!.postTimePercent}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                        )),
-                       /* _buildInfoCard(label: "Pre Quantity", value: _program!.preQty),
-                        _buildInfoCard(label: "Post Quantity", value: _program!.postQty),
-                        _buildInfoCard(label: "Pre Time", value: _program!.preTime),
-                        _buildInfoCard(label: "Post Time(%)", value: _program!.postTimePercent),*/
-                      ],
-                    ),
-                  ],
-                ),
-                ...zoneList.map((zone) => ConfigSection(
-                  title: "Zone ${zone.zoneNumber}",
-                  children: [
-                    Wrap(
-                      spacing: 10,
-                      runSpacing: 10,
-                      children: [
-                        _buildContainer(child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("Irrigation Time: ${zone.irrigationTime}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                        )),
-                        _buildContainer(child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("Flow: ${zone.irrigationFlow}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                        )),
-                        _buildContainer(child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("Valves: ${zone.activeValves.split(':').join(', ')}", style: const TextStyle(fontWeight: FontWeight.bold)),
-                        )),
-                      ],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Text("Fertilizer Timer", style: const TextStyle(fontWeight: FontWeight.w500)),
-                    ),
-                    ConfigRow(value: zone.fertigationTimes, splitBy: "-"),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Text("Fertilizer Flow", style: const TextStyle(fontWeight: FontWeight.w500)),
-                    ),
-                    ConfigRow(value: zone.fertigationFlows, splitBy: ":"),
-                  ],
-                )),
+                const Text("Last Sync:", style: TextStyle(fontSize: 12)),
+                Text(_lastSync ?? "-"),
               ],
             ),
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async => _requestMessage(widget.deviceId),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 20, top: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ConfigSection(
+                title: "Basic Program Settings",
+                children: [
+                  const SizedBox(height: 8),
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.zero,
+                    childAspectRatio: 2.6,
+                    mainAxisSpacing: 10,
+                    crossAxisSpacing: 10,
+                    children: [
+                      _buildInfoCard(label: "Program Name", value: _program!.programName),
+                      _buildInfoCard(label: "Irrigation Mode", value: _program!.irrigationMode),
+                      _buildInfoCard(label: "Valve Status", value: _program!.valveStatus, isBoolean: true),
+                      _buildInfoCard(label: "Dosing Mode", value: _program!.dosingMode),
+                      _buildInfoCard(label: "Decide Last", value: _program!.decideLast),
+                      _buildInfoCard(label: "Feedback Last", value: _program!.decideFeedbackLast),
+                      _buildInfoCard(label: "Delay Valve", value: _program!.delayValve),
+                      _buildInfoCard(label: "Feedback Time", value: _program!.feedbackTime),
+                      _buildInfoCard(label: "Drip Cyclic Restart", value: _program!.dripCycRst, isBoolean: true),
+                      _buildInfoCard(label: "Drip Restart Timer", value: _program!.dripCycRstTime),
+                      _buildInfoCard(label: "Zone Cyclic Restart", value: _program!.zoneCycRst, isBoolean: true),
+                      _buildInfoCard(label: "Start from", value: "Program:- ${_program!.programStartNumber.split(":")[0]} , Zone:- ${_program!.programStartNumber.split(":")[1]}"),
+                      _buildInfoCard(label: "Sump", value: _program!.sumpStatus, isBoolean: true),
+                      _buildInfoCard(label: "Drip Sump Restart", value: _program!.dripSumpStatus, isBoolean: true),
+                      _buildInfoCard(label: "Day count RTC", value: _program!.dayCountRtcTimer),
+                      _buildInfoCard(label: "Skip Days", value: _program!.skipDays, booleanValue: _program!.skipDaysStatus == "1"),
+                    ],
+                  ),
+                ],
+              ),
+              ConfigSection(
+                title: "RTC Timers",
+                children: [
+                  ConfigRow(label: "RTC Timer", value: _program!.rtcOnOff, isBoolean: true,),
+                  Row(
+                    children: const [
+                      SizedBox(width: 120),
+                      Expanded(child: Center(child: Text("On Time", style: TextStyle(fontWeight: FontWeight.bold)))),
+                      Expanded(child: Center(child: Text("Off Time", style: TextStyle(fontWeight: FontWeight.bold)))),
+                    ],
+                  ),
+                  ...List.generate(_program!.rtcTimers.length, (i) =>
+                      ConfigRow(
+                        label: "Timer ${i + 1}",
+                        value: _program!.rtcTimers[i],
+                        splitBy: ";",
+                      ),
+                  ),
+                ],
+              ),
+              ConfigSection(
+                title: "",
+                children: [
+                  ConfigGridRow(
+                    label: "Adjust Percent",
+                    values: _program!.adjustPercent,
+                    columnLabels: ["Time", "Flow", "Moisture", "Fert"],
+                  ),
+                ],
+              ),
+              ConfigSection(
+                title: "Fertilizer Settings",
+                children: [
+                  Row(
+                    spacing: 10,
+                    children: [
+                      SizedBox(width: 120),
+                      for(int i = 0; i < _program!.fertilizerRates[0].split(",")[0].split(":").length; i++)
+                        Expanded(child: Center(child: Text("F${i+1}", style: TextStyle(fontWeight: FontWeight.bold)))),
+                    ],
+                  ),
+                  ...List.generate(3, (i) =>
+                      ConfigRow(
+                        label: ["Fertilizer", "Fert Rate", "Vent Flow"][i],
+                        value: _program!.fertilizerRates[i],
+                        splitBy: ":",
+                      ),
+                  ),
+                  SizedBox(height: 10,),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      _buildContainer(child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Pre Quantity: ${_program!.preQty}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                      )),
+                      _buildContainer(child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Post Quantity: ${_program!.postQty}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                      )),
+                      _buildContainer(child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Pre Time: ${_program!.preTime}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                      )),
+                      _buildContainer(child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Post Time(%): ${_program!.postTimePercent}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                      )),
+                     /* _buildInfoCard(label: "Pre Quantity", value: _program!.preQty),
+                      _buildInfoCard(label: "Post Quantity", value: _program!.postQty),
+                      _buildInfoCard(label: "Pre Time", value: _program!.preTime),
+                      _buildInfoCard(label: "Post Time(%)", value: _program!.postTimePercent),*/
+                    ],
+                  ),
+                ],
+              ),
+              ...zoneList.map((zone) => ConfigSection(
+                title: "Zone ${zone.zoneNumber}",
+                children: [
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      _buildContainer(child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Irrigation Time: ${zone.irrigationTime}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                      )),
+                      _buildContainer(child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Flow: ${zone.irrigationFlow}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                      )),
+                      _buildContainer(child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Valves: ${zone.activeValves.split(':').join(', ')}", style: const TextStyle(fontWeight: FontWeight.bold)),
+                      )),
+                    ],
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text("Fertilizer Timer", style: const TextStyle(fontWeight: FontWeight.w500)),
+                  ),
+                  ConfigRow(value: zone.fertigationTimes, splitBy: "-"),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text("Fertilizer Flow", style: const TextStyle(fontWeight: FontWeight.w500)),
+                  ),
+                  ConfigRow(value: zone.fertigationFlows, splitBy: ":"),
+                ],
+              )),
+            ],
           ),
         ),
       ),

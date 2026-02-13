@@ -31,7 +31,7 @@ class _MappingAndUnmappingPageState extends State<MappingAndUnmappingPage> {
       FetchMappingAndUnmappingEvent(
         userId: controllerContext.userId,
         controllerId: controllerContext.controllerId,
-
+        deviceId: controllerContext.deviceId,
       ),
     );
   }

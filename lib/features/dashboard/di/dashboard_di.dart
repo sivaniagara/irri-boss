@@ -8,6 +8,7 @@ import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/program_p
 
 import '../../../core/di/injection.dart';
 import '../../../core/services/selected_controller_persistence.dart';
+import '../domain/usecases/control_motor_usecase.dart';
 import '../domain/usecases/update_change_from_usecase.dart';
 import '../presentation/cubit/dashboard_cubit.dart';
 import '../utils/dashboard_dispatcher.dart';
@@ -25,12 +26,14 @@ void initDashboardDependencies() {
   sl.registerLazySingleton(() => FetchDashboardGroups(sl()));
   sl.registerLazySingleton(() => FetchControllers(sl()));
   sl.registerLazySingleton(() => UpdateChangeFromUsecase(sl()));
+  sl.registerLazySingleton(() => ControlMotorUsecase(sl()));
 
   sl.registerLazySingleton<DashboardPageCubit>(
         () => DashboardPageCubit(
       fetchDashboardGroups: sl(),
       fetchControllers: sl(),
       updateChangeFromUsecase: sl(),
+      controlMotorUsecase: sl(),
     ),
   );
 

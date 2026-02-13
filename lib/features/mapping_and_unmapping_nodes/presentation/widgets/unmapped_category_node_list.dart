@@ -54,7 +54,8 @@ class _UnmappedCategoryNodeListState extends State<UnmappedCategoryNodeList> {
                 context.read<MappingAndUnmappingNodesBloc>().add(
                     FetchMappingAndUnmappingEvent(
                         userId: controllerContext.userId,
-                        controllerId: controllerContext.controllerId
+                        controllerId: controllerContext.controllerId,
+                        deviceId: controllerContext.deviceId,
                     )
                 );
                 context.pop();
