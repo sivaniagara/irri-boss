@@ -105,6 +105,18 @@ class _FertilizerLiveScreenState extends State<FertilizerLivePage> {
               padding: const EdgeInsets.only(right: 8.0),
               child: IconButton(
                 onPressed: () {
+                  setState(() {
+                    _requestLiveData();
+                  });
+                },
+                icon: Icon(Icons.refresh),
+              ),
+
+            ),
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: IconButton(
+                onPressed: () {
                   if (fertilizerState != null) {
                     final Map<String, dynamic> excelData = {
                       "Date": fertilizerState!.lastSyncDate,
@@ -264,7 +276,7 @@ class _FertilizerLiveScreenState extends State<FertilizerLivePage> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            motorOn ? "MOTOR ON" : "MOTOR OFF",
+        fertilizerState!.motorStatuslive,
             style: TextStyle(
               fontWeight: FontWeight.w900,
               fontSize: 17,
@@ -272,15 +284,7 @@ class _FertilizerLiveScreenState extends State<FertilizerLivePage> {
               letterSpacing: 0.5,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            fertilizerState!.motorStatus.toUpperCase(),
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 13,
-              color: textColor.withOpacity(0.8),
-            ),
-          ),
+
         ],
       ),
     );

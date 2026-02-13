@@ -1,8 +1,8 @@
 import 'package:niagara_smart_drip_irrigation/features/reports/fert_live/fert_live_model.dart';
 
 FertilizerLiveState fertilizerLiveStateFromRaw(
-  Map<String, dynamic> raw,
-) {
+    Map<String, dynamic> raw,
+    ) {
   final cM = raw['cM'] as String? ?? '';
   final cT = raw['cT'] as String? ?? 'NA';
   final cD = raw['cD'] as String? ?? 'NA';
@@ -12,24 +12,24 @@ FertilizerLiveState fertilizerLiveStateFromRaw(
   // Motor Status Parsing
   final rawMotorStatus = cmstr.safe(0) ?? 'NA';
   final motorOn = rawMotorStatus == '1' || rawMotorStatus.toUpperCase().contains('ON');
-  
-  // If status is '0' or empty, we treat it as 'CYCLE COMPLETED' as per the UI requirement
-  final motorStatus = (rawMotorStatus == '0' || rawMotorStatus == 'NA' || rawMotorStatus.isEmpty) 
-      ? "CYCLE COMPLETED" 
-      : rawMotorStatus;
 
+  // If status is '0' or empty, we treat it as 'CYCLE COMPLETED' as per the UI requirement
+  final motorStatus = (rawMotorStatus == '0' || rawMotorStatus == 'NA' || rawMotorStatus.isEmpty)
+      ? "CYCLE COMPLETED"
+      : rawMotorStatus;
+  final motorStatuslive  = "${cmstr.safe(1)?.trim()}\n${cmstr.safe(2)?.trim()}";
   // RTC TIME (cmstr[1])
   final rtcTime = cmstr.safe(1)?.trim() ?? '0';
 
   // VRB & AMP (cmstr[2])
   final vrbAmp = cmstr.safe(2) ?? '';
   final vrb = int.tryParse(
-        RegExp(r'VRB:(\d+)').firstMatch(vrbAmp)?.group(1) ?? '0',
-      ) ??
+    RegExp(r'VRB:(\d+)').firstMatch(vrbAmp)?.group(1) ?? '0',
+  ) ??
       0;
   final amp = double.tryParse(
-        RegExp(r'AMP:([\d.]+)').firstMatch(vrbAmp)?.group(1) ?? '0',
-      ) ??
+    RegExp(r'AMP:([\d.]+)').firstMatch(vrbAmp)?.group(1) ?? '0',
+  ) ??
       0;
 
   // PRE & POST WATER
@@ -56,7 +56,7 @@ FertilizerLiveState fertilizerLiveStateFromRaw(
   final tankStr = (cmstr.safe(9) ?? '0:0:0:0:0:0').split(':');
   final tankLevels = List.generate(
     6,
-    (i) => int.tryParse(tankStr.safe(i) ?? '0') ?? 0,
+        (i) => int.tryParse(tankStr.safe(i) ?? '0') ?? 0,
   );
 
   // FERT RTC ON–OFF TIMES (cmstr[12] → cmstr[17])
@@ -76,6 +76,7 @@ FertilizerLiveState fertilizerLiveStateFromRaw(
     rtcTime: rtcTime,
     motorOn: motorOn,
     motorStatus: motorStatus,
+    motorStatuslive: motorStatuslive,
     vrb: vrb,
     amp: amp,
     preWater: preWater,
@@ -99,6 +100,7 @@ class FertilizerLiveState {
   final String rtcTime;
   final bool motorOn;
   final String motorStatus;
+  final String motorStatuslive;
   final int vrb;
   final double amp;
   final String preWater;
@@ -120,6 +122,7 @@ class FertilizerLiveState {
     required this.rtcTime,
     required this.motorOn,
     required this.motorStatus,
+    required this.motorStatuslive,
     required this.vrb,
     required this.amp,
     required this.preWater,
