@@ -13,25 +13,42 @@ class SerialSetModel extends SerialSetEntity {
   factory SerialSetModel.fromJson(Map<String, dynamic> json) {
     var rawSendData = json['sendData'];
     Map<String, dynamic> sendDataMap = {};
+    List<dynamic> nodesList = [];
+
     if (rawSendData is String && rawSendData.isNotEmpty) {
       try {
-        sendDataMap = jsonDecode(rawSendData);
+        final decoded = jsonDecode(rawSendData);
+        if (decoded is Map) {
+          sendDataMap = Map<String, dynamic>.from(decoded);
+          // Support 'nodeList' from your specific API
+          if (decoded['nodeList'] is List) {
+            nodesList = decoded['nodeList'];
+          } else if (decoded['nodes'] is List) {
+            nodesList = decoded['nodes'];
+          }
+        } else if (decoded is List) {
+          nodesList = decoded;
+        }
       } catch (_) {}
     } else if (rawSendData is Map) {
       sendDataMap = Map<String, dynamic>.from(rawSendData);
+      if (sendDataMap['nodeList'] is List) {
+        nodesList = sendDataMap['nodeList'];
+      } else if (sendDataMap['nodes'] is List) {
+        nodesList = sendDataMap['nodes'];
+      }
     }
 
-    // In this specific API response, sendData contains loraKey as a single field
-    // Nodes might be expected from a different part or format, but following your JSON:
-    String loraKey = sendDataMap['loraKey']?.toString() ?? '';
+    // Support both 'lorakey' and 'loraKey'
+    String loraKey = (sendDataMap['lorakey'] ?? sendDataMap['loraKey'] ?? '').toString();
 
-    // If nodes are expected in sendData as a list (like in other modules):
-    List<dynamic> nodesList = [];
-    if (sendDataMap['nodes'] is List) {
-      nodesList = sendDataMap['nodes'];
-    }
-
-    var nodes = nodesList.map((e) => SerialSetNodeModel.fromJson(e)).toList();
+    // Added explicit mapping to handle potential dynamic type issues
+    var nodes = nodesList.map((e) {
+      if (e is Map) {
+        return SerialSetNodeModel.fromJson(Map<String, dynamic>.from(e));
+      }
+      return const SerialSetNodeModel(qrCode: '', serialNo: '', nodeId: '');
+    }).where((node) => node.nodeId.isNotEmpty || node.qrCode.isNotEmpty).toList();
 
     return SerialSetModel(
       menuSettingId: json['menuSettingId'] ?? 481,
@@ -52,9 +69,10 @@ class SerialSetNodeModel extends SerialSetNodeEntity {
 
   factory SerialSetNodeModel.fromJson(Map<String, dynamic> json) {
     return SerialSetNodeModel(
-      qrCode: json['QRCode']?.toString() ?? '',
-      serialNo: json['serialNo']?.toString() ?? '',
-      nodeId: json['nodeId']?.toString() ?? '',
+      // Added nodeName fallback as seen in your API response
+      qrCode: (json['QRCode'] ?? json['qrCode'] ?? json['nodeName'] ?? '').toString(),
+      serialNo: (json['serialNo'] ?? '').toString(),
+      nodeId: (json['nodeId'] ?? '').toString(),
     );
   }
 
