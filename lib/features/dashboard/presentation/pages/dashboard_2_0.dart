@@ -309,9 +309,23 @@ class _Dashboard20State extends State<Dashboard20> {
                   titleColor: const Color(0xff347CA6),
                   backgroundColor: const Color(0xff52AED7),
                 ),
-                Image.asset(
-                  'assets/images/common/valve_with_flow.png',
-                  width: 70,
+                GestureDetector(
+                  onTap: () {
+                    final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+                    context.push(
+                        DashBoardRoutes.nodeStatus,
+                        extra: {
+                          "userId": controllerContext.userId,
+                          "controllerId": controllerContext.controllerId,
+                          "subuserId": controllerContext.subUserId,
+                          "deviceId": controllerContext.deviceId,
+                        }
+                    );
+                  },
+                  child: Image.asset(
+                    'assets/images/common/valve_with_flow.png',
+                    width: 70,
+                  ),
                 )
               ],
             )

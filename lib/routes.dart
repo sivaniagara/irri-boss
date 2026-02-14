@@ -64,6 +64,7 @@ import 'core/utils/route_constants.dart';
 import 'features/auth/auth.dart';
 import 'features/serial_set/utils/serial_set_routes.dart';
 import 'features/side_drawer/side_drawer_routes.dart';
+import 'features/get_moisture/utils/get_moisture_status_routes.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream stream) {
@@ -196,9 +197,9 @@ class AppRouter {
                     /// Safe param extraction
                     final extra = state.extra as Map<String, dynamic>? ?? {};
 
-                     final int userId = int.tryParse(extra['userId']) ?? 0;
-                    final int subUserId = int.tryParse(extra['subUserId']) ?? 0;
-                    final int controllerId = int.tryParse(extra['controllerId']) ?? 0;
+                     final int userId = int.tryParse(extra['userId'].toString()) ?? 0;
+                    final int subUserId = int.tryParse(extra['subUserId'].toString()) ?? 0;
+                    final int controllerId = int.tryParse(extra['controllerId'].toString()) ?? 0;
                     final String deviceId = extra['deviceId']?.toString() ?? "0";
 
                     final String fromDate = extra['fromDate'] ??
@@ -226,10 +227,10 @@ class AppRouter {
                   path: DashBoardRoutes.standalone,
                   builder: (context, state) {
                     final params = state.extra as Map<String, dynamic>;
-                    final userId = params["userId"] ?? 0;
-                    final controllerId = params["controllerId"] ?? 0;
-                    final deviceId = params["deviceId"]?.toString() ?? '';
-                    final subUserId = params["subUserId"] ?? 0;
+                    final String userId = params["userId"].toString();
+                    final String controllerId = params["controllerId"].toString();
+                    final String deviceId = params["deviceId"]?.toString() ?? '';
+                    final String subUserId = params["subUserId"].toString();
 
                     return BlocProvider.value(
                       value: di.sl<StandaloneBloc>(),
@@ -334,10 +335,10 @@ class AppRouter {
           builder: (context, state) {
             final data = state.extra as Map<String, dynamic>;
             return NodeStatusPage(
-              userId: data['userId'],
-              controllerId: data['controllerId'],
-              subuserId: data['subuserId'],
-              deviceId: data['deviceId'],
+              userId: int.tryParse(data['userId'].toString()) ?? 0,
+              controllerId: int.tryParse(data['controllerId'].toString()) ?? 0,
+              subuserId: int.tryParse(data['subuserId'].toString()) ?? 0,
+              deviceId: data['deviceId'].toString(),
             );
           },
         ),
@@ -382,6 +383,7 @@ class AppRouter {
         ...AlarmRoutes.routes,
         ...SerialSetRoutes.routes,
         ...SellingDeviceRoutes.sellingDeviceRoutes,
+        ...nodeMoistureStatusRoutes,
       ],
     );
   }

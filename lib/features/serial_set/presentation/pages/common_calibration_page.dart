@@ -7,8 +7,8 @@ import '../bloc/serial_set_bloc.dart';
 import '../bloc/serial_set_event.dart';
 import '../bloc/serial_set_state.dart';
 
-class SerialSetCalibrationSheet extends StatelessWidget {
-  const SerialSetCalibrationSheet({super.key});
+class CommonCalibrationSheet extends StatelessWidget {
+  const CommonCalibrationSheet({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +48,7 @@ class SerialSetCalibrationSheet extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20.0),
                 child: Text(
-                  'Serial set Calibration',
+                  'Common Calibration',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: Theme.of(context).primaryColor,
                     fontWeight: FontWeight.bold,
@@ -116,7 +116,7 @@ class SerialSetCalibrationSheet extends StatelessWidget {
                                     color: Colors.blueGrey,
                                     onPressed: () {
                                       context.read<SerialSetBloc>().add(SendSerialSetMqttEvent(
-                                        smsKey: "C004", // VSERIALSET
+                                        smsKey: "C002", // VIDCALSET
                                         extraValue: node.serialNo,
                                         successMessage: "Request sent successfully",
                                       ));
@@ -128,7 +128,7 @@ class SerialSetCalibrationSheet extends StatelessWidget {
                                     color: Colors.blue,
                                     onPressed: () {
                                       context.read<SerialSetBloc>().add(SendSerialSetMqttEvent(
-                                        smsKey: "C003", // #SERIALSET
+                                        smsKey: "C001", // IDCALSET
                                         extraValue: node.serialNo,
                                         successMessage: "Command sent successfully",
                                       ));
