@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
+import '../../../../core/theme/app_themes.dart';
+import '../../../../core/utils/app_images.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../cubit/selling_device_cubit.dart';
@@ -37,21 +39,12 @@ class _SellingDevicePageState extends State<SellingDevicePage> {
 
         String? overrideType;
         if (state.userType == '4') {
-          if (kDebugMode) {
-            print("DEBUG: User type is 'Myself' (4). Mobile: $text");
-          }
           final authState = context.read<AuthBloc>().state;
           if (authState is Authenticated) {
             final user = authState.user.userDetails;
-            if (kDebugMode) {
-              print("DEBUG: Logged-in user mobile: ${user.mobile}, name: ${user.name}, type: ${user.userType}");
-            }
             overrideType = user.userType.toString();
 
             if (user.mobile == text) {
-              if (kDebugMode) {
-                print("DEBUG: Mobile matched! Setting name locally.");
-              }
               context.read<SellingDeviceCubit>().setFetchedUserName(user.name, text, successMessage: "Username successfully listed");
               return;
             }
@@ -74,15 +67,23 @@ class _SellingDevicePageState extends State<SellingDevicePage> {
   Widget build(BuildContext context) {
     final queryParams = GoRouterState.of(context).uri.queryParameters;
     final userId = queryParams['userId'] ?? '153';
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xffF3F4F6),
+      backgroundColor: AppThemes.scaffoldBackGround,
       appBar: CustomAppBar(
-        title: 'Selling Device',
+        title: 'Inventory & Sales',
         actions: [
-          IconButton(
-            icon: Icon(Icons.add_circle_rounded, size: 26, color: Theme.of(context).primaryColor),
-            onPressed: () => context.push('${SellingDeviceRoutes.traceDevice}?userId=$userId'),
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: theme.primaryColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: IconButton(
+              icon: Icon(Icons.qr_code_scanner_rounded, size: 22, color: theme.primaryColor),
+              onPressed: () => context.push('${SellingDeviceRoutes.traceDevice}?userId=$userId'),
+            ),
           ),
         ],
       ),
@@ -123,48 +124,50 @@ class _SellingDevicePageState extends State<SellingDevicePage> {
             } else if (state is SellingDeviceLoaded) {
               return ListView.builder(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.only(top: 8, bottom: 24),
                 itemCount: state.categories.length,
                 itemBuilder: (context, index) {
                   final category = state.categories[index];
                   final isExpanded = state.expandedCategories.contains(category.categoryId);
                   final units = state.categoryUnits[category.categoryId];
 
-                  return Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(20),
+                        topRight: Radius.circular(20),
+                      ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
-                          blurRadius: 10,
+                          color: Colors.black.withOpacity(0.04),
+                          blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
                       ],
+                      border: Border.all(
+                        color: isExpanded ? theme.primaryColor.withOpacity(0.3) : Colors.transparent,
+                        width: 1,
+                      ),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         _categoryHeader(context, category.categoryName, category.categoryId, userId, isExpanded),
-                        if (isExpanded && (state.isUnitsLoading || (units != null && units.isNotEmpty)))
-                          Container(
-                            decoration: BoxDecoration(
-                              color: const Color(0xffF9FAFB),
-                              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(15)),
-                            ),
-                            child: Column(
-                              children: [
-                                if (state.isUnitsLoading && units == null)
-                                  const Padding(padding: EdgeInsets.all(20.0), child: CircularProgressIndicator(strokeWidth: 2))
-                                else ...[
-                                  ...units!.map((unit) => _productItem(context, unit, state)),
-                                  if (state.selectedProductIds.isNotEmpty)
-                                    _premiumSalesForm(context, state, userId),
-                                ]
-                              ],
-                            ),
-                          ),
+                        if (isExpanded) ...[
+                          const Divider(height: 1, indent: 16, endIndent: 16),
+                          if (state.isUnitsLoading && units == null)
+                            const Padding(padding: EdgeInsets.all(24.0), child: CircularProgressIndicator(strokeWidth: 2))
+                          else if (units != null && units.isEmpty)
+                            const Padding(padding: EdgeInsets.all(24.0), child: Text("No devices available in this category", style: TextStyle(color: Colors.grey, fontSize: 13)))
+                          else if (units != null) ...[
+                            ...units.map((unit) => _productItem(context, unit, state)),
+                            if (state.selectedProductIds.isNotEmpty)
+                              _refinedSalesForm(context, state, userId),
+                          ]
+                        ],
                       ],
                     ),
                   );
@@ -183,33 +186,47 @@ class _SellingDevicePageState extends State<SellingDevicePage> {
   Widget _categoryHeader(BuildContext context, String name, int categoryId, String userId, bool isExpanded) {
     return InkWell(
       onTap: () => context.read<SellingDeviceCubit>().toggleCategory(categoryId, userId),
-      borderRadius: BorderRadius.vertical(
-        top: const Radius.circular(15),
-        bottom: Radius.circular(isExpanded ? 0 : 15),
+      borderRadius: BorderRadius.only(
+        topRight: const Radius.circular(20),
+        bottomLeft: Radius.circular(isExpanded ? 0 : 20),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xffB4E7FF),
-                borderRadius: BorderRadius.circular(8),
+                color: isExpanded ? AppThemes.primaryColor.withOpacity(0.1) : const Color(0xffF3F4F6),
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.inventory_2_rounded, size: 22, color: Theme.of(context).primaryColor),
+              child: Image.asset(
+                AppImages.mappedNodesIcon,
+                width: 22,
+                color: isExpanded ? AppThemes.primaryColor : Colors.black54,
+              ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16),
             Expanded(
-              child: Text(
-                name,
-                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isExpanded ? AppThemes.primaryColor : Colors.black87,
+                    ),
+                  ),
+                  const Text("Tap to view devices", style: TextStyle(fontSize: 11, color: Colors.black45)),
+                ],
               ),
             ),
             Icon(
               isExpanded ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-              size: 26,
-              color: Colors.black45,
+              size: 28,
+              color: isExpanded ? AppThemes.primaryColor : Colors.black38,
             ),
           ],
         ),
@@ -219,37 +236,64 @@ class _SellingDevicePageState extends State<SellingDevicePage> {
 
   Widget _productItem(BuildContext context, dynamic unit, SellingDeviceLoaded state) {
     final isSelected = state.selectedProductIds.contains(unit.productId);
+    final theme = Theme.of(context);
+
     return InkWell(
       onTap: () => context.read<SellingDeviceCubit>().toggleProductSelection(unit.productId),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: Colors.grey.withOpacity(0.1))),
+          color: isSelected ? theme.primaryColor.withOpacity(0.02) : Colors.transparent,
+          border: Border(bottom: BorderSide(color: Colors.grey.withOpacity(0.05))),
         ),
         child: Row(
           children: [
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              width: 20,
-              height: 20,
+              width: 22,
+              height: 22,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(6),
                 border: Border.all(
-                  color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade400,
-                  width: 1.5,
+                  color: isSelected ? theme.primaryColor : Colors.grey.shade300,
+                  width: 2,
                 ),
-                color: isSelected ? Theme.of(context).primaryColor : Colors.white,
+                color: isSelected ? theme.primaryColor : Colors.white,
               ),
-              child: isSelected ? const Icon(Icons.check, size: 14, color: Colors.white) : null,
+              child: isSelected ? const Icon(Icons.check, size: 16, color: Colors.white) : null,
+            ),
+            const SizedBox(width: 16),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.grey.shade100),
+              ),
+              child: Image.asset(AppImages.communicationNodeIcon, width: 18),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(unit.modelName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.black87)),
+                  Text(
+                    unit.modelName,
+                    style: TextStyle(
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                      fontSize: 14,
+                      color: isSelected ? theme.primaryColor : Colors.black87,
+                    ),
+                  ),
                   const SizedBox(height: 2),
-                  Text("ID: ${unit.deviceId} • PID: ${unit.productId}", style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                  Row(
+                    children: [
+                      _badge("SN: ${unit.deviceId}", Colors.blueGrey.shade50, Colors.blueGrey.shade600),
+                      const SizedBox(width: 6),
+                      _badge("PID: ${unit.productId}", Colors.blue.shade50, Colors.blue.shade700),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -259,107 +303,119 @@ class _SellingDevicePageState extends State<SellingDevicePage> {
     );
   }
 
-  Widget _premiumSalesForm(BuildContext context, SellingDeviceLoaded state, String userId) {
+  Widget _badge(String label, Color bg, Color text) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(4)),
+      child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: text)),
+    );
+  }
+
+  Widget _refinedSalesForm(BuildContext context, SellingDeviceLoaded state, String userId) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(20),
       margin: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.withOpacity(0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: const Color(0xffF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.primaryColor.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xffB1E4AA),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Icon(Icons.person_add_rounded, size: 16, color: Theme.of(context).primaryColor),
-              ),
+              const Icon(Icons.shopping_bag_rounded, size: 20, color: AppThemes.primaryColor),
               const SizedBox(width: 10),
-              const Text(
-                "Sales Details",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87),
+              Text(
+                "Complete Assignment (${state.selectedProductIds.length})",
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
-                flex: 2,
-                child: Container(
-                  height: 45,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xffF3F4F6),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: state.userType,
-                      isExpanded: true,
-                      icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 20),
-                      style: const TextStyle(fontSize: 13, color: Colors.black87, fontWeight: FontWeight.w500),
-                      items: const [
-                        DropdownMenuItem(value: '1', child: Text('Customer')),
-                        DropdownMenuItem(value: '2', child: Text('Dealer')),
-                        DropdownMenuItem(value: '3', child: Text('Admin')),
-                        DropdownMenuItem(value: '4', child: Text('Myself')),
-                      ],
-                      onChanged: (val) {
-                        if (val != null) {
-                          context.read<SellingDeviceCubit>().updateUserType(val);
-                          if (_mobileController.text.length == 10) {
-                            _onMobileChanged();
-                          }
-                        }
-                      },
+                flex: 4,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Role", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black54)),
+                    const SizedBox(height: 6),
+                    Container(
+                      height: 48,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: state.userType,
+                          isExpanded: true,
+                          icon: const Icon(Icons.expand_more_rounded, color: Colors.black45),
+                          style: const TextStyle(fontSize: 13, color: Colors.black87, fontWeight: FontWeight.w600),
+                          items: const [
+                            DropdownMenuItem(value: '1', child: Text('Customer')),
+                            DropdownMenuItem(value: '2', child: Text('Dealer')),
+                            DropdownMenuItem(value: '3', child: Text('Admin')),
+                            DropdownMenuItem(value: '4', child: Text('Myself')),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) {
+                              context.read<SellingDeviceCubit>().updateUserType(val);
+                              if (_mobileController.text.length == 10) {
+                                _onMobileChanged();
+                              }
+                            }
+                          },
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
-                flex: 3,
-                child: SizedBox(
-                  height: 45,
-                  child: TextField(
-                    controller: _mobileController,
-                    keyboardType: TextInputType.phone,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-                    decoration: InputDecoration(
-                      hintText: "Mobile Number",
-                      hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12),
-                      filled: true,
-                      fillColor: const Color(0xffF3F4F6),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
-                      suffixIcon: state.isUsernameLoading
-                          ? const Padding(padding: EdgeInsets.all(12), child: CircularProgressIndicator(strokeWidth: 2))
-                          : Icon(Icons.phone_android_rounded, size: 18, color: Colors.grey.shade600),
+                flex: 6,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("Mobile Number", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black54)),
+                    const SizedBox(height: 6),
+                    SizedBox(
+                      height: 48,
+                      child: TextField(
+                        controller: _mobileController,
+                        keyboardType: TextInputType.phone,
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        decoration: InputDecoration(
+                          hintText: "10-digit number",
+                          hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade400, fontWeight: FontWeight.normal),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                          filled: true,
+                          fillColor: Colors.white,
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: Colors.grey.shade200)),
+                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: theme.primaryColor, width: 1.5)),
+                          suffixIcon: state.isUsernameLoading
+                              ? const Padding(padding: EdgeInsets.all(14), child: CircularProgressIndicator(strokeWidth: 2))
+                              : Icon(Icons.phone_android_rounded, size: 18, color: theme.primaryColor.withOpacity(0.5)),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             ],
           ),
           if (state.fetchedUserName != null)
-            Container(
-              margin: const EdgeInsets.only(top: 14),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.only(top: 16),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.green.shade50,
                 borderRadius: BorderRadius.circular(10),
@@ -367,21 +423,31 @@ class _SellingDevicePageState extends State<SellingDevicePage> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.verified_user_rounded, color: Colors.green, size: 18),
-                  const SizedBox(width: 10),
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
+                    child: const Icon(Icons.check, color: Colors.white, size: 12),
+                  ),
+                  const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      "Assigning to: ${state.fetchedUserName}",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.green.shade700),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Validated User", style: TextStyle(fontSize: 11, color: Colors.green)),
+                        Text(
+                          state.fetchedUserName!,
+                          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: Colors.green.shade900),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
-            height: 48,
+            height: 52,
             child: ElevatedButton(
               onPressed: (state.fetchedUserName != null && !state.isSalesLoading)
                   ? () {
@@ -394,15 +460,16 @@ class _SellingDevicePageState extends State<SellingDevicePage> {
               }
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: theme.primaryColor,
                 foregroundColor: Colors.white,
                 disabledBackgroundColor: Colors.grey.shade300,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                elevation: 0,
+                elevation: 4,
+                shadowColor: theme.primaryColor.withOpacity(0.3),
               ),
               child: state.isSalesLoading
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text("COMPLETE SALE", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, letterSpacing: 0.5)),
+                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                  : const Text("FINALIZE TRANSACTION", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14, letterSpacing: 1)),
             ),
           ),
         ],
@@ -415,7 +482,7 @@ class _SellingDevicePageState extends State<SellingDevicePage> {
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         backgroundColor: Colors.white,
         child: Container(
           padding: const EdgeInsets.all(24),
@@ -423,33 +490,33 @@ class _SellingDevicePageState extends State<SellingDevicePage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: (isError ? Colors.red : Colors.green).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  isError ? Icons.warning_amber_rounded : Icons.verified_rounded,
-                  size: 48,
+                  isError ? Icons.error_outline_rounded : Icons.check_circle_outline_rounded,
+                  size: 56,
                   color: isError ? Colors.red : Colors.green,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               Text(
-                isError ? "Attention Required" : "Sale Successful",
+                isError ? "Transaction Failed" : "Success",
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Colors.black87),
               ),
               const SizedBox(height: 12),
               Text(
                 message,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: Colors.grey.shade600, height: 1.4),
+                style: TextStyle(fontSize: 14, color: Colors.black54, height: 1.5, fontWeight: FontWeight.w500),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
               SizedBox(
                 width: double.infinity,
-                height: 48,
+                height: 52,
                 child: ElevatedButton(
                   onPressed: () {
                     context.read<SellingDeviceCubit>().clearMessage();
@@ -458,9 +525,10 @@ class _SellingDevicePageState extends State<SellingDevicePage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isError ? Colors.black87 : Colors.green,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    elevation: 0,
                   ),
-                  child: const Text("CONTINUE", style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text("CONTINUE", style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 0.5)),
                 ),
               ),
             ],
