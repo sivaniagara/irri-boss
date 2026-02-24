@@ -58,12 +58,7 @@ class ValveFlowRepositoryImpl implements ValveFlowRepository {
         controllerId: controllerId,
         command: jsonEncode({"sentSms": sentSms}),
       );
-      await remoteSource.logHistory(
-        userId: userId,
-        subuserId: subUserId,
-        controllerId: controllerId,
-        sentSms: sentSms,
-      );
+      // Removed redundant logHistory as the backend should handle logging from the command
       return const Right(null);
     } catch (e) {
       return Left(ServerFailure(e.toString()));
@@ -84,6 +79,7 @@ class ValveFlowRepositoryImpl implements ValveFlowRepository {
         mqttDeviceId = entity.nodes.first.qrCode;
       }
 
+      // 1. Send MQTT Command
       if (mqttDeviceId.isNotEmpty) {
         await remoteSource.publishMqttCommand(
           controllerId: mqttDeviceId,
@@ -91,12 +87,9 @@ class ValveFlowRepositoryImpl implements ValveFlowRepository {
         );
       }
 
-      await remoteSource.logHistory(
-        userId: userId,
-        subuserId: subUserId,
-        controllerId: controllerId,
-        sentSms: sentSms,
-      );
+      // 2. Save settings to DB via API (which includes the sentSms for logging)
+      // Note: Removed remoteSource.logHistory call here to prevent double logging 
+      // since the saveValveFlowSettings API body already contains "sentSms".
 
       final int mId = entity.menuSettingId != 0 ? entity.menuSettingId : 488;
       final body = {

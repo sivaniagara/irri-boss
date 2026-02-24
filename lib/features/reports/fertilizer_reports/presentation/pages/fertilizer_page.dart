@@ -93,14 +93,14 @@ class FertilizerPage extends StatelessWidget {
             }
 
             if (state is FertilizerError) {
-              return noData;
+              return noDataNew;
             }
 
             if (state is FertilizerLoaded) {
               return FertilizerView(
                 data: state.data,);
             }
-            return noData;
+            return noDataNew;
           },
         ),
       ),

@@ -35,7 +35,7 @@ class faultmsgPage extends StatelessWidget {
             }
       
             if (state is faultmsgError) {
-              return Center(child: noData);
+              return Center(child: noDataNew);
             }
       
              return const SizedBox();

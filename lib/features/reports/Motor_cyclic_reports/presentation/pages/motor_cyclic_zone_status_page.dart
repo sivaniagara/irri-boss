@@ -59,7 +59,7 @@ class MotorCyclicZoneStatusView extends StatelessWidget {
              // 🔹 ZONE GRID
             Expanded(
               child: allZones.isEmpty
-                  ?  noData
+                  ?  noDataNew
                   : GridView.builder(
                 padding: const EdgeInsets.all(12),
                 gridDelegate:

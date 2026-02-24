@@ -54,7 +54,7 @@ class Datum {
   factory Datum.fromJson(Map<String, dynamic> json) => Datum(
     zone: json["zone"],
     duration: json["duration"],
-    litres: json["litres"],
+    litres: json["litres"].toString(),
     zonePlace: json["zonePlace"],
     totalFlow: json["totalFlow"],
   );

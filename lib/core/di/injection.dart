@@ -40,6 +40,7 @@ import '../../features/reports/power_reports/di/power_di.dart';
 import '../../features/reports/reportMenu/di/report_di.dart';
 import '../../features/reports/zone_duration_reports/di/zone_duration_di.dart';
 import '../../features/reports/zonecyclic_reports/di/zone_cyclic_di.dart';
+import '../../features/selling_device/di/selling_device_di.dart';
 import '../../features/sendrev_msg/di/sendrev_di.dart';
 import '../../features/auth/di/auth.di.dart';
 import '../../features/controller_settings/presentation/cubit/controller_tab_cubit.dart';
@@ -58,6 +59,7 @@ import '../services/network_info.dart';
 import '../services/notification_service.dart';
 import '../theme/theme_provider.dart';
 import '../../features/standalone_settings/di/standalone_settings_di.dart';
+import '../../features/get_moisture/di/get_moisture_status_di.dart';
 
 final GetIt sl = GetIt.instance;
 
@@ -173,6 +175,8 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initServiceRequestDependencies();
   initAlarmDependencies();
   initSerialSetDependencies();
+  initSellingDeviceDependencies();
+  initGetMoistureStatus();
 
 }
 

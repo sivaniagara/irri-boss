@@ -3,12 +3,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:niagara_smart_drip_irrigation/features/alarm_settings/utils/alarm_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/dashboard_2_0.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/node_status_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/green_house_reports/utils/green_house_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/moisture_reports/utils/moisture_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/selling_device/utils/selling_device_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/service_request/utils/service_request_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/settings/presentation/pages/settings_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
@@ -39,14 +41,18 @@ import 'features/fault_msg/utils/faultmsg_routes.dart';
 import 'features/mapping_and_unmapping_nodes/utils/mapping_and_unmapping_nodes_routes.dart';
 import 'features/report_downloader/utils/report_downloaderRoute.dart';
 import 'features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
+import 'features/reports/Voltage_reports/utils/voltage_routes.dart';
 import 'features/reports/fertilizer_reports/utils/fertilizer_routes.dart';
 import 'features/reports/flow_graph_reports/utils/flow_graph_routes.dart';
 import 'features/reports/power_reports/utils/Power_routes.dart';
+import 'features/reports/reportMenu/bloc/report_menu_bloc.dart';
+import 'features/reports/reportMenu/presentation/reportmenu_page.dart';
 import 'features/reports/reportMenu/utils/report_routes.dart';
 import 'features/reports/standalone_reports/utils/standalone_report_routes.dart';
 import 'features/reports/tdy_valve_status_reports/utils/tdy_valve_status_routes.dart';
 import 'features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
 import 'features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
+import 'features/sendrev_msg/presentation/pages/sendrevPage.dart';
 import 'features/sendrev_msg/utils/senrev_routes.dart';
 import 'features/program_settings/utils/program_settings_routes.dart';
 
@@ -58,6 +64,7 @@ import 'core/utils/route_constants.dart';
 import 'features/auth/auth.dart';
 import 'features/serial_set/utils/serial_set_routes.dart';
 import 'features/side_drawer/side_drawer_routes.dart';
+import 'features/get_moisture/utils/get_moisture_status_routes.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream stream) {
@@ -187,22 +194,43 @@ class AppRouter {
               GoRoute(
                   path: DashBoardRoutes.report,
                   builder: (context, state) {
-                    return Center(
-                      child: Text('Report'),
+                    /// Safe param extraction
+                    final extra = state.extra as Map<String, dynamic>? ?? {};
+
+                     final int userId = int.tryParse(extra['userId'].toString()) ?? 0;
+                    final int subUserId = int.tryParse(extra['subUserId'].toString()) ?? 0;
+                    final int controllerId = int.tryParse(extra['controllerId'].toString()) ?? 0;
+                    final String deviceId = extra['deviceId']?.toString() ?? "0";
+
+                    final String fromDate = extra['fromDate'] ??
+                        DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+                    final String toDate = extra['toDate'] ??
+                        DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+                    return BlocProvider.value(
+                      value: di.sl<ReportMenuBloc>(),
+                      child: ReportMenuPage(
+                        params: {
+                          "userId": userId,
+                          "subuserId": subUserId,
+                          "controllerId": controllerId,
+                          "deviceId": deviceId,
+                          "fromDate": fromDate,
+                          "toDate": toDate,
+                        },
+                      ),
                     );
                   },
-                  routes: [
-
-                  ]
               ),
               GoRoute(
                   path: DashBoardRoutes.standalone,
                   builder: (context, state) {
                     final params = state.extra as Map<String, dynamic>;
-                    final userId = params["userId"]?.toString() ?? '';
-                    final controllerId = params["controllerId"]?.toString() ?? '';
-                    final deviceId = params["deviceId"]?.toString() ?? '';
-                    final subUserId = params["subUserId"]?.toString() ?? '0';
+                    final String userId = params["userId"].toString();
+                    final String controllerId = params["controllerId"].toString();
+                    final String deviceId = params["deviceId"]?.toString() ?? '';
+                    final String subUserId = params["subUserId"].toString();
 
                     return BlocProvider.value(
                       value: di.sl<StandaloneBloc>(),
@@ -235,13 +263,18 @@ class AppRouter {
               GoRoute(
                   path: DashBoardRoutes.sentAndReceive,
                   builder: (context, state) {
-                    return Center(
-                      child: Text('sentAndReceive'),
+                    final controllerContext = context.read<ControllerContextCubit>().state;
+                    if (controllerContext is ControllerContextLoaded) {
+                      return SendRevPage(params: {
+                        "userId": controllerContext.userId,
+                        "subuserId": controllerContext.subUserId,
+                        "controllerId": controllerContext.controllerId,
+                      });
+                    }
+                    return const Center(
+                      child: Text('Please select a controller first.'),
                     );
                   },
-                  routes: [
-
-                  ]
               ),
             ]
         ),
@@ -302,10 +335,10 @@ class AppRouter {
           builder: (context, state) {
             final data = state.extra as Map<String, dynamic>;
             return NodeStatusPage(
-              userId: data['userId'],
-              controllerId: data['controllerId'],
-              subuserId: data['subuserId'],
-              deviceId: data['deviceId'],
+              userId: int.tryParse(data['userId'].toString()) ?? 0,
+              controllerId: int.tryParse(data['controllerId'].toString()) ?? 0,
+              subuserId: int.tryParse(data['subuserId'].toString()) ?? 0,
+              deviceId: data['deviceId'].toString(),
             );
           },
         ),
@@ -334,6 +367,7 @@ class AppRouter {
         ...reportPageRoutes,
         ...sendRevPageRoutes,
         ...FaultMsgPagesRoutes,
+        ...voltGraphRoutes,
         ...PowerGraphRoutes,
         ...ReportDownloadRoutes,
         ...MotorCyclicRoutes,
@@ -348,6 +382,8 @@ class AppRouter {
         ...ValveFlowRoutes.routes,
         ...AlarmRoutes.routes,
         ...SerialSetRoutes.routes,
+        ...SellingDeviceRoutes.sellingDeviceRoutes,
+        ...nodeMoistureStatusRoutes,
       ],
     );
   }

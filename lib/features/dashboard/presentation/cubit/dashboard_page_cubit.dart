@@ -215,6 +215,10 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     emit(currentState.copyWith(selectedControllerIndex: controllerIndex));
   }
 
+  void getLive(String deviceId){
+    sl<MqttManager>().publish(deviceId, jsonEncode(PublishMessageHelper.requestLive));
+  }
+
   void resetDashboardSelection() {
     if (state is DashboardGroupsLoaded) {
       final currentState = state as DashboardGroupsLoaded;
@@ -250,6 +254,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
         if (ctrl.deviceId == deviceId) {
           final model = ctrl as ControllerModel;
           print("liveMessage => $liveMessage");
+          print("liveMessage => ${liveMessage.runtimeType}");
           final updatedCtrl = model.copyWith(liveMessage: liveMessage);
           updatedControllersList.add(updatedCtrl);
           groupUpdated = true;

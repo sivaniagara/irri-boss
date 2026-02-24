@@ -56,6 +56,7 @@ final FlutterLocalNotificationsPlugin notifications = FlutterLocalNotificationsP
 abstract class MessageDispatcher {
   void onLiveUpdate(String deviceId, LiveMessageEntity liveMessage) {}
   void onFertilizerUpdate(String deviceId, String rawMessage) {}
+  void onFertilizerLive(String deviceId, Map<String, dynamic> message) {}
   void onScheduleUpdate(String deviceId, String rawMessage) {}
   void onSmsNotification(String deviceId, String message, String description) {}
   void onPumpWaterPumpSettings(String deviceId, String message) {}
@@ -77,9 +78,10 @@ class MqttMessageHelper {
     String ct = '';
     String qrCode = '';
     String cl = '';
+    Map<String, dynamic> jsonObject = {};
 
     try {
-      final Map<String, dynamic> jsonObject = jsonDecode(mqttMsg);
+      jsonObject = jsonDecode(mqttMsg);
       msg = jsonObject['cM'] ?? '';
       typeStr = jsonObject['mC'] ?? '';
       if (!['NLM', 'V01', 'V02', 'V03', 'LD01', 'LD02', 'LD06'].contains(typeStr)) {
@@ -101,15 +103,38 @@ class MqttMessageHelper {
     LiveMessageEntity? liveModel;
     final type = MqttMessageType.fromCode(typeStr);
 
-    if (type == MqttMessageType.live || type == MqttMessageType.liveExtended) {
-      liveModel = LiveMessageModel.fromLiveMessage(trimmedMsg, date: cd, time: ct);
-      if (kDebugMode) print('Live message from MQTT: $liveModel');
-      await prefs.setString('LIVEMSG_$qrCode', '$trimmedMsg$cd,$ct');
+    if (type == MqttMessageType.live || type == MqttMessageType.liveExtended || type == MqttMessageType.pumpLive) {
+      late final LiveMessageEntity liveModel;
+
+      if (type == MqttMessageType.live) {
+        print('call live');
+        liveModel = LiveMessageModel.fromLiveMessage(
+          '$trimmedMsg,$cd,$ct,',
+        );
+      } else {
+        print('call pump live');
+
+        // LD06 or LD04 (Pump Live)
+        liveModel = LiveMessageModel.fromPumpLiveMessage(
+          'LD04,$trimmedMsg,$cd,$ct,$cl,',
+          date: cd,
+          time: ct,
+        );
+        print("liveModel => $liveModel");
+      }
+
+
+      if (kDebugMode) {
+        print('Live message from MQTT: $liveModel');
+      }
+
+      await prefs.setString('LIVEMSG_$qrCode', '$trimmedMsg,$cd,$ct');
+
       dispatcher.onLiveUpdate(qrCode, liveModel);
     }
     if (type == MqttMessageType.fertilizerLive) {
       await prefs.setString('FERTLIVEMSG_$qrCode', '$trimmedMsg,$cd,$ct');
-      dispatcher.onFertilizerUpdate(qrCode, trimmedMsg);
+      dispatcher.onFertilizerLive(qrCode, jsonObject);
     }
 
     if(type == MqttMessageType.waterPumpSettings) {
@@ -119,66 +144,18 @@ class MqttMessageHelper {
 
     if(type == MqttMessageType.scheduleOne) {
       print("schedule one");
-      dispatcher.onScheduleOne(qrCode, jsonDecode(mqttMsg));
+      dispatcher.onScheduleOne(qrCode, jsonObject);
     }
 
     if(type == MqttMessageType.scheduleTwo) {
       print("schedule Two");
-      print("mqttMsg");
-      dispatcher.onScheduleTwo(qrCode, jsonDecode(mqttMsg));
+      dispatcher.onScheduleTwo(qrCode, jsonObject);
     }
 
     if(type == MqttMessageType.sms) {
       print("pump settings view");
-      dispatcher.onViewSettings(qrCode, jsonDecode(mqttMsg));
+      dispatcher.onViewSettings(qrCode, jsonObject);
     }
-
-    // Switch for type-specific storage (use type?.code)
-    /*if (type != null) {
-      switch (type.code) {
-        case 'LD04':
-          await prefs.setString('PUMPLIVEMSG_$qrCode', '$cl,$trimmedMsg$cd,$ct,');
-          break;
-        case 'NLM':
-          // Handle delayed action if needed
-          break;
-        case 'V01':
-          await prefs.setString('SCHEDULE_MSG_ONE_$qrCode', '$trimmedMsg,$cd,$ct');
-          dispatcher.onScheduleOne(qrCode, jsonDecode(mqttMsg));
-          break;
-        case 'V02':
-          // Handle sub-cases for V02 as before
-          if (trimmedMsg.contains('001;')) {
-            await prefs.setString('SCHEDULE_MSG_TWO1_$qrCode', trimmedMsg);
-          } else if (trimmedMsg.contains('005;')) {
-            await prefs.setString('SCHEDULE_MSG_TWO2_$qrCode', trimmedMsg);
-          } else if (trimmedMsg.contains('009;')) {
-            await prefs.setString('SCHEDULE_MSG_TWO3_$qrCode', trimmedMsg);
-          } else if (trimmedMsg.contains('013;')) {
-            await prefs.setString('SCHEDULE_MSG_TWO4_$qrCode', trimmedMsg);
-          } else if (trimmedMsg.contains('017;')) {
-            await prefs.setString('SCHEDULE_MSG_TWO5_$qrCode', trimmedMsg);
-          } else if (trimmedMsg.contains('021;')) {
-            await prefs.setString('SCHEDULE_MSG_TWO6_$qrCode', trimmedMsg);
-          } else if (trimmedMsg.contains('025;')) {
-            await prefs.setString('SCHEDULE_MSG_TWO7_$qrCode', trimmedMsg);
-          } else if (trimmedMsg.contains('029;')) {
-            await prefs.setString('SCHEDULE_MSG_TWO8_$qrCode', trimmedMsg);
-          } else if (trimmedMsg.contains('033;')) {
-            await prefs.setString('SCHEDULE_MSG_TWO9_$qrCode', trimmedMsg);
-          } else if (trimmedMsg.contains('037;')) {
-            await prefs.setString('SCHEDULE_MSG_TWO10_$qrCode', trimmedMsg);
-          }
-          dispatcher.onScheduleUpdate(qrCode, trimmedMsg);
-          break;
-        case 'V03':
-          await prefs.setString('WATER_PUMP_SETTINGS_VIEW_MSG_$qrCode', '$trimmedMsg,$cd,$ct');
-          dispatcher.onScheduleUpdate(qrCode, trimmedMsg);
-          break;
-        default:
-          break;
-      }
-    }*/
 
     // Process msgCode for description
     msgCode = msgCode.length >= 3 ? msgCode.substring(0, 3) : msgCode;
@@ -216,11 +193,6 @@ class MqttMessageHelper {
       String notificationTitle = msgDesc.isNotEmpty ? '$msgDesc $trimmedMsg' : trimmedMsg;
       await _sendNotification(notificationTitle, devicename, 'body');
     }
-
-    // Delayed UI refresh (now configurable; pass to dispatcher if needed)
-    Timer(const Duration(milliseconds: 300), () {
-      // Dispatcher handles UI triggers now (e.g., via callbacks)
-    });
 
     // Set IOT status
     await prefs.setBool('IOT_STATUS', true);

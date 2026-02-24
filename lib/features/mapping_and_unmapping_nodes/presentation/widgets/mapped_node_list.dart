@@ -176,7 +176,7 @@ class _MappedNodeListState extends State<MappedNodeList> {
                         },
                       )
                           : Lottie.asset(
-                        'assets/lottie/no_data.json',
+                        'assets/lottie/No_data_current.json',
                         width: MediaQuery.of(context).size.width * 0.8,
                         height: MediaQuery.of(context).size.width * 0.8,
                         repeat: true,

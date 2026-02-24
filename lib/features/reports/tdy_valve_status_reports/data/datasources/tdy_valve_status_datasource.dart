@@ -51,17 +51,15 @@ class TdyValveStatusRemoteDataSourceImpl extends TdyValveStatusRemoteDataSource 
 
       /// Make API call
       final response = await apiClient.get(endpoint);
+      // final response = await apiClient.get("user/2489/subuser/0/controller/3827/zone/graph?&fromDate=2026-02-09&programName=p2");
        print("endpoint--->$endpoint");
-
-      if (response == null) {
+       if (response == null) {
         throw ServerException(statusCode: 500, message: "Empty server response");
       }
-
       /// Success Response
       if (response["code"] == 200) {
-        return TdyValveStatusModel.fromJson(response);
-      }
-
+         return TdyValveStatusModel.fromJson(response);
+       }
       /// Error Response
       throw ServerException(
         statusCode: response["code"],

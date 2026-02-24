@@ -61,14 +61,14 @@ class MoistureReportPage extends StatelessWidget {
             }
 
             if (state is MoistureError) {
-              return noData;
+              return noDataNew;
             }
 
             if (state is MoistureLoaded) {
               return MoistureZoneStatusView(
                 data: state.data.data ,);
              }
-             return noData;
+             return noDataNew;
           },
         ),
       ),

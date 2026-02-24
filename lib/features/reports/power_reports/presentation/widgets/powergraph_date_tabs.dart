@@ -24,104 +24,112 @@ class DateTabs extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<DateTabCubit, DateTabType>(
       builder: (context, selectedTab) {
-        return Column(
-          children: [
-             Row(
-              children: [
-                _tab("Days", selectedTab == DateTabType.days, () {
-                  context.read<DateTabCubit>().selectDays();
-                  final today = apiFormat.format(DateTime.now());
-                  context.read<PowerGraphBloc>().add(
-                    FetchPowerGraphEvent(
-                      userId: userId,
-                      subuserId: subuserId,
-                      controllerId: controllerId,
-                      fromDate: today,
-                      toDate: today,
-                      sum: 0,
-                    ),
-                  );
-                }),
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: Container(
+               child: Column(
+                children: [
+                   Row(
+                    children: [
+                      _tab("Days", selectedTab == DateTabType.days, () {
+                        context.read<DateTabCubit>().selectDays();
+                        final today = apiFormat.format(DateTime.now());
+                        context.read<PowerGraphBloc>().add(
+                          FetchPowerGraphEvent(
+                            userId: userId,
+                            subuserId: subuserId,
+                            controllerId: controllerId,
+                            fromDate: today,
+                            toDate: today,
+                            sum: 0,
+                          ),
+                        );
+                      }),
 
-                _tab("Weekly", selectedTab == DateTabType.weekly, () {
-                  context.read<DateTabCubit>().selectWeekly();
-                  final to = DateTime.now();
-                  final from = to.subtract(const Duration(days: 6));
-                  context.read<PowerGraphBloc>().add(
-                    FetchPowerGraphEvent(
-                      userId: userId,
-                      subuserId: subuserId,
-                      controllerId: controllerId,
-                      fromDate: apiFormat.format(from),
-                      toDate: apiFormat.format(to),
-                      sum: 1,
-                    ),
-                  );
-                }),
+                      _tab("Weekly", selectedTab == DateTabType.weekly, () {
+                        context.read<DateTabCubit>().selectWeekly();
+                        final to = DateTime.now();
+                        final from = to.subtract(const Duration(days: 6));
+                        context.read<PowerGraphBloc>().add(
+                          FetchPowerGraphEvent(
+                            userId: userId,
+                            subuserId: subuserId,
+                            controllerId: controllerId,
+                            fromDate: apiFormat.format(from),
+                            toDate: apiFormat.format(to),
+                            sum: 1,
+                          ),
+                        );
+                      }),
 
-                _tab("Monthly", selectedTab == DateTabType.monthly, () {
-                  context.read<DateTabCubit>().selectMonthly();
-                  final to = DateTime.now();
-                  final from = to.subtract(const Duration(days: 30));
-                  context.read<PowerGraphBloc>().add(
-                    FetchPowerGraphEvent(
-                      userId: userId,
-                      subuserId: subuserId,
-                      controllerId: controllerId,
-                      fromDate: apiFormat.format(from),
-                      toDate: apiFormat.format(to),
-                      sum: 1,
-                    ),
-                  );
-                }),
+                      _tab("Monthly", selectedTab == DateTabType.monthly, () {
+                        context.read<DateTabCubit>().selectMonthly();
+                        final to = DateTime.now();
+                        final from = to.subtract(const Duration(days: 30));
+                        context.read<PowerGraphBloc>().add(
+                          FetchPowerGraphEvent(
+                            userId: userId,
+                            subuserId: subuserId,
+                            controllerId: controllerId,
+                            fromDate: apiFormat.format(from),
+                            toDate: apiFormat.format(to),
+                            sum: 1,
+                          ),
+                        );
+                      }),
 
-                IconButton(
-                  icon: const Icon(Icons.calendar_today),
-                  onPressed: () async {
-                    final result = await pickReportDate(
-                      context: context,
-                      allowRange: true,
-                    );
-                    if (result == null) return;
+                      IconButton(
+                        icon: const Icon(Icons.calendar_today,color: Colors.blue,),
+                        onPressed: () async {
+                          final result = await pickReportDate(
+                            context: context,
+                            allowRange: true,
+                          );
+                          if (result == null) return;
 
-                    context.read<DateTabCubit>().selectDays(); // 👈 force days
+                          context.read<DateTabCubit>().selectDays(); // 👈 force days
 
-                    context.read<PowerGraphBloc>().add(
-                      FetchPowerGraphEvent(
-                        userId: userId,
-                        subuserId: subuserId,
-                        controllerId: controllerId,
-                        fromDate: result.fromDate,
-                        toDate: result.toDate,
-                        sum: 0,
+                          context.read<PowerGraphBloc>().add(
+                            FetchPowerGraphEvent(
+                              userId: userId,
+                              subuserId: subuserId,
+                              controllerId: controllerId,
+                              fromDate: result.fromDate,
+                              toDate: result.toDate,
+                              sum: 0,
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
-              ],
+                    ],
+                  ),
+                  BlocBuilder<PowerGraphBloc, PowerGraphState>(
+                    buildWhen: (p, c) => c is PowerGraphLoaded,
+                    builder: (context, state) {
+                      if (state is PowerGraphLoaded) {
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 8, top: 6),
+                          child: Center(
+                            child: Text(
+                              _formatRange(state.fromDate, state.toDate),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.black54,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      return const SizedBox();
+                    },
+                  ),
+                ],
+              ),
             ),
-            BlocBuilder<PowerGraphBloc, PowerGraphState>(
-              buildWhen: (p, c) => c is PowerGraphLoaded,
-              builder: (context, state) {
-                if (state is PowerGraphLoaded) {
-                  return Padding(
-                    padding: const EdgeInsets.only(left: 8, top: 6),
-                    child: Center(
-                      child: Text(
-                        _formatRange(state.fromDate, state.toDate),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.black54,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  );
-                }
-                return const SizedBox();
-              },
-            ),
-          ],
+          ),
         );
       },
     );
@@ -142,12 +150,17 @@ Widget _tab(String text, bool active, VoidCallback onTap) {
     child: GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          color: active ? Colors.blue : Colors.white,
-          borderRadius: BorderRadius.circular(6),
-        ),
+         height: 50,
+           decoration: BoxDecoration(
+            border: text != "Monthly"
+                ? const Border(
+              right: BorderSide(
+                color: Colors.black,
+                width: 0.5,
+              ),
+            ) : null,
+           color: active ? Colors.blue : Color(0xFFD5D5D5)
+         ),
         child: Center(
           child: Text(
             text,

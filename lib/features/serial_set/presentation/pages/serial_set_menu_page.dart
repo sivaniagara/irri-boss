@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../../core/di/injection.dart';
+import '../../../../../../core/theme/app_themes.dart';
 import '../../../../../../core/widgets/app_alerts.dart';
 import '../../../../../../core/widgets/custom_app_bar.dart';
+import '../../../../../../core/widgets/custom_list_tile.dart';
 import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../bloc/serial_set_bloc.dart';
 import '../bloc/serial_set_event.dart';
 import '../bloc/serial_set_state.dart';
 import 'serial_set_calibration_page.dart';
+import 'common_calibration_page.dart';
 
 class SerialSetMenuPage extends StatelessWidget {
   const SerialSetMenuPage({super.key});
@@ -35,7 +38,7 @@ class SerialSetMenuPage extends StatelessWidget {
           }
         },
         child: Scaffold(
-          backgroundColor: const Color(0xFFE8F1F1),
+          backgroundColor: AppThemes.scaffoldBackGround,
           appBar: const CustomAppBar(title: 'Serial set'),
           body: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -52,43 +55,41 @@ class SerialSetMenuPage extends StatelessWidget {
                   loraValue = state.entity.loraKey;
                 }
 
-                return SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 16),
-                      _buildMenuItem(
-                        title: 'Serial Set',
-                        icon: Icons.chevron_right,
-                        onTap: () => _showSheet(context, 'Serial set Calibration'),
-                      ),
-                      _buildMenuItem(
-                        title: 'Set Serial',
-                        icon: Icons.visibility,
-                        onTap: () {
-                          context.read<SerialSetBloc>().add(const SendSerialSetMqttEvent(
-                            smsKey: "C005",
-                            successMessage: "message delivered",
-                          ));
-                        },
-                      ),
-                      _buildMenuItem(
-                        title: 'Clear Serial',
-                        icon: Icons.visibility,
-                        onTap: () {
-                          context.read<SerialSetBloc>().add(const SendSerialSetMqttEvent(
-                            smsKey: "C006",
-                            successMessage: "message delivered",
-                          ));
-                        },
-                      ),
-                      _buildMenuItem(
-                        title: 'Common Calibration',
-                        icon: Icons.chevron_right,
-                        onTap: () => _showSheet(context, 'Common Calibration'),
-                      ),
-                      _LoraKeyTile(initialValue: loraValue),
-                    ],
-                  ),
+                return Column(
+                  children: [
+                    const SizedBox(height: 16),
+                    CustomListTile(
+                      onTap: () => _showSerialSetSheet(context),
+                      title: 'Serial Set',
+                      iconData: Icons.chevron_right,
+                    ),
+                    CustomListTile(
+                      onTap: () {
+                        context.read<SerialSetBloc>().add(const SendSerialSetMqttEvent(
+                          smsKey: "C005", // #SETSERIAL
+                          successMessage: "message delivered",
+                        ));
+                      },
+                      title: 'Set Serial',
+                      iconData: Icons.visibility,
+                    ),
+                    CustomListTile(
+                      onTap: () {
+                        context.read<SerialSetBloc>().add(const SendSerialSetMqttEvent(
+                          smsKey: "C006", // #CLEARSERIAL
+                          successMessage: "message delivered",
+                        ));
+                      },
+                      title: 'Clear Serial',
+                      iconData: Icons.visibility,
+                    ),
+                    CustomListTile(
+                      onTap: () => _showCommonSheet(context),
+                      title: 'Common Calibration',
+                      iconData: Icons.chevron_right,
+                    ),
+                    _LoraKeyTile(initialValue: loraValue),
+                  ],
                 );
               },
             ),
@@ -98,40 +99,7 @@ class SerialSetMenuPage extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuItem({
-    required String title,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ListTile(
-        onTap: onTap,
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.black,
-          ),
-        ),
-        trailing: Icon(icon, color: Colors.black, size: 28),
-      ),
-    );
-  }
-
-  void _showSheet(BuildContext context, String title) {
+  void _showSerialSetSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -142,7 +110,24 @@ class SerialSetMenuPage extends StatelessWidget {
       builder: (_) {
         return BlocProvider.value(
           value: context.read<SerialSetBloc>(),
-          child: SerialSetCalibrationSheet(title: title),
+          child: const SerialSetCalibrationSheet(),
+        );
+      },
+    );
+  }
+
+  void _showCommonSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useRootNavigator: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) {
+        return BlocProvider.value(
+          value: context.read<SerialSetBloc>(),
+          child: const CommonCalibrationSheet(),
         );
       },
     );
@@ -183,49 +168,38 @@ class _LoraKeyTileState extends State<_LoraKeyTile> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
               'LORA Key value',
-              style: TextStyle(
-                fontSize: 16,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: Colors.black,
               ),
             ),
           ),
           Container(
-            width: 80,
+            width: 100,
             height: 35,
-            alignment: Alignment.center,
             decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey.shade400),
+              border: Border.all(color: Colors.grey.shade300),
               borderRadius: BorderRadius.circular(8),
             ),
             child: TextField(
               controller: _controller,
               textAlign: TextAlign.center,
-              textAlignVertical: TextAlignVertical.center,
               keyboardType: TextInputType.number,
-              style: const TextStyle(fontSize: 14, height: 1.0),
+              style: const TextStyle(fontSize: 14, color: Colors.black),
               decoration: const InputDecoration(
-                isCollapsed: true,
-                border: InputBorder.none,
                 contentPadding: EdgeInsets.zero,
+                border: InputBorder.none,
               ),
               onChanged: (val) => context.read<SerialSetBloc>().add(UpdateLoraKeyEvent(val)),
             ),
@@ -233,13 +207,14 @@ class _LoraKeyTileState extends State<_LoraKeyTile> {
           const SizedBox(width: 8),
           IconButton(
             onPressed: () {
+              final value = _controller.text.padLeft(3, '0');
               context.read<SerialSetBloc>().add(SendSerialSetMqttEvent(
                 smsKey: "C008",
-                extraValue: _controller.text,
+                extraValue: value,
                 successMessage: "message delivered",
               ));
             },
-            icon: const Icon(Icons.send_outlined, color: Colors.blue, size: 28),
+            icon: const Icon(Icons.send, color: Colors.blue),
           ),
         ],
       ),

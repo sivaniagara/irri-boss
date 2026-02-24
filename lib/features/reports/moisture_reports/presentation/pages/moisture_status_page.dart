@@ -17,7 +17,7 @@ class MoistureZoneStatusView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (data.mostList.isEmpty) {
-      return noData;
+      return noDataNew;
     }
 
     return ListView.builder(

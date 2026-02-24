@@ -75,12 +75,21 @@ class MqttService {
 
   bool get isConnected => _connected;
 
-  void subscribe(String deviceId, {MqttQos qos = MqttQos.atMostOnce}) {
+  void subscribe(String deviceId, {MqttQos qos = MqttQos.atMostOnce}) async{
     if (_connected) {
       final topic = "$_subscribeTopic/$deviceId";
       _client.subscribe(topic, qos);
       if (kDebugMode) {
         print('Subscribed to: $topic');
+      }
+    }else{
+      for(var i = 0;i < 10;i++){
+        await Future.delayed(const Duration(seconds: 1));
+        print('trying to subscribe ${i+1}');
+        subscribe(deviceId);
+        if(_connected){
+          break;
+        }
       }
     }
   }

@@ -309,7 +309,7 @@ class ControllerDetailsPage extends StatelessWidget {
     return  GlassyWrapper(
       child: Scaffold(
          body: Center(
-          child: noData,
+          child: noDataNew,
         ),
       ),
     );

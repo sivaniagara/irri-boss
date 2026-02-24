@@ -144,7 +144,7 @@ class MotorCyclicPage extends StatelessWidget {
             }
 
             if (state is MotorCyclicError) {
-              return noData;
+              return noDataNew;
             }
 
             if (state is MotorCyclicLoaded) {
@@ -163,7 +163,7 @@ class MotorCyclicPage extends StatelessWidget {
               );
             }
 
-            return noData;
+            return noDataNew;
           },
         ),
       ),

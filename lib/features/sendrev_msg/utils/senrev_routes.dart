@@ -37,7 +37,7 @@ final sendRevPageRoutes = <GoRoute>[
       final fromDate = params["fromDate"] ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
       final toDate = params["toDate"] ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-        return BlocProvider(
+      return BlocProvider(
         create: (_) => di.sl<SendrevBloc>()
           ..add(LoadMessagesEvent(
             userId: userId,

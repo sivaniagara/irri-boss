@@ -101,7 +101,7 @@ class ZoneDurationPage extends StatelessWidget {
               return  ZoneDurationPageReport(data: state.data);
             }
 
-            return noData;
+            return noDataNew;
           },
         ),
       ),
