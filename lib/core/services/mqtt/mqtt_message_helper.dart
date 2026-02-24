@@ -103,10 +103,33 @@ class MqttMessageHelper {
     LiveMessageEntity? liveModel;
     final type = MqttMessageType.fromCode(typeStr);
 
-    if (type == MqttMessageType.live || type == MqttMessageType.liveExtended) {
-      liveModel = LiveMessageModel.fromLiveMessage(trimmedMsg, date: cd, time: ct);
-      if (kDebugMode) print('Live message from MQTT: $liveModel');
-      await prefs.setString('LIVEMSG_$qrCode', '$trimmedMsg$cd,$ct');
+    if (type == MqttMessageType.live || type == MqttMessageType.liveExtended || type == MqttMessageType.pumpLive) {
+      late final LiveMessageEntity liveModel;
+
+      if (type == MqttMessageType.live) {
+        print('call live');
+        liveModel = LiveMessageModel.fromLiveMessage(
+          '$trimmedMsg,$cd,$ct,',
+        );
+      } else {
+        print('call pump live');
+
+        // LD06 or LD04 (Pump Live)
+        liveModel = LiveMessageModel.fromPumpLiveMessage(
+          'LD04,$trimmedMsg,$cd,$ct,$cl,',
+          date: cd,
+          time: ct,
+        );
+        print("liveModel => $liveModel");
+      }
+
+
+      if (kDebugMode) {
+        print('Live message from MQTT: $liveModel');
+      }
+
+      await prefs.setString('LIVEMSG_$qrCode', '$trimmedMsg,$cd,$ct');
+
       dispatcher.onLiveUpdate(qrCode, liveModel);
     }
     if (type == MqttMessageType.fertilizerLive) {

@@ -43,6 +43,7 @@ class MqttManager {
   }
 
   void subscribe(String deviceId) {
+    print("going to subscribe :: ${deviceId}");
     if (_currentDeviceId == deviceId) return;
 
     if (_currentDeviceId != null) {

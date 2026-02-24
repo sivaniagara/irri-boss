@@ -31,17 +31,31 @@ class _Dashboard20State extends State<Dashboard20> {
   Widget build(BuildContext context) {
     return BlocConsumer<DashboardPageCubit, DashboardState>(
         builder: (context, state){
-          print("state in ui :: ${state}");
           if(state is! DashboardGroupsLoaded) return Placeholder();
           ControllerEntity controllerEntity = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!];
           LiveMessageEntity liveMessageEntity = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!].liveMessage;
-          return SingleChildScrollView(
-            child: Column(
-              spacing: 20,
-              children: [
-                if([11, 27].contains(controllerEntity.modelId)) ...pumpDashboard(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity)
-                else ...dripDashboard(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity)
-              ],
+          return RefreshIndicator(
+            onRefresh: () async {
+              context.read<DashboardPageCubit>().getLive(controllerEntity.deviceId);
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(), // important
+              child: Column(
+                spacing: 10,
+                children: [
+                  const SizedBox(height: 20),
+                  if ([11, 27].contains(controllerEntity.modelId))
+                    ...pumpDashboard(
+                      controllerEntity: controllerEntity,
+                      liveMessageEntity: liveMessageEntity,
+                    )
+                  else
+                    ...dripDashboard(
+                      controllerEntity: controllerEntity,
+                      liveMessageEntity: liveMessageEntity,
+                    ),
+                ],
+              ),
             ),
           );
         },
@@ -148,6 +162,7 @@ class _Dashboard20State extends State<Dashboard20> {
   List<Widget> pumpDashboard({required ControllerEntity controllerEntity, required LiveMessageEntity liveMessageEntity}){
     return [
       mountainWidget(liveMessageEntity),
+      voltageAndCurrent(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity),
       if(controllerEntity.modelId == 27)
         doublePumpWidget(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity),
       if([11, 27].contains(controllerEntity.modelId))
@@ -162,60 +177,66 @@ class _Dashboard20State extends State<Dashboard20> {
                 iconColor: Theme.of(context).colorScheme.primary,
                 icon: Icon(Icons.message, color: Theme.of(context).colorScheme.primary),
               ),
-              Text("Motor: OFF Date and Time : 17/11/2025 | 12:26:59 BY = + 918056087405 FLO:0M", style: TextStyle(fontSize: 16, color: Color(0xff424242),),)
+              Text(controllerEntity.msgDesc, style: TextStyle(fontSize: 16, color: Color(0xff424242),),),
+              Text(controllerEntity.ctrlLatestMsg, style: TextStyle(fontSize: 16, color: Color(0xff424242),),)
             ],
           ),
         ),
+      SizedBox(height: 100,)
     ];
+  }
+
+  Widget voltageAndCurrent({required ControllerEntity controllerEntity, required LiveMessageEntity liveMessageEntity}){
+    return dashboardCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 20,
+        children: [
+          Row(
+            spacing: 10,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: Color(0xffFFF5DC),
+                ),
+                child: Center(
+                  child: Image.asset(
+                    AppImages.currentIcon,
+                    width: 25,
+                    height: 25,
+                  ),
+                ),
+              ),
+              Text('Current', style: Theme.of(context).textTheme.labelLarge),
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(3),
+                    color: Color(0xffE1EEEE)
+                ),
+                child: Text('Current : C1 ${liveMessageEntity.rCurrent}A , C2 ${liveMessageEntity.yCurrent}A , C3 ${liveMessageEntity.bCurrent}A', style: Theme.of(context).textTheme.bodySmall,),
+              )
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              rybWidget(backgroundColor: Color(0xffE21E11), value: liveMessageEntity.rVoltage, phase: 'R Phase'),
+              rybWidget(backgroundColor: Color(0xffFEC106), value: liveMessageEntity.yVoltage, phase: 'Y Phase'),
+              rybWidget(backgroundColor: Color(0xff6C8DB7), value: liveMessageEntity.bVoltage, phase: 'B Phase'),
+            ],
+          )
+        ],
+      ),
+    );
   }
 
   List<Widget> dripDashboard({required ControllerEntity controllerEntity, required LiveMessageEntity liveMessageEntity}){
     return [
       mountainWidget(liveMessageEntity),
-      dashboardCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 20,
-          children: [
-            Row(
-              spacing: 10,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: Color(0xffFFF5DC),
-                  ),
-                  child: Center(
-                    child: Image.asset(
-                      AppImages.currentIcon,
-                      width: 25,
-                      height: 25,
-                    ),
-                  ),
-                ),
-                Text('Current', style: Theme.of(context).textTheme.labelLarge),
-                Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(3),
-                      color: Color(0xffE1EEEE)
-                  ),
-                  child: Text('Current : C1 ${liveMessageEntity.rCurrent}A , C2 ${liveMessageEntity.yCurrent}A , C3 ${liveMessageEntity.bCurrent}A', style: Theme.of(context).textTheme.bodySmall,),
-                )
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                rybWidget(backgroundColor: Color(0xffE21E11), value: liveMessageEntity.rVoltage, phase: 'R Phase'),
-                rybWidget(backgroundColor: Color(0xffFEC106), value: liveMessageEntity.yVoltage, phase: 'Y Phase'),
-                rybWidget(backgroundColor: Color(0xff6C8DB7), value: liveMessageEntity.bVoltage, phase: 'B Phase'),
-              ],
-            )
-          ],
-        ),
-      ),
+      voltageAndCurrent(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity),
       dashboardCard(
         child: Column(
           spacing: 20,
