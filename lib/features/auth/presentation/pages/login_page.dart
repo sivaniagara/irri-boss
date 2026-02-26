@@ -19,275 +19,247 @@ class LoginPage extends StatelessWidget {
     return BlocProvider(
       create: (_) => LoginPageCubit(),
       child: Scaffold(
-        body: Container(
-          height: MediaQuery.of(dialogContext).size.height,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                theme.primaryColor.withOpacity(0.9),
-                theme.primaryColorDark.withOpacity(0.9),
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-              child: BlocConsumer<AuthBloc, AuthState>(
-                listener: (context, authState) => LoginPageListener.handleAuthState(context, authState),
-                builder: (context, authState) {
-                  print("authState :: $authState");
-                  final cubit = context.watch<LoginPageCubit>();
-                  final state = cubit.state;
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: BlocConsumer<AuthBloc, AuthState>(
+              listener: (context, authState) =>
+                  LoginPageListener.handleAuthState(context, authState),
+              builder: (context, authState) {
+                final cubit = context.watch<LoginPageCubit>();
+                final state = cubit.state;
 
-                  return AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 500),
-                    transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
-                    child: authState is AuthLoading
-                        ? const Center(
-                      key: ValueKey('loading'),
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 6),
-                    )
-                        : SingleChildScrollView(
-                      key: const ValueKey('form'),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const SizedBox(height: 50),
-                          // Logo
-                          Center(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.white.withOpacity(0.3)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 20,
-                                    spreadRadius: 5,
+                if (authState is AuthLoading) {
+                  return const Center(
+                    child: CircularProgressIndicator(strokeWidth: 4),
+                  );
+                }
+
+                return SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 20),
+                      // 🔹 Title
+                      const Text(
+                        "Login",
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        "Sign in using your registered mobile number. This helps us securely access your account.",
+                        style: TextStyle(fontSize: 14, color: Colors.black54),
+                      ),
+                      const SizedBox(height: 24),
+                      // 🔹 Illustration
+                      Center(
+                        child: !state.useOtpLogin ? Image.asset("assets/images/common/login.png",
+                          height: 200,) : Image.asset("assets/images/common/otp_login.png",
+                          height: !state.useOtpLogin ? 200 : 250,
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      const Text(
+                        "Mobile Number",
+                        style: TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                      // 🔹 FORM CARD
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        child: Form(
+                          key: state.formKey,
+                          child: Column(
+                            children: [
+                              IntlPhoneField(
+                                controller: state.phoneController,
+                                initialCountryCode: 'IN',
+                                decoration: InputDecoration(
+                                  hintText: "Mobile Number", // 👈 use hint instead of label
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  contentPadding:
+                                  const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(color: Colors.grey.shade300),
                                   ),
-                                ],
+
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide(color: Colors.grey.shade300),
+                                  ),
+
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: const BorderSide(color: Colors.blue),
+                                  ),
+                                ),
+                                onCountryChanged: (country) {
+                                  cubit.updateCountryCode(
+                                      '+${country.dialCode}');
+                                },
+                                validator: (value) =>
+                                value?.number.isEmpty ?? true
+                                    ? 'Please enter a valid phone number'
+                                    : null,
                               ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(16),
-                                child: Image.asset(
-                                  AppImages.logoLarge,
-                                  height: 140,
-                                  width: 140,
-                                  fit: BoxFit.contain,
-                                )
-                                    .animate()
-                                    .slideY(begin: 1, end: 0, duration: 1200.ms, curve: Curves.easeOut)
-                                    .then()
-                                    .shimmer(duration: 2000.ms),
-                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // 🔹 Password
+
+                      if (!state.useOtpLogin) ...[
+                        const Text(
+                          "Password",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: state.passwordController,
+                          obscureText: true,
+                          keyboardType: TextInputType.text,
+                          decoration: InputDecoration(
+                            hintText: "Enter password",
+                            suffixIcon: const Icon(Icons.visibility_off, size: 20),
+                            filled: true,
+                            fillColor: Colors.white,
+                            contentPadding:
+                            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(color: Colors.grey.shade300),
+                            ),
+
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(color: Colors.grey.shade300),
+                            ),
+
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: const BorderSide(color: Colors.blue),
                             ),
                           ),
-                          const SizedBox(height: 40),
-                          Text(
-                            'Welcome Back',
-                            style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
-                              letterSpacing: 0.5,
-                              shadows: [
-                                Shadow(
-                                  blurRadius: 12.0,
-                                  color: Colors.black.withOpacity(0.3),
-                                  offset: const Offset(2, 2),
-                                ),
-                              ],
-                            ),
-                            textAlign: TextAlign.center,
-                          ).animate().fadeIn(duration: 800.ms),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Sign in to your account',
-                            style: TextStyle(fontSize: 16, color: Colors.white70),
-                            textAlign: TextAlign.center,
-                          ).animate().fadeIn(duration: 1000.ms),
-                          const SizedBox(height: 48),
+                          validator: (value) =>
+                          value == null || value.isEmpty
+                              ? 'Please enter your password'
+                              : null,
+                        ),
+                      ],
 
-                          // Form Card
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white.withOpacity(0.3)),
-                              boxShadow: [
-                                BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 20, spreadRadius: 5),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(20.0),
-                              child: Form(
-                                key: state.formKey,
-                                child: Column(
-                                  children: [
-                                    IntlPhoneField(
-                                      controller: state.phoneController,
-                                      initialCountryCode: 'IN',
-                                      style: const TextStyle(color: Colors.black),
-                                      dropdownTextStyle: const TextStyle(color: Colors.black),
-                                      decoration: InputDecoration(
-                                        labelText: 'Phone Number',
-                                        border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide.none,
-                                        ),
-                                        enabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide.none,
-                                        ),
-                                        focusedBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide.none,
-                                        ),
-                                        errorBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide.none,
-                                        ),
-                                        focusedErrorBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide.none,
-                                        ),
-                                        disabledBorder: OutlineInputBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                          borderSide: BorderSide.none,
-                                        ),
-                                        filled: true,
-                                        fillColor: Colors.white.withOpacity(0.9),
-                                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-                                        labelStyle: const TextStyle(color: Colors.black45),
-                                        prefixIcon: const Icon(Icons.phone, color: Colors.blue),
-                                      ),
-                                      onCountryChanged: (country) {
-                                        cubit.updateCountryCode('+${country.dialCode}');
-                                      },
-                                      validator: (value) => value?.number.isEmpty ?? true ? 'Please enter a valid phone number' : null,
-                                    ),
-                                    if (!state.useOtpLogin) ...[
-                                      const SizedBox(height: 16),
-                                      TextFormField(
-                                        controller: state.passwordController,
-                                        style: const TextStyle(color: Colors.black),
-                                        obscureText: true,
-                                        decoration: InputDecoration(
-                                          labelText: 'Password',
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                            borderSide: BorderSide.none,
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                            borderSide: BorderSide.none,
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                            borderSide: BorderSide.none,
-                                          ),
-                                          errorBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                            borderSide: BorderSide.none,
-                                          ),
-                                          focusedErrorBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                            borderSide: BorderSide.none,
-                                          ),
-                                          disabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                            borderSide: BorderSide.none,
-                                          ),
-                                          filled: true,
-                                          fillColor: Colors.white.withOpacity(0.9),
-                                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-                                          labelStyle: const TextStyle(color: Colors.black45),
-                                          prefixIcon: const Icon(Icons.lock, color: Colors.blue),
-                                        ),
-                                        validator: (value) => value?.isEmpty ?? true ? 'Please enter your password' : null,
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ).animate().slideY(begin: 0.2, end: 0, duration: 600.ms),
 
-                          const SizedBox(height: 16),
-                          TextButton(
-                            onPressed: cubit.toggleLoginMode,
-                            child: Text(
-                              state.useOtpLogin ? 'Use Password Instead' : 'Use OTP Instead',
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
-                          ).animate().fadeIn(duration: 1200.ms),
+                      if (state.errorMessage != null) ...[
+                        const SizedBox(height: 12),
+                        Text(
+                          state.errorMessage!,
+                          style: const TextStyle(
+                              color: Colors.red, fontWeight: FontWeight.w500),
+                        ),
+                      ],
 
-                          if (state.errorMessage != null) ...[
-                            const SizedBox(height: 16),
-                            Text(
-                              state.errorMessage!,
-                              style: const TextStyle(color: Colors.redAccent, fontSize: 14, fontWeight: FontWeight.w500),
-                              textAlign: TextAlign.center,
-                            ).animate().fadeIn(duration: 500.ms),
-                          ],
 
-                          const SizedBox(height: 32),
-                          CustomButton(
-                            onPressed: state.isRateLimited
-                                ? null
-                                : () {
-                              if (state.formKey.currentState!.validate()) {
-                                context.read<AuthBloc>().add(
-                                  CheckPhoneNumberEvent(
-                                    phone: state.phoneController.text,
-                                    countryCode: state.countryCode,
-                                  ),
-                                );
-                              }
-                            },
-                            text: state.useOtpLogin ? 'Send OTP' : 'Login',
-                            isLoading: authState is AuthLoading,
+                      const SizedBox(height: 10),
+
+                      // 🔹 SIGN UP
+                      Center(
+                        child: TextButton(
+                          onPressed: () => context.push(AuthRoutes.signUp),
+                          child: const Text(
+                            "Not registered? Create an account",
+                            style: TextStyle(fontWeight: FontWeight.w600),
                           ),
+                        ),
+                      ),
 
-                          const SizedBox(height: 20),
-                          TextButton(
-                            onPressed: () => context.push(AuthRoutes.signUp),
-                            child: RichText(
-                              text: const TextSpan(
-                                text: 'Not registered? ',
-                                style: TextStyle(color: Colors.white70, fontSize: 15, fontWeight: FontWeight.w500),
-                                children: [
-                                  TextSpan(
-                                    text: 'Create an account',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ),
-                                ],
-                              ),
+                      const SizedBox(height: 12),
+                      // 🔹 Login Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: state.isRateLimited
+                              ? null
+                              : () {
+                            if (state.formKey.currentState!.validate()) {
+                              context.read<AuthBloc>().add(
+                                CheckPhoneNumberEvent(
+                                  phone: state.phoneController.text,
+                                  countryCode: state.countryCode,
+                                ),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1689D7),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                          ).animate().fadeIn(duration: 1200.ms),
+                          ),
+                          child: Text(
+                            !state.useOtpLogin ? "Log In" : "Get OTP",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // 🔹 OR Divider
+                      Row(
+                        children: const [
+                          Expanded(child: Divider()),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8),
+                            child: Text("Or"),
+                          ),
+                          Expanded(child: Divider()),
                         ],
                       ),
-                    ),
-                  );
-                },
-              ),
+
+                      const SizedBox(height: 20),
+
+                      // 🔹 OTP Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: OutlinedButton.icon(
+                          onPressed: cubit.toggleLoginMode,
+                          icon: const Icon(Icons.lock_outline),
+                          label:  Text(!state.useOtpLogin ? "Continue with OTP Verification" : "Continue with UserID ",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ) ,
+                          style: OutlinedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
+
         ),
+
       ),
     );
   }
+
+
+
 }

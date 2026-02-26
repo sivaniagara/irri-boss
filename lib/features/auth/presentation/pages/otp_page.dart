@@ -62,7 +62,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
       backgroundColor: Colors.white,
       body: Container(
         height: MediaQuery.of(context).size.height,
-         child: SafeArea(
+        child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
             child: BlocConsumer<AuthBloc, AuthState>(
@@ -128,7 +128,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                         const Text(
+                        const Text(
                           "OTP Verification",
                           style: TextStyle(
                             fontSize: 28,
@@ -140,13 +140,13 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                           " We’ve sent a one-time password (OTP) to your registered mobile number.",
                           style: TextStyle(fontSize: 14, color: Colors.black54),
                         ),
-                         const SizedBox(height: 24),
+                        const SizedBox(height: 24),
                         // 🔹 Illustration
                         Center(
-                          child: Image.asset("assets/images/common/verify_otp.png", height: 200,)
+                            child: Image.asset("assets/images/common/verify_otp.png", height: 200,)
                         ),
                         const SizedBox(height: 12),
-                         Text(
+                        Text(
                           "We will send you one time password thisMobile Number.${widget.countryCode} ${widget.phone} ",
                           style: TextStyle(fontSize: 14, color: Colors.black54),
                         ),
