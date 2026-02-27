@@ -208,7 +208,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     padding: EdgeInsets.zero,
-                    childAspectRatio: 2.6,
+                    childAspectRatio: 2.5,
                     mainAxisSpacing: 10,
                     crossAxisSpacing: 10,
                     children: [
