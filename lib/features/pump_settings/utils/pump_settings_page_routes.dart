@@ -19,10 +19,10 @@ final pumpSettingsRoutes = <GoRoute>[
     builder: (context, state) {
       final params = state.extra as Map<String, dynamic>;
       return PumpSettingsMenuPage(
-        userId: params['userId'],
-        subUserId: params['subUserId'],
-        controllerId: params['controllerId'],
-        deviceId: params['deviceId'],
+        userId: int.parse(params['userId'].toString()),
+        subUserId: int.parse(params['subUserId'].toString()),
+        controllerId: int.parse(params['controllerId'].toString()),
+        deviceId: params['deviceId'].toString(),
       );
     },
   ),
@@ -33,12 +33,12 @@ final pumpSettingsRoutes = <GoRoute>[
       final params = state.extra as Map<String, dynamic>;
 
       return PumpSettingsPage(
-        menuId: params['menuId'],
-        userId: params['userId'],
-        subUserId: params['subUserId'],
-        controllerId: params['controllerId'],
-        menuName: params['menuName'],
-        deviceId: params['deviceId'],
+        menuId: int.parse(params['menuId'].toString()),
+        userId: int.parse(params['userId'].toString()),
+        subUserId: int.parse(params['subUserId'].toString()),
+        controllerId: int.parse(params['controllerId'].toString()),
+        menuName: params['menuName']?.toString(),
+        deviceId: params['deviceId'].toString(),
       );
     }
   ),
@@ -48,9 +48,9 @@ final pumpSettingsRoutes = <GoRoute>[
       builder: (context, state) {
         final params = state.extra as Map<String, dynamic>;
         return NotificationsPage(
-          userId: params['userId'],
-          subUserId: params['subUserId'],
-          controllerId: params['controllerId'],
+          userId: int.parse(params['userId'].toString()),
+          subUserId: int.parse(params['subUserId'].toString()),
+          controllerId: int.parse(params['controllerId'].toString()),
         );
       }
   ),
@@ -60,10 +60,10 @@ final pumpSettingsRoutes = <GoRoute>[
       builder: (context, state) {
         final params = state.extra as Map<String, dynamic>;
         return ViewPumpSettingsPage(
-          deviceId: params['deviceId'],
-          userId: params['userId'],
-          subuserId: params['subUserId'],
-          controllerId: params['controllerId'],
+          deviceId: params['deviceId'].toString(),
+          userId: int.parse(params['userId'].toString()),
+          subuserId: int.parse(params['subUserId'].toString()),
+          controllerId: int.parse(params['controllerId'].toString()),
         );
       }
   ),
