@@ -30,62 +30,75 @@ class _Dashboard20State extends State<Dashboard20> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<DashboardPageCubit, DashboardState>(
-        builder: (context, state){
-          print("state in ui :: ${state}");
-          if(state is! DashboardGroupsLoaded) return Placeholder();
-          ControllerEntity controllerEntity = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!];
-          LiveMessageEntity liveMessageEntity = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!].liveMessage;
-          return RefreshIndicator(
-            onRefresh: () async {
-              context.read<DashboardPageCubit>().getLive(controllerEntity.deviceId);
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(), // important
-              child: Column(
-                spacing: 10,
-                children: [
-                  const SizedBox(height: 20),
-                  if ([11, 27].contains(controllerEntity.modelId))
-                    ...pumpDashboard(
-                      controllerEntity: controllerEntity,
-                      liveMessageEntity: liveMessageEntity,
-                    )
-                  else
-                    ...dripDashboard(
-                      controllerEntity: controllerEntity,
-                      liveMessageEntity: liveMessageEntity,
-                    ),
-                ],
+          builder: (context, state){
+            if(state is! DashboardGroupsLoaded) return Placeholder();
+            ControllerEntity controllerEntity = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!];
+            LiveMessageEntity liveMessageEntity = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!].liveMessage;
+            return RefreshIndicator(
+              onRefresh: () async {
+                context.read<DashboardPageCubit>().getLive(controllerEntity.deviceId);
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(), // important
+                child: Column(
+                  spacing: 10,
+                  children: [
+                    const SizedBox(height: 20),
+                    if ([11, 27].contains(controllerEntity.modelId))
+                      ...pumpDashboard(
+                        controllerEntity: controllerEntity,
+                        liveMessageEntity: liveMessageEntity,
+                      )
+                    else
+                      ...dripDashboard(
+                        controllerEntity: controllerEntity,
+                        liveMessageEntity: liveMessageEntity,
+                      ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
-        listener: (context, state){
-          print('listening state :: ${state}');
-          if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.loading){
-            showGradientLoadingDialog(context);
-          }else if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.success){
-            context.pop();
-            showSuccessAlert(
-                context: context,
-                message: 'Change From command Success'
             );
-          }else if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.failure){
-            context.pop();
-            showErrorAlert(
-                context: context,
-                message: state.errorMsg
-            );
-          }
-        },
-        listenWhen: (previous, current){
-            if(previous is DashboardGroupsLoaded && previous.controlMotorStatus == ControlMotorStatus.loading){
-              if(current is DashboardGroupsLoaded && current.controlMotorStatus == ControlMotorStatus.loading){
-                return false;
-              }
+          },
+          listener: (context, state){
+            print('listening state :: $state');
+            if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.loading){
+              showGradientLoadingDialog(context);
+            }else if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.success){
+              context.pop();
+              showSuccessAlert(
+                  context: context,
+                  message: 'Change From command Success'
+              );
+            }else if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.failure){
+              context.pop();
+              showErrorAlert(
+                  context: context,
+                  message: state.errorMsg
+              );
+            }else if(state is DashboardGroupsLoaded && state.controlMotorStatus == ControlMotorStatus.loading){
+              showGradientLoadingDialog(context);
+            }else if(state is DashboardGroupsLoaded && state.controlMotorStatus == ControlMotorStatus.success){
+              context.pop();
+              showSuccessAlert(
+                  context: context,
+                  message: 'Motor command Send Success'
+              );
+            }else if(state is DashboardGroupsLoaded && state.controlMotorStatus == ControlMotorStatus.failure){
+              context.pop();
+              showErrorAlert(
+                  context: context,
+                  message: state.errorMsg
+              );
             }
-            return true;
-        }
+          },
+          listenWhen: (previous, current){
+              if(previous is DashboardGroupsLoaded && previous.controlMotorStatus == ControlMotorStatus.loading){
+                if(current is DashboardGroupsLoaded && current.controlMotorStatus == ControlMotorStatus.loading){
+                  return false;
+                }
+              }
+              return true;
+          }
         );
   }
 
@@ -172,6 +185,7 @@ class _Dashboard20State extends State<Dashboard20> {
   List<Widget> pumpDashboard({required ControllerEntity controllerEntity, required LiveMessageEntity liveMessageEntity}){
     return [
       mountainWidget(liveMessageEntity),
+      voltageAndCurrent(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity),
       if(controllerEntity.modelId == 27)
         doublePumpWidget(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity),
       if([11, 27].contains(controllerEntity.modelId))
@@ -194,6 +208,7 @@ class _Dashboard20State extends State<Dashboard20> {
       SizedBox(height: 100,)
     ];
   }
+
   Widget voltageAndCurrent({required ControllerEntity controllerEntity, required LiveMessageEntity liveMessageEntity}){
     return dashboardCard(
       child: Column(
@@ -589,32 +604,34 @@ class _Dashboard20State extends State<Dashboard20> {
                           spacing: 15,
                           children: [
                             Image.asset(
-                              'assets/images/common/motor_g.png',
+                              'assets/images/common/motor_${liveMessageEntity.motorOnOff == '1' ? 'g' : 'r'}.png',
                               width: 80,
                             ),
-                            switches()
+                            switches(liveMessageEntity: liveMessageEntity, motorNo: 1)
                           ],
                         ),
                         Column(
                           spacing: 15,
                           children: [
                             Image.asset(
-                              'assets/images/common/motor_r.png',
+                              'assets/images/common/motor_${liveMessageEntity.valveOnOff == '1' ? 'g' : 'r'}.png',
                               width: 80,
                             ),
-                            switches()
+                            switches(liveMessageEntity: liveMessageEntity, motorNo: 2)
                           ],
                         ),
                       ]
                     else
                       ...[
                         Image.asset(
-                          'assets/images/common/motor_g.png',
+                          'assets/images/common/motor_${liveMessageEntity.motorOnOff == '1' ? 'g' : 'r'}.png',
                           width: 80,
                         ),
-                        switches()
+                        switches(
+                            liveMessageEntity: liveMessageEntity,
+                            motorNo: 1
+                        )
                       ]
-
                   ],
                 )
               ],
@@ -645,14 +662,22 @@ class _Dashboard20State extends State<Dashboard20> {
 
   }
 
-  Widget switches() {
+  Widget switches({required LiveMessageEntity liveMessageEntity, required int motorNo}) {
     return Row(
       children: [
         Column(
           children: [
             IconButton(
               onPressed: (){
-
+                final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+                String payload = 'MTR${motorNo}ON,';
+                context.read<DashboardPageCubit>().controlMotorStatus(
+                    userId: controllerContext.userId,
+                    controllerId: controllerContext.controllerId,
+                    programId: '0',
+                    deviceId: controllerContext.deviceId,
+                    payload: payload
+                );
               },
               icon: Icon(Icons.power_settings_new,),
               style: ButtonStyle(
@@ -666,7 +691,15 @@ class _Dashboard20State extends State<Dashboard20> {
           children: [
             IconButton(
               onPressed: (){
-
+                final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+                String payload = 'MTR${motorNo}OF,';
+                context.read<DashboardPageCubit>().controlMotorStatus(
+                    userId: controllerContext.userId,
+                    controllerId: controllerContext.controllerId,
+                    programId: '0',
+                    deviceId: controllerContext.deviceId,
+                    payload: payload
+                );
               },
               icon: Icon(Icons.power_settings_new,),
               style: ButtonStyle(
@@ -679,7 +712,7 @@ class _Dashboard20State extends State<Dashboard20> {
       ],
     );
   }
-  
+
   Widget rybWidget({
     required Color backgroundColor,
     required String value,
@@ -694,7 +727,7 @@ class _Dashboard20State extends State<Dashboard20> {
       child: Column(
         spacing: 5,
         children: [
-          Text('$phase', style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),),
+          Text(phase, style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),),
           IntrinsicWidth(
             child: Container(
               width: 60,

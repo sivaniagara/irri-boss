@@ -190,7 +190,7 @@ class _DashboardPageState extends State<DashboardPage> {
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             title: Container(
-              width: 140,
+              width: 100,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: Colors.transparent,
@@ -223,7 +223,7 @@ class _DashboardPageState extends State<DashboardPage> {
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             title: Container(
-              width: 140,
+              width: 100,
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               decoration: BoxDecoration(
                 color: Colors.transparent,
@@ -410,14 +410,16 @@ print("controllerContext.userId:${controllerContext.userId},controllerContext.co
       ) {
     return AppBar(
       title: Container(
-        width: 140,
+        width: 100,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(6),
         ),
         alignment: Alignment.center,
-        child: Image.asset(AppImages.logoSmall),
+        child: Image.asset(
+            AppImages.logoSmall
+        ),
       ),
       bottom: _buildAppBarBottom(
         selectedGroup,
