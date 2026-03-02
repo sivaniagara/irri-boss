@@ -12,6 +12,7 @@ class TemplateIrrigationSettingsLoaded extends TemplateIrrigationSettingsState{
   final String settingId;
   final String message;
   final ControllerIrrigationSettingEntity controllerIrrigationSettingEntity;
+  final ControllerIrrigationSettingEntity? updatedControllerIrrigationSettingEntity;
   final UpdateTemplateSettingStatus updateTemplateSettingStatus;
 
   TemplateIrrigationSettingsLoaded({
@@ -22,11 +23,13 @@ class TemplateIrrigationSettingsLoaded extends TemplateIrrigationSettingsState{
     required this.settingId,
     this.message = '',
     required this.controllerIrrigationSettingEntity,
+    this.updatedControllerIrrigationSettingEntity,
     this.updateTemplateSettingStatus = UpdateTemplateSettingStatus.idle
   });
 
   TemplateIrrigationSettingsLoaded copyWith({
-    required ControllerIrrigationSettingEntity updatedControllerIrrigationSettingEntity,
+    ControllerIrrigationSettingEntity? controllerIrrigationSettingEntity,
+    ControllerIrrigationSettingEntity? updatedControllerIrrigationSettingEntity,
     UpdateTemplateSettingStatus? status,
     String? msg
   }){
@@ -37,7 +40,8 @@ class TemplateIrrigationSettingsLoaded extends TemplateIrrigationSettingsState{
         subUserId: subUserId,
         settingId: settingId,
         message: msg ?? message,
-        controllerIrrigationSettingEntity: updatedControllerIrrigationSettingEntity,
+        controllerIrrigationSettingEntity: controllerIrrigationSettingEntity ?? this.controllerIrrigationSettingEntity,
+        updatedControllerIrrigationSettingEntity: updatedControllerIrrigationSettingEntity ?? this.updatedControllerIrrigationSettingEntity,
         updateTemplateSettingStatus: status ?? updateTemplateSettingStatus
     );
   }

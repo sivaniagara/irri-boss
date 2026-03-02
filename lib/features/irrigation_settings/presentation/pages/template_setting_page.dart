@@ -32,16 +32,16 @@ class TemplateSettingPage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
                     children: [
-                      SizedBox(height: 10,),
+                      const SizedBox(height: 10,),
                       ...List.generate(state.controllerIrrigationSettingEntity.settings.length, (groupIndex){
                         CommonSettingGroupEntity commonSettingGroupEntity = state.controllerIrrigationSettingEntity.settings[groupIndex];
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(commonSettingGroupEntity.name, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.black, fontWeight: FontWeight.w400)),
-                            SizedBox(height: 8,),
+                            const SizedBox(height: 8,),
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                               width: double.infinity,
                               decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10),
@@ -57,15 +57,15 @@ class TemplateSettingPage extends StatelessWidget {
                                           BlocSelector<TemplateIrrigationSettingsBloc, TemplateIrrigationSettingsState, String>(
                                               selector: (state){
                                                 if (state is! TemplateIrrigationSettingsLoaded) return '';
-                                                return (state
-                                                    .controllerIrrigationSettingEntity
+                                                final currentEntity = state.updatedControllerIrrigationSettingEntity ?? state.controllerIrrigationSettingEntity;
+                                                return (currentEntity
                                                     .settings[groupIndex]
                                                     .sets[index] as SingleSettingItemEntity)
                                                     .value;
                                               },
                                               builder: (context, value){
                                                 return SettingRow(
-                                                  singleSettingItemEntity: setting,
+                                                  singleSettingItemEntity: setting.copyWith(updateValue: value),
                                                   hideSendButton: false,
                                                   onChanged: (value) {
                                                     print('value : $value');
@@ -80,15 +80,17 @@ class TemplateSettingPage extends StatelessWidget {
                                                   onTap: () async{
                                                     final result = await TimePickerService.show(
                                                         context: context,
-                                                        initialTime: setting.value
+                                                        initialTime: value
                                                     );
-                                                    context.read<TemplateIrrigationSettingsBloc>().add(
-                                                        UpdateSingleSettingRowEvent(
-                                                            groupIndex: groupIndex,
-                                                            index: index,
-                                                            value: result
-                                                        )
-                                                    );
+                                                    if(result != null) {
+                                                      context.read<TemplateIrrigationSettingsBloc>().add(
+                                                          UpdateSingleSettingRowEvent(
+                                                              groupIndex: groupIndex,
+                                                              index: index,
+                                                              value: result
+                                                          )
+                                                      );
+                                                    }
                                                   },
                                                   groupIndex: groupIndex,
                                                   settingIndex: index,
@@ -109,26 +111,36 @@ class TemplateSettingPage extends StatelessWidget {
                                                   spacing: 10,
                                                   alignment: WrapAlignment.start,
                                                   children: List.generate(setting.listOfSingleSettingItemEntity.length, (multipleIndex){
-                                                    return GestureDetector(
-                                                      onTap: (){
-                                                        context.read<TemplateIrrigationSettingsBloc>().add(
-                                                          UpdateMultipleSettingRowEvent(
-                                                            groupIndex: groupIndex,
-                                                            multipleIndex: index,
-                                                            index: multipleIndex,
-                                                            value: setting.listOfSingleSettingItemEntity[multipleIndex].value == 'OF' ? 'ON' : 'OF',
+                                                    return BlocSelector<TemplateIrrigationSettingsBloc, TemplateIrrigationSettingsState, String>(
+                                                      selector: (state) {
+                                                        if (state is! TemplateIrrigationSettingsLoaded) return 'OF';
+                                                        final entity = state.updatedControllerIrrigationSettingEntity ?? state.controllerIrrigationSettingEntity;
+                                                        final item = entity.settings[groupIndex].sets[index] as MultipleSettingItemEntity;
+                                                        return item.listOfSingleSettingItemEntity[multipleIndex].value;
+                                                      },
+                                                      builder: (context, currentValue) {
+                                                        return GestureDetector(
+                                                          onTap: (){
+                                                            context.read<TemplateIrrigationSettingsBloc>().add(
+                                                              UpdateMultipleSettingRowEvent(
+                                                                groupIndex: groupIndex,
+                                                                multipleIndex: index,
+                                                                index: multipleIndex,
+                                                                value: currentValue == 'OF' ? 'ON' : 'OF',
+                                                              ),
+                                                            );
+                                                          },
+                                                          child: Container(
+                                                            padding: const EdgeInsets.all(10),
+                                                            decoration: BoxDecoration(
+                                                                color: currentValue == 'ON' ? Theme.of(context).colorScheme.primary : null,
+                                                                border: Border.all(width: 1, color: Theme.of(context).colorScheme.primary),
+                                                                borderRadius: BorderRadius.circular(6)
+                                                            ),
+                                                            child: Text(setting.listOfSingleSettingItemEntity[multipleIndex].titleText, style: Theme.of(context).textTheme.labelLarge?.copyWith(color: currentValue == 'ON' ? Colors.white : null),),
                                                           ),
                                                         );
                                                       },
-                                                      child: Container(
-                                                        padding: EdgeInsets.all(10),
-                                                        decoration: BoxDecoration(
-                                                            color: setting.listOfSingleSettingItemEntity[multipleIndex].value == 'ON' ? Theme.of(context).colorScheme.primary : null,
-                                                            border: Border.all(width: 1, color: Theme.of(context).colorScheme.primary),
-                                                            borderRadius: BorderRadius.circular(6)
-                                                        ),
-                                                        child: Text(setting.listOfSingleSettingItemEntity[multipleIndex].titleText, style: Theme.of(context).textTheme.labelLarge?.copyWith(color: setting.listOfSingleSettingItemEntity[multipleIndex].value == 'ON' ? Colors.white : null),),
-                                                      ),
                                                     );
                                                   }),
                                                 )
@@ -139,39 +151,59 @@ class TemplateSettingPage extends StatelessWidget {
                                                     spacing: 10,
                                                     alignment: WrapAlignment.start,
                                                     children: List.generate(setting.listOfSingleSettingItemEntity.length, (multipleIndex){
-                                                      return Container(
-                                                        decoration: BoxDecoration(
-                                                            borderRadius: BorderRadius.only(
-                                                              bottomLeft: Radius.circular(10),
-                                                              topRight: Radius.circular(10),
+                                                      return BlocSelector<TemplateIrrigationSettingsBloc, TemplateIrrigationSettingsState, String>(
+                                                        selector: (state) {
+                                                          if (state is! TemplateIrrigationSettingsLoaded) return '';
+                                                          final entity = state.updatedControllerIrrigationSettingEntity ?? state.controllerIrrigationSettingEntity;
+                                                          final item = entity.settings[groupIndex].sets[index] as MultipleSettingItemEntity;
+                                                          return item.listOfSingleSettingItemEntity[multipleIndex].value;
+                                                        },
+                                                        builder: (context, currentValue) {
+                                                          return Container(
+                                                            decoration: BoxDecoration(
+                                                                borderRadius: const BorderRadius.only(
+                                                                  bottomLeft: Radius.circular(10),
+                                                                  topRight: Radius.circular(10),
+                                                                ),
+                                                                border: Border.all(width: 1, color: Theme.of(context).colorScheme.outline)
                                                             ),
-                                                            border: Border.all(width: 1, color: Theme.of(context).colorScheme.outline)
-                                                        ),
-                                                        child: SizedBox(
-                                                          width: 150,
-                                                          child: Row(
-                                                            children: [
-                                                              Container(
-                                                                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                                                                decoration: BoxDecoration(
-                                                                    color: Theme.of(context).colorScheme.primary,
-                                                                    borderRadius: BorderRadius.only(
-                                                                      bottomLeft: Radius.circular(10),
-                                                                      topRight: Radius.circular(10),
-                                                                    )
-                                                                ),
-                                                                child: Text(
-                                                                  setting.listOfSingleSettingItemEntity[multipleIndex].titleText, style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white),),
+                                                            child: SizedBox(
+                                                              width: 150,
+                                                              child: Row(
+                                                                children: [
+                                                                  Container(
+                                                                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                                                    decoration: BoxDecoration(
+                                                                        color: Theme.of(context).colorScheme.primary,
+                                                                        borderRadius: const BorderRadius.only(
+                                                                          bottomLeft: Radius.circular(10),
+                                                                          topRight: Radius.circular(10),
+                                                                        )
+                                                                    ),
+                                                                    child: Text(
+                                                                      setting.listOfSingleSettingItemEntity[multipleIndex].titleText, style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.white),),
+                                                                  ),
+                                                                  SizedBox(
+                                                                    width: 100,
+                                                                    child: TinyTextFormField(
+                                                                        value: currentValue,
+                                                                        onChanged: (newValue) {
+                                                                          context.read<TemplateIrrigationSettingsBloc>().add(
+                                                                            UpdateMultipleSettingRowEvent(
+                                                                              groupIndex: groupIndex,
+                                                                              multipleIndex: index,
+                                                                              index: multipleIndex,
+                                                                              value: newValue,
+                                                                            ),
+                                                                          );
+                                                                        }
+                                                                    ),
+                                                                  )
+                                                                ],
                                                               ),
-                                                              SizedBox(
-                                                                width: 100,
-                                                                child: TinyTextFormField(
-                                                                    value: setting.listOfSingleSettingItemEntity[multipleIndex].value
-                                                                ),
-                                                              )
-                                                            ],
-                                                          ),
-                                                        ),
+                                                            ),
+                                                          );
+                                                        },
                                                       );
                                                     }),
                                                   ),
@@ -185,7 +217,8 @@ class TemplateSettingPage extends StatelessWidget {
                                                           selector: (state) {
                                                             if (state is! TemplateIrrigationSettingsLoaded) return '';
 
-                                                            final groups = state.controllerIrrigationSettingEntity.settings;
+                                                            final entity = state.updatedControllerIrrigationSettingEntity ?? state.controllerIrrigationSettingEntity;
+                                                            final groups = entity.settings;
                                                             if (groupIndex >= groups.length) return '';
 
                                                             final sets = groups[groupIndex].sets;
@@ -203,25 +236,25 @@ class TemplateSettingPage extends StatelessWidget {
                                                             final childEntity = setting.listOfSingleSettingItemEntity[multipleIndex];
 
                                                             return SettingRow(
-                                                              singleSettingItemEntity: childEntity,
+                                                              singleSettingItemEntity: childEntity.copyWith(updateValue: currentValue),
                                                               hideSendButton: true,
                                                               onChanged: (value) {
                                                                 print('multi onChanged: $value');
                                                                 context.read<TemplateIrrigationSettingsBloc>().add(
                                                                   UpdateMultipleSettingRowEvent(
                                                                     groupIndex: groupIndex,
-                                                                    multipleIndex: index,         // index of MultipleSettingItemEntity in sets
-                                                                    index: multipleIndex,         // index inside the inner list
+                                                                    multipleIndex: index,
+                                                                    index: multipleIndex,
                                                                     value: childEntity.widgetType == 2
                                                                         ? (value == true ? 'ON' : 'OF')
                                                                         : value.toString(),
                                                                   ),
                                                                 );
                                                               },
-                                                              onTap: childEntity.widgetType == 3 ? () async {  // only if it's time picker
+                                                              onTap: childEntity.widgetType == 3 ? () async {
                                                                 final result = await TimePickerService.show(
                                                                   context: context,
-                                                                  initialTime: childEntity.value,
+                                                                  initialTime: currentValue,
                                                                 );
                                                                 if (result != null) {
                                                                   context.read<TemplateIrrigationSettingsBloc>().add(
@@ -253,7 +286,7 @@ class TemplateSettingPage extends StatelessWidget {
                                                   );
                                                 },
                                                 child: Container(
-                                                  padding: EdgeInsets.all(10),
+                                                  padding: const EdgeInsets.all(10),
                                                   child: Image.asset(
                                                     'assets/images/icons/send_icon.png',
                                                     width: 25,
@@ -265,7 +298,7 @@ class TemplateSettingPage extends StatelessWidget {
                                         ],
                                       );
                                     }else{
-                                      return Placeholder();
+                                      return const Placeholder();
                                     }
 
 
@@ -274,7 +307,7 @@ class TemplateSettingPage extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            SizedBox(height: 10,)
+                            const SizedBox(height: 10,)
                           ],
                         );
                       }),
@@ -285,7 +318,7 @@ class TemplateSettingPage extends StatelessWidget {
                 ),
               );
             }else{
-              return Placeholder();
+              return const Placeholder();
             }
 
           },

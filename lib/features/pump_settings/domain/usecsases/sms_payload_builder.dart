@@ -18,7 +18,17 @@ class SmsPayloadBuilder {
   }
 
   static String _buildDefaultPayload(SettingsEntity s, String value) {
-    return "${s.smsFormat}$value"
+    String processedValue = value;
+    
+    // Handle specific padding for DROCCURNBR
+    if (s.smsFormat == "DROCCURNBR") {
+      final number = int.tryParse(value.replaceAll(RegExp(r'[^0-9]'), ''));
+      if (number != null) {
+        processedValue = number.toString().padLeft(2, '0');
+      }
+    }
+
+    return "${s.smsFormat}$processedValue"
         .replaceAll(':', '')
         .replaceAll(';', ',')
         .replaceAll(RegExp(r'\s+'), '');
@@ -32,27 +42,47 @@ class SmsPayloadBuilder {
   }
 
   static String _buildPhonePayload(SettingsEntity s, String completeNumber, String deviceId) {
-    final phone = PhoneNumber.fromCompleteNumber(completeNumber: completeNumber);
-    final spiltPayload = s.smsFormat.split(",");
-    spiltPayload[1] = '+${phone.countryCode}';
-    spiltPayload[2] = phone.number;
-    if(spiltPayload.length > 3) {
-      spiltPayload[3] = "$deviceId,1234";
+    if (completeNumber.isEmpty) return "";
+    try {
+      final phone = PhoneNumber.fromCompleteNumber(completeNumber: completeNumber);
+      final List<String> parts = s.smsFormat.split(",");
+
+      if (s.smsFormat.startsWith("REG")) {
+        // Format: REGxx,+CC,Number
+        return "${parts[0]},+${phone.countryCode},${phone.number}";
+      }
+
+      // Existing logic for other phone types, ensuring indices are valid
+      List<String> resultParts = List.from(parts);
+      while (resultParts.length < 3) {
+        resultParts.add("");
+      }
+
+      resultParts[1] = '+${phone.countryCode}';
+      resultParts[2] = phone.number;
+
+      if (resultParts.length > 3) {
+        resultParts[3] = "$deviceId,1234";
+      }
+      return resultParts.join(',');
+    } catch (e) {
+      // Fallback if phone parsing fails
+      return "${s.smsFormat}$completeNumber";
     }
-    return spiltPayload.join(',');
   }
 
   static String _buildDndPayload(SettingsEntity s) {
     final parts = s.smsFormat.split(',');
+    if (parts.length < 3) {
+      return "${s.smsFormat},${s.value == "ON" ? "1" : "0"}";
+    }
     parts[2] = s.value == "ON" ? "1" : "0";
     return parts.join(',');
   }
 
   static String _buildDateTimePayload(SettingsEntity s) {
     final now = DateTime.now();
-
     final formatter = DateFormat("','yy','MM','dd','HH','mm','ss");
-
     return "DT${formatter.format(now)}";
   }
 }

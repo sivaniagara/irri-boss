@@ -59,8 +59,16 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       if (setting.widgetType == SettingWidgetType.text) {
         final trimmed = newValue.trim();
         if(setting.title == 'Dry Run Occurance Count') {
-          processedValue = newValue.contains('.') ? newValue.split('.')[0] : newValue;
-        }else {
+          final val = newValue.contains('.') ? newValue.split('.')[0] : newValue;
+          final number = int.tryParse(val);
+          if (number != null) {
+            processedValue = number.toString().padLeft(2, '0');
+          } else {
+            processedValue = val;
+          }
+        } else if (menuItemEntity.menu.menuSettingId == 508) {
+          processedValue = trimmed;
+        } else {
           if (trimmed.isEmpty) {
             processedValue = trimmed;
           } else if (trimmed.contains('.')) {
@@ -120,7 +128,9 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
     String payload = SmsPayloadBuilder.build(setting, deviceId);
 
-    if(menuItemEntity.menu.menuSettingId == 508 && menuItemEntity.template.sections[0].typeId == 1) {
+    if (menuItemEntity.menu.menuSettingId == 508 && 
+        menuItemEntity.template.sections[sectionIndex].typeId == 1 &&
+        setting.serialNumber <= 4) {
       payload = '';
     }
 

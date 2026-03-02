@@ -400,7 +400,10 @@ class _SettingRow extends StatelessWidget {
             ? PumpSettingsImages.getCommunicationConfigIcons(path)
             : null,
       ),
-      SettingWidgetType.multiText => _MultiTextInput(setting: setting, onChanged: _onChanged(context)),
+      SettingWidgetType.multiText => (["VOLTCAL", "VOLTAGCAL", "CURRCAL", "CURCAL", "CURRENTCAL"]
+              .contains(setting.smsFormat.trim().toUpperCase()))
+          ? _CalibrationInput(setting: setting, onChanged: _onChanged(context))
+          : _MultiTextInput(setting: setting, onChanged: _onChanged(context)),
       _ => SettingListTile(
         title: setting.title,
         leadingIcon: [509].contains(menuItemEntity.menu.menuSettingId) ? PumpSettingsImages.getStatusCheckIcons(path) : null,
@@ -607,7 +610,7 @@ class _MultiTimeInput extends StatelessWidget {
     return Column(
       children: List.generate(
         titles.length,
-            (i) => SettingListTile(
+        (i) => SettingListTile(
           title: titles[i],
           trailing: LeafBox(
             height: 30,
@@ -615,7 +618,10 @@ class _MultiTimeInput extends StatelessWidget {
             child: Center(
               child: Text(
                 values[i].isEmpty ? "00:00" : values[i],
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
+                    ?.copyWith(fontWeight: FontWeight.w500),
               ),
             ),
           ),
@@ -632,6 +638,130 @@ class _MultiTimeInput extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+}
+
+class _CalibrationInput extends StatelessWidget {
+  final SettingsEntity setting;
+  final ValueChanged<String> onChanged;
+
+  const _CalibrationInput({required this.setting, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final rawTitles = setting.title.split(';').map((e) => e.trim()).toList();
+    final rawValues = setting.value.split(';').map((e) => e.trim()).toList();
+
+    // Ensure exactly 3 titles and 3 values for consistent splitting
+    final titles = List<String>.generate(3, (i) {
+      if (i < rawTitles.length && rawTitles[i].isNotEmpty) return rawTitles[i];
+      return i == 0 ? "VR" : (i == 1 ? "VY" : "VB");
+    });
+
+    final values = List<String>.generate(3, (i) {
+      if (i < rawValues.length) return rawValues[i];
+      return "0";
+    });
+
+    final String format = setting.smsFormat.trim().toUpperCase();
+    final bool isVoltageCal = format == "VOLTCAL";
+    final bool isVoltageWhole = format == "VOLTAGCAL";
+    final bool isCurrentCal = format == "CURRCAL" || format == "CURCAL";
+    final bool isCurrentSecondRow = format == "CURRENTCAL";
+
+    final bool isDecimalOnlyLine = isVoltageCal || isCurrentCal;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (rawTitles.any((t) => t.isNotEmpty))
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+            child: Row(
+              children: titles
+                  .map((t) => Expanded(
+                        child: Text(
+                          t,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ))
+                  .toList(),
+            ),
+          ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: List.generate(
+              3,
+              (i) => Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: LeafBox(
+                    height: 36,
+                    padding: EdgeInsets.zero,
+                    margin: EdgeInsets.zero,
+                    child: TextFormField(
+                      initialValue: values[i],
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      inputFormatters: isVoltageWhole
+                          ? [FilteringTextInputFormatter.digitsOnly]
+                          : [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: Colors.black,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: isVoltageCal
+                            ? "0.0000"
+                            : (isCurrentCal
+                                ? "0.00000"
+                                : (isVoltageWhole
+                                    ? "000"
+                                    : (isCurrentSecondRow ? "0.00" : null))),
+                        hintStyle: const TextStyle(fontSize: 12, color: Colors.grey),
+                        border: InputBorder.none,
+                        isDense: true,
+                        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                        errorStyle: const TextStyle(height: 0, fontSize: 0),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) return 'Req';
+                        final numValue = double.tryParse(value.trim());
+                        if (numValue == null) return 'Err';
+
+                        if (isDecimalOnlyLine && !value.contains('.')) return 'Dec';
+                        if (isVoltageWhole && value.contains('.')) return 'Int';
+                        
+                        if (isCurrentSecondRow && value.contains('.')) {
+                          final parts = value.split('.');
+                          if (parts.length > 2 || parts[1].length > 2) return 'Max 2';
+                        }
+
+                        if (numValue <= 0) return '>0';
+                        return null;
+                      },
+                      onChanged: (newValue) {
+                        final newValues = List<String>.from(values);
+                        newValues[i] = newValue.trim();
+                        onChanged(newValues.join(';'));
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

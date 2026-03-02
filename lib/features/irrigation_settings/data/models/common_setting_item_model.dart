@@ -164,6 +164,12 @@ class MultipleSettingItemModel extends MultipleSettingItemEntity{
         String zone = '${int.parse(listOfSingleSettingItemEntity[1].value.isEmpty ? '000' : listOfSingleSettingItemEntity[1].value)}'.padLeft(3, '0');
         return '${listOfSingleSettingItemEntity.first.settingField}$program,$zone';
       }
+      
+      final sf = listOfSingleSettingItemEntity.first.settingField;
+      if(sf.startsWith('Moisture') || sf.contains('MOISTURELEVELSETP')){
+        return 'MOISTURELEVELSETP,${listOfSingleSettingItemEntity.map((set) => int.parse(set.value.isEmpty ? '0' : set.value)).join(',')}';
+      }
+
       return '${listOfSingleSettingItemEntity.first.settingField},${listOfSingleSettingItemEntity.map((set) => formatTo000(int.parse(set.value.isEmpty ? '0' : set.value))).join(',')}';
     }else if(listOfSingleSettingItemEntity.first.widgetType == 3){
       return '${listOfSingleSettingItemEntity.first.settingField}'

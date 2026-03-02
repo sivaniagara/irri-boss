@@ -40,7 +40,8 @@ class TemplateIrrigationSettingsBloc extends Bloc<TemplateIrrigationSettingsEven
                     deviceId: event.deviceId,
                     subUserId: event.subUserId,
                     settingId: event.settingNo,
-                    controllerIrrigationSettingEntity: success
+                    controllerIrrigationSettingEntity: success,
+                    updatedControllerIrrigationSettingEntity: success
                 )
             );
           }
@@ -48,30 +49,35 @@ class TemplateIrrigationSettingsBloc extends Bloc<TemplateIrrigationSettingsEven
     });
 
     on<UpdateSingleSettingRowEvent>((event, emit){
+      if(state is! TemplateIrrigationSettingsLoaded) return;
       final current = state as TemplateIrrigationSettingsLoaded;
+      final currentEntity = current.updatedControllerIrrigationSettingEntity ?? current.controllerIrrigationSettingEntity;
+      
+      final updatedSettings = currentEntity.settings
+          .asMap()
+          .entries
+          .map((groupEntry){
+        final index = groupEntry.key;
+        CommonSettingGroupEntity e = groupEntry.value;
+        if(index == event.groupIndex){
+          return e.copyWith(
+              updatedSets: e.sets.asMap().entries.map((settingEntry){
+                final settingIndex = settingEntry.key;
+                final setting = settingEntry.value;
+                if(settingIndex == event.index && setting is SingleSettingItemEntity){
+                  return setting.copyWith(updateValue: event.value);
+                }
+                return setting;
+              }).toList()
+          );
+        }
+        return e;
+      }).toList();
+
       emit(
           current.copyWith(
-              updatedControllerIrrigationSettingEntity: current.controllerIrrigationSettingEntity.copyWith(
-                  updatedSettings: current.controllerIrrigationSettingEntity.settings
-                      .asMap()
-                      .entries
-                      .map((groupEntry){
-                    final index = groupEntry.key;
-                    CommonSettingGroupEntity e = groupEntry.value;
-                    if(index == event.groupIndex){
-                      return e.copyWith(
-                          updatedSets: e.sets.asMap().entries.map((settingEntry){
-                            final settingIndex = settingEntry.key;
-                            final setting = settingEntry.value;
-                            if(settingIndex == event.index && setting is SingleSettingItemEntity){
-                              return setting.copyWith(updateValue: event.value);
-                            }
-                            return setting;
-                          }).toList()
-                      );
-                    }
-                    return e;
-                  }).toList()
+              updatedControllerIrrigationSettingEntity: currentEntity.copyWith(
+                  updatedSettings: updatedSettings
               ),
               status: UpdateTemplateSettingStatus.idle
           )
@@ -79,27 +85,26 @@ class TemplateIrrigationSettingsBloc extends Bloc<TemplateIrrigationSettingsEven
     });
 
     on<UpdateMultipleSettingRowEvent>((event, emit) {
+      if(state is! TemplateIrrigationSettingsLoaded) return;
       final currentState = state as TemplateIrrigationSettingsLoaded;
-      final currentEntity = currentState.controllerIrrigationSettingEntity;
+      final currentEntity = currentState.updatedControllerIrrigationSettingEntity ?? currentState.controllerIrrigationSettingEntity;
 
       final newSettings = currentEntity.settings.asMap().entries.map((groupEntry) {
         final groupIndex = groupEntry.key;
         final group = groupEntry.value;
 
         if (groupIndex != event.groupIndex) {
-          return group; // unchanged group
+          return group;
         }
 
-        // Update this group
         final newSets = group.sets.asMap().entries.map((setEntry) {
           final setIndex = setEntry.key;
           final setItem = setEntry.value;
 
           if (setIndex != event.multipleIndex || setItem is! MultipleSettingItemEntity) {
-            return setItem; // unchanged
+            return setItem;
           }
 
-          // This is the MultipleSettingItemEntity we want to update
           final multipleItem = setItem;
 
           final newSingleItems = multipleItem.listOfSingleSettingItemEntity.asMap().entries.map((singleEntry) {
@@ -109,7 +114,7 @@ class TemplateIrrigationSettingsBloc extends Bloc<TemplateIrrigationSettingsEven
             if (singleIndex == event.index) {
               return singleItem.copyWith(updateValue: event.value);
             }
-            return singleItem; // unchanged
+            return singleItem;
           }).toList();
 
           return MultipleSettingItemEntity(listOfSingleSettingItemEntity: newSingleItems);
@@ -132,15 +137,22 @@ class TemplateIrrigationSettingsBloc extends Bloc<TemplateIrrigationSettingsEven
       }
 
       final currentState = state as TemplateIrrigationSettingsLoaded;
-      emit(currentState.copyWith(updatedControllerIrrigationSettingEntity: currentState.controllerIrrigationSettingEntity, status: UpdateTemplateSettingStatus.loading));
+      final updatedEntity = currentState.updatedControllerIrrigationSettingEntity ?? currentState.controllerIrrigationSettingEntity;
+      
+      emit(currentState.copyWith(
+          status: UpdateTemplateSettingStatus.loading,
+          updatedControllerIrrigationSettingEntity: updatedEntity
+      ));
+      
       UpdateTemplateIrrigationSettingParams params = UpdateTemplateIrrigationSettingParams(
           userId: currentState.userId,
           controllerId: currentState.controllerId,
           subUserId: currentState.subUserId,
           settingNo: currentState.settingId,
-          controllerIrrigationSettingEntity: currentState.controllerIrrigationSettingEntity,
+          controllerIrrigationSettingEntity: updatedEntity,
           groupIndex: event.groupIndex,
-          settingIndex: event.settingIndex, deviceId: currentState.deviceId
+          settingIndex: event.settingIndex, 
+          deviceId: currentState.deviceId
       );
 
       final result = await updateTemplateIrrigationSettingUsecase(params);
@@ -150,7 +162,7 @@ class TemplateIrrigationSettingsBloc extends Bloc<TemplateIrrigationSettingsEven
             emit(
                 currentState
                     .copyWith(
-                    updatedControllerIrrigationSettingEntity: currentState.controllerIrrigationSettingEntity,
+                    updatedControllerIrrigationSettingEntity: updatedEntity,
                     status: UpdateTemplateSettingStatus.failure,
                     msg: failure.message
                 )
@@ -160,7 +172,8 @@ class TemplateIrrigationSettingsBloc extends Bloc<TemplateIrrigationSettingsEven
             emit(
                 currentState
                     .copyWith(
-                    updatedControllerIrrigationSettingEntity: currentState.controllerIrrigationSettingEntity,
+                    controllerIrrigationSettingEntity: updatedEntity,
+                    updatedControllerIrrigationSettingEntity: updatedEntity,
                     status: UpdateTemplateSettingStatus.success,
                     msg: 'Setting Updated SuccessFully!'
                 )
