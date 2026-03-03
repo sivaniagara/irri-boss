@@ -14,6 +14,7 @@ abstract class EditProgramRemoteSource{
     required List<Map<String, dynamic>> listOfPayload,
     required String deviceId
   });
+  Future<Map<String, dynamic>> deleteZone(Map<String, String> urlData);
 }
 
 
@@ -34,6 +35,18 @@ class EditProgramRemoteSourceImpl extends EditProgramRemoteSource{
       print('getPrograms => $response');
       return response;
     }catch (e){
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> deleteZone(Map<String, String> urlData)async{
+    try{
+      String endPoint = buildUrl(EditProgramUrls.deleteZone, urlData);
+      final response = await apiClient.delete(endPoint);
+      print('delete zone => $response');
+      return response;
+    }catch(e){
       rethrow;
     }
   }

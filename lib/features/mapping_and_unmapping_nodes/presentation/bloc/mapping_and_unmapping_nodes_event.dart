@@ -40,3 +40,9 @@ class ViewNodeDetailsMqttEvent extends MappingAndUnmappingNodesEvent {
 
   ViewNodeDetailsMqttEvent({required this.mappedNodeEntity});
 }
+
+class ResendNodeDetailsMqttEvent extends MappingAndUnmappingNodesEvent {
+  final MappedNodeEntity mappedNodeEntity;
+
+  ResendNodeDetailsMqttEvent({required this.mappedNodeEntity});
+}

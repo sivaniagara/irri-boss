@@ -142,6 +142,13 @@ class _MappedNodeListState extends State<MappedNodeList> {
                                       },
                                     ),
                                     IconButton(
+                                      icon: const Icon(Icons.send),
+                                      tooltip: "Send",
+                                      onPressed: () {
+                                        context.read<MappingAndUnmappingNodesBloc>().add(ResendNodeDetailsMqttEvent(mappedNodeEntity: node));
+                                      },
+                                    ),
+                                    IconButton(
                                       icon: const Icon(Icons.link_off_rounded),
                                       tooltip: "Unmap Node",
                                       onPressed: () {

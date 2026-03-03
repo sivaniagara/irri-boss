@@ -9,6 +9,7 @@ import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nod
 import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/domain/usecases/delete_mapped_node_usecase.dart';
 import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/domain/usecases/fetch_mapping_unmapping_nodes_usecase.dart';
 
+import '../../domain/usecases/resend_mapped_node_usecase.dart';
 import '../../domain/usecases/unmapped_node_to_mapped_node_usecase.dart';
 import '../../domain/usecases/view_node_details_mqtt_usecase.dart';
 import '../data_source/mapping_and_unmapping_nodes_remote_source.dart';
@@ -63,6 +64,7 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
   @override
   Future<Either<Failure, Unit>> unmappedNodeToMapped(UnmappedNodeToMappedNodeParams params) async{
     try{
+      List<int> listOfMappedSerialNo = params.listOfMappedNodeEntity.map((e) => int.parse(e.serialNo)).toList();
       List<UnmappedCategoryNodeModel> unmappedCategoryNodeModel = params.listOfUnmappedCategoryNodeEntity.map(((e){
         return UnmappedCategoryNodeModel.fromEntity(e);
       })).toList();
@@ -75,12 +77,18 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
           deviceId: params.deviceId,
           bodyData: {
             'nodeList' : List.generate(unmappedCategoryNodeModel.length, (index){
+              int? serialNo;
+              for(var i = 1;i < params.listOfMappedNodeEntity.length;i++){
+                if(!listOfMappedSerialNo.contains(i)){
+                  serialNo = i;
+                  break;
+                }
+              }
               return unmappedCategoryNodeModel[index].formPayload(
                   params.categoryId,
-                  (params.mappedNodeLength + index + 1).toString().padLeft(3, '0')
+                  (serialNo ?? params.listOfMappedNodeEntity.length).toString().padLeft(3, '0')
               );
             })
-            // 'nodeList' : unmappedCategoryNodeModel.map((e) => e.formPayload(params.categoryId)).toList()
           }
       );
       if(response['code'] == 200){
@@ -100,17 +108,50 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
   @override
   Future<Either<Failure, Unit>> viewNodeDetailsMqtt(ViewNodeDetailsMqttParams params) async {
     try {
-      // Assuming a payload format for viewing details, or just notifying the node.
-      // Based on deleteMappedNodePayload, it might be something similar.
-      // For now, I'll use a placeholder or the serial number if no specific format is known.
-      String payload = "VDSET${params.mappedNodeEntity.serialNo}";
-      mappingAndUnmappingNodesRemoteSource.viewNodeDetailsMqtt(
+      String payload = "VIDSET${params.mappedNodeEntity.serialNo}";
+      final result = await mappingAndUnmappingNodesRemoteSource.sendMessageViaMqtt(
         deviceId: params.deviceId,
         payload: payload,
+        userId: params.userId,
+        controllerId: params.controllerId,
+        programId: '0',
       );
-      return const Right(unit);
+      if(result){
+        return const Right(unit);
+      }else{
+        return Left(ServerFailure('View Node Details Failed'));
+      }
     } catch (e) {
       return Left(ServerFailure('Send Node Details via MQTT Failed :: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> resendMappedNode(ResendMappedNodeParams params) async {
+    try {
+      String splitQrCode(String qrCode){
+        int chunkSize = 3;
+        List<String> splitList = [
+          for (int i = 0; i < qrCode.length; i += chunkSize)
+            qrCode.substring(i, i + chunkSize > qrCode.length ? qrCode.length : i + chunkSize)
+        ];
+        return splitList.join(',');
+      }
+      String payload = "IDSET${params.mappedNodeEntity.serialNo},${splitQrCode(params.mappedNodeEntity.qrCode)}";
+      final result = await mappingAndUnmappingNodesRemoteSource.sendMessageViaMqtt(
+        deviceId: params.deviceId,
+        payload: payload,
+        userId: params.userId,
+        controllerId: params.controllerId,
+        programId: '0',
+      );
+      if(result){
+        return const Right(unit);
+      }else{
+        return Left(ServerFailure('Resend Mapped Node Failed'));
+      }
+    } catch (e) {
+      return Left(ServerFailure('Resend Node Details via MQTT Failed :: ${e.toString()}'));
     }
   }
 }

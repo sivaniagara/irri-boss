@@ -2,17 +2,17 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/domain/entities/unmapped_category_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/domain/entities/unmapped_category_node_entity.dart';
-
-import '../../../common_id_settings/data/models/category_model.dart';
 import '../../domain/entities/mapped_node_entity.dart';
 import '../../domain/entities/mapping_and_unmapping_node_entity.dart';
-import '../../domain/entities/unmapped_category_node_entity.dart';
 import '../../domain/usecases/delete_mapped_node_usecase.dart';
 import '../../domain/usecases/fetch_mapping_unmapping_nodes_usecase.dart';
+import '../../domain/usecases/resend_mapped_node_usecase.dart';
 import '../../domain/usecases/unmapped_node_to_mapped_node_usecase.dart';
 import '../../domain/usecases/view_node_details_mqtt_usecase.dart';
 import '../enums/delete_mapped_node_enum.dart';
+import '../enums/resend_command_enum.dart';
 import '../enums/unmapped_node_to_mapped_enum.dart';
+import '../enums/view_command_enum.dart';
 part 'mapping_and_unmapping_nodes_event.dart';
 part 'mapping_and_unmapping_nodes_state.dart';
 
@@ -21,12 +21,14 @@ class MappingAndUnmappingNodesBloc extends Bloc<MappingAndUnmappingNodesEvent, M
   final DeleteMappedNodeUsecase deleteMappedNodeUsecase;
   final UnmappedNodeToMappedNodeUsecase unmappedNodeToMappedNodeUsecase;
   final ViewNodeDetailsMqttUsecase viewNodeDetailsMqttUsecase;
+  final ResendMappedNodeUsecase resendMappedNodeUsecase;
 
   MappingAndUnmappingNodesBloc({
     required this.fetchMappingUnmappingNodesUsecase,
     required this.deleteMappedNodeUsecase,
     required this.unmappedNodeToMappedNodeUsecase,
     required this.viewNodeDetailsMqttUsecase,
+    required this.resendMappedNodeUsecase,
   }) : super(MappingAndUnmappingNodesInitial()){
 
     on<FetchMappingAndUnmappingEvent>((event, emit)async{
@@ -112,6 +114,10 @@ class MappingAndUnmappingNodesBloc extends Bloc<MappingAndUnmappingNodesEvent, M
             entity: updatedEntity,
             deleteStatus: DeleteMappedNodeEnum.success,
           ));
+          emit(currentState.copyWith(
+            entity: updatedEntity,
+            deleteStatus: DeleteMappedNodeEnum.idle,
+          ));
         },
       );
     });
@@ -125,7 +131,7 @@ class MappingAndUnmappingNodesBloc extends Bloc<MappingAndUnmappingNodesEvent, M
           controllerId: event.controllerId,
           deviceId: currentState.deviceId,
           categoryId: event.categoryId.toString(),
-          mappedNodeLength: currentState.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity.length,
+          listOfMappedNodeEntity: currentState.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity,
           listOfUnmappedCategoryNodeEntity: nodeToBeMapped
       );
       final result = await unmappedNodeToMappedNodeUsecase(unmappedNodeToMappedNodeParams);
@@ -165,10 +171,50 @@ class MappingAndUnmappingNodesBloc extends Bloc<MappingAndUnmappingNodesEvent, M
     on<ViewNodeDetailsMqttEvent>((event, emit) async {
       if (state is MappingAndUnmappingNodesLoaded) {
         final currentState = state as MappingAndUnmappingNodesLoaded;
-        await viewNodeDetailsMqttUsecase(ViewNodeDetailsMqttParams(
-          deviceId: currentState.deviceId,
-          mappedNodeEntity: event.mappedNodeEntity,
-        ));
+        emit(currentState.copyWith(viewCommandEnum: ViewCommandEnum.loading));
+        final result = await viewNodeDetailsMqttUsecase(
+            ViewNodeDetailsMqttParams(
+              deviceId: currentState.deviceId,
+              mappedNodeEntity: event.mappedNodeEntity,
+              userId: currentState.userId,
+              controllerId: currentState.controllerId,
+            )
+        );
+        result.fold(
+                (failure){
+              emit(currentState.copyWith(viewCommandEnum: ViewCommandEnum.failure));
+              emit(currentState.copyWith(viewCommandEnum: ViewCommandEnum.idle));
+            },
+                (success){
+              emit(currentState.copyWith(viewCommandEnum: ViewCommandEnum.success));
+              emit(currentState.copyWith(viewCommandEnum: ViewCommandEnum.idle));
+            }
+        );
+      }
+    });
+
+    on<ResendNodeDetailsMqttEvent>((event, emit) async {
+      if (state is MappingAndUnmappingNodesLoaded) {
+        final currentState = state as MappingAndUnmappingNodesLoaded;
+        emit(currentState.copyWith(viewCommandEnum: ViewCommandEnum.loading));
+        final result = await resendMappedNodeUsecase(
+            ResendMappedNodeParams(
+              deviceId: currentState.deviceId,
+              mappedNodeEntity: event.mappedNodeEntity,
+              userId: currentState.userId,
+              controllerId: currentState.controllerId,
+            )
+        );
+        result.fold(
+                (failure){
+              emit(currentState.copyWith(resendCommandEnum: ResendCommandEnum.failure));
+              emit(currentState.copyWith(resendCommandEnum: ResendCommandEnum.idle));
+            },
+                (success){
+              emit(currentState.copyWith(resendCommandEnum: ResendCommandEnum.success));
+              emit(currentState.copyWith(resendCommandEnum: ResendCommandEnum.idle));
+            }
+        );
       }
     });
 

@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
 import 'package:niagara_smart_drip_irrigation/core/usecases/usecase.dart';
-
+import '../entities/mapped_node_entity.dart';
 import '../entities/unmapped_category_node_entity.dart';
 import '../repositories/mapping_and_unmapping_nodes_repository.dart';
 
@@ -10,18 +10,17 @@ class UnmappedNodeToMappedNodeParams{
   final String controllerId;
   final String deviceId;
   final String categoryId;
-  final int mappedNodeLength;
+  final List<MappedNodeEntity> listOfMappedNodeEntity;
   final List<UnmappedCategoryNodeEntity> listOfUnmappedCategoryNodeEntity;
   UnmappedNodeToMappedNodeParams({
     required this.userId,
     required this.controllerId,
     required this.deviceId,
     required this.categoryId,
-    required this.mappedNodeLength,
+    required this.listOfMappedNodeEntity,
     required this.listOfUnmappedCategoryNodeEntity
   });
 }
-
 
 class UnmappedNodeToMappedNodeUsecase extends UseCase<Unit, UnmappedNodeToMappedNodeParams>{
   final MappingAndUnmappingNodesRepository repository;
@@ -31,5 +30,4 @@ class UnmappedNodeToMappedNodeUsecase extends UseCase<Unit, UnmappedNodeToMapped
   Future<Either<Failure, Unit>> call(UnmappedNodeToMappedNodeParams params)async{
     return repository.unmappedNodeToMapped(params);
   }
-
 }

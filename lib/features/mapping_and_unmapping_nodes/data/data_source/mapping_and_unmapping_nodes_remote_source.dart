@@ -9,7 +9,13 @@ abstract class MappingAndUnmappingNodesRemoteSource{
   Future<Map<String, dynamic>> fetchMappingUnMappingNodeData({required Map<String, String> urlData});
   Future<Map<String, dynamic>> deleteMappedNode({required Map<String, String> urlData, required String deviceId});
   Future<Map<String, dynamic>> unmappedToMapped({required Map<String, String> urlData, required Map<String, dynamic> bodyData, required String deviceId});
-  void viewNodeDetailsMqtt({required String deviceId, required String payload});
+  Future<bool> sendMessageViaMqtt({
+    required String userId,
+    required String controllerId,
+    required String programId,
+    required String deviceId,
+    required String payload
+  });
 }
 
 
@@ -66,7 +72,39 @@ class MappingAndUnmappingNodesRemoteSourceImpl extends MappingAndUnmappingNodesR
   }
 
   @override
-  void viewNodeDetailsMqtt({required String deviceId, required String payload}) {
-    mqttManager.publish(deviceId, PublishMessageHelper.settingsPayload(payload));
+  Future<bool> sendMessageViaMqtt({
+    required String userId,
+    required String controllerId,
+    required String programId,
+    required String deviceId,
+    required String payload
+  }) async{
+    try{
+      String endPoint = buildUrl(
+          MappingAndUnmappingNodesUrls.sentAndReceive,
+          {
+            'userId': userId,
+            'controllerId': controllerId,
+            'programId': programId,
+          }
+      );
+
+      final response = await apiClient.post(
+          endPoint,
+          body: {
+            "sentAndReceived": [
+              PublishMessageHelper.settingsPayload(payload)
+            ]}
+      );
+      mqttManager.publish(deviceId, PublishMessageHelper.settingsPayload(payload));
+      if(response['code'] == 200){
+        return true;
+      }else{
+        return false;
+      }
+    }catch (e){
+      rethrow;
+    }
   }
 }
+

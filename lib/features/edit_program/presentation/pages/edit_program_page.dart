@@ -13,6 +13,7 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/presentation/widgets/wrap_or_row.dart';
 import '../../../../core/services/time_picker_service.dart';
 import '../../../../core/widgets/alert_dialog.dart';
+import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../domain/entities/zone_setting_entity.dart';
 import '../bloc/edit_program_bloc.dart';
 import '../../../../core/widgets/tiny_text_form_field.dart';
@@ -75,6 +76,9 @@ class _EditProgramPageState extends State<EditProgramPage> {
       ),
       floatingActionButton: BlocListener<EditProgramBloc, EditProgramState>(
         listener: (BuildContext context, state) {
+          if(state is EditProgramLoaded){
+            print(state.zoneDeleteStatusEditProgram);
+          }
           if(state is EditProgramLoaded && state.saveProgramStatus == SaveProgramStatus.loading){
             showGradientLoadingDialog(context);
           }else if(state is EditProgramLoaded && state.saveProgramStatus == SaveProgramStatus.success){
@@ -85,6 +89,21 @@ class _EditProgramPageState extends State<EditProgramPage> {
             showErrorAlert(
                 context: context,
                 message: 'Program Failed to Save!',
+            );
+          }
+          if(state is EditProgramLoaded && state.zoneDeleteStatusEditProgram == ZoneDeleteStatusEditProgram.loading){
+            showGradientLoadingDialog(context);
+          }else if(state is EditProgramLoaded && state.zoneDeleteStatusEditProgram == ZoneDeleteStatusEditProgram.failure){
+            context.pop();
+            showErrorAlert(context: context, message: state.zoneDeleteStatusEditProgram.message);
+          }else if(state is EditProgramLoaded && state.zoneDeleteStatusEditProgram == ZoneDeleteStatusEditProgram.success){
+            context.pop();
+            showSuccessAlert(
+                context: context,
+                message: state.zoneDeleteStatusEditProgram.message,
+                onPressed: (){
+                  context.pop();
+                }
             );
           }
         },
@@ -593,8 +612,18 @@ class _EditProgramPageState extends State<EditProgramPage> {
                 _buildActionButton(
                     icon: Icons.delete_outline,
                     color: Colors.red[50]!,
-                    iconName: 'delete_icon', onTap: () { 
-                      context.read<EditProgramBloc>().add(DeleteZoneEvent(zoneIndex: selectedZone));
+                    iconName: 'delete_icon', onTap: () {
+                  final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+
+                  context.read<EditProgramBloc>().add(
+                      DeleteZoneEvent(
+                              zoneIndex: selectedZone,
+                          userId: controllerContext.userId,
+                          controllerId: controllerContext.controllerId,
+                          programId: state.editProgramEntity.programId.toString(),
+                          zoneSerialNo: (selectedZone + 1).toString().padLeft(3, '0')
+                          )
+                      );
                 }
                 ),
               ],

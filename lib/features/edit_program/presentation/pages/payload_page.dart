@@ -41,7 +41,8 @@ class _PayloadPageState extends State<PayloadPage> {
 
   List<Map<String, dynamic>> splitIntoChunks(int chunkSize) {
     List<Map<String, dynamic>> chunks = [];
-    for (var i = 0; i < zoneSelection.length; i += chunkSize) {
+    final filterInActiveZones = (context.read<EditProgramBloc>().state as EditProgramLoaded).editProgramEntity.zones.where((e) =>e.active).toList();
+    for (var i = 0; i < filterInActiveZones.length; i += chunkSize) {
       chunks.add({'mode' : PayloadModeEnum.idle, 'value' : true});
     }
     return chunks;
@@ -67,6 +68,9 @@ class _PayloadPageState extends State<PayloadPage> {
                             Text('Zone Configuration', style: Theme.of(context).textTheme.labelLarge,),
                             ...List.generate(zoneSelection.length, (index){
                               final zone = state.editProgramEntity.zones[index];
+                              if(!zone.active) {
+                                return Container();
+                              };
                               return CheckboxListTile(
                                 enabled: enableEdit,
                                   controlAffinity: ListTileControlAffinity.leading,
