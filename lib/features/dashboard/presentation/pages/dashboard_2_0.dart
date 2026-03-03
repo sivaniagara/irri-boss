@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/alert_dialog.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/app_alerts.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_switch.dart';
@@ -242,6 +243,24 @@ class _Dashboard20State extends State<Dashboard20> {
                 child: Text('Current : C1 ${liveMessageEntity.rCurrent}A , C2 ${liveMessageEntity.yCurrent}A , C3 ${liveMessageEntity.bCurrent}A', style: Theme.of(context).textTheme.bodySmall,),
               )
             ],
+
+          ),
+          Center(
+            child: ElevatedButton.icon(
+              onPressed: () {
+                context.push(DashBoardRoutes.ctrlLivePage, extra: liveMessageEntity);
+              },
+              icon: const Icon(Icons.dashboard, size: 18),
+              label: const Text("Controller Live"),
+              style: ElevatedButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                backgroundColor: Colors.blueGrey,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+            ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -503,6 +522,7 @@ class _Dashboard20State extends State<Dashboard20> {
                 ],
               ),
             ),
+
           ],
         ),
       ),
