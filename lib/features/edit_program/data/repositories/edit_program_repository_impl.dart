@@ -124,12 +124,14 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
         return zoneLength;
       }
         EditProgramModel editProgramModel = EditProgramModel.fromEntity(params.editProgramEntity);
+      print("takingActiveZoneByZoneSet : ${takingActiveZoneByZoneSet}");
       print(start(params.zoneSetNo));
       print(end(params.zoneSetNo, params.editProgramEntity.zones.length));
         List<ZoneSettingModel> zoneSet = takingActiveZoneByZoneSet.sublist(
             start(params.zoneSetNo),
-            end(params.zoneSetNo, params.editProgramEntity.zones.length)
-        ).map((e) => ZoneSettingModel.fromEntity(e)).toList();
+            end(params.zoneSetNo, params.editProgramEntity.zones.length).clamp(0, takingActiveZoneByZoneSet.length)
+
+    ).map((e) => ZoneSettingModel.fromEntity(e)).toList();
       final response = await remoteSource.sendZonePayload(
           urlData: {'userId' : params.userId, 'controllerId' : params.controllerId},
           bodyData: {},

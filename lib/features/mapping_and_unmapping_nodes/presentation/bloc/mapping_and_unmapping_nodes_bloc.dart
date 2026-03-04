@@ -53,6 +53,27 @@ class MappingAndUnmappingNodesBloc extends Bloc<MappingAndUnmappingNodesEvent, M
       );
     });
 
+    on<RefreshMappingAndUnmappingEvent>((event, emit)async{
+      FetchMappingUnmappingParams fetchMappingUnmappingParams = FetchMappingUnmappingParams(userId: event.userId, controllerId: event.controllerId);
+      final result = await fetchMappingUnmappingNodesUsecase(fetchMappingUnmappingParams);
+      result
+          .fold(
+              (failure){
+            emit(MappingAndUnmappingNodesError());
+          },
+              (success){
+            emit(
+                MappingAndUnmappingNodesLoaded(
+                    userId: event.userId,
+                    controllerId: event.controllerId,
+                    mappingAndUnmappingNodeEntity: success,
+                    deviceId: event.deviceId
+                )
+            );
+          }
+      );
+    });
+
     on<DeleteMappedNodeEvent>((event, emit) async {
       if (state is! MappingAndUnmappingNodesLoaded) return;
       final currentState = state as MappingAndUnmappingNodesLoaded;
@@ -77,47 +98,53 @@ class MappingAndUnmappingNodesBloc extends Bloc<MappingAndUnmappingNodesEvent, M
           ));
         },
             (success) {
-          final updatedMappedNodes = currentState
-              .mappingAndUnmappingNodeEntity.listOfMappedNodeEntity
-              .where((e) => e.nodeId != event.mappedNodeEntity.nodeId)
-              .toList();
+          // final updatedMappedNodes = currentState
+          //     .mappingAndUnmappingNodeEntity.listOfMappedNodeEntity
+          //     .where((e) => e.nodeId != event.mappedNodeEntity.nodeId)
+          //     .toList();
 
-          final updatedCategories = currentState
-              .mappingAndUnmappingNodeEntity.listOfUnmappedCategoryEntity
-              .map((category) {
-            if (category.categoryId != event.mappedNodeEntity.categoryId) {
-              return category;
-            } else {
-              final updatedUnmappedNodes = [
-                ...category.nodes.map((e) => e.copyWith()),
-                UnmappedCategoryNodeEntity(
-                  nodeId: event.mappedNodeEntity.nodeId,
-                  categoryId: event.mappedNodeEntity.categoryId,
-                  qrCode: event.mappedNodeEntity.qrCode,
-                  modelName: event.mappedNodeEntity.modelName,
-                  dateManufacture: event.mappedNodeEntity.dateManufacture,
-                  userName: event.mappedNodeEntity.userName,
-                  mobileNumber: event.mappedNodeEntity.mobileNumber,
-                ),
-              ]..sort((a, b) => a.nodeId.compareTo(b.nodeId)); // more meaningful sort
-
-              return category.copyWith(updateNodes: updatedUnmappedNodes);
-            }
-          }).toList();
-
-          final updatedEntity = MappingAndUnmappingNodeEntity(
-            listOfMappedNodeEntity: updatedMappedNodes,
-            listOfUnmappedCategoryEntity: updatedCategories,
-          );
+          // final updatedCategories = currentState
+          //     .mappingAndUnmappingNodeEntity.listOfUnmappedCategoryEntity
+          //     .map((category) {
+          //   if (category.categoryId != event.mappedNodeEntity.categoryId) {
+          //     return category;
+          //   } else {
+          //     final updatedUnmappedNodes = [
+          //       ...category.nodes.map((e) => e.copyWith()),
+          //       UnmappedCategoryNodeEntity(
+          //         nodeId: event.mappedNodeEntity.nodeId,
+          //         categoryId: event.mappedNodeEntity.categoryId,
+          //         qrCode: event.mappedNodeEntity.qrCode,
+          //         modelName: event.mappedNodeEntity.modelName,
+          //         dateManufacture: event.mappedNodeEntity.dateManufacture,
+          //         userName: event.mappedNodeEntity.userName,
+          //         mobileNumber: event.mappedNodeEntity.mobileNumber,
+          //       ),
+          //     ]..sort((a, b) => a.nodeId.compareTo(b.nodeId)); // more meaningful sort
+          //
+          //     return category.copyWith(updateNodes: updatedUnmappedNodes);
+          //   }
+          // }).toList();
+          //
+          // final updatedEntity = MappingAndUnmappingNodeEntity(
+          //   listOfMappedNodeEntity: updatedMappedNodes,
+          //   listOfUnmappedCategoryEntity: updatedCategories,
+          // );
 
           emit(currentState.copyWith(
-            entity: updatedEntity,
+            // entity: updatedEntity,
             deleteStatus: DeleteMappedNodeEnum.success,
           ));
           emit(currentState.copyWith(
-            entity: updatedEntity,
             deleteStatus: DeleteMappedNodeEnum.idle,
           ));
+          add(
+              RefreshMappingAndUnmappingEvent(
+                  userId: event.userId,
+                  controllerId: event.controllerId,
+                  deviceId: event.deviceId
+              )
+          );
         },
       );
     });
@@ -217,6 +244,5 @@ class MappingAndUnmappingNodesBloc extends Bloc<MappingAndUnmappingNodesEvent, M
         );
       }
     });
-
   }
 }

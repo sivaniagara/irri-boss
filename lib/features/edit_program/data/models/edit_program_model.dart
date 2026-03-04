@@ -81,7 +81,7 @@ class EditProgramModel extends EditProgramEntity {
     print("zoneSetId :: $zoneSetId");
     return template
         .replaceAll(':programId', programId.toString())
-        .replaceAll(':zoneSetId', zoneSetId.toString().padLeft(3, '0'));
+        .replaceAll(':zoneSetId', zoneSetId.toString().padLeft(2, '0'));
   }
 
   String _joinTimes(Iterable<String> values) {
@@ -140,7 +140,7 @@ class EditProgramModel extends EditProgramEntity {
 
     final cmd = template
         .replaceAll(':programId', programId.toString())
-        .replaceAll(':zoneSetId', zoneSetId.toString().padLeft(3, '0'))
+        .replaceAll(':zoneSetId', zoneSetId.toString().padLeft(2, '0'))
         .replaceAll(':channelNo', channelNo.toString());
 
     final values = listOfZone.map(

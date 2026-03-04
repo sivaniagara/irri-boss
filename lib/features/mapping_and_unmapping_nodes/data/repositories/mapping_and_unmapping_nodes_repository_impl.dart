@@ -68,6 +68,7 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
       List<UnmappedCategoryNodeModel> unmappedCategoryNodeModel = params.listOfUnmappedCategoryNodeEntity.map(((e){
         return UnmappedCategoryNodeModel.fromEntity(e);
       })).toList();
+      print("listOfMappedSerialNo :: $listOfMappedSerialNo");
       final response = await mappingAndUnmappingNodesRemoteSource
           .unmappedToMapped(
           urlData: {
@@ -79,11 +80,14 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
             'nodeList' : List.generate(unmappedCategoryNodeModel.length, (index){
               int? serialNo;
               for(var i = 1;i < params.listOfMappedNodeEntity.length;i++){
+                print('i : $i');
                 if(!listOfMappedSerialNo.contains(i)){
                   serialNo = i;
+                  listOfMappedSerialNo.add(i);
                   break;
                 }
               }
+              print((serialNo ?? params.listOfMappedNodeEntity.length).toString().padLeft(3, '0'));
               return unmappedCategoryNodeModel[index].formPayload(
                   params.categoryId,
                   (serialNo ?? params.listOfMappedNodeEntity.length).toString().padLeft(3, '0')

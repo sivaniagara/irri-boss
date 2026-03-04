@@ -9,6 +9,13 @@ class FetchMappingAndUnmappingEvent extends MappingAndUnmappingNodesEvent{
   FetchMappingAndUnmappingEvent({required this.userId, required this.controllerId, required this.deviceId});
 }
 
+class RefreshMappingAndUnmappingEvent extends MappingAndUnmappingNodesEvent{
+  final String userId;
+  final String controllerId;
+  final String deviceId;
+  RefreshMappingAndUnmappingEvent({required this.userId, required this.controllerId, required this.deviceId});
+}
+
 class DeleteMappedNodeEvent extends MappingAndUnmappingNodesEvent{
   final String userId;
   final String controllerId;

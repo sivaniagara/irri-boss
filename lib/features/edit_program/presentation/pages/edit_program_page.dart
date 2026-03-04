@@ -236,6 +236,9 @@ class _EditProgramPageState extends State<EditProgramPage> {
                                 Divider(),
                                 ...List.generate(state.editProgramEntity.zones.length, (index){
                                   ZoneSettingEntity zone = state.editProgramEntity.zones[index];
+                                  if(zone.active == false){
+                                    return Container();
+                                  }
                                   return Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [

@@ -119,24 +119,27 @@ class _PayloadPageState extends State<PayloadPage> {
                               enableEdit = false;
                               setState(() {});
                               for (var zonePayload = 0; zonePayload < zoneSelection.length; zonePayload++) {
-                                if(!zoneSelection[zonePayload]['value']) continue;
-                                setState(() {
-                                  zoneSelection[zonePayload]['mode'] = PayloadModeEnum.loading;
-                                });
+                                if(state.editProgramEntity.zones[zonePayload].active){
+                                  if(!zoneSelection[zonePayload]['value']) continue;
+                                  setState(() {
+                                    zoneSelection[zonePayload]['mode'] = PayloadModeEnum.loading;
+                                  });
 
-                                try {
-                                  final result = await context.read<EditProgramBloc>().sendZonePayload(
-                                    zoneIndex: zonePayload,
-                                  );
-                                  setState(() {
-                                    zoneSelection[zonePayload]['mode'] = result; // ← now result is the real enum value
-                                  });
-                                } catch (e) {
-                                  setState(() {
-                                    zoneSelection[zonePayload]['mode'] = PayloadModeEnum.failure;
-                                  });
-                                  print("Zone $zonePayload failed: $e");
+                                  try {
+                                    final result = await context.read<EditProgramBloc>().sendZonePayload(
+                                      zoneIndex: zonePayload,
+                                    );
+                                    setState(() {
+                                      zoneSelection[zonePayload]['mode'] = result; // ← now result is the real enum value
+                                    });
+                                  } catch (e) {
+                                    setState(() {
+                                      zoneSelection[zonePayload]['mode'] = PayloadModeEnum.failure;
+                                    });
+                                    print("Zone $zonePayload failed: $e");
+                                  }
                                 }
+
                               }
                               for (var zoneSetPayload = 0; zoneSetPayload < zoneSetSelection.length; zoneSetPayload++) {
                                 if(!zoneSetSelection[zoneSetPayload]['value']) continue;
