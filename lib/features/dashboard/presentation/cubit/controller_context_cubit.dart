@@ -31,13 +31,14 @@ class ControllerContextCubit extends Cubit<ControllerContextState>{
   }){
     emit(
         ControllerContextLoaded(
-            userId: userId,
-            controllerId: controllerId,
-            deviceId: deviceId,
-            userType: userType,
-            subUserId: subUserId,
+          userId: userId,
+          controllerId: controllerId,
+          deviceId: deviceId,
+          userType: userType,
+          subUserId: subUserId,
         )
     );
+    print('ControllerContextLoaded updayed....');
   }
 
   void toInitial(){
@@ -48,7 +49,7 @@ class ControllerContextCubit extends Cubit<ControllerContextState>{
     required String controllerId,
     required String deviceId,
   }) {
-    print("controllerId ==> $controllerId");
+    // print("controllerId ==> $controllerId");
     final currentState = state;
 
     // ✅ SAFETY CHECK

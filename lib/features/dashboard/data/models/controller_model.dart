@@ -1,344 +1,196 @@
-import 'package:equatable/equatable.dart';
-import '../../data/dashboard_data.dart';
-import '../../domain/dashboard_domain.dart';
-// Add this import for jsonDecode
+import '../../domain/entities/controller_entity.dart';
+import '../../domain/entities/livemessage_entity.dart';
+import '../../presentation/helper/get_sms_sync.dart';
+import 'live_message_model.dart';
 
 class ProgramModel extends ProgramEntity {
   const ProgramModel({
     required super.programId,
     required super.programName,
+    required super.programNameDefault,
     required super.listOfZone,
   });
 
   factory ProgramModel.fromJson(Map<String, dynamic> json) {
     return ProgramModel(
-      programId: json['programId'] as int,
-      programName: json['programName'] as String,
-      listOfZone: json['zones'].map<ZoneEntity>((e) => ZoneModel.fromJson(e)).toList(),
+      programId: json['programId'] as int? ?? 0,
+      programName: json['programName'] as String? ?? '',
+      programNameDefault: json['programNameDefault'] as String? ?? '',
+      listOfZone: const [],
     );
   }
 }
 
-class ZoneModel extends ZoneEntity{
-  ZoneModel({required super.zoneNumber});
-  
-  factory ZoneModel.fromJson(Map<String, dynamic> json) {
-    return ZoneModel(zoneNumber: json['zoneNumber']);
-  }
-}
-
-class ControllerModel extends Equatable implements ControllerEntity {
-  @override
-  final int userDeviceId;
-  @override
-  final String fertilizerMessage;
-  @override
-  final String filterMessage;
-  @override
-  final int userId;
-  @override
-  final String appSmsMode;
-  @override
-  final String status;
-  @override
-  final String ctrlStatusFlag;
-  @override
-  final String power;
-  @override
-  final String status1;
-  @override
-  final String msgcode;
-  @override
-  final String ctrlLatestMsg;
-  @override
-  final LiveMessageEntity liveMessage;
-  @override
-  final String relaystatus;
-  @override
-  final String operationMode;
-  @override
-  final String gprsMode;
-  @override
-  final String dndStatus;
-  @override
-  final String mobCctv;
-  @override
-  final String webCctv;
-  @override
-  final String simNumber;
-  @override
-  final String deviceName;
-  @override
-  final String deviceId;
-  @override
-  final int modelId;
-  @override
-  final String livesyncDate;
-  @override
-  final String livesyncTime;
-  @override
-  final List<ProgramEntity> programList;
-  @override
-  final String wpsIp;
-  @override
-  final String wpsPort;
-  @override
-  final String wapIp;
-  @override
-  final String wapPort;
-  @override
-  final String userProgramName;
-  @override
-  final String msgDesc;
-  @override
-  final String motorStatus;
-  @override
-  final String programNo;
-  @override
-  final String zoneNo;
-  @override
-  final String zoneRunTime;
-  @override
-  final String zoneRemainingTime;
-  @override
-  final String menuId;
-  @override
-  final String referenceId;
-  @override
-  final String setFlow;
-  @override
-  final String remFlow;
-  @override
-  final String flowRate;
-
+class ControllerModel extends ControllerEntity {
   const ControllerModel({
-    required this.userDeviceId,
-    required this.fertilizerMessage,
-    required this.filterMessage,
-    required this.userId,
-    required this.appSmsMode,
-    required this.status,
-    required this.ctrlStatusFlag,
-    required this.power,
-    required this.status1,
-    required this.msgcode,
-    required this.ctrlLatestMsg,
-    required this.liveMessage,
-    required this.relaystatus,
-    required this.operationMode,
-    required this.gprsMode,
-    required this.dndStatus,
-    required this.mobCctv,
-    required this.webCctv,
-    required this.simNumber,
-    required this.deviceName,
-    required this.deviceId,
-    required this.modelId,
-    required this.livesyncDate,
-    required this.livesyncTime,
-    required this.programList,
-    required this.wpsIp,
-    required this.wpsPort,
-    required this.wapIp,
-    required this.wapPort,
-    required this.userProgramName,
-    required this.msgDesc,
-    required this.motorStatus,
-    required this.programNo,
-    required this.zoneNo,
-    required this.zoneRunTime,
-    required this.zoneRemainingTime,
-    required this.menuId,
-    required this.referenceId,
-    required this.setFlow,
-    required this.remFlow,
-    required this.flowRate,
+    required super.userDeviceId,
+    required super.fertilizerMessage,
+    required super.filterMessage,
+    required super.userId,
+    required super.appSmsMode,
+    required super.status,
+    required super.ctrlStatusFlag,
+    required super.power,
+    required super.status1,
+    required super.msgcode,
+    required super.ctrlLatestMsg,
+    required super.liveMessage,
+    required super.relaystatus,
+    required super.operationMode,
+    required super.gprsMode,
+    required super.dndStatus,
+    required super.mobCctv,
+    required super.webCctv,
+    required super.simNumber,
+    required super.deviceName,
+    required super.deviceId,
+    required super.modelId,
+    required super.livesyncDate,
+    required super.livesyncTime,
+    required super.smsSyncTime,
+    required super.programList,
+    required super.wpsIp,
+    required super.wpsPort,
+    required super.wapIp,
+    required super.wapPort,
+    required super.userProgramName,
+    required super.msgDesc,
+    required super.motorStatus,
+    required super.programNo,
+    required super.zoneNo,
+    required super.zoneRunTime,
+    required super.zoneRemainingTime,
+    required super.menuId,
+    required super.referenceId,
+    required super.setFlow,
+    required super.remFlow,
+    required super.flowRate,
   });
 
   factory ControllerModel.fromJson(Map<String, dynamic> json) {
-    List<ProgramEntity> parsedProgramList = [];
-    if (json['programList'] != null && json['programList'] !is List<dynamic>) {
-      final List<dynamic> programJsonList = json['programList'];
-      parsedProgramList = programJsonList
-          .map((programJson) => ProgramModel.fromJson(programJson))
-          .toList();
-    }
+    final List<ProgramEntity> programs = json['programList'] is List
+        ? (json['programList'] as List).map((e) => ProgramModel.fromJson(e)).toList()
+        : const [];
+
+    final rawDate = json['livesyncDate']?.toString() ?? '';
+    final rawTime = json['livesyncTime']?.toString() ?? '';
+    final formattedDateTime = _formatSync(rawDate, rawTime);
+
+    final String latestMsg = json['ctrlLatestMsg']?.toString() ?? '';
+    final String parsedSmsSync = getSmsSync(latestMsg);
+
+    final LiveMessageEntity liveMessage = LiveMessageModel.fromLiveMessage(
+      json['liveMessage']?.toString() ?? '',
+      externalLastSync: formattedDateTime,
+    );
 
     return ControllerModel(
-      userDeviceId: json['userDeviceId'] as int? ?? 0,
-      fertilizerMessage: json['fertilizerMessage'] as String? ?? '',
-      filterMessage: json['filterMessage'] as String? ?? '',
-      userId: json['userId'] as int? ?? 0,
-      appSmsMode: json['appSmsMode'] as String? ?? '',
-      status: json['status'] as String? ?? '',
-      ctrlStatusFlag: json['ctrlStatusFlag'] as String? ?? '',
-      power: json['Power'] as String? ?? '',
-      status1: json['status1'] as String? ?? '',
-      msgcode: json['msgcode'] as String? ?? '',
-      ctrlLatestMsg: json['ctrlLatestMsg'] as String? ?? '',
-      liveMessage: LiveMessageModel.fromLiveMessage(json['liveMessage']),
-      relaystatus: json['relaystatus'] as String? ?? '',
-      operationMode: json['operationMode'] as String? ?? '',
-      gprsMode: json['gprsMode'] as String? ?? '',
-      dndStatus: json['dndStatus'] as String? ?? '',
-      mobCctv: json['mobCctv'] as String? ?? '',
-      webCctv: json['webCctv'] as String? ?? '',
-      simNumber: json['simNumber'] as String? ?? '',
-      deviceName: json['deviceName'] as String? ?? '',
-      deviceId: json['deviceId'] as String? ?? '',
-      modelId: json['model_Id'] as int? ?? 0,
-      livesyncDate: json['livesyncDate'] as String? ?? '',
-      livesyncTime: json['livesyncTime'] as String? ?? '',
-      programList: parsedProgramList,
-      wpsIp: json['wpsIp'] as String? ?? '',
-      wpsPort: json['wpsPort'] as String? ?? '',
-      wapIp: json['wapIp'] as String? ?? '',
-      wapPort: json['wapPort'] as String? ?? '',
-      userProgramName: json['userProgramName'] as String? ?? '',
-      msgDesc: json['msgDesc'] as String? ?? '',
-      motorStatus: json['motorStatus'] as String? ?? '',
-      programNo: json['programNo'] as String? ?? '',
-      zoneNo: json['zoneNo'] as String? ?? '',
-      zoneRunTime: json['ZoneRunTime'] as String? ?? '',
-      zoneRemainingTime: json['zoneRemainingTime'] as String? ?? '',
-      menuId: json['menuId'] as String? ?? '',
-      referenceId: json['referenceId'] as String? ?? '',
-      setFlow: json['setFlow'] as String? ?? '',
-      remFlow: json['remFlow'] as String? ?? '',
-      flowRate: json['flowRate'] as String? ?? '',
+      userDeviceId: json['userDeviceId'] ?? 0,
+      fertilizerMessage: json['fertilizerMessage'] ?? '',
+      filterMessage: json['filterMessage'] ?? '',
+      userId: json['userId'] ?? 0,
+      appSmsMode: json['appSmsMode'] ?? '',
+      status: json['status'] ?? '',
+      ctrlStatusFlag: json['ctrlStatusFlag'] ?? '',
+      power: json['Power'] ?? '',
+      status1: json['status1'] ?? '',
+      msgcode: json['msgcode'] ?? '',
+      ctrlLatestMsg: latestMsg,
+      liveMessage: liveMessage,
+      relaystatus: json['relaystatus'] ?? '',
+      operationMode: json['operationMode'] ?? '',
+      gprsMode: json['gprsMode'] ?? '',
+      dndStatus: json['dndStatus'] ?? '',
+      mobCctv: json['mobCctv'] ?? '',
+      webCctv: json['webCctv'] ?? '',
+      simNumber: json['simNumber'] ?? '',
+      deviceName: json['deviceName'] ?? '',
+      deviceId: json['deviceId'] ?? '',
+      modelId: json['model_Id'] ?? 0,
+      livesyncDate: formattedDateTime.split('\n').last,
+      livesyncTime: formattedDateTime.split('\n').first,
+      smsSyncTime: parsedSmsSync.isNotEmpty ? parsedSmsSync : '--',
+      programList: programs,
+      wpsIp: json['wpsIp'] ?? '',
+      wpsPort: json['wpsPort'] ?? '',
+      wapIp: json['wapIp'] ?? '',
+      wapPort: json['wapPort'] ?? '',
+      userProgramName: json['userProgramName'] ?? '',
+      msgDesc: json['msgDesc'] ?? '',
+      motorStatus: json['motorStatus'] ?? '',
+      programNo: json['programNo'] ?? '',
+      zoneNo: json['zoneNo'] ?? '',
+      zoneRunTime: json['ZoneRunTime'] ?? '',
+      zoneRemainingTime: json['zoneRemainingTime'] ?? '',
+      menuId: json['menuId'] ?? '',
+      referenceId: json['referenceId'] ?? '',
+      setFlow: json['setFlow'] ?? '',
+      remFlow: json['remFlow'] ?? '',
+      flowRate: json['flowRate'] ?? '',
     );
   }
 
-  ControllerModel copyWith({
-    int? userDeviceId,
-    String? fertilizerMessage,
-    String? filterMessage,
-    int? userId,
-    String? appSmsMode,
-    String? status,
-    String? ctrlStatusFlag,
-    String? power,
-    String? status1,
-    String? msgcode,
-    String? ctrlLatestMsg,
-    required LiveMessageEntity liveMessage,
-    String? relaystatus,
-    String? operationMode,
-    String? gprsMode,
-    String? dndStatus,
-    String? mobCctv,
-    String? webCctv,
-    String? simNumber,
-    String? deviceName,
-    String? deviceId,
-    int? modelId,
-    String? livesyncDate,
-    String? livesyncTime,
-    List<ProgramEntity>? programList,
-    String? wpsIp,
-    String? wpsPort,
-    String? wapIp,
-    String? wapPort,
-    String? userProgramName,
-    String? msgDesc,
-    String? motorStatus,
-    String? programNo,
-    String? zoneNo,
-    String? zoneRunTime,
-    String? zoneRemainingTime,
-    String? menuId,
-    String? referenceId,
-    String? setFlow,
-    String? remFlow,
-    String? flowRate,
-  }) {
-    return ControllerModel(
-      userDeviceId: userDeviceId ?? this.userDeviceId,
-      fertilizerMessage: fertilizerMessage ?? this.fertilizerMessage,
-      filterMessage: filterMessage ?? this.filterMessage,
-      userId: userId ?? this.userId,
-      appSmsMode: appSmsMode ?? this.appSmsMode,
-      status: status ?? this.status,
-      ctrlStatusFlag: ctrlStatusFlag ?? this.ctrlStatusFlag,
-      power: power ?? this.power,
-      status1: status1 ?? this.status1,
-      msgcode: msgcode ?? this.msgcode,
-      ctrlLatestMsg: ctrlLatestMsg ?? this.ctrlLatestMsg,
-      liveMessage: liveMessage,
-      relaystatus: relaystatus ?? this.relaystatus,
-      operationMode: operationMode ?? this.operationMode,
-      gprsMode: gprsMode ?? this.gprsMode,
-      dndStatus: dndStatus ?? this.dndStatus,
-      mobCctv: mobCctv ?? this.mobCctv,
-      webCctv: webCctv ?? this.webCctv,
-      simNumber: simNumber ?? this.simNumber,
-      deviceName: deviceName ?? this.deviceName,
-      deviceId: deviceId ?? this.deviceId,
-      modelId: modelId ?? this.modelId,
-      livesyncDate: livesyncDate ?? this.livesyncDate,
-      livesyncTime: livesyncTime ?? this.livesyncTime,
-      programList: programList ?? this.programList,
-      wpsIp: wpsIp ?? this.wpsIp,
-      wpsPort: wpsPort ?? this.wpsPort,
-      wapIp: wapIp ?? this.wapIp,
-      wapPort: wapPort ?? this.wapPort,
-      userProgramName: userProgramName ?? this.userProgramName,
-      msgDesc: msgDesc ?? this.msgDesc,
-      motorStatus: motorStatus ?? this.motorStatus,
-      programNo: programNo ?? this.programNo,
-      zoneNo: zoneNo ?? this.zoneNo,
-      zoneRunTime: zoneRunTime ?? this.zoneRunTime,
-      zoneRemainingTime: zoneRemainingTime ?? this.zoneRemainingTime,
-      menuId: menuId ?? this.menuId,
-      referenceId: referenceId ?? this.referenceId,
-      setFlow: setFlow ?? this.setFlow,
-      remFlow: remFlow ?? this.remFlow,
-      flowRate: flowRate ?? this.flowRate,
-    );
+  static String _formatSync(String rawDate, String rawTime) {
+    if (rawDate.isEmpty || rawTime.isEmpty) return "--\n--";
+    return "$rawTime\n$rawDate";
   }
 
   @override
-  List<Object?> get props => [
-    userDeviceId,
-    fertilizerMessage,
-    filterMessage,
-    userId,
-    appSmsMode,
-    status,
-    ctrlStatusFlag,
-    power,
-    status1,
-    msgcode,
-    ctrlLatestMsg,
-    liveMessage,
-    relaystatus,
-    operationMode,
-    gprsMode,
-    dndStatus,
-    mobCctv,
-    webCctv,
-    simNumber,
-    deviceName,
-    deviceId,
-    modelId,
-    livesyncDate,
-    livesyncTime,
-    programList,
-    wpsIp,
-    wpsPort,
-    wapIp,
-    wapPort,
-    userProgramName,
-    msgDesc,
-    motorStatus,
-    programNo,
-    zoneNo,
-    zoneRunTime,
-    zoneRemainingTime,
-    menuId,
-    referenceId,
-    setFlow,
-    remFlow,
-    flowRate,
-  ];
+  ControllerModel copyWith({
+    LiveMessageEntity? liveMessage,
+    String? motorStatus,
+    String? flowRate,
+    List<ProgramEntity>? programList,
+    String? ctrlLatestMsg,
+    String? msgDesc,
+    String? livesyncDate,
+    String? livesyncTime,
+    String? smsSyncTime,
+    String? status,
+  }) {
+    return ControllerModel(
+      userDeviceId: userDeviceId,
+      fertilizerMessage: fertilizerMessage,
+      filterMessage: filterMessage,
+      userId: userId,
+      appSmsMode: appSmsMode,
+      status: status ?? this.status,
+      ctrlStatusFlag: ctrlStatusFlag,
+      power: power,
+      status1: status1,
+      msgcode: msgcode,
+      ctrlLatestMsg: ctrlLatestMsg ?? this.ctrlLatestMsg,
+      liveMessage: liveMessage ?? this.liveMessage,
+      relaystatus: relaystatus,
+      operationMode: operationMode,
+      gprsMode: gprsMode,
+      dndStatus: dndStatus,
+      mobCctv: mobCctv,
+      webCctv: webCctv,
+      simNumber: simNumber,
+      deviceName: deviceName,
+      deviceId: deviceId,
+      modelId: modelId,
+      livesyncDate: livesyncDate ?? this.livesyncDate,
+      livesyncTime: livesyncTime ?? this.livesyncTime,
+      smsSyncTime: smsSyncTime ?? this.smsSyncTime,
+      programList: programList ?? this.programList,
+      wpsIp: wpsIp,
+      wpsPort: wpsPort,
+      wapIp: wapIp,
+      wapPort: wapPort,
+      userProgramName: userProgramName,
+      msgDesc: msgDesc ?? this.msgDesc,
+      motorStatus: motorStatus ?? this.motorStatus,
+      programNo: programNo,
+      zoneNo: zoneNo,
+      zoneRunTime: zoneRunTime,
+      zoneRemainingTime: zoneRemainingTime,
+      menuId: menuId,
+      referenceId: referenceId,
+      setFlow: setFlow,
+      remFlow: remFlow,
+      flowRate: flowRate ?? this.flowRate,
+    );
+  }
 }

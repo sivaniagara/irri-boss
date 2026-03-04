@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 import 'package:syncfusion_flutter_gauges/gauges.dart';
 
 class PressureGaugeSection extends StatelessWidget {
@@ -15,84 +14,102 @@ class PressureGaugeSection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext dialogContext) {
+  Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildGauge(prsIn,"bar"),
-        _buildGauge(prsOut,"bar"),
-        _buildGauge(fertFlow,"LT/S"),
+        _buildGaugeWithLabel("Prs In", prsIn, "bar"),
+        _buildGaugeWithLabel("Prs Out", prsOut, "bar"),
+        _buildGaugeWithLabel("Flow Rate", fertFlow, "LT/S"),
       ],
+    );
+  }
+
+  Widget _buildGaugeWithLabel(String label, double value, String type) {
+    return Expanded(
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF424242), // Darker grey for better visibility
+            ),
+          ),
+          const SizedBox(height: 8),
+          _buildGauge(value, type),
+        ],
+      ),
     );
   }
 
   Widget _buildGauge(double value, String type) {
     final double maxValue = type == "bar" ? 10 : 100;
 
-    return GlassCard(
-      padding:  const EdgeInsets.all(4),
-      margin:  const EdgeInsets.all(4),
-      child: SizedBox(
-        width: 90,
-        height: 90,
-        child: SfRadialGauge(
-          axes: [
-            RadialAxis(
-              minimum: 0,
-              maximum: maxValue,
-              showLabels: false,
-              showTicks: false,
-              axisLineStyle: const AxisLineStyle(
-                thickness: 0.15,
-                thicknessUnit: GaugeSizeUnit.factor,
-                color: Colors.transparent,
-              ),
-              pointers: [
-                // Full color background (full arc)
-                RangePointer(
-                  value: maxValue, // full arc
-                  width: 0.30,
-                  sizeUnit: GaugeSizeUnit.factor,
-                  gradient: SweepGradient(
-                    colors: const <Color>[
-                      Colors.tealAccent,
-                      Colors.orangeAccent,
-                      Colors.redAccent,
-                      Colors.red,
-                    ],
-                    stops: type == "bar"
-                        ? const <double>[0.10, 0.30, 0.60, 1.00]
-                        : const <double>[0.15, 0.50, 0.70, 1.00],
-                  ),
-                  enableAnimation: true,
-                ),
-                // Needle showing actual value
-                NeedlePointer(
-                  value: value.clamp(0, maxValue),
-                  needleEndWidth: 3,
-                  needleColor: Colors.white,
-                ),
-              ],
-              annotations: [
-                GaugeAnnotation(
-                  widget: Text(
-                    "$value $type",
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  angle: 90,
-                  positionFactor: 0.8,
-                ),
-              ],
+    return SizedBox(
+      width: 90,
+      height: 90,
+      child: SfRadialGauge(
+        axes: [
+          RadialAxis(
+            minimum: 0,
+            maximum: maxValue,
+            showLabels: false,
+            showTicks: false,
+            startAngle: 180,
+            endAngle: 0, // Fixed: Top semi-circle
+            centerY: 0.7,
+            axisLineStyle: const AxisLineStyle(
+              thickness: 0.15,
+              thicknessUnit: GaugeSizeUnit.factor,
+              color: Color(0xFFE1EEEE),
             ),
-          ],
-        ),
+            pointers: [
+              RangePointer(
+                value: value.clamp(0, maxValue),
+                width: 0.15,
+                sizeUnit: GaugeSizeUnit.factor,
+                gradient: const SweepGradient(
+                  colors: <Color>[
+                    Colors.green,
+                    Colors.orange,
+                    Colors.red,
+                  ],
+                  stops: <double>[0.3, 0.6, 1.0],
+                ),
+                enableAnimation: true,
+              ),
+              NeedlePointer(
+                value: value.clamp(0, maxValue),
+                needleEndWidth: 3,
+                needleLength: 0.7,
+                needleColor: Colors.black54,
+                knobStyle: const KnobStyle(
+                  knobRadius: 0.08,
+                  sizeUnit: GaugeSizeUnit.factor,
+                  color: Colors.black54,
+                ),
+              ),
+            ],
+            annotations: [
+              GaugeAnnotation(
+                widget: Text(
+                  "$value\n$type",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                angle: 90,
+                positionFactor: 0.5,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
-
-
 }

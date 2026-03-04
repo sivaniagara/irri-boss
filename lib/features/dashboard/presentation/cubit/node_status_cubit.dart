@@ -37,7 +37,7 @@ class NodeStatusCubit extends Cubit<NodeStatusState> {
 
   NodeStatusCubit({required this.getNodeStatusUsecase}) : super(NodeStatusInitialState());
 
-  Future<void> getNodeStatus({required int userId, required int subUserId, required int controllerId, required String deviceId, bool isTestComm = false}) async {
+  Future<void> getNodeStatus({required int userId, required int subUserId, required int controllerId, required String deviceId, bool isTestComm = false, required String motorStatus}) async {
     emit(NodeStatusInitialState());
 
     final result = await getNodeStatusUsecase(GetNodeStatusParams(
