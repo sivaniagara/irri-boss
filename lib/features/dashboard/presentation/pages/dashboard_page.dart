@@ -11,6 +11,7 @@ import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/auth.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/dashboard_page_cubit.dart';
+import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/bloc/standalone_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/di/injection.dart' as di;
@@ -372,6 +373,7 @@ print("controllerContext.userId:${controllerContext.userId},controllerContext.co
             ? null
             : CustomAppBar(
                 title: selectedBottomNavigation.title(),
+
         ),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         drawer: userType == 1 ? AppDrawer(userData: widget.userData,) : null,

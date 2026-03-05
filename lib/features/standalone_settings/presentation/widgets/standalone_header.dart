@@ -6,6 +6,7 @@ class StandaloneHeader extends StatelessWidget {
   final String title;
   final ValueChanged<bool> onChanged;
   final VoidCallback onSend;
+  final VoidCallback? onView;
 
   const StandaloneHeader({
     super.key,
@@ -13,6 +14,7 @@ class StandaloneHeader extends StatelessWidget {
     required this.title,
     required this.onChanged,
     required this.onSend,
+    this.onView,
   });
 
   @override
@@ -49,6 +51,20 @@ class StandaloneHeader extends StatelessWidget {
             onChanged: (v) => onChanged(v as bool),
           ),
           const SizedBox(width: 12),
+          if (onView != null) ...[
+            GestureDetector(
+              onTap: onView,
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.visibility_outlined, color: Colors.blue, size: 22),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
           GestureDetector(
             onTap: onSend,
             child: Container(

@@ -194,6 +194,17 @@ class _StandalonePageState extends State<StandalonePage> {
                     value: v,
                   ));
                 },
+                onView: () {
+                  context.read<StandaloneBloc>().add(
+                    ViewStandaloneEvent(
+                      userId: userId,
+                      controllerId: controllerId,
+                      subUserId: subUserId,
+                      deviceId: deviceId,
+                      successMessage: "Sending View Standalone...",
+                    ),
+                  );
+                },
                 onSend: () {
                   context.read<StandaloneBloc>().add(
                     SendStandaloneConfigEvent(
@@ -319,6 +330,17 @@ class _StandalonePageState extends State<StandalonePage> {
                     settingsId: "500",
                     value: v,
                   ));
+                },
+                onView: () {
+                  context.read<StandaloneBloc>().add(
+                    ViewStandaloneEvent(
+                      userId: userId,
+                      controllerId: controllerId,
+                      subUserId: subUserId,
+                      deviceId: deviceId,
+                      successMessage: "Sending View Configuration...",
+                    ),
+                  );
                 },
                 onSend: () {
                   context.read<StandaloneBloc>().add(
