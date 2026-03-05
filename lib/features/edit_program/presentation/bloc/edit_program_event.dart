@@ -17,6 +17,35 @@ class GetProgramEvent extends EditProgramEvent{
   });
 }
 
+class DeleteZone extends EditProgramEvent{
+  final String userId;
+  final String controllerId;
+  final String programId;
+  final String zoneSerialNo;
+
+  DeleteZone({
+    required this.userId,
+    required this.controllerId,
+    required this.programId,
+    required this.zoneSerialNo,
+  });
+}
+
+class DeleteZoneEvent extends EditProgramEvent{
+  final int zoneIndex;
+  final String userId;
+  final String controllerId;
+  final String programId;
+  final String zoneSerialNo;
+  DeleteZoneEvent({
+    required this.zoneIndex,
+    required this.userId,
+    required this.controllerId,
+    required this.programId,
+    required this.zoneSerialNo,
+  });
+}
+
 class SaveProgramEvent extends EditProgramEvent{
   final String userId;
   final String controllerId;
@@ -52,10 +81,7 @@ class UpdateFertilizerAdjustPercent extends EditProgramEvent{
 
 class AddZoneEvent extends EditProgramEvent{}
 
-class DeleteZoneEvent extends EditProgramEvent{
-  final int zoneIndex;
-  DeleteZoneEvent({required this.zoneIndex});
-}
+
 
 class AddOrRemoveValveToZoneEvent extends EditProgramEvent{
   final int zoneIndex;

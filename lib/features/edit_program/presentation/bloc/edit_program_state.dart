@@ -1,5 +1,21 @@
 part of 'edit_program_bloc.dart';
 
+enum ZoneDeleteStatusEditProgram { initial, loading, success, failure }
+
+extension ZoneDeleteStatusExtension on ZoneDeleteStatusEditProgram {
+  String get message {
+    switch (this) {
+      case ZoneDeleteStatusEditProgram.initial:
+        return '';
+      case ZoneDeleteStatusEditProgram.loading:
+        return 'Deleting zone...';
+      case ZoneDeleteStatusEditProgram.success:
+        return 'Zone deleted successfully';
+      case ZoneDeleteStatusEditProgram.failure:
+        return 'Failed to delete zone';
+    }
+  }
+}
 abstract class EditProgramState{}
 
 class EditProgramInitial extends EditProgramState{}
@@ -12,6 +28,7 @@ class EditProgramLoaded extends EditProgramState{
   final String deviceId;
   final SaveProgramStatus saveProgramStatus;
   final EditProgramEntity editProgramEntity;
+  final ZoneDeleteStatusEditProgram zoneDeleteStatusEditProgram;
 
   EditProgramLoaded({
     required this.userId,
@@ -19,16 +36,22 @@ class EditProgramLoaded extends EditProgramState{
     required this.subUserId,
     required this.deviceId,
     this.saveProgramStatus = SaveProgramStatus.idle,
+    this.zoneDeleteStatusEditProgram = ZoneDeleteStatusEditProgram.initial,
     required this.editProgramEntity,
   });
 
-  EditProgramLoaded copyWith({EditProgramEntity? updatedEditProgramEntity, SaveProgramStatus? updatedSaveProgramStatus}){
+  EditProgramLoaded copyWith({
+    EditProgramEntity? editProgramEntity,
+    SaveProgramStatus? saveProgramStatus,
+    ZoneDeleteStatusEditProgram? zoneDeleteStatusEditProgram,
+  }){
     return EditProgramLoaded(
         userId: userId,
         controllerId: controllerId,
         subUserId: subUserId,
-        saveProgramStatus: updatedSaveProgramStatus ?? saveProgramStatus,
-        editProgramEntity: updatedEditProgramEntity ?? editProgramEntity,
+        saveProgramStatus: saveProgramStatus ?? this.saveProgramStatus,
+        editProgramEntity: editProgramEntity ?? this.editProgramEntity,
+        zoneDeleteStatusEditProgram: zoneDeleteStatusEditProgram ?? this.zoneDeleteStatusEditProgram,
         deviceId: deviceId
     );
   }

@@ -1,3 +1,5 @@
+import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/usecases/delete_zone_usecase.dart';
+
 import '../../../core/di/injection.dart';
 import '../data/data_source/edit_program_remote_source.dart';
 import '../data/repositories/edit_program_repository_impl.dart';
@@ -14,11 +16,13 @@ void initEditProgramDependencies() async{
       saveProgramUsecase: sl(),
     sendZoneConfigurationPayloadUsecase: sl(),
     sendZoneSetPayloadUsecase: sl(),
+    deleteZoneEditProgramUseCase: sl(),
   ));
   sl.registerLazySingleton(()=>GetProgramUsecase(repository: sl()));
   sl.registerLazySingleton(()=>SaveProgramUsecase(repository: sl()));
   sl.registerLazySingleton(()=>SendZoneConfigurationPayloadUsecase(repository: sl()));
   sl.registerLazySingleton(()=>SendZoneSetPayloadUsecase(repository: sl()));
+  sl.registerLazySingleton(()=>DeleteZoneEditProgramUseCase(repository: sl()));
   sl.registerLazySingleton<EditProgramRepository>(
         () => GetProgramRepositoryImpl(remoteSource: sl()),
   );

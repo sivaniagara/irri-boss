@@ -1,7 +1,7 @@
 import 'package:niagara_smart_drip_irrigation/features/edit_program/data/models/node_model.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/entities/mapped_node_entity.dart';
 
-class MappedNodeModel extends MappedNodeEntity {
+class MappedNodeModel extends MappedNodeEntityProgram {
   MappedNodeModel({
     required super.valves,
     required super.moistureSensors,
@@ -34,7 +34,7 @@ class MappedNodeModel extends MappedNodeEntity {
     );
   }
 
-  factory MappedNodeModel.fromEntity(MappedNodeEntity entity) {
+  factory MappedNodeModel.fromEntity(MappedNodeEntityProgram entity) {
     return MappedNodeModel(
       valves: entity.valves.map((e) => NodeModel.fromEntity(e)).toList(),
       moistureSensors: entity.moistureSensors.map((e) => NodeModel.fromEntity(e)).toList(),

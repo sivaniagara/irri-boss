@@ -77,10 +77,12 @@ class EditProgramModel extends EditProgramEntity {
   static const _preFlowSetCommand = 'SETPREFLOWP:programId:zoneSetId';
   static const _postFlowSetCommand = 'SETPOSTFLOWP:programId:zoneSetId';
 
-  String _cmd(String template, String zoneSetId) =>
-      template
-          .replaceAll(':programId', programId.toString())
-          .replaceAll(':zoneSetId', zoneSetId.substring(zoneSetId.length - 2));
+  String _cmd(String template, String zoneSetId) {
+    print("zoneSetId :: $zoneSetId");
+    return template
+        .replaceAll(':programId', programId.toString())
+        .replaceAll(':zoneSetId', zoneSetId.toString().padLeft(2, '0'));
+  }
 
   String _joinTimes(Iterable<String> values) {
     final formEightZone = [
@@ -138,7 +140,7 @@ class EditProgramModel extends EditProgramEntity {
 
     final cmd = template
         .replaceAll(':programId', programId.toString())
-        .replaceAll(':zoneSetId', zoneSetId.substring(zoneSetId.length - 2))
+        .replaceAll(':zoneSetId', zoneSetId.toString().padLeft(2, '0'))
         .replaceAll(':channelNo', channelNo.toString());
 
     final values = listOfZone.map(

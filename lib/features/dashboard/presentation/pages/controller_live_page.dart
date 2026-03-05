@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/domain/entities/livemessage_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/widgets/previousday_section.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/widgets/prs_gauge_section.dart';
@@ -55,79 +56,81 @@ class CtrlLivePage extends StatelessWidget {
         final bool isValveOn = liveData.valveOnOff == "1";
         final bool isOnline = true; // Based on latest sync or specific flag if available
 
-        return Scaffold(
-          backgroundColor: AppThemes.scaffoldBackGround,
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0.5,
-            iconTheme: const IconThemeData(color: AppThemes.primaryColor),
-            title: const Text("CONTROLLER LIVE", 
-              style: TextStyle(color: AppThemes.primaryColor, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 1.2)
+        return GlassyWrapper(
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              iconTheme: const IconThemeData(color: AppThemes.primaryColor),
+              title: const Text("CONTROLLER LIVE", 
+                style: TextStyle(color: AppThemes.primaryColor, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 1.2)
+              ),
+              centerTitle: true,
+              actions: [
+                _buildStatusBadge(isMotorOn), // Using motor status as general indicator here
+                const SizedBox(width: 16),
+              ],
             ),
-            centerTitle: true,
-            actions: [
-              _buildStatusBadge(isMotorOn), // Using motor status as general indicator here
-              const SizedBox(width: 16),
-            ],
-          ),
-          body: RefreshIndicator(
-            onRefresh: () async {
-              if (state is DashboardGroupsLoaded && state.selectedControllerIndex != null) {
-                final controllers = state.groupControllers[state.selectedGroupId];
-                if (controllers != null) {
-                  context.read<DashboardPageCubit>().getLive(controllers[state.selectedControllerIndex!].deviceId);
+            body: RefreshIndicator(
+              onRefresh: () async {
+                if (state is DashboardGroupsLoaded && state.selectedControllerIndex != null) {
+                  final controllers = state.groupControllers[state.selectedGroupId];
+                  if (controllers != null) {
+                    context.read<DashboardPageCubit>().getLive(controllers[state.selectedControllerIndex!].deviceId);
+                  }
                 }
-              }
-            },
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeaderInfo(liveData),
-                  const SizedBox(height: 20),
-                  _buildQuickStats(liveData),
-                  const SizedBox(height: 20),
-                  _buildMotorValveControl(liveData, isMotorOn, isValveOn),
-                  const SizedBox(height: 24),
-                  const _SectionHeader(title: "POWER STATUS", icon: Icons.bolt_rounded),
-                  const SizedBox(height: 12),
-                  RYBSection(
-                    r: liveData.rVoltage,
-                    y: liveData.yVoltage,
-                    b: liveData.bVoltage,
-                    c1: liveData.rCurrent,
-                    c2: liveData.yCurrent,
-                    c3: liveData.bCurrent,
-                  ),
-                  const SizedBox(height: 24),
-                  const _SectionHeader(title: "IRRIGATION PROGRESS", icon: Icons.timer_outlined),
-                  const SizedBox(height: 12),
-                  _buildIrrigationProgressCard(liveData),
-                  const SizedBox(height: 24),
-                  const _SectionHeader(title: "SYSTEM PARAMETERS", icon: Icons.settings_suggest_outlined),
-                  const SizedBox(height: 12),
-                  _buildSystemParametersCard(liveData),
-                  const SizedBox(height: 24),
-                  const _SectionHeader(title: "FERTILIZATION", icon: Icons.science_outlined),
-                  const SizedBox(height: 12),
-                  _buildFertilizationOverview(liveData),
-                  const SizedBox(height: 24),
-                  const _SectionHeader(title: "ANALYTICS", icon: Icons.analytics_outlined),
-                  const SizedBox(height: 12),
-                  PreviousDaySection(
-                    runTimeToday: liveData.runTimeToday,
-                    runTimePrevious: liveData.runTimePrevious,
-                    flowToday: liveData.flowToday,
-                    flowPrevious: liveData.flowPrevDay,
-                    cFlowToday: "0",
-                    cFlowPrevious: "0",
-                  ),
-                  const SizedBox(height: 32),
-                  _buildFooterInfo(liveData),
-                  const SizedBox(height: 40),
-                ],
+              },
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeaderInfo(liveData),
+                    const SizedBox(height: 20),
+                    _buildQuickStats(liveData),
+                    const SizedBox(height: 20),
+                    _buildMotorValveControl(liveData, isMotorOn, isValveOn),
+                    const SizedBox(height: 24),
+                    const _SectionHeader(title: "POWER STATUS", icon: Icons.bolt_rounded),
+                    const SizedBox(height: 12),
+                    RYBSection(
+                      r: liveData.rVoltage,
+                      y: liveData.yVoltage,
+                      b: liveData.bVoltage,
+                      c1: liveData.rCurrent,
+                      c2: liveData.yCurrent,
+                      c3: liveData.bCurrent,
+                    ),
+                    const SizedBox(height: 24),
+                    const _SectionHeader(title: "IRRIGATION PROGRESS", icon: Icons.timer_outlined),
+                    const SizedBox(height: 12),
+                    _buildIrrigationProgressCard(liveData),
+                    const SizedBox(height: 24),
+                    const _SectionHeader(title: "SYSTEM PARAMETERS", icon: Icons.settings_suggest_outlined),
+                    const SizedBox(height: 12),
+                    _buildSystemParametersCard(liveData),
+                    const SizedBox(height: 24),
+                    const _SectionHeader(title: "FERTILIZATION", icon: Icons.science_outlined),
+                    const SizedBox(height: 12),
+                    _buildFertilizationOverview(liveData),
+                    const SizedBox(height: 24),
+                    const _SectionHeader(title: "ANALYTICS", icon: Icons.analytics_outlined),
+                    const SizedBox(height: 12),
+                    PreviousDaySection(
+                      runTimeToday: liveData.runTimeToday,
+                      runTimePrevious: liveData.runTimePrevious,
+                      flowToday: liveData.flowToday,
+                      flowPrevious: liveData.flowPrevDay,
+                      cFlowToday: "0",
+                      cFlowPrevious: "0",
+                    ),
+                    const SizedBox(height: 32),
+                    _buildFooterInfo(liveData),
+                    const SizedBox(height: 40),
+                  ],
+                ),
               ),
             ),
           ),
@@ -228,7 +231,11 @@ class CtrlLivePage extends StatelessWidget {
     return _buildSectionCard(
       child: Row(
         children: [
-          _buildControlCircle("MOTOR", 'assets/images/common/ui_motor.gif', liveData.motorOnOff == "1"),
+          _buildControlCircle(
+            "MOTOR", 
+            isMotorOn ? 'assets/images/common/ui_motor.gif' : 'assets/images/common/live_motor_off.png', 
+            isMotorOn
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -244,7 +251,11 @@ class CtrlLivePage extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
-          _buildControlCircle("VALVE", 'assets/images/common/valve_open.gif', liveData.valveOnOff == "1"),
+          _buildControlCircle(
+            "VALVE", 
+            isValveOn ? 'assets/images/common/valve_open.gif' : 'assets/images/common/valve_stop.png', 
+            isValveOn
+          ),
         ],
       ),
     );
@@ -263,9 +274,11 @@ class CtrlLivePage extends StatelessWidget {
             boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)],
           ),
           child: Center(
-            child: Opacity(
-              opacity: isOn ? 1.0 : 0.5,
-              child: Image.asset(asset, width: 45, height: 45, errorBuilder: (c,e,s) => Icon(Icons.settings_input_component, color: isOn ? Colors.green : Colors.red)),
+            child: Image.asset(
+              asset, 
+              width: 45, 
+              height: 45, 
+              errorBuilder: (c,e,s) => Icon(Icons.settings_input_component, color: isOn ? Colors.green : Colors.red)
             ),
           ),
         ),

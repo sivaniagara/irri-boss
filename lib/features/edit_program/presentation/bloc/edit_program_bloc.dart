@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/entities/selected_node_entity.dart';
+import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/usecases/delete_zone_usecase.dart';
 
 import '../../../program_settings/sub_module/edit_zone/domain/entities/node_entity.dart';
 import '../../domain/entities/edit_program_entity.dart';
@@ -18,11 +19,13 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
   final SaveProgramUsecase saveProgramUsecase;
   final SendZoneConfigurationPayloadUsecase sendZoneConfigurationPayloadUsecase;
   final SendZoneSetPayloadUsecase sendZoneSetPayloadUsecase;
+  final DeleteZoneEditProgramUseCase deleteZoneEditProgramUseCase;
   EditProgramBloc({
     required this.getProgramUsecase,
     required this.saveProgramUsecase,
     required this.sendZoneConfigurationPayloadUsecase,
     required this.sendZoneSetPayloadUsecase,
+    required this.deleteZoneEditProgramUseCase,
   }) : super(EditProgramInitial()){
 
     on<GetProgramEvent>((event, emit) async{
@@ -54,7 +57,7 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
     on<SaveProgramEvent>((event, emit) async{
       final current = state as EditProgramLoaded;
 
-      emit(current.copyWith(updatedSaveProgramStatus: SaveProgramStatus.loading));
+      emit(current.copyWith(saveProgramStatus: SaveProgramStatus.loading));
 
       SaveProgramParams params = SaveProgramParams(
           userId: event.userId,
@@ -66,11 +69,11 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
 
       result.fold(
               (failure){
-                emit(current.copyWith(updatedSaveProgramStatus: SaveProgramStatus.failure));
+                emit(current.copyWith(saveProgramStatus: SaveProgramStatus.failure));
           },
               (success){
-                emit(current.copyWith(updatedSaveProgramStatus: SaveProgramStatus.success));
-                emit(current.copyWith(updatedSaveProgramStatus: SaveProgramStatus.idle));
+                emit(current.copyWith(saveProgramStatus: SaveProgramStatus.success));
+                emit(current.copyWith(saveProgramStatus: SaveProgramStatus.idle));
               }
       );
     });
@@ -96,12 +99,12 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
       }
 
       emit(current.copyWith(
-          updatedEditProgramEntity: current.editProgramEntity
+          editProgramEntity: current.editProgramEntity
               .copyWith(updatedZones: zonesToUpdate)
       ));
     });
 
-    on<DeleteZoneEvent>((event, emit){
+    on<DeleteZoneEvent>((event, emit)async{
       final current = state as EditProgramLoaded;
       var zonesToUpdate = List.generate(current.editProgramEntity.zones.length, (index){
         if(event.zoneIndex == index){
@@ -112,11 +115,40 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
           return current.editProgramEntity.zones[index];
         }
       });
-      emit(current.copyWith(
-          updatedEditProgramEntity: current.editProgramEntity
-              .copyWith(updatedZones: zonesToUpdate)
-      ));
+      emit(current.copyWith(zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.loading));
+
+      DeleteZoneParamsEditProgram deleteZoneParams = DeleteZoneParamsEditProgram(
+          userId: event.userId,
+          controllerId: event.controllerId,
+          programId: event.programId,
+          zoneSerialNo: event.zoneSerialNo
+      );
+
+      final result = await deleteZoneEditProgramUseCase(deleteZoneParams);
+      result.fold(
+              (failure){
+            emit(current.copyWith(
+                zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.failure,
+            ));
+            emit(current.copyWith(zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.initial));
+          },
+              (unit){
+            emit(current.copyWith(
+                zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.success,
+                editProgramEntity: current.editProgramEntity
+                    .copyWith(updatedZones: zonesToUpdate)
+            ));
+            emit(current.copyWith(
+                zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.initial,
+                editProgramEntity: current.editProgramEntity
+                    .copyWith(updatedZones: zonesToUpdate)
+            ));
+          }
+      );
+
     });
+
+
 
     on<AddOrRemoveValveToZoneEvent>((event, emit){
       final current = state as EditProgramLoaded;
@@ -134,7 +166,7 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
         updatedList = current.editProgramEntity.zones[event.zoneIndex].valves.where((e)=> e.nodeId != current.editProgramEntity.mappedValves[event.nodeIndex].nodeId).toList();
       }
       emit(current.copyWith(
-          updatedEditProgramEntity: current.editProgramEntity
+          editProgramEntity: current.editProgramEntity
               .copyWith(
               updatedZones: List.generate(
                   current.editProgramEntity.zones.length,
@@ -169,7 +201,7 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
         updatedList = current.editProgramEntity.zones[event.zoneIndex].moistureSensors.where((e)=> e.nodeId != current.editProgramEntity.mappedMoistureSensors[event.nodeIndex].nodeId).toList();
       }
       emit(current.copyWith(
-          updatedEditProgramEntity: current.editProgramEntity
+          editProgramEntity: current.editProgramEntity
               .copyWith(
               updatedZones: List.generate(
                   current.editProgramEntity.zones.length,
@@ -204,7 +236,7 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
         updatedList = current.editProgramEntity.zones[event.zoneIndex].levelSensors.where((e)=> e.nodeId != current.editProgramEntity.mappedLevelSensors[event.nodeIndex].nodeId).toList();
       }
       emit(current.copyWith(
-          updatedEditProgramEntity: current.editProgramEntity
+          editProgramEntity: current.editProgramEntity
               .copyWith(
               updatedZones: List.generate(
                   current.editProgramEntity.zones.length,
@@ -227,28 +259,28 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
     on<UpdateTimerAdjustPercent>((event, emit){
       final current = state as EditProgramLoaded;
       emit(current.copyWith(
-          updatedEditProgramEntity: current.editProgramEntity.copyWith(updatedTimerAdjustPercent: event.value)
+          editProgramEntity: current.editProgramEntity.copyWith(updatedTimerAdjustPercent: event.value)
       ));
     });
 
     on<UpdateFlowAdjustPercent>((event, emit){
       final current = state as EditProgramLoaded;
       emit(current.copyWith(
-          updatedEditProgramEntity: current.editProgramEntity.copyWith(updatedFlowAdjustPercent: event.value)
+          editProgramEntity: current.editProgramEntity.copyWith(updatedFlowAdjustPercent: event.value)
       ));
     });
 
     on<UpdateMoistureAdjustPercent>((event, emit){
       final current = state as EditProgramLoaded;
       emit(current.copyWith(
-          updatedEditProgramEntity: current.editProgramEntity.copyWith(updatedMoistureAdjustPercent: event.value)
+          editProgramEntity: current.editProgramEntity.copyWith(updatedMoistureAdjustPercent: event.value)
       ));
     });
 
     on<UpdateFertilizerAdjustPercent>((event, emit){
       final current = state as EditProgramLoaded;
       emit(current.copyWith(
-          updatedEditProgramEntity: current.editProgramEntity.copyWith(updatedFertilizerAdjustPercent: event.value)
+          editProgramEntity: current.editProgramEntity.copyWith(updatedFertilizerAdjustPercent: event.value)
       ));
     });
 
@@ -425,6 +457,33 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
               })
           )
       ));
+    });
+
+    on<DeleteZone>((event, emit) async{
+      if (state is! EditProgramLoaded) return;
+      final current = state as EditProgramLoaded;
+
+      emit(current.copyWith(zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.loading));
+
+      DeleteZoneParamsEditProgram deleteZoneParams = DeleteZoneParamsEditProgram(
+          userId: event.userId,
+          controllerId: event.controllerId,
+          programId: event.programId,
+          zoneSerialNo: event.zoneSerialNo
+      );
+
+      final result = await deleteZoneEditProgramUseCase(deleteZoneParams);
+
+      result.fold(
+              (failure){
+            emit(current.copyWith(zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.failure));
+            emit(current.copyWith(zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.initial));
+          },
+              (unit){
+            emit(current.copyWith(zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.success));
+            emit(current.copyWith(zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.initial));
+          }
+      );
     });
   }
 

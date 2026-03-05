@@ -27,6 +27,7 @@ class ZoneSettingModel extends ZoneSettingEntity {
     required super.preLiters,
     required super.postTime,
     required super.postLiters,
+    required super.active,
   });
 
   factory ZoneSettingModel.fromJson(Map<String, dynamic> json) {
@@ -59,6 +60,7 @@ class ZoneSettingModel extends ZoneSettingEntity {
       preLiters: json['preLiters'] as String,
       postTime: json['postTime'] as String,
       postLiters: json['postLiters'] as String,
+      active: json['active'] ?? true,
     );
   }
 
@@ -86,6 +88,7 @@ class ZoneSettingModel extends ZoneSettingEntity {
       preLiters: entity.preLiters,
       postTime: entity.postTime,
       postLiters: entity.postLiters,
+      active: entity.active,
     );
   }
 
@@ -113,6 +116,7 @@ class ZoneSettingModel extends ZoneSettingEntity {
       preLiters: preLiters,
       postTime: postTime,
       postLiters: postLiters,
+      active: active,
     );
   }
 
@@ -139,7 +143,8 @@ class ZoneSettingModel extends ZoneSettingEntity {
       "preTime": preTime,
       "preLiters": preLiters,
       "postTime": postTime,
-      "postLiters": postLiters
+      "postLiters": postLiters,
+      "active": active,
     };
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
 
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/entities/edit_program_entity.dart';
+import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/usecases/delete_zone_usecase.dart';
 
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/usecases/get_program_usecase.dart';
 
@@ -91,9 +92,29 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
   }
 
   @override
+  Future<Either<Failure, Unit>> deleteZone(DeleteZoneParamsEditProgram params) async{
+    try {
+      final response = await remoteSource.deleteZone({'userId' : params.userId, 'controllerId' : params.controllerId, 'programId' : params.programId, 'zoneSerialNo' : params.zoneSerialNo});
+      if(response['code'] == 200){
+        return Right(unit);
+      }else{
+        return Left(ServerFailure(response['message']));
+      }
+    } catch (e) {
+      return Left(ServerFailure('getPrograms Fetching Failure: $e'));
+    }
+  }
+
+  @override
   Future<Either<Failure, Unit>> sendZoneSetPayload(
       SendZoneSetPayloadParams params) async{
     try {
+      final takingActiveZoneByZoneSet = [];
+      for(var i = 0; i < params.editProgramEntity.zones.length;i++){
+        if(params.editProgramEntity.zones[i].active){
+          takingActiveZoneByZoneSet.add(params.editProgramEntity.zones[i]);
+        }
+      }
       int start(int zoneSetNo){
         if(zoneSetNo == 1) return 0;
         return (zoneSetNo * 8) - 9;
@@ -103,12 +124,14 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
         return zoneLength;
       }
         EditProgramModel editProgramModel = EditProgramModel.fromEntity(params.editProgramEntity);
+      print("takingActiveZoneByZoneSet : ${takingActiveZoneByZoneSet}");
       print(start(params.zoneSetNo));
       print(end(params.zoneSetNo, params.editProgramEntity.zones.length));
-        List<ZoneSettingModel> zoneSet = params.editProgramEntity.zones.sublist(
+        List<ZoneSettingModel> zoneSet = takingActiveZoneByZoneSet.sublist(
             start(params.zoneSetNo),
-            end(params.zoneSetNo, params.editProgramEntity.zones.length)
-        ).map((e) => ZoneSettingModel.fromEntity(e)).toList();
+            end(params.zoneSetNo, params.editProgramEntity.zones.length).clamp(0, takingActiveZoneByZoneSet.length)
+
+    ).map((e) => ZoneSettingModel.fromEntity(e)).toList();
       final response = await remoteSource.sendZonePayload(
           urlData: {'userId' : params.userId, 'controllerId' : params.controllerId},
           bodyData: {},

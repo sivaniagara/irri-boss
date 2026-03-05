@@ -41,7 +41,8 @@ class _PayloadPageState extends State<PayloadPage> {
 
   List<Map<String, dynamic>> splitIntoChunks(int chunkSize) {
     List<Map<String, dynamic>> chunks = [];
-    for (var i = 0; i < zoneSelection.length; i += chunkSize) {
+    final filterInActiveZones = (context.read<EditProgramBloc>().state as EditProgramLoaded).editProgramEntity.zones.where((e) =>e.active).toList();
+    for (var i = 0; i < filterInActiveZones.length; i += chunkSize) {
       chunks.add({'mode' : PayloadModeEnum.idle, 'value' : true});
     }
     return chunks;
@@ -67,6 +68,9 @@ class _PayloadPageState extends State<PayloadPage> {
                             Text('Zone Configuration', style: Theme.of(context).textTheme.labelLarge,),
                             ...List.generate(zoneSelection.length, (index){
                               final zone = state.editProgramEntity.zones[index];
+                              if(!zone.active) {
+                                return Container();
+                              };
                               return CheckboxListTile(
                                 enabled: enableEdit,
                                   controlAffinity: ListTileControlAffinity.leading,
@@ -115,24 +119,27 @@ class _PayloadPageState extends State<PayloadPage> {
                               enableEdit = false;
                               setState(() {});
                               for (var zonePayload = 0; zonePayload < zoneSelection.length; zonePayload++) {
-                                if(!zoneSelection[zonePayload]['value']) continue;
-                                setState(() {
-                                  zoneSelection[zonePayload]['mode'] = PayloadModeEnum.loading;
-                                });
+                                if(state.editProgramEntity.zones[zonePayload].active){
+                                  if(!zoneSelection[zonePayload]['value']) continue;
+                                  setState(() {
+                                    zoneSelection[zonePayload]['mode'] = PayloadModeEnum.loading;
+                                  });
 
-                                try {
-                                  final result = await context.read<EditProgramBloc>().sendZonePayload(
-                                    zoneIndex: zonePayload,
-                                  );
-                                  setState(() {
-                                    zoneSelection[zonePayload]['mode'] = result; // ← now result is the real enum value
-                                  });
-                                } catch (e) {
-                                  setState(() {
-                                    zoneSelection[zonePayload]['mode'] = PayloadModeEnum.failure;
-                                  });
-                                  print("Zone $zonePayload failed: $e");
+                                  try {
+                                    final result = await context.read<EditProgramBloc>().sendZonePayload(
+                                      zoneIndex: zonePayload,
+                                    );
+                                    setState(() {
+                                      zoneSelection[zonePayload]['mode'] = result; // ← now result is the real enum value
+                                    });
+                                  } catch (e) {
+                                    setState(() {
+                                      zoneSelection[zonePayload]['mode'] = PayloadModeEnum.failure;
+                                    });
+                                    print("Zone $zonePayload failed: $e");
+                                  }
                                 }
+
                               }
                               for (var zoneSetPayload = 0; zoneSetPayload < zoneSetSelection.length; zoneSetPayload++) {
                                 if(!zoneSetSelection[zoneSetPayload]['value']) continue;
