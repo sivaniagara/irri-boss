@@ -28,6 +28,12 @@ class Dashboard20 extends StatefulWidget {
 
 class _Dashboard20State extends State<Dashboard20> {
 
+  double _safeParse(String? value) {
+    if (value == null || value.isEmpty) return 0.0;
+    String cleanValue = value.replaceAll('F', '').trim();
+    return double.tryParse(cleanValue) ?? 0.0;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<DashboardPageCubit, DashboardState>(
@@ -143,7 +149,7 @@ class _Dashboard20State extends State<Dashboard20> {
                       children: [
                         const Icon(Icons.battery_6_bar_rounded, color: Colors.green),
                         Text(
-                          'Battery ${liveMessageEntity.batVolt}% | ${getDate(liveMessageEntity.cd)}',
+                          'Battery ${liveMessageEntity.batVolt}% | ${getDate(liveData: liveMessageEntity)}',
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w400),
                         ),
@@ -570,13 +576,13 @@ class _Dashboard20State extends State<Dashboard20> {
                   moonColor: const Color(0xffD4EAFF),
                   skyColor: const Color(0xffE6F7FF),
                   title: 'Max Level',
-                  value: '${liveMessageEntity.wellLevel} Feet',
+                  value: '${_safeParse(liveMessageEntity.wellLevel).toStringAsFixed(1)} Feet',
                 ),
                 moonCard(
                   moonColor: const Color(0xffD4EAFF),
                   skyColor: const Color(0xffE6F7FF),
                   title: 'Current Level',
-                  value: '${liveMessageEntity.wellPercent}%',
+                  value: '${_safeParse(liveMessageEntity.wellPercent).toStringAsFixed(0)}%',
                 ),
               ],
             )
@@ -597,9 +603,9 @@ class _Dashboard20State extends State<Dashboard20> {
    return zoneNumbers;
   }
 
-  String getDate(String date){
+  String getDate({required LiveMessageEntity liveData}){
     try{
-      return DateFormat("d/MMM/yyyy").format(DateTime(int.parse(date.split('/')[2]), int.parse(date.split('/')[1]), int.parse(date.split('/')[0]))).toUpperCase();
+      return DateFormat("d/MMM/yyyy").format(DateTime(int.parse(liveData.cd.split('/')[2]), int.parse(liveData.cd.split('/')[1]), int.parse(liveData.cd.split('/')[0]))).toUpperCase();
     }catch(e){
       if (kDebugMode) {
         print(e.toString());

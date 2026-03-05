@@ -195,8 +195,8 @@ class LiveMessageModel extends LiveMessageEntity {
       wellPercent = safeString(23, '0');
       runTimeToday = safeString(27, '00:00:00');
       runTimePrevious = safeString(28, '00:00:00');
-      flowToday = safeString(29, '0');
-      flowPrevDay = safeString(30, '0');
+      flowToday = safeString(30, '0');
+      flowPrevDay = safeString(29, '0');
       moisture1 = safeString(31, '0');
       moisture2 = safeString(32, '0');
       energy = safeString(33, '0');

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/domain/entities/livemessage_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/data/models/program_view_model.dart';
 import '../../../../core/di/injection.dart';
@@ -235,17 +236,8 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
 
         return Scaffold(
           backgroundColor: AppThemes.scaffoldBackGround,
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-            title: const Text(
-              "Program Preview",
-              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-            ),
+          appBar: CustomAppBar(
+            title: "Program Preview",
             actions: [
               AnimatedBuilder(
                 animation: _refreshController,
@@ -285,30 +277,13 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
               ),
             ],
           ),
-          body: Stack(
-            children: [
-              Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      AppThemes.gradientTopColor,
-                      AppThemes.gradientMidColor,
-                      AppThemes.gradientBottomColor,
-                    ],
-                  ),
-                ),
-              ),
-              (_isLoading && _program == null && zoneList.isEmpty)
-                  ? const Center(child: CircularProgressIndicator())
-                  : _error != null && _program == null && zoneList.isEmpty
-                  ? _buildErrorState()
-                  : RefreshIndicator(
-                onRefresh: () => _requestMessage(),
-                child: _buildContent(liveMessage, isOnline, lastSyncToDisplay),
-              ),
-            ],
+          body: (_isLoading && _program == null && zoneList.isEmpty)
+              ? const Center(child: CircularProgressIndicator())
+              : _error != null && _program == null && zoneList.isEmpty
+              ? _buildErrorState()
+              : RefreshIndicator(
+            onRefresh: () => _requestMessage(),
+            child: _buildContent(liveMessage, isOnline, lastSyncToDisplay),
           ),
         );
       },
@@ -382,14 +357,14 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
         Text(
           title,
           style: TextStyle(
-            color: AppThemes.primaryColor.withOpacity(0.8),
+            color: Colors.black54,
             fontWeight: FontWeight.bold,
             fontSize: 13,
             letterSpacing: 1.2,
           ),
         ),
         const SizedBox(width: 8),
-        Expanded(child: Divider(color: AppThemes.primaryColor.withOpacity(0.2))),
+        Expanded(child: Divider(color: Colors.grey.shade300)),
       ],
     );
   }
@@ -398,19 +373,16 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppThemes.primaryColor, AppThemes.primaryColor.withOpacity(0.85)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
         boxShadow: [
           BoxShadow(
-            color: AppThemes.primaryColor.withOpacity(0.4),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           )
         ],
+        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -420,24 +392,24 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
             children: [
               Text(
                 "PROGRAM $programName".toUpperCase(),
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 22, letterSpacing: 1),
+                style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w900, fontSize: 20, letterSpacing: 1),
               ),
               const SizedBox(height: 4),
-              const Text("CONTROLLER PREVIEW", style: TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+              const Text("CONTROLLER PREVIEW", style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
             ],
           ),
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: AppThemes.scaffoldBackGround,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                const Text("LAST SYNC", style: TextStyle(color: Colors.white70, fontSize: 9, fontWeight: FontWeight.bold)),
+                const Text("LAST SYNC", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 2),
-                Text(lastSync, style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600)),
+                Text(lastSync, style: const TextStyle(color: AppThemes.primaryColor, fontSize: 11, fontWeight: FontWeight.w600)),
               ],
             ),
           )
@@ -523,31 +495,32 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
   Widget _buildRTCTimerSection() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.7),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
         ],
+        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
       ),
       child: Column(
         children: [
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [AppThemes.primaryColor.withOpacity(0.9), AppThemes.primaryColor]),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              color: AppThemes.scaffoldBackGround,
+              borderRadius: const BorderRadius.only(topRight: Radius.circular(15)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Row(
                   children: [
-                    Icon(Icons.schedule_rounded, color: Colors.white, size: 20),
+                    Icon(Icons.schedule_rounded, color: Colors.black87, size: 20),
                     SizedBox(width: 8),
-                    Text("RTC Timer Configuration", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                    Text("RTC Timer Configuration", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 14)),
                   ],
                 ),
-                _buildBadge(_program?.rtcOnOff == "1" ? "ON" : "OFF", isNegative: _program?.rtcOnOff != "1", elevated: true),
+                _buildBadge(_program?.rtcOnOff == "1" ? "ON" : "OFF", isNegative: _program?.rtcOnOff != "1", elevated: false),
               ],
             ),
           ),
@@ -556,8 +529,8 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
             child: Row(
               children: [
                 const SizedBox(width: 44),
-                Expanded(child: Center(child: Text("ON TIME", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppThemes.primaryColor, letterSpacing: 0.5)))),
-                Expanded(child: Center(child: Text("OFF TIME", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppThemes.primaryColor, letterSpacing: 0.5)))),
+                Expanded(child: Center(child: Text("ON TIME", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey.shade600, letterSpacing: 0.5)))),
+                Expanded(child: Center(child: Text("OFF TIME", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey.shade600, letterSpacing: 0.5)))),
               ],
             ),
           ),
@@ -573,15 +546,15 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
                     width: 24,
                     height: 24,
                     decoration: BoxDecoration(
-                      color: AppThemes.primaryColor.withOpacity(0.1),
+                      color: AppThemes.scaffoldBackGround,
                       shape: BoxShape.circle,
                     ),
-                    child: Center(child: Text("${index + 1}", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: AppThemes.primaryColor))),
+                    child: Center(child: Text("${index + 1}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: AppThemes.primaryColor))),
                   ),
                   const SizedBox(width: 12),
-                  Expanded(child: _buildValueBox(onTime, highlighted: true)),
+                  Expanded(child: _buildValueBox(onTime, highlighted: false)),
                   const SizedBox(width: 12),
-                  Expanded(child: _buildValueBox(offTime, highlighted: true)),
+                  Expanded(child: _buildValueBox(offTime, highlighted: false)),
                 ],
               ),
             );
@@ -596,11 +569,12 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.7),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
         ],
+        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
       ),
       child: Row(
         children: [
@@ -620,11 +594,12 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.7),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
         ],
+        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
       ),
       child: Column(
         children: [
@@ -634,10 +609,10 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
                 margin: const EdgeInsets.symmetric(horizontal: 2),
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [AppThemes.primaryColor, AppThemes.primaryColor.withOpacity(0.8)]),
+                  color: AppThemes.scaffoldBackGround,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Center(child: Text("F${i + 1}", style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold))),
+                child: Center(child: Text("F${i + 1}", style: const TextStyle(color: AppThemes.primaryColor, fontSize: 10, fontWeight: FontWeight.bold))),
               ),
             )),
           ),
@@ -655,7 +630,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
   Widget _buildFertRow(String label, Widget Function(int) builder) {
     return Row(
       children: [
-        SizedBox(width: 60, child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: AppThemes.primaryColor.withOpacity(0.6)))),
+        SizedBox(width: 60, child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey.shade600))),
         ...List.generate(6, (i) => Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 2),
@@ -695,14 +670,14 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: isRunning ? Colors.green.shade50.withOpacity(0.9) : Colors.white.withOpacity(0.8),
-        borderRadius: BorderRadius.circular(20),
-        border: isRunning ? Border.all(color: Colors.green.shade300, width: 2) : Border.all(color: Colors.white.withOpacity(0.5)),
+        color: isRunning ? Colors.green.shade50 : Colors.white,
+        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
+        border: isRunning ? Border.all(color: Colors.green.shade200, width: 1.5) : Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
         boxShadow: [
           BoxShadow(
-            color: isRunning ? Colors.green.withOpacity(0.1) : Colors.black.withOpacity(0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           )
         ],
       ),
@@ -710,10 +685,10 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: isRunning ? Colors.green.shade100 : AppThemes.primaryColor.withOpacity(0.05),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              color: isRunning ? Colors.green.shade100 : AppThemes.scaffoldBackGround,
+              borderRadius: const BorderRadius.only(topRight: Radius.circular(15)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -722,11 +697,11 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
                   children: [
                     Container(
                       padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(color: isRunning ? Colors.green : AppThemes.primaryColor, shape: BoxShape.circle),
+                      decoration: const BoxDecoration(color: AppThemes.primaryColor, shape: BoxShape.circle),
                       child: const Icon(Icons.grid_view_rounded, color: Colors.white, size: 14),
                     ),
                     const SizedBox(width: 10),
-                    Text("Zone ${z.zoneNumber}", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 0.5)),
+                    Text("Zone ${z.zoneNumber}", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: 0.5)),
                   ],
                 ),
                 if (isRunning)
@@ -783,7 +758,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
   }
 
   Widget _buildSmallLabel(String text) {
-    return Text(text, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: AppThemes.primaryColor.withOpacity(0.5), letterSpacing: 0.5));
+    return Text(text, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.grey.shade600, letterSpacing: 0.5));
   }
 
   Widget _buildZoneInfoChip(IconData icon, String label, String value) {
@@ -792,7 +767,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppThemes.primaryColor.withOpacity(0.1)),
+        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -801,7 +776,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
             children: [
               Icon(icon, size: 10, color: AppThemes.primaryColor),
               const SizedBox(width: 4),
-              Text(label, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: AppThemes.primaryColor.withOpacity(0.6))),
+              Text(label, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.grey.shade600)),
             ],
           ),
           const SizedBox(height: 2),
@@ -817,18 +792,19 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.85),
-        borderRadius: BorderRadius.circular(14),
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 4))
         ],
+        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 14, color: AppThemes.primaryColor.withOpacity(0.7)),
+              Icon(icon, size: 14, color: AppThemes.primaryColor),
               const SizedBox(width: 6),
               Expanded(child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.grey.shade600, letterSpacing: 0.2))),
             ],
@@ -846,18 +822,19 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.85),
-        borderRadius: BorderRadius.circular(14),
+        color: Colors.white,
+        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 4))
         ],
+        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.skip_next_rounded, size: 14, color: AppThemes.primaryColor.withOpacity(0.7)),
+              Icon(Icons.skip_next_rounded, size: 14, color: AppThemes.primaryColor),
               const SizedBox(width: 6),
               Expanded(child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.grey.shade600))),
             ],
@@ -879,9 +856,9 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8, vertical: small ? 4 : 8),
       decoration: BoxDecoration(
-        color: highlighted ? AppThemes.primaryColor.withOpacity(0.05) : AppThemes.secondaryColor.withOpacity(0.15),
+        color: highlighted ? Colors.green.shade50 : AppThemes.scaffoldBackGround.withOpacity(0.5),
         borderRadius: BorderRadius.circular(small ? 8 : 10),
-        border: Border.all(color: highlighted ? AppThemes.primaryColor.withOpacity(0.2) : Colors.blue.shade100.withOpacity(0.5), width: 1),
+        border: Border.all(color: highlighted ? Colors.green.shade200 : Theme.of(context).colorScheme.outline.withOpacity(0.2), width: 1),
       ),
       child: Center(
         child: Text(
@@ -891,7 +868,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
           style: TextStyle(
             fontWeight: FontWeight.w900,
             fontSize: small ? 10 : 13,
-            color: highlighted ? AppThemes.primaryColor : Colors.blue.shade900,
+            color: highlighted ? Colors.green.shade900 : Colors.black87,
             fontFamily: 'monospace',
           ),
         ),
@@ -924,7 +901,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
     return Expanded(
       child: Column(
         children: [
-          Icon(icon, size: 14, color: AppThemes.primaryColor.withOpacity(0.6)),
+          Icon(icon, size: 14, color: AppThemes.primaryColor),
           const SizedBox(height: 4),
           Text(label, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.grey.shade600)),
           const SizedBox(height: 6),

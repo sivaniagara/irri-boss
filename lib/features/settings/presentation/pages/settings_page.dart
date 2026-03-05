@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/utils/app_images.dart';
+import 'package:niagara_smart_drip_irrigation/core/utils/route_constants.dart';
 import 'package:niagara_smart_drip_irrigation/features/common_id_settings/utils/common_id_settings_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/controller_details/domain/usecase/controller_details_params.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/serial_set/utils/serial_set_routes.dart';
 import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
@@ -16,6 +18,23 @@ class SettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
+
+        _buildSettingsItem(
+            context: context,
+            title: 'Controller Details',
+            iconPath: AppImages.ControllerDetailsIcon,
+            onTap: () {
+              final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
+              context.push(
+                RouteConstants.ctrlDetailsPage,
+                extra: GetControllerDetailsParams(
+                  userId: int.parse(controllerContext.userId),
+                  controllerId: int.parse(controllerContext.controllerId),
+                  deviceId: controllerContext.deviceId,
+                ),
+              );
+            }
+        ),
         _buildSettingsItem(
             context: context,
             title: 'Pump Settings',
@@ -58,6 +77,7 @@ class SettingsPage extends StatelessWidget {
               context.push(CommonIdSettingsRoutes.commonIdSettings);
             }
         ),
+
         _buildSettingsItem(
             context: context,
             title: 'Serial Set',
