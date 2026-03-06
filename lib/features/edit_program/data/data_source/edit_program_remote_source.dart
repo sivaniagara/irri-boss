@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../../../../core/services/api_client.dart';
 import '../../../../core/services/mqtt/mqtt_manager.dart';
+import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/utils/api_urls.dart';
 import '../../utils/edit_program_urls.dart';
 
@@ -15,6 +16,13 @@ abstract class EditProgramRemoteSource{
     required String deviceId
   });
   Future<Map<String, dynamic>> deleteZone(Map<String, String> urlData);
+  Future<bool> sendViewMessage({
+    required String userId,
+    required String controllerId,
+    required String programId,
+    required String deviceId,
+    required String payload,
+  });
 }
 
 
@@ -76,16 +84,53 @@ class EditProgramRemoteSourceImpl extends EditProgramRemoteSource{
   })async {
     try{
       String endPoint = buildUrl(EditProgramUrls.sentAndReceive, urlData);
-      await Future.delayed(Duration(seconds: 3));
+
       final response = await apiClient.post(
           endPoint,
         body: {"sentAndReceived": listOfPayload}
       );
       print('getPrograms => $response');
       for(var payload in listOfPayload){
+        await Future.delayed(Duration(seconds: 8));
         mqttManager.publish(deviceId, payload);
       }
       return true;
+    }catch (e){
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> sendViewMessage({
+    required String userId,
+    required String controllerId,
+    required String programId,
+    required String deviceId,
+    required String payload
+  }) async{
+    try{
+      String endPoint = buildUrl(
+          EditProgramUrls.sentAndReceive,
+          {
+            'userId': userId,
+            'controllerId': controllerId,
+            'programId': programId,
+          }
+      );
+
+      final response = await apiClient.post(
+          endPoint,
+          body: {
+            "sentAndReceived": [
+              PublishMessageHelper.settingsPayload(payload)
+            ]}
+      );
+      mqttManager.publish(deviceId, PublishMessageHelper.settingsPayload(payload));
+      if(response['code'] == 200){
+        return true;
+      }else{
+        return false;
+      }
     }catch (e){
       rethrow;
     }

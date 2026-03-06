@@ -7,9 +7,11 @@ import '../../domain/entities/edit_program_entity.dart';
 import '../../domain/entities/zone_setting_entity.dart';
 import '../../domain/usecases/get_program_usecase.dart';
 import '../../domain/usecases/save_program_usecase.dart';
+import '../../domain/usecases/send_view_message_usecase.dart';
 import '../../domain/usecases/send_zone_configuration_payload_usecase.dart';
 import '../../domain/usecases/send_zone_set_payload_usecase.dart';
 import '../enums/add_remove_enum.dart';
+import '../enums/send_view_message_enum.dart';
 import '../pages/payload_page.dart';
 part 'edit_program_event.dart';
 part 'edit_program_state.dart';
@@ -20,12 +22,14 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
   final SendZoneConfigurationPayloadUsecase sendZoneConfigurationPayloadUsecase;
   final SendZoneSetPayloadUsecase sendZoneSetPayloadUsecase;
   final DeleteZoneEditProgramUseCase deleteZoneEditProgramUseCase;
+  final SendViewMessageUsecase sendViewMessageUsecase;
   EditProgramBloc({
     required this.getProgramUsecase,
     required this.saveProgramUsecase,
     required this.sendZoneConfigurationPayloadUsecase,
     required this.sendZoneSetPayloadUsecase,
     required this.deleteZoneEditProgramUseCase,
+    required this.sendViewMessageUsecase,
   }) : super(EditProgramInitial()){
 
     on<GetProgramEvent>((event, emit) async{
@@ -76,6 +80,58 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
                 emit(current.copyWith(saveProgramStatus: SaveProgramStatus.idle));
               }
       );
+    });
+
+    on<SendViewMessageEvent>((event, emit)async{
+      if (state is! EditProgramLoaded) return;
+
+      // 1. First — go to loading
+      var current = state as EditProgramLoaded;
+      emit(current.copyWith(sendViewMessageStatusEnum: SendViewMessageStatusEnum.loading));
+
+      try {
+        final param = SendViewMessageParam(
+          userId: event.userId,
+          controllerId: event.controllerId,
+          programId: event.programId,
+          deviceId: event.deviceId,
+          payload: event.payload,
+        );
+
+        // Call backend / confirmation logic
+        final result = await sendViewMessageUsecase(param);
+
+        result.fold(
+              (failure) {
+            emit(current.copyWith(
+              sendViewMessageStatusEnum: SendViewMessageStatusEnum.failure,
+              errorMsg: failure.message,
+            ));
+            emit(current.copyWith(
+              sendViewMessageStatusEnum: SendViewMessageStatusEnum.initial,
+              errorMsg: '',
+            ));
+          },
+              (success) {
+            emit(current.copyWith(
+              sendViewMessageStatusEnum: SendViewMessageStatusEnum.success,
+            ));
+            emit(current.copyWith(
+              sendViewMessageStatusEnum: SendViewMessageStatusEnum.initial,
+              errorMsg: '',
+            ));
+          },
+        );
+      } catch (e) {
+        emit(current.copyWith(
+          sendViewMessageStatusEnum: SendViewMessageStatusEnum.failure,
+          errorMsg: e.toString(),
+        ));
+        emit(current.copyWith(
+          sendViewMessageStatusEnum: SendViewMessageStatusEnum.initial,
+          errorMsg: '',
+        ));
+      }
     });
 
     on<AddZoneEvent>((event, emit){

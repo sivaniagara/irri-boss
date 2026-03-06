@@ -8,8 +8,10 @@ import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/useca
 
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/usecases/get_program_usecase.dart';
 
+import '../../../../core/error/exceptions.dart';
 import '../../domain/repositories/edit_program_repository.dart';
 import '../../domain/usecases/save_program_usecase.dart';
+import '../../domain/usecases/send_view_message_usecase.dart';
 import '../../domain/usecases/send_zone_configuration_payload_usecase.dart';
 import '../../domain/usecases/send_zone_set_payload_usecase.dart';
 import '../data_source/edit_program_remote_source.dart';
@@ -164,6 +166,28 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
         print(stackTrace);
       }
       return Left(ServerFailure('sendZoneConfigurationPayload Fetching Failure: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> sendViewMessage(SendViewMessageParam params) async {
+    try {
+      final response = await remoteSource.sendViewMessage(
+        userId: params.userId,
+        controllerId: params.controllerId,
+        programId: params.programId,
+        deviceId: params.deviceId,
+        payload: params.payload,
+      );
+      if(response){
+        return Right(unit);
+      }else{
+        return Left(ServerFailure('Change From Payload not sent'));
+      }
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('Failed to fetch controllers: $e'));
     }
   }
 }

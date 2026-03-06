@@ -11,6 +11,8 @@ import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nod
 
 import '../../../../core/widgets/alert_dialog.dart';
 import '../../../../core/widgets/app_alerts.dart';
+import '../enums/resend_command_enum.dart';
+import '../enums/view_command_enum.dart';
 
 
 class MappedNodeList extends StatefulWidget {
@@ -30,10 +32,6 @@ class _MappedNodeListState extends State<MappedNodeList> {
     // TODO: implement initState
     super.initState();
     final currentState = context.read<MappingAndUnmappingNodesBloc>().state as MappingAndUnmappingNodesLoaded;
-    for(var i in currentState.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity){
-      print(i.select);
-    }
-    print("length => ${currentState.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity.length}");
     listOfMappedNode = currentState.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity.map(((e){
       return e.copyWidth();
     })).toList();
@@ -54,6 +52,34 @@ class _MappedNodeListState extends State<MappedNodeList> {
             showSuccessAlert(
                 context: context,
                 message: state.deleteMappedNodeEnum.getMessage(),
+                onPressed: (){
+                  context.pop();
+                }
+            );
+          }else if(state is MappingAndUnmappingNodesLoaded && state.viewCommandEnum == ViewCommandEnum.loading){
+            showGradientLoadingDialog(context);
+          }else if(state is MappingAndUnmappingNodesLoaded && state.viewCommandEnum == ViewCommandEnum.failure){
+            context.pop();
+            showErrorAlert(context: context, message: state.message);
+          }else if(state is MappingAndUnmappingNodesLoaded && state.viewCommandEnum == ViewCommandEnum.success){
+            context.pop();
+            showSuccessAlert(
+                context: context,
+                message: state.viewCommandEnum.getMessage(),
+                onPressed: (){
+                  context.pop();
+                }
+            );
+          }else if(state is MappingAndUnmappingNodesLoaded && state.resendCommandEnum == ResendCommandEnum.loading){
+            showGradientLoadingDialog(context);
+          }else if(state is MappingAndUnmappingNodesLoaded && state.resendCommandEnum == ResendCommandEnum.failure){
+            context.pop();
+            showErrorAlert(context: context, message: state.message);
+          }else if(state is MappingAndUnmappingNodesLoaded && state.resendCommandEnum == ResendCommandEnum.success){
+            context.pop();
+            showSuccessAlert(
+                context: context,
+                message: state.resendCommandEnum.getMessage(),
                 onPressed: (){
                   context.pop();
                 }

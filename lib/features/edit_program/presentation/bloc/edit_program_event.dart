@@ -184,3 +184,18 @@ class UpdateChannelLiters extends EditProgramEvent {
     required this.liters,
   });
 }
+
+class SendViewMessageEvent extends EditProgramEvent{
+  final String userId;
+  final String controllerId;
+  final String programId;
+  final String deviceId;
+  final String payload;
+  SendViewMessageEvent({
+    required this.userId,
+    required this.controllerId,
+    required this.programId,
+    required this.deviceId,
+    required this.payload,
+  });
+}

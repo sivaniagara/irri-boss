@@ -29,6 +29,8 @@ class EditProgramLoaded extends EditProgramState{
   final SaveProgramStatus saveProgramStatus;
   final EditProgramEntity editProgramEntity;
   final ZoneDeleteStatusEditProgram zoneDeleteStatusEditProgram;
+  final SendViewMessageStatusEnum sendViewMessageStatusEnum;
+  final String errorMsg;
 
   EditProgramLoaded({
     required this.userId,
@@ -37,13 +39,17 @@ class EditProgramLoaded extends EditProgramState{
     required this.deviceId,
     this.saveProgramStatus = SaveProgramStatus.idle,
     this.zoneDeleteStatusEditProgram = ZoneDeleteStatusEditProgram.initial,
+    this.sendViewMessageStatusEnum = SendViewMessageStatusEnum.initial,
     required this.editProgramEntity,
+    this.errorMsg = '',
   });
 
   EditProgramLoaded copyWith({
     EditProgramEntity? editProgramEntity,
     SaveProgramStatus? saveProgramStatus,
     ZoneDeleteStatusEditProgram? zoneDeleteStatusEditProgram,
+    SendViewMessageStatusEnum? sendViewMessageStatusEnum,
+    String? errorMsg,
   }){
     return EditProgramLoaded(
         userId: userId,
@@ -52,7 +58,9 @@ class EditProgramLoaded extends EditProgramState{
         saveProgramStatus: saveProgramStatus ?? this.saveProgramStatus,
         editProgramEntity: editProgramEntity ?? this.editProgramEntity,
         zoneDeleteStatusEditProgram: zoneDeleteStatusEditProgram ?? this.zoneDeleteStatusEditProgram,
-        deviceId: deviceId
+      sendViewMessageStatusEnum: sendViewMessageStatusEnum ?? this.sendViewMessageStatusEnum,
+        deviceId: deviceId,
+      errorMsg: errorMsg ?? this.errorMsg,
     );
   }
 }
