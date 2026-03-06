@@ -27,7 +27,7 @@ final editProgramGoRoutes = [
                     deviceId: controllerContext.deviceId
                 )
             ),
-            child: EditProgramPage());
+            child: EditProgramPage(programId: programId.toString(),));
       },
       routes: [
 

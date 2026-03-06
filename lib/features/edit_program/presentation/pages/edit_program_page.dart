@@ -19,7 +19,8 @@ import '../bloc/edit_program_bloc.dart';
 import '../../../../core/widgets/tiny_text_form_field.dart';
 
 class EditProgramPage extends StatefulWidget {
-  const EditProgramPage({super.key});
+  final String programId;
+  const EditProgramPage({super.key, required this.programId});
 
   @override
   State<EditProgramPage> createState() => _EditProgramPageState();
@@ -64,7 +65,7 @@ class _EditProgramPageState extends State<EditProgramPage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Program 1', style: Theme.of(context).textTheme.titleLarge,),
+        title: Text('Program ${widget.programId}', style: Theme.of(context).textTheme.titleLarge,),
         actions: [
           GestureDetector(
             child: Padding(
@@ -288,7 +289,6 @@ class _EditProgramPageState extends State<EditProgramPage> {
                                     ],
                                   );
                                 }),
-
                               ],
                             ),
                           ),
@@ -361,7 +361,6 @@ class _EditProgramPageState extends State<EditProgramPage> {
     final String mm = time.minute.toString().padLeft(2, '0');
     return '$hh:$mm';
   }
-
 
   Widget leafBox({required Widget child}){
     return Container(
