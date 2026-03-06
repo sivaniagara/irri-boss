@@ -39,6 +39,6 @@ class AppImages {
   static const String activeStandaloneIcon = '$iconPath/active_setting_icon.png';
   static const String inActiveStandaloneIcon = '$iconPath/inactive_setting_icon.png';
   static const String setserialIcon = '$iconPath/set_serial_icon.png';
-
+  static const String ControllerDetailsIcon = '$iconPath/controller_details_icon.png';
   static const String currentIcon = '$commonPath/current_icon.png';
 }

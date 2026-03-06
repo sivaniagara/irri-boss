@@ -3,13 +3,10 @@ import 'dart:convert';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_service.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_routes.dart';
-import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/services/mqtt/mqtt_manager.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
-import '../../../../core/services/selected_controller_persistence.dart';
 import '../../dashboard.dart';
 import '../../domain/usecases/control_motor_usecase.dart';
 import '../../domain/usecases/update_change_from_usecase.dart';
@@ -229,21 +226,14 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     }
   }
 
-  void updateLiveMessage(String deviceId, dynamic liveMessage) {
-    print('liveMessage ::: $liveMessage');
-    print("state ==> ${state}");
+  void updateLiveMessage(String deviceId, LiveMessageEntity liveMessage, {String? date, String? time, String? fullMsg, String? msgDesc}) {
     if (state is! DashboardGroupsLoaded) return;
 
     final currentState = state as DashboardGroupsLoaded;
     final updatedGroupControllers = Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
     bool updated = false;
 
-    // sl.get<MqttService>().updates.listen((message) {
-    //   liveMessage = message;
-    // });
-    print("updatedGroupControllers => ${updatedGroupControllers}");
     for (final entry in updatedGroupControllers.entries) {
-      print('entry.key ::: ${entry.key}');
       final groupId = entry.key;
       final controllers = entry.value;
       final updatedControllersList = <ControllerEntity>[];
@@ -253,9 +243,52 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       for (final ctrl in controllers) {
         if (ctrl.deviceId == deviceId) {
           final model = ctrl as ControllerModel;
-          print("liveMessage => $liveMessage");
-          print("liveMessage => ${liveMessage.runtimeType}");
-          final updatedCtrl = model.copyWith(liveMessage: liveMessage);
+          final updatedCtrl = model.copyWith(
+              liveMessage: liveMessage,
+              livesyncDate: date,
+              livesyncTime: time,
+              ctrlLatestMsg: fullMsg,
+              msgDesc: msgDesc
+          );
+          updatedControllersList.add(updatedCtrl);
+          groupUpdated = true;
+          updated = true;
+        } else {
+          updatedControllersList.add(ctrl);
+        }
+      }
+
+      if (groupUpdated) {
+        updatedGroupControllers[groupId] = updatedControllersList;
+      }
+    }
+
+    if (updated) {
+      emit(currentState.copyWith(groupControllers: updatedGroupControllers));
+    }
+  }
+
+  void updateServerTime(String deviceId, {String? date, String? time}) {
+    if (state is! DashboardGroupsLoaded) return;
+
+    final currentState = state as DashboardGroupsLoaded;
+    final updatedGroupControllers = Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
+    bool updated = false;
+
+    for (final entry in updatedGroupControllers.entries) {
+      final groupId = entry.key;
+      final controllers = entry.value;
+      final updatedControllersList = <ControllerEntity>[];
+
+      bool groupUpdated = false;
+
+      for (final ctrl in controllers) {
+        if (ctrl.deviceId == deviceId) {
+          final model = ctrl as ControllerModel;
+          final updatedCtrl = model.copyWith(
+              livesyncDate: date,
+              livesyncTime: time
+          );
           updatedControllersList.add(updatedCtrl);
           groupUpdated = true;
           updated = true;

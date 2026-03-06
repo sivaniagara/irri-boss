@@ -10,5 +10,4 @@ class PublishMessageHelper {
   static const Map<String, dynamic> motor2ON = {key: "MOTOR1ON"};
   static const Map<String, dynamic> motorOFF = {key: "MTROF"};
   static const Map<String, dynamic> requestFertilizerLive = {key: "#fertlive"};
-
 }

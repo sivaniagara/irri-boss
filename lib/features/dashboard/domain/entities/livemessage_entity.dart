@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-class LiveMessageEntity extends Equatable{
+class LiveMessageEntity extends Equatable {
   final String cd;
   final String ct;
   final String motorOnOff;
@@ -45,6 +45,7 @@ class LiveMessageEntity extends Equatable{
   final List<String> fertValues; // f1–f6
   final String versionModule;
   final String versionBoard;
+  final String lastsync;
 
   const LiveMessageEntity({
     required this.cd,
@@ -91,11 +92,13 @@ class LiveMessageEntity extends Equatable{
     required this.fertValues,
     required this.versionModule,
     required this.versionBoard,
+    required this.lastsync,
   });
 
   @override
-  // TODO: implement props
   List<Object?> get props => [
+    cd,
+    ct,
     motorOnOff,
     valveOnOff,
     liveDisplay1,
@@ -137,6 +140,103 @@ class LiveMessageEntity extends Equatable{
     powerFactor,
     fertValues,
     versionModule,
-    versionBoard
+    versionBoard,
+    lastsync,
   ];
+
+  LiveMessageEntity copyWith({
+    String? cd,
+    String? ct,
+    String? motorOnOff,
+    String? valveOnOff,
+    String? liveDisplay1,
+    String? liveDisplay2,
+    String? rVoltage,
+    String? yVoltage,
+    String? bVoltage,
+    String? ryVoltage,
+    String? ybVoltage,
+    String? brVoltage,
+    String? rCurrent,
+    String? yCurrent,
+    String? bCurrent,
+    String? phase,
+    String? signal,
+    String? batVolt,
+    String? modeOfOperation,
+    String? programName,
+    String? zoneNo,
+    String? valveForZone,
+    String? zoneDuration,
+    String? zoneRemainingTime,
+    String? prsIn,
+    String? prsOut,
+    String? flowRate,
+    String? wellLevel,
+    String? wellPercent,
+    List<String>? fertStatus,
+    String? ec,
+    String? ph,
+    String? totalMeterFlow,
+    String? runTimeToday,
+    String? runTimePrevious,
+    String? flowPrevDay,
+    String? flowToday,
+    String? moisture1,
+    String? moisture2,
+    String? energy,
+    String? powerFactor,
+    List<String>? fertValues,
+    String? versionModule,
+    String? versionBoard,
+    String? lastsync,
+  }) {
+    return LiveMessageEntity(
+      cd: cd ?? this.cd,
+      ct: ct ?? this.ct,
+      motorOnOff: motorOnOff ?? this.motorOnOff,
+      valveOnOff: valveOnOff ?? this.valveOnOff,
+      liveDisplay1: liveDisplay1 ?? this.liveDisplay1,
+      liveDisplay2: liveDisplay2 ?? this.liveDisplay2,
+      rVoltage: rVoltage ?? this.rVoltage,
+      yVoltage: yVoltage ?? this.yVoltage,
+      bVoltage: bVoltage ?? this.bVoltage,
+      ryVoltage: ryVoltage ?? this.ryVoltage,
+      ybVoltage: ybVoltage ?? this.ybVoltage,
+      brVoltage: brVoltage ?? this.brVoltage,
+      rCurrent: rCurrent ?? this.rCurrent,
+      yCurrent: yCurrent ?? this.yCurrent,
+      bCurrent: bCurrent ?? this.bCurrent,
+      phase: phase ?? this.phase,
+      signal: signal ?? this.signal,
+      batVolt: batVolt ?? this.batVolt,
+      modeOfOperation: modeOfOperation ?? this.modeOfOperation,
+      programName: programName ?? this.programName,
+      zoneNo: zoneNo ?? this.zoneNo,
+      valveForZone: valveForZone ?? this.valveForZone,
+      zoneDuration: zoneDuration ?? this.zoneDuration,
+      zoneRemainingTime: zoneRemainingTime ?? this.zoneRemainingTime,
+      prsIn: prsIn ?? this.prsIn,
+      prsOut: prsOut ?? this.prsOut,
+      flowRate: flowRate ?? this.flowRate,
+      wellLevel: wellLevel ?? this.wellLevel,
+      wellPercent: wellPercent ?? this.wellPercent,
+      fertStatus: fertStatus ?? this.fertStatus,
+      ec: ec ?? this.ec,
+      ph: ph ?? this.ph,
+      totalMeterFlow: totalMeterFlow ?? this.totalMeterFlow,
+      runTimeToday: runTimeToday ?? this.runTimeToday,
+      runTimePrevious: runTimePrevious ?? this.runTimePrevious,
+      flowPrevDay: flowPrevDay ?? this.flowPrevDay,
+      flowToday: flowToday ?? this.flowToday,
+      moisture1: moisture1 ?? this.moisture1,
+      moisture2: moisture2 ?? this.moisture2,
+      energy: energy ?? this.energy,
+      powerFactor: powerFactor ?? this.powerFactor,
+      fertValues: fertValues ?? this.fertValues,
+      versionModule: versionModule ?? this.versionModule,
+      versionBoard: versionBoard ?? this.versionBoard,
+      lastsync: lastsync ?? this.lastsync,
+    );
+  }
 }

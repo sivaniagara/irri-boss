@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
-import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 
 class RYBSection extends StatelessWidget {
   final String r, y, b;
@@ -16,47 +14,41 @@ class RYBSection extends StatelessWidget {
     required this.c3,
   });
 
-  Widget _buildBox(Color color, String line1, String line2, String line3) {
+  Widget _buildBox(BuildContext context, Color color, String phase, String value) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(2),
-        margin: const EdgeInsets.all(2),
-           decoration: BoxDecoration(
-             borderRadius: BorderRadius.circular(16),
-             border: BoxBorder.all(width: 0.3),
-             color: color,
-            ),
-           child: Column(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          color: color,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(height: 5,),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                 Icon(Icons.power,color: Colors.white70),
-                Text(line1, style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.black)),
-              ],
+            Text(
+              phase,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                fontSize: 14,
+              ),
             ),
-            SizedBox(height: 5,),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Icon(Icons.account_tree_rounded,color: Colors.white70),
-                Text(line2,style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.black)),
-              ],
+            const SizedBox(height: 5),
+            Container(
+              width: 40,
+              height: 0.8,
+              color: Colors.white.withOpacity(0.8),
             ),
-            SizedBox(height: 5,),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Icon(Icons.ac_unit,color: Colors.white70),
-                Expanded(
-                  child: Text(
-                      line3,
-                      style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.black),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+            const SizedBox(height: 5),
+            Text(
+              '$value V',
+              style: const TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            SizedBox(height: 5,),
           ],
         ),
       ),
@@ -64,12 +56,35 @@ class RYBSection extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext dialogContext) {
-    return Row(
+  Widget build(BuildContext context) {
+    return Column(
       children: [
-        _buildBox( Colors.redAccent, "RY $r V", "R $r V", "C1 $c1 A"),
-        _buildBox(Colors.yellow, "YB $y V", "Y $y V", "C2 $c2 A"),
-        _buildBox(Colors.blueAccent, "BR $b V", "B $b V", "C3 $c3 A"),
+        Row(
+          children: [
+            _buildBox(context, const Color(0xffE21E11), 'R Phase', r),
+            _buildBox(context, const Color(0xffFEC106), 'Y Phase', y),
+            _buildBox(context, const Color(0xff6C8DB7), 'B Phase', b),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: const Color(0xffE1EEEE),
+          ),
+          child: Center(
+            child: Text(
+              'Current : C1 ${c1}A , C2 ${c2}A , C3 ${c3}A',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Colors.black87,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

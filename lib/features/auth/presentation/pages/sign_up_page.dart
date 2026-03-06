@@ -24,135 +24,193 @@ class UserProfileForm extends StatelessWidget {
   }
 }
 
-class _UserProfileFormBody extends StatelessWidget {
+class _UserProfileFormBody extends StatefulWidget {
   final bool isEdit;
   final UserEntity? initialData;
 
   const _UserProfileFormBody({required this.isEdit, this.initialData});
 
   @override
-  Widget build(BuildContext dialogContext) {
-    final formKey = GlobalKey<FormState>();
+  State<_UserProfileFormBody> createState() => _UserProfileFormBodyState();
+}
 
-    final nameCtrl = TextEditingController(text: initialData?.name ?? '');
-    final address1Ctrl = TextEditingController(text: initialData?.addressOne ?? '');
-    final address2Ctrl = TextEditingController(text: initialData?.addressTwo ?? '');
-    final townCtrl = TextEditingController(text: initialData?.town ?? '');
-    final villageCtrl = TextEditingController(text: initialData?.village ?? '');
-    final cityCtrl = TextEditingController(text: initialData?.city ?? '');
-    final postalCodeCtrl = TextEditingController(text: initialData?.postalCode ?? '');
-    final altPhoneCtrl = TextEditingController(
-      text: initialData?.altPhoneNum.isNotEmpty == true
-          ? initialData!.altPhoneNum.first
+class _UserProfileFormBodyState extends State<_UserProfileFormBody> {
+  final formKey = GlobalKey<FormState>();
+  late TextEditingController nameCtrl;
+  late TextEditingController address1Ctrl;
+  late TextEditingController address2Ctrl;
+  late TextEditingController townCtrl;
+  late TextEditingController villageCtrl;
+  late TextEditingController cityCtrl;
+  late TextEditingController postalCodeCtrl;
+  late TextEditingController altPhoneCtrl;
+  late TextEditingController emailCtrl;
+  late TextEditingController passwordCtrl;
+
+  String? phoneNumber;
+  String? phoneCountryCode;
+  String? phoneWithoutCountry;
+
+  late ValueNotifier<String?> selectedUserType;
+  late ValueNotifier<String?> selectedCountry;
+  late ValueNotifier<String?> selectedState;
+
+  @override
+  void initState() {
+    super.initState();
+    nameCtrl = TextEditingController(text: widget.initialData?.name ?? '');
+    address1Ctrl = TextEditingController(text: widget.initialData?.addressOne ?? '');
+    address2Ctrl = TextEditingController(text: widget.initialData?.addressTwo ?? '');
+    townCtrl = TextEditingController(text: widget.initialData?.town ?? '');
+    villageCtrl = TextEditingController(text: widget.initialData?.village ?? '');
+    cityCtrl = TextEditingController(text: widget.initialData?.city ?? '');
+    postalCodeCtrl = TextEditingController(text: widget.initialData?.postalCode ?? '');
+    altPhoneCtrl = TextEditingController(
+      text: widget.initialData?.altPhoneNum.isNotEmpty == true
+          ? widget.initialData!.altPhoneNum.first
           : '',
     );
-    final emailCtrl = TextEditingController(text: initialData?.email ?? '');
-    final passwordCtrl = TextEditingController();
+    emailCtrl = TextEditingController(text: widget.initialData?.email ?? '');
+    passwordCtrl = TextEditingController();
 
-    // Phone field state
-    String? phoneNumber;           // Full international number (e.g. +918888888888)
-    String? phoneCountryCode;      // e.g. "IN"
-    String? phoneWithoutCountry;   // e.g. "8888888888"
+    phoneNumber = widget.initialData?.mobile;
+    phoneWithoutCountry = _extractPhoneNumber(widget.initialData?.mobile);
 
-    String getUserTypeLabel(int? type) {
-      const map = {1: 'Customer', 2: 'Dealer', 3: 'Admin'};
-      return map[type] ?? '';
-    }
-
-    // Dropdown state
-    final selectedUserType = ValueNotifier<String?>(
-      ['Customer', 'Dealer', 'Admin'].contains(getUserTypeLabel(initialData?.userType))
-          ? getUserTypeLabel(initialData?.userType)
+    selectedUserType = ValueNotifier<String?>(
+      ['Customer', 'Dealer', 'Admin'].contains(getUserTypeLabel(widget.initialData?.userType))
+          ? getUserTypeLabel(widget.initialData?.userType)
           : null,
     );
 
-    final selectedCountry = ValueNotifier<String?>(
-      ['India', 'USA', 'UK'].contains(initialData?.country) ? initialData!.country : 'India',
+    selectedCountry = ValueNotifier<String?>(
+      ['India', 'USA', 'UK'].contains(widget.initialData?.country) ? widget.initialData!.country : 'India',
     );
 
-    final selectedState = ValueNotifier<String?>(
-      ['State 1', 'State 2', 'State 3'].contains(initialData?.state) ? initialData!.state : null,
+    selectedState = ValueNotifier<String?>(
+      ['State 1', 'State 2', 'State 3'].contains(widget.initialData?.state) ? widget.initialData!.state : null,
     );
+  }
 
-    // User type mapping
-    int? mapUserTypeToInt(String label) {
-      const map = {'Customer': 1, 'Dealer': 2, 'Admin': 3};
-      return map[label];
+  @override
+  void dispose() {
+    nameCtrl.dispose();
+    address1Ctrl.dispose();
+    address2Ctrl.dispose();
+    townCtrl.dispose();
+    villageCtrl.dispose();
+    cityCtrl.dispose();
+    postalCodeCtrl.dispose();
+    altPhoneCtrl.dispose();
+    emailCtrl.dispose();
+    passwordCtrl.dispose();
+    super.dispose();
+  }
+
+  String getUserTypeLabel(int? type) {
+    const map = {1: 'Customer', 2: 'Dealer', 3: 'Admin'};
+    return map[type] ?? '';
+  }
+
+  int? mapUserTypeToInt(String label) {
+    const map = {'Customer': 1, 'Dealer': 2, 'Admin': 3};
+    return map[label];
+  }
+
+  void submit() {
+    if (!formKey.currentState!.validate()) return;
+
+    if (phoneNumber == null || phoneNumber!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid mobile number')),
+      );
+      return;
     }
 
-    void submit() {
-      if (!formKey.currentState!.validate()) return;
-
-      if (phoneNumber == null || phoneNumber!.isEmpty) {
-        ScaffoldMessenger.of(dialogContext).showSnackBar(
-          const SnackBar(content: Text('Please enter a valid mobile number')),
-        );
-        return;
-      }
-
-      if (!isEdit && passwordCtrl.text.isEmpty) {
-        ScaffoldMessenger.of(dialogContext).showSnackBar(
-          const SnackBar(content: Text('Password is required for signup')),
-        );
-        return;
-      }
-
-      if (selectedUserType.value == null) {
-        ScaffoldMessenger.of(dialogContext).showSnackBar(
-          const SnackBar(content: Text('Please select User Type')),
-        );
-        return;
-      }
-
-      final userTypeInt = mapUserTypeToInt(selectedUserType.value!);
-
-      // Use normalized mobile (last 10 digits or full with country code as per backend)
-      final mobileToSend = phoneWithoutCountry ?? phoneNumber!.replaceAll(RegExp(r'\D'), '');
-
-      if (isEdit) {
-        dialogContext.read<AuthBloc>().add(UpdateProfileEvent(
-          id: initialData!.id,
-          name: nameCtrl.text.trim(),
-          mobile: mobileToSend,
-          userType: userTypeInt,
-          addressOne: address1Ctrl.text.trim(),
-          addressTwo: address2Ctrl.text.trim(),
-          town: townCtrl.text.trim(),
-          village: villageCtrl.text.trim(),
-          country: selectedCountry.value,
-          state: selectedState.value,
-          city: cityCtrl.text.trim(),
-          postalCode: postalCodeCtrl.text.trim(),
-          altPhone: altPhoneCtrl.text.trim(),
-          email: emailCtrl.text.trim(),
-          password: passwordCtrl.text.isEmpty ? null : passwordCtrl.text,
-        ));
-      } else {
-        dialogContext.read<AuthBloc>().add(SignUpEvent(
-          mobile: mobileToSend,
-          name: nameCtrl.text.trim(),
-          userType: userTypeInt,
-          addressOne: address1Ctrl.text.trim(),
-          addressTwo: address2Ctrl.text.trim(),
-          town: townCtrl.text.trim(),
-          village: villageCtrl.text.trim(),
-          country: selectedCountry.value,
-          state: selectedState.value,
-          city: cityCtrl.text.trim(),
-          postalCode: postalCodeCtrl.text.trim(),
-          altPhone: altPhoneCtrl.text.trim(),
-          email: emailCtrl.text.trim(),
-          password: passwordCtrl.text,));
-      }
+    if (!widget.isEdit && passwordCtrl.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password is required for signup')),
+      );
+      return;
     }
 
+    if (selectedUserType.value == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select User Type')),
+      );
+      return;
+    }
+
+    final userTypeInt = mapUserTypeToInt(selectedUserType.value!);
+    final mobileToSend = phoneWithoutCountry ?? phoneNumber!.replaceAll(RegExp(r'\D'), '');
+
+    if (widget.isEdit) {
+      context.read<AuthBloc>().add(UpdateProfileEvent(
+        id: widget.initialData!.id,
+        name: nameCtrl.text.trim(),
+        mobile: mobileToSend,
+        userType: userTypeInt,
+        addressOne: address1Ctrl.text.trim(),
+        addressTwo: address2Ctrl.text.trim(),
+        town: townCtrl.text.trim(),
+        village: villageCtrl.text.trim(),
+        country: selectedCountry.value,
+        state: selectedState.value,
+        city: cityCtrl.text.trim(),
+        postalCode: postalCodeCtrl.text.trim(),
+        altPhone: altPhoneCtrl.text.trim(),
+        email: emailCtrl.text.trim(),
+        password: passwordCtrl.text.isEmpty ? null : passwordCtrl.text,
+      ));
+    } else {
+      context.read<AuthBloc>().add(SignUpEvent(
+        mobile: mobileToSend,
+        name: nameCtrl.text.trim(),
+        userType: userTypeInt,
+        addressOne: address1Ctrl.text.trim(),
+        addressTwo: address2Ctrl.text.trim(),
+        town: townCtrl.text.trim(),
+        village: villageCtrl.text.trim(),
+        country: selectedCountry.value,
+        state: selectedState.value,
+        city: cityCtrl.text.trim(),
+        postalCode: postalCodeCtrl.text.trim(),
+        altPhone: altPhoneCtrl.text.trim(),
+        email: emailCtrl.text.trim(),
+        password: passwordCtrl.text,));
+    }
+  }
+
+  String _detectInitialCountry(String? mobile) {
+    if (mobile == null || mobile.isEmpty) return 'IN';
+    if (mobile.startsWith('+91')) return 'IN';
+    if (mobile.startsWith('+1')) return 'US';
+    if (mobile.startsWith('+44')) return 'GB';
+    return 'IN';
+  }
+
+  String _extractPhoneNumber(String? mobile) {
+    if (mobile == null || mobile.isEmpty) return '';
+    // If it starts with a '+' and country code, we want just the number.
+    // Assuming standard 10-digit numbers for now as a fallback.
+    if (mobile.contains('+')) {
+       final digits = mobile.replaceAll(RegExp(r'\D'), '');
+       if (digits.length > 10) {
+         return digits.substring(digits.length - 10);
+       }
+       return digits;
+    }
+    return mobile.replaceAll(RegExp(r'\D'), '');
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Edit Profile' : 'Sign Up'),
-        leading: isEdit
+        title: Text(widget.isEdit ? 'Edit Profile' : 'Sign Up'),
+        leading: widget.isEdit
             ? IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => Navigator.pop(dialogContext),
+          onPressed: () => Navigator.pop(context),
         )
             : null,
       ),
@@ -170,10 +228,9 @@ class _UserProfileFormBody extends StatelessWidget {
                 ),
                 const SizedBox(height: 20),
 
-                // Mobile Number with intl_phone_field
                 IntlPhoneField(
-                  initialCountryCode: _detectInitialCountry(initialData?.mobile),
-                  initialValue: _extractPhoneNumber(initialData?.mobile),
+                  initialCountryCode: _detectInitialCountry(widget.initialData?.mobile),
+                  initialValue: _extractPhoneNumber(widget.initialData?.mobile),
                   decoration: _inputDecoration('Mobile Number *', Icons.phone),
                   onChanged: (phone) {
                     phoneNumber = phone.completeNumber;
@@ -196,7 +253,6 @@ class _UserProfileFormBody extends StatelessWidget {
                     validator: (v) => v!.trim().isEmpty ? 'Name is required' : null),
                 const SizedBox(height: 16),
 
-                // User Type Dropdown
                 ValueListenableBuilder<String?>(
                   valueListenable: selectedUserType,
                   builder: (_, value, __) {
@@ -288,7 +344,7 @@ class _UserProfileFormBody extends StatelessWidget {
                     }),
                 const SizedBox(height: 16),
 
-                if (!isEdit)
+                if (!widget.isEdit)
                   TextFormField(
                     controller: passwordCtrl,
                     obscureText: true,
@@ -304,11 +360,11 @@ class _UserProfileFormBody extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: submit,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(dialogContext).primaryColor,
+                      backgroundColor: Theme.of(context).primaryColor,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                     child: Text(
-                      isEdit ? 'Update Profile' : 'Sign Up',
+                      widget.isEdit ? 'Update Profile' : 'Sign Up',
                       style: const TextStyle(fontSize: 16, color: Colors.white),
                     ),
                   ),
@@ -320,21 +376,6 @@ class _UserProfileFormBody extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  // Helper: Detect initial country from mobile
-  String _detectInitialCountry(String? mobile) {
-    if (mobile == null || mobile.isEmpty) return 'IN';
-    if (mobile.startsWith('+91')) return 'IN';
-    if (mobile.startsWith('+1')) return 'US';
-    if (mobile.startsWith('+44')) return 'GB';
-    return 'IN';
-  }
-
-  // Helper: Extract phone number without country code
-  String _extractPhoneNumber(String? mobile) {
-    if (mobile == null || mobile.isEmpty) return '';
-    return mobile.replaceAll(RegExp(r'^\+\d{1,3}'), '').trim();
   }
 
   Widget _buildField(
@@ -362,11 +403,10 @@ class _UserProfileFormBody extends StatelessWidget {
     return InputDecoration(
       labelText: label,
       prefixIcon: Icon(icon),
-      enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white70)),
-      focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.white, width: 2)),
+      enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.black26)),
+      focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.black87, width: 2)),
       errorBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.redAccent)),
       focusedErrorBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Colors.redAccent, width: 2)),
-      // labelStyle: const TextStyle(color: Colors.white70),
       errorStyle: const TextStyle(color: Colors.redAccent),
     );
   }

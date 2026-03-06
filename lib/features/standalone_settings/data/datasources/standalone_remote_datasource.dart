@@ -73,12 +73,48 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
       if (rawZoneList is Map) {
         final data = rawZoneList['data'];
         if (data is List) {
-          zoneListJson = data;
-        } else if (data is Map && data['zoneList'] is List) {
-          // Fix for nested structure: data -> zoneList
-          zoneListJson = data['zoneList'];
-        } else if (rawZoneList['zones'] is List) {
-          zoneListJson = rawZoneList['zones'];
+          final Set<String> uniqueZoneIds = {};
+          for (var item in data) {
+             // Handle list of programs or direct list of zones
+             final List<dynamic> list = (item is Map && item.containsKey('zoneList')) 
+                 ? item['zoneList'] 
+                 : (item is Map && item.containsKey('zones')) 
+                     ? item['zones'] 
+                     : [item];
+             
+             for (var zone in list) {
+               if (zone is! Map) continue;
+               final rawId = zone['zoneNumber'] ?? zone['zoneName'] ?? zone['zoneId'] ?? zone['id'];
+               if (rawId != null) {
+                 final normalized = StandaloneModel.normalizeZoneId(rawId);
+                 
+                 // FILTER: A zone is "Created" if it has hardware mapping
+                 final bool hasNode = zone['nodeId'] != null && zone['nodeId'] != 0 && zone['nodeId'] != '0';
+                 final bool hasValves = zone['valves'] is List && (zone['valves'] as List).isNotEmpty;
+                 final bool isActive = zone['active'] == true || zone['status'] == 1 || zone['status'] == "1";
+
+                 if ((hasNode || hasValves || isActive) && !uniqueZoneIds.contains(normalized)) {
+                   uniqueZoneIds.add(normalized);
+                   zoneListJson.add(zone);
+                 }
+               }
+             }
+          }
+        } else if (data is Map) {
+          // Response 1 or 3 style
+          final List<dynamic> sourceList = data['zoneList'] ?? 
+                                         (data['setting'] != null ? data['setting']['zones'] : null) ?? 
+                                         data['zones'] ?? [];
+          
+          for (var zone in sourceList) {
+            final bool hasNode = zone['nodeId'] != null && zone['nodeId'] != 0 && zone['nodeId'] != '0';
+            final bool hasValves = zone['valves'] is List && (zone['valves'] as List).isNotEmpty;
+            final bool isActive = zone['active'] == true || zone['status'] == 1 || zone['status'] == "1";
+
+            if (hasNode || hasValves || isActive) {
+              zoneListJson.add(zone);
+            }
+          }
         }
       } else if (rawZoneList is List) {
         zoneListJson = rawZoneList;
@@ -124,7 +160,6 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
     };
 
     try {
-      // Backend automatically logs history when 'sentSms' is in body
       await sl<ApiClient>().post(settingsEndpoint, body: body);
     } catch (e) {
       throw Exception('Failed to send configuration: $e');
@@ -157,7 +192,6 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
     try {
       await sl<ApiClient>().post(historyEndpoint, body: {"sentSms": sentSms});
     } catch (e) {
-      // Log failure but don't rethrow
     }
   }
 }

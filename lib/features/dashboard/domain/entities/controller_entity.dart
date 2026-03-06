@@ -1,21 +1,21 @@
-
 import 'package:equatable/equatable.dart';
-
 import 'livemessage_entity.dart';
 
 class ProgramEntity extends Equatable {
   final int programId;
   final String programName;
+  final String programNameDefault;
   final List<ZoneEntity> listOfZone;
 
   const ProgramEntity({
     required this.programId,
     required this.programName,
+    required this.programNameDefault,
     required this.listOfZone,
   });
 
   @override
-  List<Object> get props => [programId, programName];
+  List<Object> get props => [programId, programName, programNameDefault];
 }
 
 class ZoneEntity {
@@ -48,6 +48,7 @@ class ControllerEntity extends Equatable {
   final int modelId;
   final String livesyncDate;
   final String livesyncTime;
+  final String smsSyncTime;
   final List<ProgramEntity> programList;
   final String wpsIp;
   final String wpsPort;
@@ -91,6 +92,7 @@ class ControllerEntity extends Equatable {
     required this.modelId,
     required this.livesyncDate,
     required this.livesyncTime,
+    required this.smsSyncTime,
     required this.programList,
     required this.wpsIp,
     required this.wpsPort,
@@ -136,6 +138,7 @@ class ControllerEntity extends Equatable {
     modelId,
     livesyncDate,
     livesyncTime,
+    smsSyncTime,
     programList,
     wpsIp,
     wpsPort,
@@ -154,5 +157,62 @@ class ControllerEntity extends Equatable {
     remFlow,
     flowRate,
   ];
-}
 
+  ControllerEntity copyWith({
+    LiveMessageEntity? liveMessage,
+    String? motorStatus,
+    String? flowRate,
+    List<ProgramEntity>? programList,
+    String? ctrlLatestMsg,
+    String? msgDesc,
+    String? livesyncDate,
+    String? livesyncTime,
+    String? smsSyncTime,
+    String? status,
+  }) {
+    return ControllerEntity(
+      userDeviceId: userDeviceId,
+      fertilizerMessage: fertilizerMessage,
+      filterMessage: filterMessage,
+      userId: userId,
+      appSmsMode: appSmsMode,
+      status: status ?? this.status,
+      ctrlStatusFlag: ctrlStatusFlag,
+      power: power,
+      status1: status1,
+      msgcode: msgcode,
+      ctrlLatestMsg: ctrlLatestMsg ?? this.ctrlLatestMsg,
+      liveMessage: liveMessage ?? this.liveMessage,
+      relaystatus: relaystatus,
+      operationMode: operationMode,
+      gprsMode: gprsMode,
+      dndStatus: dndStatus,
+      mobCctv: mobCctv,
+      webCctv: webCctv,
+      simNumber: simNumber,
+      deviceName: deviceName,
+      deviceId: deviceId,
+      modelId: modelId,
+      livesyncDate: livesyncDate ?? this.livesyncDate,
+      livesyncTime: livesyncTime ?? this.livesyncTime,
+      smsSyncTime: smsSyncTime ?? this.smsSyncTime,
+      programList: programList ?? this.programList,
+      wpsIp: wpsIp,
+      wpsPort: wpsPort,
+      wapIp: wapIp,
+      wapPort: wapPort,
+      userProgramName: userProgramName,
+      msgDesc: msgDesc ?? this.msgDesc,
+      motorStatus: motorStatus ?? this.motorStatus,
+      programNo: programNo,
+      zoneNo: zoneNo,
+      zoneRunTime: zoneRunTime,
+      zoneRemainingTime: zoneRemainingTime,
+      menuId: menuId,
+      referenceId: referenceId,
+      setFlow: setFlow,
+      remFlow: remFlow,
+      flowRate: flowRate ?? this.flowRate,
+    );
+  }
+}

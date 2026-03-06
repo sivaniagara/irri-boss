@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
-import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/utils/auth_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/groups/utils/group_routes.dart';
@@ -19,9 +17,25 @@ class AppDrawer extends StatelessWidget {
   final Map<String, dynamic> userData;
   const AppDrawer({super.key, required this.userData});
 
+  String _formatMobile(String mobile) {
+    if (mobile.isEmpty || mobile == 'No Number') return mobile;
+    
+    // Remove all non-digits
+    String digits = mobile.replaceAll(RegExp(r'\D'), '');
+    
+    if (digits.length >= 10) {
+      String country = digits.substring(0, digits.length - 10);
+      String number = digits.substring(digits.length - 10);
+      
+      if (country.isEmpty) return number;
+      return '+$country $number';
+    }
+    return mobile;
+  }
+
   @override
-  Widget build(BuildContext dialogContext) {
-    final theme = Theme.of(dialogContext);
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
 
     return Drawer(
       backgroundColor: Colors.white,
@@ -35,7 +49,7 @@ class AppDrawer extends StatelessWidget {
                 BlocBuilder<AuthBloc, AuthState>(
                   builder: (context, authState) {
                     String userName = 'Guest';
-                    String? mobile;
+                    String mobile = 'No Number';
 
                     if (authState is Authenticated) {
                       userName = authState.user.userDetails.name;
@@ -43,97 +57,67 @@ class AppDrawer extends StatelessWidget {
                     }
 
                     return UserAccountsDrawerHeader(
-                      decoration: BoxDecoration(color: theme.primaryColorDark),
-                      currentAccountPictureSize: const Size(double.maxFinite, 70),
+                      decoration: BoxDecoration(color: theme.primaryColor),
                       accountName: Text(
                         userName,
-                        style: theme.textTheme.titleLarge?.copyWith(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
+                          fontSize: 18,
                         ),
                       ),
                       accountEmail: Text(
-                        mobile != null && mobile.isNotEmpty ? mobile : '+91 123456789',
-                        style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                        _formatMobile(mobile),
+                        style: const TextStyle(color: Colors.white70, fontSize: 14),
                       ),
-                      currentAccountPicture: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Stack(
-                            clipBehavior: Clip.hardEdge,
-                            children: [
-                              CircleAvatar(
-                                radius: 35,
-                                backgroundColor: Colors.white.withOpacity(0.2),
-                                child: Text(
-                                  userName.isNotEmpty ? userName[0].toUpperCase() : 'G',
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    shadows: [
-                                      Shadow(
-                                        offset: const Offset(0, 1),
-                                        blurRadius: 2,
-                                        color: Colors.black.withOpacity(0.3),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
+                      currentAccountPicture: CircleAvatar(
+                        backgroundColor: Colors.white.withOpacity(0.2),
+                        child: Text(
+                          userName.isNotEmpty ? userName[0].toUpperCase() : 'G',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
                           ),
-                          const SizedBox(width: 12),
-                          TextButton.icon(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              context.push(AuthRoutes.editProfile);
-                            },
-                            icon: const Icon(Icons.edit, size: 16, color: Colors.white70),
-                            label: const Text(
-                              'Edit Profile',
-                              style: TextStyle(color: Colors.white70, fontSize: 12),
-                            ),
-                            style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              foregroundColor: Colors.white70,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                                side: BorderSide(color: Colors.white.withOpacity(0.3)),
-                              ),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
+                      otherAccountsPictures: [
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            context.push(AuthRoutes.editProfile);
+                          },
+                          icon: const Icon(Icons.edit, color: Colors.white, size: 20),
+                          tooltip: 'Edit Profile',
+                        ),
+                      ],
                     );
                   },
                 ),
-                BlocBuilder<AuthBloc, AuthState>(
-                  builder: (context, authState) {
-                    String? homeRoute;
-                    if (authState is Authenticated) {
-                      final userType = authState.user.userDetails.userType;
-                      homeRoute = userType == 2 ? DealerRoutes.dealerDashboard : DashBoardRoutes.dashboard;
-                    } else {
-                      homeRoute = AuthRoutes.login;
-                    }
-
-                    return _buildDrawerItem(
-                      context,
-                      icon: Icons.home,
-                      title: 'Home',
-                      route: homeRoute,
-                    );
-                  },
-                ),
-                const Divider(indent: 10, endIndent: 10,),
-                // Standalone Settings
                 _buildDrawerItem(
-                  dialogContext,
+                  context,
+                  icon: Icons.home,
+                  title: 'Home',
+                  onTap: () {
+                    final authState = context.read<AuthBloc>().state;
+                    if (authState is Authenticated) {
+                      final userId = authState.user.userDetails.id;
+                      final userType = authState.user.userDetails.userType;
+                      final route = userType == 2 ? DealerRoutes.dealerDashboard : DashBoardRoutes.dashboard;
+                      context.go('$route?userId=$userId&userType=$userType');
+                    } else {
+                      context.go(AuthRoutes.login);
+                    }
+                    Navigator.pop(context);
+                  },
+                ),
+                const Divider(indent: 10, endIndent: 10),
+                _buildDrawerItem(
+                  context,
                   icon: Icons.settings_remote,
                   title: 'Standalone Settings',
                   onTap: () {
-                    dialogContext.push(
+                    context.push(
                       StandaloneRoutes.standalone,
                       extra: {
                         'userId': userData['userId'],
@@ -143,42 +127,50 @@ class AppDrawer extends StatelessWidget {
                         'deviceId': userData['deviceId'] ?? '',
                       },
                     );
-                    Navigator.pop(dialogContext);
+                    Navigator.pop(context);
                   },
                 ),
-                const Divider(indent: 10, endIndent: 10,),
-                // Groups (Dynamic Content)
+                const Divider(indent: 10, endIndent: 10),
                 _buildDrawerItem(
-                  dialogContext,
+                  context,
                   icon: Icons.group_work,
                   title: 'Groups',
-                  route: GroupRoutes.groups,
+                  onTap: () {
+                    context.push(GroupRoutes.groups);
+                    Navigator.pop(context);
+                  },
                 ),
-                const Divider(indent: 10, endIndent: 10,),
-                // Sub Users
+                const Divider(indent: 10, endIndent: 10),
                 _buildDrawerItem(
-                  dialogContext,
+                  context,
                   icon: Icons.group,
                   title: 'Sub Users',
-                  route: SubUserRoutes.subUsers,
+                  onTap: () {
+                    context.push(SubUserRoutes.subUsers);
+                    Navigator.pop(context);
+                  },
                 ),
-                const Divider(indent: 10, endIndent: 10,),
-                // Chat
+                const Divider(indent: 10, endIndent: 10),
                 _buildDrawerItem(
-                  dialogContext,
+                  context,
                   icon: Icons.chat,
                   title: 'Chat',
-                  route: RouteConstants.chat,
+                  onTap: () {
+                    context.push(RouteConstants.chat);
+                    Navigator.pop(context);
+                  },
                 ),
-                const Divider(indent: 10, endIndent: 10,),
-                // Reminder
+                const Divider(indent: 10, endIndent: 10),
                 _buildDrawerItem(
-                  dialogContext,
+                  context,
                   icon: Icons.alarm,
                   title: 'Reminder',
-                  // route: RouteConstants.reminder, // Add this route
+                  onTap: () {
+                    // Navigate to reminder
+                    Navigator.pop(context);
+                  },
                 ),
-                const Divider(indent: 10, endIndent: 10,),
+                const Divider(indent: 10, endIndent: 10),
               ],
             ),
           ),
@@ -186,32 +178,21 @@ class AppDrawer extends StatelessWidget {
             builder: (context, state) {
               if (state is Authenticated) {
                 return ListTile(
-                  tileColor: Colors.transparent,
-                  leading: const Icon(Icons.logout, color: Colors.red,),
-                  title: Text(
+                  leading: const Icon(Icons.logout, color: Colors.red),
+                  title: const Text(
                     'Logout',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w500,
-                      color: Colors.red
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w500, color: Colors.red),
                   ),
                   onTap: () {
                     context.read<AuthBloc>().add(LogoutEvent());
                     context.go(AuthRoutes.login);
-                    // context.pop();
                   },
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 );
               }
-              return _buildDrawerItem(
-                context,
-                icon: Icons.login,
-                title: 'Login',
-                route: AuthRoutes.login,
-              );
+              return const SizedBox.shrink();
             },
           ),
-          const SizedBox(height: 20,)
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -221,26 +202,15 @@ class AppDrawer extends StatelessWidget {
       BuildContext context, {
         required IconData icon,
         required String title,
-        String? route,
-        VoidCallback? onTap,
+        required VoidCallback onTap,
       }) {
     return ListTile(
-      tileColor: Colors.transparent,
       leading: Icon(icon),
       title: Text(
         title,
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.w500),
       ),
-      onTap: () {
-        if (onTap != null) {
-          onTap();
-        } else if (route != null) {
-          context.go('$route?userId=${userData['userId']}&userType=${userData['userType']}');
-          Navigator.pop(context);
-        }
-      },
+      onTap: onTap,
       trailing: const Icon(Icons.chevron_right),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
     );

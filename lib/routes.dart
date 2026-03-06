@@ -28,6 +28,7 @@ import 'features/controller_details/presentation/pages/controller_details_page.d
 import 'features/controller_settings/utils/controller_settings_routes.dart';
 import 'features/dashboard/domain/entities/livemessage_entity.dart';
 import 'features/dashboard/presentation/cubit/controller_context_cubit.dart';
+import 'features/dashboard/presentation/cubit/dashboard_page_cubit.dart';
 import 'features/dashboard/presentation/pages/controller_live_page.dart';
 import 'features/dashboard/presentation/pages/dashboard_page.dart';
 import 'features/dashboard/presentation/pages/program_preview_page.dart';
@@ -313,8 +314,11 @@ class AppRouter {
             builder: (context, state) {
               print('Building ctrlLivePage, AuthBloc state: ${sl.get<AuthBloc>().state}');
               final selectedController = state.extra as LiveMessageEntity?;
-              return BlocProvider.value(
-                value: sl.get<AuthBloc>(),
+              return MultiBlocProvider(
+                providers: [
+                  BlocProvider.value(value: sl.get<AuthBloc>()),
+                  BlocProvider.value(value: sl.get<DashboardPageCubit>()),
+                ],
                 child: CtrlLivePage(selectedController: selectedController),
               );
             },
@@ -326,7 +330,10 @@ class AppRouter {
           path: DashBoardRoutes.programPreview,
           builder: (context, state) {
             final String deviceId = state.extra as String;
-            return ProgramPreviewPage(deviceId: deviceId,);
+            return BlocProvider.value(
+              value: sl.get<DashboardPageCubit>(),
+              child: ProgramPreviewPage(deviceId: deviceId,),
+            );
           },
         ),
         GoRoute(
@@ -339,6 +346,7 @@ class AppRouter {
               controllerId: int.tryParse(data['controllerId'].toString()) ?? 0,
               subuserId: int.tryParse(data['subuserId'].toString()) ?? 0,
               deviceId: data['deviceId'].toString(),
+              motorStatus: data['motorStatus']?.toString() ?? '0',
             );
           },
         ),

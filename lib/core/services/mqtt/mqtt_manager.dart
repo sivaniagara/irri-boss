@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 
 import 'mqtt_message_helper.dart';
@@ -12,6 +13,9 @@ class MqttManager {
   StreamSubscription? _subscription;
   String? _currentDeviceId;
   bool _started = false;
+
+  final StreamController<String> _messageController = StreamController<String>.broadcast();
+  Stream<String> get messages => _messageController.stream;
 
   MqttManager({
     required this.mqttService,
@@ -27,13 +31,15 @@ class MqttManager {
     await mqttService.connect();
 
     _subscription = mqttService.updates.listen((messages) {
+
       for (final msg in messages) {
         final payload = msg.payload as MqttPublishMessage;
         final message =
         MqttPublishPayload.bytesToStringAsString(
           payload.payload.message,
         );
-
+        debugPrint("messages---->$messages");
+        _messageController.add(message);
         MqttMessageHelper.processMessage(
           message,
           dispatcher: dispatcher,
@@ -42,11 +48,11 @@ class MqttManager {
     });
   }
 
-  void subscribe(String deviceId) {
-    print("going to subscribe :: ${deviceId}");
-    if (_currentDeviceId == deviceId) return;
+  void subscribe(String deviceId, {bool force = false}) {
 
-    if (_currentDeviceId != null) {
+    if (_currentDeviceId == deviceId && !force) return;
+
+    if (_currentDeviceId != null && _currentDeviceId != deviceId) {
       mqttService.unsubscribe(_currentDeviceId!);
     }
 
@@ -55,15 +61,15 @@ class MqttManager {
   }
 
   void publish(String deviceId, dynamic payload) {
-    print("deviceId : $deviceId");
-    print("payload : $payload");
     if(payload is String){
       mqttService.publish(deviceId, payload);
     }else{
       mqttService.publish(deviceId, jsonEncode(payload));
-    }  }
+    }
+  }
 
   void dispose() {
     _subscription?.cancel();
+    _messageController.close();
   }
 }

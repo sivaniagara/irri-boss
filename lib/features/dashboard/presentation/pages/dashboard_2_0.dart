@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/alert_dialog.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/app_alerts.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_switch.dart';
@@ -26,6 +27,12 @@ class Dashboard20 extends StatefulWidget {
 }
 
 class _Dashboard20State extends State<Dashboard20> {
+
+  double _safeParse(String? value) {
+    if (value == null || value.isEmpty) return 0.0;
+    String cleanValue = value.replaceAll('F', '').trim();
+    return double.tryParse(cleanValue) ?? 0.0;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +149,7 @@ class _Dashboard20State extends State<Dashboard20> {
                       children: [
                         const Icon(Icons.battery_6_bar_rounded, color: Colors.green),
                         Text(
-                          'Battery ${liveMessageEntity.batVolt}% | ${getDate(liveMessageEntity.cd)}',
+                          'Battery ${liveMessageEntity.batVolt}% | ${getDate(liveData: liveMessageEntity)}',
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w400),
                         ),
@@ -200,12 +207,12 @@ class _Dashboard20State extends State<Dashboard20> {
                 iconColor: Theme.of(context).colorScheme.primary,
                 icon: Icon(Icons.message, color: Theme.of(context).colorScheme.primary),
               ),
-              Text(controllerEntity.msgDesc, style: TextStyle(fontSize: 16, color: Color(0xff424242),),),
-              Text(controllerEntity.ctrlLatestMsg, style: TextStyle(fontSize: 16, color: Color(0xff424242),),)
+              Text(controllerEntity.msgDesc, style: const TextStyle(fontSize: 16, color: Color(0xff424242),),),
+              Text(controllerEntity.ctrlLatestMsg, style: const TextStyle(fontSize: 16, color: Color(0xff424242),),)
             ],
           ),
         ),
-      SizedBox(height: 100,)
+      const SizedBox(height: 100,)
     ];
   }
 
@@ -222,7 +229,7 @@ class _Dashboard20State extends State<Dashboard20> {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
-                  color: Color(0xffFFF5DC),
+                  color: const Color(0xffFFF5DC),
                 ),
                 child: Center(
                   child: Image.asset(
@@ -233,23 +240,62 @@ class _Dashboard20State extends State<Dashboard20> {
                 ),
               ),
               Text('Current', style: Theme.of(context).textTheme.labelLarge),
-              Container(
-                padding: EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(3),
-                    color: Color(0xffE1EEEE)
+              const Spacer(),
+              InkWell(
+                onTap: () {
+                  context.push(DashBoardRoutes.ctrlLivePage, extra: liveMessageEntity);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xffE6F2FF),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.developer_board, size: 20, color: Colors.black),
+                      SizedBox(width: 8),
+                      Text(
+                        "Controller Live",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                child: Text('Current : C1 ${liveMessageEntity.rCurrent}A , C2 ${liveMessageEntity.yCurrent}A , C3 ${liveMessageEntity.bCurrent}A', style: Theme.of(context).textTheme.bodySmall,),
-              )
+              ),
             ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              rybWidget(backgroundColor: Color(0xffE21E11), value: liveMessageEntity.rVoltage, phase: 'R Phase'),
-              rybWidget(backgroundColor: Color(0xffFEC106), value: liveMessageEntity.yVoltage, phase: 'Y Phase'),
-              rybWidget(backgroundColor: Color(0xff6C8DB7), value: liveMessageEntity.bVoltage, phase: 'B Phase'),
+              rybWidget(backgroundColor: const Color(0xffE21E11), value: liveMessageEntity.rVoltage, phase: 'R Phase'),
+              rybWidget(backgroundColor: const Color(0xffFEC106), value: liveMessageEntity.yVoltage, phase: 'Y Phase'),
+              rybWidget(backgroundColor: const Color(0xff6C8DB7), value: liveMessageEntity.bVoltage, phase: 'B Phase'),
             ],
+          ),
+          Center(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(8),
+                  color: const Color(0xffE1EEEE)
+              ),
+              child: Center(
+                child: Text(
+                  'Current : C1 ${liveMessageEntity.rCurrent}A , C2 ${liveMessageEntity.yCurrent}A , C3 ${liveMessageEntity.bCurrent}A',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
           )
         ],
       ),
@@ -376,6 +422,7 @@ class _Dashboard20State extends State<Dashboard20> {
                           "controllerId": controllerContext.controllerId,
                           "subuserId": controllerContext.subUserId,
                           "deviceId": controllerContext.deviceId,
+                          "motorStatus": controllerEntity.motorStatus,
                         }
                     );
                   },
@@ -410,7 +457,7 @@ class _Dashboard20State extends State<Dashboard20> {
                       final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
                       context.push(DashBoardRoutes.programPreview, extra: controllerContext.deviceId);
                     },
-                    icon: Icon(Icons.visibility_sharp, color: Colors.black,)
+                    icon: const Icon(Icons.visibility_sharp, color: Colors.black,)
                 ),
                 const Spacer(),
                 PopupMenuButton(
@@ -446,8 +493,8 @@ class _Dashboard20State extends State<Dashboard20> {
                     ),
                     child: Row(
                       children: [
-                        Text('Block ${liveMessageEntity.zoneNo}', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black)),
-                        Icon(Icons.keyboard_arrow_down, color: Colors.black)
+                        Text('Block ${liveMessageEntity.zoneNo}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black)),
+                        const Icon(Icons.keyboard_arrow_down, color: Colors.black)
                       ],
                     ),
                   ),
@@ -503,6 +550,7 @@ class _Dashboard20State extends State<Dashboard20> {
                 ],
               ),
             ),
+
           ],
         ),
       ),
@@ -528,20 +576,20 @@ class _Dashboard20State extends State<Dashboard20> {
                   moonColor: const Color(0xffD4EAFF),
                   skyColor: const Color(0xffE6F7FF),
                   title: 'Max Level',
-                  value: '${liveMessageEntity.wellLevel} Feet',
+                  value: '${_safeParse(liveMessageEntity.wellLevel).toStringAsFixed(1)} Feet',
                 ),
                 moonCard(
                   moonColor: const Color(0xffD4EAFF),
                   skyColor: const Color(0xffE6F7FF),
                   title: 'Current Level',
-                  value: '${liveMessageEntity.wellPercent}%',
+                  value: '${_safeParse(liveMessageEntity.wellPercent).toStringAsFixed(0)}%',
                 ),
               ],
             )
           ],
         ),
       ),
-      SizedBox(height: 100)
+      const SizedBox(height: 100)
     ];
   }
 
@@ -555,9 +603,9 @@ class _Dashboard20State extends State<Dashboard20> {
    return zoneNumbers;
   }
 
-  String getDate(String date){
+  String getDate({required LiveMessageEntity liveData}){
     try{
-      return DateFormat("d/MMM/yyyy").format(DateTime(int.parse(date.split('/')[2]), int.parse(date.split('/')[1]), int.parse(date.split('/')[0]))).toUpperCase();
+      return DateFormat("d/MMM/yyyy").format(DateTime(int.parse(liveData.cd.split('/')[2]), int.parse(liveData.cd.split('/')[1]), int.parse(liveData.cd.split('/')[0]))).toUpperCase();
     }catch(e){
       if (kDebugMode) {
         print(e.toString());
@@ -679,9 +727,9 @@ class _Dashboard20State extends State<Dashboard20> {
                     payload: payload
                 );
               },
-              icon: Icon(Icons.power_settings_new,),
+              icon: const Icon(Icons.power_settings_new,),
               style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(Color(0xff4DB53D))
+                  backgroundColor: WidgetStateProperty.all(const Color(0xff4DB53D))
               ),
             ),
             Text('ON', style: Theme.of(context).textTheme.labelLarge,)
@@ -701,9 +749,9 @@ class _Dashboard20State extends State<Dashboard20> {
                     payload: payload
                 );
               },
-              icon: Icon(Icons.power_settings_new,),
+              icon: const Icon(Icons.power_settings_new,),
               style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(Color(0xffE9352B))
+                  backgroundColor: WidgetStateProperty.all(const Color(0xffE9352B))
               ),
             ),
             Text('OFF', style: Theme.of(context).textTheme.labelLarge,)
@@ -719,7 +767,7 @@ class _Dashboard20State extends State<Dashboard20> {
     required String phase,
   }){
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: backgroundColor
@@ -735,7 +783,7 @@ class _Dashboard20State extends State<Dashboard20> {
               color: Colors.white,
             ),
           ),
-          Text('$value V', style: TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),),
+          Text('$value V', style: const TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),),
         ],
       ),
     );
