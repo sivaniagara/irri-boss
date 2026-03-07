@@ -9,6 +9,7 @@ import '../domain/usecases/get_program_usecase.dart';
 import '../domain/usecases/save_program_usecase.dart';
 import '../domain/usecases/send_zone_configuration_payload_usecase.dart';
 import '../domain/usecases/send_zone_set_payload_usecase.dart';
+import '../domain/usecases/send_zone_view_command_usecase.dart';
 import '../presentation/bloc/edit_program_bloc.dart';
 
 void initEditProgramDependencies() async{
@@ -19,7 +20,9 @@ void initEditProgramDependencies() async{
     sendZoneSetPayloadUsecase: sl(),
     deleteZoneEditProgramUseCase: sl(),
     sendViewMessageUsecase: sl(),
+    sendZoneViewCommandUseCase: sl(),
   ));
+  sl.registerLazySingleton(()=>SendZoneViewCommandUseCase(repository: sl()));
   sl.registerLazySingleton(()=>SendViewMessageUsecase(repository: sl()));
   sl.registerLazySingleton(()=>GetProgramUsecase(repository: sl()));
   sl.registerLazySingleton(()=>SaveProgramUsecase(repository: sl()));

@@ -10,6 +10,7 @@ import '../../domain/usecases/save_program_usecase.dart';
 import '../../domain/usecases/send_view_message_usecase.dart';
 import '../../domain/usecases/send_zone_configuration_payload_usecase.dart';
 import '../../domain/usecases/send_zone_set_payload_usecase.dart';
+import '../../domain/usecases/send_zone_view_command_usecase.dart';
 import '../enums/add_remove_enum.dart';
 import '../enums/send_view_message_enum.dart';
 import '../pages/payload_page.dart';
@@ -20,6 +21,7 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
   final GetProgramUsecase getProgramUsecase;
   final SaveProgramUsecase saveProgramUsecase;
   final SendZoneConfigurationPayloadUsecase sendZoneConfigurationPayloadUsecase;
+  final SendZoneViewCommandUseCase sendZoneViewCommandUseCase;
   final SendZoneSetPayloadUsecase sendZoneSetPayloadUsecase;
   final DeleteZoneEditProgramUseCase deleteZoneEditProgramUseCase;
   final SendViewMessageUsecase sendViewMessageUsecase;
@@ -27,6 +29,7 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
     required this.getProgramUsecase,
     required this.saveProgramUsecase,
     required this.sendZoneConfigurationPayloadUsecase,
+    required this.sendZoneViewCommandUseCase,
     required this.sendZoneSetPayloadUsecase,
     required this.deleteZoneEditProgramUseCase,
     required this.sendViewMessageUsecase,
@@ -541,6 +544,27 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
           }
       );
     });
+  }
+
+  Future<PayloadModeEnum> sendZoneViewCommandPayload({
+    required int zoneIndex,
+  }) async {
+    final current = state as EditProgramLoaded;
+
+    SendZoneViewCommandParams params = SendZoneViewCommandParams(
+      userId: current.userId,
+      controllerId: current.controllerId,
+      deviceId: current.deviceId,
+      programId: current.editProgramEntity.programId,
+      zoneNo: zoneIndex.toString(),
+    );
+
+    final result = await sendZoneViewCommandUseCase(params);
+
+    return result.fold(
+          (failure) => PayloadModeEnum.failure,
+          (success) => PayloadModeEnum.success,
+    );
   }
 
   Future<PayloadModeEnum> sendZonePayload({
