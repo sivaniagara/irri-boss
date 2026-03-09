@@ -25,13 +25,6 @@ class CtrlLivePage extends StatelessWidget {
     return "0";
   }
 
-  String _getFertValue(LiveMessageEntity? ctrl, int index) {
-    if (ctrl != null && ctrl.fertValues.length > index) {
-      return ctrl.fertValues[index];
-    }
-    return "0";
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DashboardPageCubit, DashboardState>(
@@ -420,15 +413,12 @@ class CtrlLivePage extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          _buildDataGridRow([
-            {"label": "FERT-1", "value": _getFertValue(liveData, 0)},
-            {"label": "FERT-2", "value": _getFertValue(liveData, 1)},
-          ]),
-          const SizedBox(height: 16),
-          _buildDataGridRow([
-            {"label": "FERT-3", "value": _getFertValue(liveData, 2)},
-            {"label": "FERT-4", "value": _getFertValue(liveData, 3)},
-          ]),
+          // Cleaned up: Removed mis-mapped FERT rates that were showing RTC timers.
+          // Real-time fertilization rates are typically monitored via the Fert-Live report.
+          const Center(
+            child: Text("Monitoring active injection points", 
+              style: TextStyle(fontSize: 10, color: Colors.grey, fontStyle: FontStyle.italic)),
+          ),
         ],
       ),
     );

@@ -525,7 +525,7 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
         editProgramEntity : current.editProgramEntity,
         channelNo : channelNo,
         irrigationDosingOrPrePost : irrigationDosingOrPrePost,
-        method : method,
+        method : method, subUserId: '',
     );
 
     final result = await sendZoneSetPayloadUsecase(params);

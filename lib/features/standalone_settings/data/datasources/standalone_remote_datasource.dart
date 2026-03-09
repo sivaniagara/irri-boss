@@ -70,54 +70,57 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
       }
 
       List<dynamic> zoneListJson = [];
-      if (rawZoneList is Map) {
-        final data = rawZoneList['data'];
-        if (data is List) {
-          final Set<String> uniqueZoneIds = {};
-          for (var item in data) {
-             // Handle list of programs or direct list of zones
-             final List<dynamic> list = (item is Map && item.containsKey('zoneList')) 
-                 ? item['zoneList'] 
-                 : (item is Map && item.containsKey('zones')) 
-                     ? item['zones'] 
-                     : [item];
-             
-             for (var zone in list) {
-               if (zone is! Map) continue;
-               final rawId = zone['zoneNumber'] ?? zone['zoneName'] ?? zone['zoneId'] ?? zone['id'];
-               if (rawId != null) {
-                 final normalized = StandaloneModel.normalizeZoneId(rawId);
-                 
-                 // FILTER: A zone is "Created" if it has hardware mapping
-                 final bool hasNode = zone['nodeId'] != null && zone['nodeId'] != 0 && zone['nodeId'] != '0';
-                 final bool hasValves = zone['valves'] is List && (zone['valves'] as List).isNotEmpty;
-                 final bool isActive = zone['active'] == true || zone['status'] == 1 || zone['status'] == "1";
+      final Set<String> uniqueZoneIds = {};
 
-                 if ((hasNode || hasValves || isActive) && !uniqueZoneIds.contains(normalized)) {
-                   uniqueZoneIds.add(normalized);
-                   zoneListJson.add(zone);
-                 }
-               }
-             }
-          }
-        } else if (data is Map) {
-          // Response 1 or 3 style
-          final List<dynamic> sourceList = data['zoneList'] ?? 
-                                         (data['setting'] != null ? data['setting']['zones'] : null) ?? 
-                                         data['zones'] ?? [];
-          
-          for (var zone in sourceList) {
+      void processZones(List<dynamic> list) {
+        for (var zone in list) {
+          if (zone is! Map) continue;
+          final rawId = zone['zoneNumber'] ?? zone['zoneName'] ?? zone['zone_number'] ?? zone['zoneId'] ?? zone['id'];
+          if (rawId != null) {
+            final normalized = StandaloneModel.normalizeZoneId(rawId);
+            
+            // FILTER: A zone is "Created" if it has hardware mapping, valves, or is active
             final bool hasNode = zone['nodeId'] != null && zone['nodeId'] != 0 && zone['nodeId'] != '0';
             final bool hasValves = zone['valves'] is List && (zone['valves'] as List).isNotEmpty;
             final bool isActive = zone['active'] == true || zone['status'] == 1 || zone['status'] == "1";
 
-            if (hasNode || hasValves || isActive) {
+            // If any of these are true, the zone is considered "configured/created"
+            if ((hasNode || hasValves || isActive) && !uniqueZoneIds.contains(normalized)) {
+              uniqueZoneIds.add(normalized);
               zoneListJson.add(zone);
             }
           }
         }
+      }
+
+      if (rawZoneList is Map) {
+        final data = rawZoneList['data'];
+        if (data is List) {
+          for (var item in data) {
+             // Handle list of programs or direct list of zones. 
+             // Support 'setting' -> 'zones' structure commonly found in program responses.
+             final List<dynamic> list = (item is Map && item.containsKey('zoneList')) 
+                 ? item['zoneList'] 
+                 : (item is Map && item.containsKey('zones')) 
+                     ? item['zones'] 
+                     : (item is Map && item['setting'] != null && item['setting'] is Map && item['setting'].containsKey('zones'))
+                        ? item['setting']['zones']
+                        : [item];
+             
+             processZones(list);
+          }
+        } else if (data is Map) {
+          // Single program or configuration object
+          final List<dynamic> sourceList = data['zoneList'] ?? 
+                                         (data['setting'] != null && data['setting'] is Map ? data['setting']['zones'] : null) ?? 
+                                         data['zones'] ?? [];
+          processZones(sourceList);
+        } else if (rawZoneList['code'] == 200 && rawZoneList['message'] != null) {
+           // Fallback for cases where 'data' might be null or missing but top level has info
+           // though usually handled by the 'Map' check above.
+        }
       } else if (rawZoneList is List) {
-        zoneListJson = rawZoneList;
+        processZones(rawZoneList);
       }
 
       return StandaloneModel.fromCombinedJson(

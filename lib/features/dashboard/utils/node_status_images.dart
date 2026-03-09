@@ -9,10 +9,12 @@ class NodeStatusImages {
     'pressure': "assets/svg/node_status_svg/pressure_m.svg",
     'moisture': "assets/svg/node_status_svg/moisture_sensor_m.svg",
     'valves': "assets/svg/node_status_svg/valve_m.svg",
+    'valvesOn': "assets/svg/node_status_svg/valve_open.svg",
+    'valvesErr': "assets/svg/node_status_svg/valve_Err.svg",
   };
 
   static const Map<String, Color> _statusColors = {
-    '0': Colors.grey,
+    '0': Colors.white,
     '1': Colors.green,
     '2': Colors.red,
     '3': Colors.orange,
@@ -23,18 +25,48 @@ class NodeStatusImages {
   static String getIcon(String category) {
     final normalized = category.toLowerCase().replaceAll(' ', '');
 
-    if (normalized.contains('valve')) return _categoryIcons['valves']!;
-    if (normalized.contains('light')) return _categoryIcons['lights']!;
-    if (normalized.contains('flowmeter')) return _categoryIcons['flowmeter']!;
-    if (normalized.contains('energy')) return _categoryIcons['energymeter']!;
-    if (normalized.contains('fertilizer')) return _categoryIcons['fertilizer']!;
-    if (normalized.contains('pressure')) return _categoryIcons['pressure']!;
-    if (normalized.contains('moisture')) return _categoryIcons['moisture']!;
+    // ✅ MOST specific first
+    if (normalized == 'valveson') {
+      return _categoryIcons['valvesOn']!;
+    }
+
+    if (normalized == 'valveserr') {
+      return _categoryIcons['valvesErr']!;
+    }
+
+    // ✅ Generic AFTER
+    if (normalized.contains('valve')) {
+      return _categoryIcons['valves']!;
+    }
+
+    if (normalized.contains('light')) {
+      return _categoryIcons['lights']!;
+    }
+
+    if (normalized.contains('flowmeter')) {
+      return _categoryIcons['flowmeter']!;
+    }
+
+    if (normalized.contains('energy')) {
+      return _categoryIcons['energymeter']!;
+    }
+
+    if (normalized.contains('fertilizer')) {
+      return _categoryIcons['fertilizer']!;
+    }
+
+    if (normalized.contains('pressure')) {
+      return _categoryIcons['pressure']!;
+    }
+
+    if (normalized.contains('moisture')) {
+      return _categoryIcons['moisture']!;
+    }
 
     return _categoryIcons['valves']!;
   }
 
   static Color getTintColor(String status) {
-    return _statusColors[status] ?? Colors.grey;
+    return _statusColors[status] ?? Colors.white;
   }
 }

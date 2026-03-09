@@ -37,13 +37,14 @@ class NodeStatusCubit extends Cubit<NodeStatusState> {
 
   NodeStatusCubit({required this.getNodeStatusUsecase}) : super(NodeStatusInitialState());
 
-  Future<void> getNodeStatus({required int userId, required int subUserId, required int controllerId, required String deviceId, bool isTestComm = false, required String motorStatus}) async {
+  Future<void> getNodeStatus({required int userId, required int subUserId, required int controllerId, required String deviceId, required String motorStatus, bool isTestComm = false}) async {
     emit(NodeStatusInitialState());
 
     final result = await getNodeStatusUsecase(GetNodeStatusParams(
-        userId: userId,
-        controllerId: controllerId,
-        subuserId: subUserId,
+      userId: userId,
+      controllerId: controllerId,
+      subuserId: subUserId,
+      motorStatus: motorStatus,
     ));
 
     sl.get<MqttService>().publish(

@@ -78,11 +78,31 @@ class UserModel extends UserEntity{
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    // print("json in UserModel :: $json");
+    String mobileNumber = '';
+    
+    // Check for a single 'mobile' field first
+    if (json.containsKey('mobile') && json['mobile'] != null) {
+      String m = json['mobile'].toString();
+      if (m.isNotEmpty && m != '0') {
+        mobileNumber = m;
+      }
+    }
+    
+    // If mobile is still empty, try split fields
+    if (mobileNumber.isEmpty) {
+      String mNum = json['mobileNumber']?.toString() ?? '';
+      String cCode = json['mobileCountryCode']?.toString() ?? '';
+      
+      if (mNum.isNotEmpty && mNum != '0') {
+        if (cCode == '0') cCode = '';
+        mobileNumber = '$cCode$mNum';
+      }
+    }
+
     return UserModel(
       id: json['userId'] as int? ?? 0,
       name: json['userName'] as String? ?? '',
-      mobile: '${json['mobileCountryCode'] ?? ''}${json['mobileNumber'] ?? ''}',
+      mobile: mobileNumber,
       userType: json['userType'] is String ? int.parse(json['userType'] ?? '0') : (json['userType'] as int? ?? 0),
       deviceToken: json['deviceToken'] as String? ?? '',
       mobCctv: json['mobCctv'] as String? ?? '',
@@ -101,10 +121,16 @@ class UserModel extends UserEntity{
   }
 
   factory UserModel.fromFirebaseUser(User firebaseUser, Map<String, dynamic> regDetails) {
+    String mobile = firebaseUser.phoneNumber ?? '';
+    if (mobile.isEmpty) {
+      // Fallback to regDetails
+      mobile = UserModel.fromJson(regDetails).mobile;
+    }
+
     return UserModel(
       id: regDetails['userId'] as int? ?? 0,
       name: regDetails['userName'] as String? ?? '',
-      mobile: firebaseUser.phoneNumber ?? '',
+      mobile: mobile,
       userType: regDetails['userType'] is String ? int.parse(regDetails['userType'] ?? '0') : (regDetails['userType'] as int? ?? 0),
       deviceToken: regDetails['deviceToken'] as String? ?? '',
       mobCctv: regDetails['mobCctv'] as String? ?? '',
@@ -126,8 +152,7 @@ class UserModel extends UserEntity{
     return {
       'userId': id,
       'userName': name,
-      'mobileCountryCode': mobile.startsWith('+') ? int.parse(mobile.substring(1, mobile.length - 10)) : 0,
-      'mobileNumber': mobile.startsWith('+') ? int.parse(mobile.substring(mobile.length - 10)) : 0,
+      'mobile': mobile,
       'userType': userType,
       'deviceToken': deviceToken,
       'mobCctv': mobCctv,

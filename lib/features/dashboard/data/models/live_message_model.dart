@@ -163,7 +163,7 @@ class LiveMessageModel extends LiveMessageEntity {
       fertValues = safeList(36, ['0', '0', '0', '0', '0', '0'], separator: ';');
       batVolt = safeString(48, '0');
       ec = safeString(25, '0');
-      ph = safeString(25, '0');
+      ph = safeString(26, '0'); // Corrected from 25 to 26
       versionModule = safeString(39, '');
       versionBoard = safeString(40, '');
     } else {
@@ -205,7 +205,7 @@ class LiveMessageModel extends LiveMessageEntity {
       fertValues = safeList(36, ['0', '0', '0', '0', '0', '0'], separator: ';');
       batVolt = safeString(38, '0');
       ec = safeString(25, '0');
-      ph = safeString(25, '0');
+      ph = safeString(26, '0'); // Corrected from 25 to 26
       versionModule = safeString(39, '');
       versionBoard = safeString(40, '');
     }
