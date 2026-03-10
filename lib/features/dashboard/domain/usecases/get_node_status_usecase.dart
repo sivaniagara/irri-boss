@@ -18,13 +18,16 @@ class GetNodeStatusUsecase extends UseCase<List<NodeStatusEntity>, GetNodeStatus
 
 class GetNodeStatusParams extends Equatable {
   final int userId, controllerId, subuserId;
+  final String motorStatus;
+
 
   const GetNodeStatusParams({
     required this.userId,
     required this.controllerId,
-    required this.subuserId
+    required this.subuserId,
+    required this.motorStatus,
   });
 
   @override
-  List<Object?> get props => [userId, controllerId, subuserId];
+  List<Object?> get props => [userId, controllerId, subuserId,motorStatus];
 }

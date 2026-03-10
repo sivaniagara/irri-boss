@@ -325,6 +325,12 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
         const SizedBox(height: 10),
         _buildGeneralInfoSection(liveMessage),
         const SizedBox(height: 20),
+        if (liveMessage != null) ...[
+          _buildSectionHeader("SENSORS & LIVE DATA", Icons.sensors_rounded),
+          const SizedBox(height: 10),
+          _buildLiveSensorsSection(liveMessage),
+          const SizedBox(height: 20),
+        ],
         _buildRTCTimerSection(),
         const SizedBox(height: 20),
         _buildSectionHeader("ADJUSTMENTS", Icons.tune_rounded),
@@ -492,6 +498,52 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
     );
   }
 
+  Widget _buildLiveSensorsSection(LiveMessageEntity live) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(child: _buildDataCard("R-Y-B Voltage", "${live.rVoltage}v | ${live.yVoltage}v | ${live.bVoltage}v", Icons.electrical_services_rounded, isSmallValue: true)),
+            const SizedBox(width: 10),
+            Expanded(child: _buildDataCard("R-Y-B Current", "${live.rCurrent}A | ${live.yCurrent}A | ${live.bCurrent}A", Icons.bolt_rounded, isSmallValue: true)),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(child: _buildDataCard("Pressure In/Out", "${live.prsIn} / ${live.prsOut} bar", Icons.compress_rounded)),
+            const SizedBox(width: 10),
+            Expanded(child: _buildDataCard("Flow Rate", "${live.flowRate} m³/h", Icons.speed_rounded)),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(child: _buildDataCard("EC / PH", "${live.ec} / ${live.ph}", Icons.science_outlined)),
+            const SizedBox(width: 10),
+            Expanded(child: _buildDataCard("Moisture 1/2", "${live.moisture1}% / ${live.moisture2}%", Icons.water_drop_outlined)),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(child: _buildDataCard("Well Level", "${live.wellPercent}%", Icons.waves_rounded)),
+            const SizedBox(width: 10),
+            Expanded(child: _buildDataCard("Signal/Bat", "${live.signal}% / ${live.batVolt}v", Icons.signal_cellular_alt_rounded)),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(child: _buildDataCard("Today Flow", "${live.flowToday} m³", Icons.summarize_outlined)),
+            const SizedBox(width: 10),
+            Expanded(child: _buildDataCard("Today RunTime", live.runTimeToday, Icons.history_toggle_off_rounded)),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _buildRTCTimerSection() {
     return Container(
       decoration: BoxDecoration(
@@ -566,6 +618,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
   }
 
   Widget _buildAdjustPercentSection() {
+    final adjust = _program?.adjustPercent ?? ["100", "100", "100", "100"];
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -578,18 +631,20 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
       ),
       child: Row(
         children: [
-          _buildColumnLabelValue("Time (%)", _program?.adjustPercent[0] ?? "100", Icons.access_time_filled_rounded),
-          _buildColumnLabelValue("Flow (%)", _program?.adjustPercent[1] ?? "100", Icons.speed_rounded),
-          _buildColumnLabelValue("Moist (%)", _program?.adjustPercent[2] ?? "100", Icons.water_rounded),
-          _buildColumnLabelValue("Fert (%)", _program?.adjustPercent[3] ?? "100", Icons.science_rounded),
+          _buildColumnLabelValue("Time (%)", adjust.isNotEmpty ? adjust[0] : "100", Icons.access_time_filled_rounded),
+          _buildColumnLabelValue("Flow (%)", adjust.length > 1 ? adjust[1] : "100", Icons.speed_rounded),
+          _buildColumnLabelValue("Moist (%)", adjust.length > 2 ? adjust[2] : "100", Icons.water_rounded),
+          _buildColumnLabelValue("Fert (%)", adjust.length > 3 ? adjust[3] : "100", Icons.science_rounded),
         ],
       ),
     );
   }
 
   Widget _buildFertilizerSection(LiveMessageEntity? liveMessage) {
-    final List<String> currentFertStatus = liveMessage != null && liveMessage.fertStatus.isNotEmpty ? liveMessage.fertStatus : (_program?.fertilizerStatus ?? List.filled(6, "0"));
-    final List<String> currentFertRates = liveMessage != null && liveMessage.fertValues.isNotEmpty ? liveMessage.fertValues : (_program?.fertilizerRates ?? List.filled(6, "00:00"));
+    // Corrected: Always use _program data for configuration view.
+    // LiveMessage data (fertStatus/fertValues) represents real-time activity, not saved config.
+    final List<String> currentFertStatus = _program?.fertilizerStatus ?? List.filled(6, "0");
+    final List<String> currentFertRates = _program?.fertilizerRates ?? List.filled(6, "00:00");
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -617,11 +672,20 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
             )),
           ),
           const SizedBox(height: 12),
-          _buildFertRow("STATUS", (i) => _buildBadge(currentFertStatus[i] == "1" ? "ON" : "OFF", isNegative: currentFertStatus[i] != "1", small: true)),
+          _buildFertRow("STATUS", (i) {
+            final val = i < currentFertStatus.length ? currentFertStatus[i] : "0";
+            return _buildBadge(val == "1" ? "ON" : "OFF", isNegative: val != "1", small: true);
+          }),
           const SizedBox(height: 10),
-          _buildFertRow("RATE", (i) => _buildValueBox(currentFertRates[i], small: true)),
+          _buildFertRow("RATE", (i) {
+            final val = i < currentFertRates.length ? currentFertRates[i] : "00:00";
+            return _buildValueBox(val, small: true);
+          }),
           const SizedBox(height: 10),
-          _buildFertRow("FLOW", (i) => _buildValueBox(_program?.ventFlows[i] ?? "0.0", small: true)),
+          _buildFertRow("FLOW", (i) {
+            final val = (_program != null && i < _program!.ventFlows.length) ? _program!.ventFlows[i] : "0.0";
+            return _buildValueBox(val, small: true);
+          }),
         ],
       ),
     );

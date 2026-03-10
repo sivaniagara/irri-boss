@@ -90,8 +90,8 @@ class _EditProgramPageState extends State<EditProgramPage> {
           }else if(state is EditProgramLoaded && state.saveProgramStatus == SaveProgramStatus.failure){
             context.pop();
             showErrorAlert(
-                context: context,
-                message: 'Program Failed to Save!',
+              context: context,
+              message: 'Program Failed to Save!',
             );
           }
           if(state is EditProgramLoaded && state.zoneDeleteStatusEditProgram == ZoneDeleteStatusEditProgram.loading){
@@ -111,12 +111,12 @@ class _EditProgramPageState extends State<EditProgramPage> {
           }
         },
         child: FloatingActionButton(
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          child: Image.asset(
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            child: Image.asset(
               'assets/images/icons/send_icon.png',
-            width: 30,
-            color: Colors.white,
-          ),
+              width: 30,
+              color: Colors.white,
+            ),
             onPressed: (){
               final currentState = context.read<EditProgramBloc>().state;
               if(currentState is EditProgramLoaded){
@@ -483,13 +483,13 @@ class _EditProgramPageState extends State<EditProgramPage> {
 
       },
       child: leafBox(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Text(time, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.black),),
-            Text('HH:MM', style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 10, fontWeight: FontWeight.w400),)
-          ],
-        )
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Text(time, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.black),),
+              Text('HH:MM', style: TextStyle(color: Theme.of(context).colorScheme.outline, fontSize: 10, fontWeight: FontWeight.w400),)
+            ],
+          )
       ),
     );
   }
@@ -684,34 +684,34 @@ class _EditProgramPageState extends State<EditProgramPage> {
 
                   context.read<EditProgramBloc>().add(
                       DeleteZoneEvent(
-                              zoneIndex: selectedZone,
+                          zoneIndex: selectedZone,
                           userId: controllerContext.userId,
                           controllerId: controllerContext.controllerId,
                           programId: state.editProgramEntity.programId.toString(),
                           zoneSerialNo: (selectedZone + 1).toString().padLeft(3, '0')
-                          )
-                      );
+                      )
+                  );
                 }
                 ),
               ],
             ),
             WrapOrRow(
-                open: showZone,
-                listOfWidget: [
-                  for(var index = 0;index < state.editProgramEntity.zones.length;index++)
-                    if(state.editProgramEntity.zones[index].active)
-                      _chipWidget(
-                        context: context,
-                        title: 'BLOCK ${state.editProgramEntity.zones[index].zoneNumber}',
-                        selected: selectedZone == index,
-                        index: index,
-                        onTap: () {
-                          setState(() {
-                            selectedZone = index;
-                          });
-                        },
-                      )
-                ],
+              open: showZone,
+              listOfWidget: [
+                for(var index = 0;index < state.editProgramEntity.zones.length;index++)
+                  if(state.editProgramEntity.zones[index].active)
+                    _chipWidget(
+                      context: context,
+                      title: 'BLOCK ${state.editProgramEntity.zones[index].zoneNumber}',
+                      selected: selectedZone == index,
+                      index: index,
+                      onTap: () {
+                        setState(() {
+                          selectedZone = index;
+                        });
+                      },
+                    )
+              ],
             )
           ],
         )
@@ -723,38 +723,38 @@ class _EditProgramPageState extends State<EditProgramPage> {
         child: Column(
           children: [
             CardHeader(
-                title: 'Select Valves',
-                onPressed: (){
-                  setState(() {
-                    showValve = !showValve;
-                  });
-                }, open: showValve,
+              title: 'Select Valves',
+              onPressed: (){
+                setState(() {
+                  showValve = !showValve;
+                });
+              }, open: showValve,
             ),
             WrapOrRow(
-                open: showValve,
-                listOfWidget: List.generate(state.editProgramEntity.mappedValves.length, (index){
-                  bool isSelected = state.editProgramEntity.zones[selectedZone].valves.any((e) => e.serialNo == state.editProgramEntity.mappedValves[index].serialNo);
-                  return _chipWidget(
-                      context: context,
-                      title: 'Valve ${index+1}',
-                      selected:  isSelected,
-                      color: Theme.of(context).colorScheme.secondary,
-                      textColor:Colors.black,
-                      index: index,
-                      onTap: () {
-                        if(!isSelected){
-                          if(state.editProgramEntity.zones[selectedZone].valves.length < 4){
-                            context.read<EditProgramBloc>().add(AddOrRemoveValveToZoneEvent(zoneIndex: selectedZone, nodeIndex: index, addRemoveEnum: AddRemoveEnum.add));
-                          }else{
-                            showErrorAlert(context: context, message: '4 valves able to selected per zone');
-                          }
+              open: showValve,
+              listOfWidget: List.generate(state.editProgramEntity.mappedValves.length, (index){
+                bool isSelected = state.editProgramEntity.zones[selectedZone].valves.any((e) => e.serialNo == state.editProgramEntity.mappedValves[index].serialNo);
+                return _chipWidget(
+                    context: context,
+                    title: 'Valve ${index+1}',
+                    selected:  isSelected,
+                    color: Theme.of(context).colorScheme.secondary,
+                    textColor:Colors.black,
+                    index: index,
+                    onTap: () {
+                      if(!isSelected){
+                        if(state.editProgramEntity.zones[selectedZone].valves.length < 4){
+                          context.read<EditProgramBloc>().add(AddOrRemoveValveToZoneEvent(zoneIndex: selectedZone, nodeIndex: index, addRemoveEnum: AddRemoveEnum.add));
                         }else{
-                          context.read<EditProgramBloc>().add(AddOrRemoveValveToZoneEvent(zoneIndex: selectedZone, nodeIndex: index, addRemoveEnum: AddRemoveEnum.remove));
+                          showErrorAlert(context: context, message: '4 valves able to selected per zone');
                         }
-
+                      }else{
+                        context.read<EditProgramBloc>().add(AddOrRemoveValveToZoneEvent(zoneIndex: selectedZone, nodeIndex: index, addRemoveEnum: AddRemoveEnum.remove));
                       }
-                  );
-                }),
+
+                    }
+                );
+              }),
             )
           ],
         )
@@ -766,15 +766,15 @@ class _EditProgramPageState extends State<EditProgramPage> {
         child: Column(
           children: [
             CardHeader(
-                title: 'Select Moisture Sensor',
-                onPressed: (){
-                  setState(() {
-                    showMoisture = !showMoisture;
-                  });
-                }, open: showMoisture,
+              title: 'Select Moisture Sensor',
+              onPressed: (){
+                setState(() {
+                  showMoisture = !showMoisture;
+                });
+              }, open: showMoisture,
             ),
             WrapOrRow(
-                open: showMoisture,
+              open: showMoisture,
               listOfWidget: List.generate(state.editProgramEntity.mappedMoistureSensors.length, (index){
                 bool isSelected = state.editProgramEntity.zones[selectedZone].moistureSensors.any((e) => e.serialNo == state.editProgramEntity.mappedMoistureSensors[index].serialNo);
                 return _chipWidget(
@@ -853,12 +853,12 @@ class _EditProgramPageState extends State<EditProgramPage> {
         spacing: 10,
         children: [
           CardHeader(
-              title: 'Adjust Percentage',
-              onPressed: (){
-                setState(() {
-                  showAdjustPercent = !showAdjustPercent;
-                });
-              }, open: showAdjustPercent,
+            title: 'Adjust Percentage',
+            onPressed: (){
+              setState(() {
+                showAdjustPercent = !showAdjustPercent;
+              });
+            }, open: showAdjustPercent,
           ),
           if(showAdjustPercent)
             ...[
@@ -929,7 +929,7 @@ class _EditProgramPageState extends State<EditProgramPage> {
           shape: BoxShape.circle,
         ),
         child: Image.asset(
-            'assets/images/icons/$iconName.png',
+          'assets/images/icons/$iconName.png',
           width: 16,
         ),
       ),
@@ -953,7 +953,7 @@ class _EditProgramPageState extends State<EditProgramPage> {
           decoration: BoxDecoration(
               color: selected ? (color ?? Theme.of(context).colorScheme.primary) : null,
               borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Color(0xffCDCDCD))
+              border: Border.all(color: Color(0xffCDCDCD))
           ),
           child: Center(
             child: Text(title, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: selected ? (textColor ?? Colors.white) : Colors.black),),

@@ -1,4 +1,3 @@
-
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
@@ -8,6 +7,7 @@ import '../repositories/edit_program_repository.dart';
 
 class SendZoneSetPayloadParams{
   final String userId;
+  final String subUserId;
   final String controllerId;
   final String deviceId;
   final int programId;
@@ -18,6 +18,7 @@ class SendZoneSetPayloadParams{
   final int method;
   SendZoneSetPayloadParams({
     required this.userId,
+    required this.subUserId,
     required this.controllerId,
     required this.deviceId,
     required this.programId,
