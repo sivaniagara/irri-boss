@@ -98,41 +98,7 @@ class MappingAndUnmappingNodesBloc extends Bloc<MappingAndUnmappingNodesEvent, M
           ));
         },
             (success) {
-          // final updatedMappedNodes = currentState
-          //     .mappingAndUnmappingNodeEntity.listOfMappedNodeEntity
-          //     .where((e) => e.nodeId != event.mappedNodeEntity.nodeId)
-          //     .toList();
-
-          // final updatedCategories = currentState
-          //     .mappingAndUnmappingNodeEntity.listOfUnmappedCategoryEntity
-          //     .map((category) {
-          //   if (category.categoryId != event.mappedNodeEntity.categoryId) {
-          //     return category;
-          //   } else {
-          //     final updatedUnmappedNodes = [
-          //       ...category.nodes.map((e) => e.copyWith()),
-          //       UnmappedCategoryNodeEntity(
-          //         nodeId: event.mappedNodeEntity.nodeId,
-          //         categoryId: event.mappedNodeEntity.categoryId,
-          //         qrCode: event.mappedNodeEntity.qrCode,
-          //         modelName: event.mappedNodeEntity.modelName,
-          //         dateManufacture: event.mappedNodeEntity.dateManufacture,
-          //         userName: event.mappedNodeEntity.userName,
-          //         mobileNumber: event.mappedNodeEntity.mobileNumber,
-          //       ),
-          //     ]..sort((a, b) => a.nodeId.compareTo(b.nodeId)); // more meaningful sort
-          //
-          //     return category.copyWith(updateNodes: updatedUnmappedNodes);
-          //   }
-          // }).toList();
-          //
-          // final updatedEntity = MappingAndUnmappingNodeEntity(
-          //   listOfMappedNodeEntity: updatedMappedNodes,
-          //   listOfUnmappedCategoryEntity: updatedCategories,
-          // );
-
           emit(currentState.copyWith(
-            // entity: updatedEntity,
             deleteStatus: DeleteMappedNodeEnum.success,
           ));
           emit(currentState.copyWith(
@@ -223,7 +189,7 @@ class MappingAndUnmappingNodesBloc extends Bloc<MappingAndUnmappingNodesEvent, M
     on<ResendNodeDetailsMqttEvent>((event, emit) async {
       if (state is MappingAndUnmappingNodesLoaded) {
         final currentState = state as MappingAndUnmappingNodesLoaded;
-        emit(currentState.copyWith(viewCommandEnum: ViewCommandEnum.loading));
+        emit(currentState.copyWith(resendCommandEnum: ResendCommandEnum.loading));
         final result = await resendMappedNodeUsecase(
             ResendMappedNodeParams(
               deviceId: currentState.deviceId,
@@ -243,6 +209,68 @@ class MappingAndUnmappingNodesBloc extends Bloc<MappingAndUnmappingNodesEvent, M
             }
         );
       }
+    });
+
+    on<ResendMultipleNodeDetailsMqttEvent>((event, emit) async {
+      if (state is MappingAndUnmappingNodesLoaded) {
+        final currentState = state as MappingAndUnmappingNodesLoaded;
+
+        // Reset all nodes status to idle before starting (optional but clean)
+        List<MappedNodeEntity> currentMappedNodes = currentState.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity
+            .map((n) => n.copyWidth(status: ResendCommandEnum.idle)).toList();
+
+        for (var nodeToResend in event.mappedNodeEntities) {
+          // 1. Set specific node to loading
+          currentMappedNodes = currentMappedNodes.map((n) {
+            if (n.nodeId == nodeToResend.nodeId) {
+              return n.copyWidth(status: ResendCommandEnum.resendLoading);
+            }
+            return n;
+          }).toList();
+
+          emit(currentState.copyWith(
+              entity: currentState.mappingAndUnmappingNodeEntity.copyWith(listOfMapped: currentMappedNodes),
+              resendCommandEnum: ResendCommandEnum.idle // KEEP global command idle to prevent global alert
+          ));
+
+          // 2. Execute usecase
+          final result = await resendMappedNodeUsecase(
+              ResendMappedNodeParams(
+                deviceId: currentState.deviceId,
+                mappedNodeEntity: nodeToResend,
+                userId: currentState.userId,
+                controllerId: currentState.controllerId,
+              )
+          );
+          await Future.delayed(const Duration(seconds: 5));
+
+          // 3. Update specific node with result
+          currentMappedNodes = currentMappedNodes.map((n) {
+            if (n.nodeId == nodeToResend.nodeId) {
+              return result.fold(
+                      (failure) => n.copyWidth(status: ResendCommandEnum.failure),
+                      (success) => n.copyWidth(status: ResendCommandEnum.success)
+              );
+            }
+            return n;
+          }).toList();
+
+          emit(currentState.copyWith(
+              entity: currentState.mappingAndUnmappingNodeEntity.copyWith(listOfMapped: currentMappedNodes),
+              resendCommandEnum: ResendCommandEnum.idle
+          ));
+        }
+      }
+    });
+
+    on<UpdateResendStatusToIdle>((event, emit){
+      final currentState = state as MappingAndUnmappingNodesLoaded;
+      List<MappedNodeEntity> defaultMappedNodes = currentState.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity
+          .map((n) => n.copyWidth(status: ResendCommandEnum.idle, isSelect: false)).toList();
+      emit(currentState.copyWith(
+          entity: currentState.mappingAndUnmappingNodeEntity.copyWith(listOfMapped: defaultMappedNodes),
+          resendCommandEnum: ResendCommandEnum.idle
+      ));
     });
   }
 }

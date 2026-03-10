@@ -8,10 +8,14 @@ import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/useca
 
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/usecases/get_program_usecase.dart';
 
+import '../../../../core/error/exceptions.dart';
+import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../domain/repositories/edit_program_repository.dart';
 import '../../domain/usecases/save_program_usecase.dart';
+import '../../domain/usecases/send_view_message_usecase.dart';
 import '../../domain/usecases/send_zone_configuration_payload_usecase.dart';
 import '../../domain/usecases/send_zone_set_payload_usecase.dart';
+import '../../domain/usecases/send_zone_view_command_usecase.dart';
 import '../data_source/edit_program_remote_source.dart';
 import '../models/edit_program_model.dart';
 import '../models/zone_setting_model.dart';
@@ -92,6 +96,31 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
   }
 
   @override
+  Future<Either<Failure, Unit>> sendZoneViewCommandPayload(
+      SendZoneViewCommandParams params) async{
+    try {
+      final response = await remoteSource.sendZonePayload(
+          urlData: {'userId' : params.userId, 'controllerId' : params.controllerId},
+          bodyData: {},
+          listOfPayload: [
+            PublishMessageHelper.settingsPayload('VIDZONESELP${params.programId}${params.zoneNo.padLeft(3, '0')}'),
+            PublishMessageHelper.settingsPayload('VIDZLMSETP${params.programId}${params.zoneNo.padLeft(3, '0')}'),
+          ],
+          deviceId: params.deviceId
+      );
+      await Future.delayed(Duration(seconds: 2));
+      return Right(unit);
+    } catch (e, stackTrace) {
+
+      if (kDebugMode) {
+        print('sendZoneViewCommandPayload Failure: $e');
+        print(stackTrace);
+      }
+      return Left(ServerFailure('sendZoneViewCommandPayload Fetching Failure: $e'));
+    }
+  }
+
+  @override
   Future<Either<Failure, Unit>> deleteZone(DeleteZoneParamsEditProgram params) async{
     try {
       final response = await remoteSource.deleteZone({'userId' : params.userId, 'controllerId' : params.controllerId, 'programId' : params.programId, 'zoneSerialNo' : params.zoneSerialNo});
@@ -164,6 +193,28 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
         print(stackTrace);
       }
       return Left(ServerFailure('sendZoneConfigurationPayload Fetching Failure: $e'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> sendViewMessage(SendViewMessageParam params) async {
+    try {
+      final response = await remoteSource.sendViewMessage(
+        userId: params.userId,
+        controllerId: params.controllerId,
+        programId: params.programId,
+        deviceId: params.deviceId,
+        payload: params.payload,
+      );
+      if(response){
+        return Right(unit);
+      }else{
+        return Left(ServerFailure('sendViewMessage Payload not sent'));
+      }
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('Failed to fetch controllers: $e'));
     }
   }
 }

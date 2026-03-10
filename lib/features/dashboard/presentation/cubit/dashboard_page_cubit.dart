@@ -394,6 +394,13 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       );
 
       // Send MQTT command
+      if(payload.contains('MTRON')){
+        sl<MqttManager>().publish(
+          deviceId,
+          PublishMessageHelper.settingsPayload('MTROF,'),
+        );
+        await Future.delayed(Duration(seconds: 1));
+      }
       sl<MqttManager>().publish(
         deviceId,
         PublishMessageHelper.settingsPayload(payload),

@@ -28,6 +28,7 @@ class PayloadPage extends StatefulWidget {
 class _PayloadPageState extends State<PayloadPage> {
   late List<Map<String, dynamic>> zoneSetSelection;
   late List<Map<String, dynamic>> zoneSelection;
+  late List<Map<String, dynamic>> zoneViewCommandSelection;
   bool enableEdit = true;
 
   @override
@@ -35,6 +36,8 @@ class _PayloadPageState extends State<PayloadPage> {
     // TODO: implement initState
     super.initState();
     zoneSelection = (context.read<EditProgramBloc>().state as EditProgramLoaded).editProgramEntity.zones
+        .map((e) => {'mode' : PayloadModeEnum.idle, 'value' : true}).toList();
+    zoneViewCommandSelection = (context.read<EditProgramBloc>().state as EditProgramLoaded).editProgramEntity.zones
         .map((e) => {'mode' : PayloadModeEnum.idle, 'value' : true}).toList();
     zoneSetSelection = splitIntoChunks(8);
   }
@@ -83,6 +86,26 @@ class _PayloadPageState extends State<PayloadPage> {
                                   },
                                 activeColor: Colors.green,
                                 secondary: getStatusWidget(zoneSelection[index]['mode']),
+                              );
+                            }),
+                            Text('Zone View Command', style: Theme.of(context).textTheme.labelLarge,),
+                            ...List.generate(zoneSelection.length, (index){
+                              final zone = state.editProgramEntity.zones[index];
+                              if(!zone.active) {
+                                return Container();
+                              };
+                              return CheckboxListTile(
+                                enabled: enableEdit,
+                                controlAffinity: ListTileControlAffinity.leading,
+                                title: Text('Block ${zone.zoneNumber}'),
+                                value: zoneViewCommandSelection[index]['value'],
+                                onChanged: (value){
+                                  setState(() {
+                                    zoneViewCommandSelection[index]['value'] = value;
+                                  });
+                                },
+                                activeColor: Colors.green,
+                                secondary: getStatusWidget(zoneViewCommandSelection[index]['mode']),
                               );
                             }),
                             Text('Zone Set Setting', style: Theme.of(context).textTheme.labelLarge,),
@@ -137,6 +160,29 @@ class _PayloadPageState extends State<PayloadPage> {
                                       zoneSelection[zonePayload]['mode'] = PayloadModeEnum.failure;
                                     });
                                     print("Zone $zonePayload failed: $e");
+                                  }
+                                }
+
+                              }
+                              for (var zonePayload = 0; zonePayload < zoneViewCommandSelection.length; zonePayload++) {
+                                if(state.editProgramEntity.zones[zonePayload].active){
+                                  if(!zoneViewCommandSelection[zonePayload]['value']) continue;
+                                  setState(() {
+                                    zoneViewCommandSelection[zonePayload]['mode'] = PayloadModeEnum.loading;
+                                  });
+
+                                  try {
+                                    final result = await context.read<EditProgramBloc>().sendZoneViewCommandPayload(
+                                      zoneIndex: zonePayload + 1,
+                                    );
+                                    setState(() {
+                                      zoneViewCommandSelection[zonePayload]['mode'] = result; // ← now result is the real enum value
+                                    });
+                                  } catch (e) {
+                                    setState(() {
+                                      zoneViewCommandSelection[zonePayload]['mode'] = PayloadModeEnum.failure;
+                                    });
+                                    print("zoneViewCommandSelection $zonePayload failed: $e");
                                   }
                                 }
 

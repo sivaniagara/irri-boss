@@ -13,13 +13,16 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/presentation/widgets/wrap_or_row.dart';
 import '../../../../core/services/time_picker_service.dart';
 import '../../../../core/widgets/alert_dialog.dart';
+import '../../../../core/widgets/custom_material_button.dart';
 import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../domain/entities/zone_setting_entity.dart';
 import '../bloc/edit_program_bloc.dart';
 import '../../../../core/widgets/tiny_text_form_field.dart';
+import '../enums/send_view_message_enum.dart';
 
 class EditProgramPage extends StatefulWidget {
-  const EditProgramPage({super.key});
+  final String programId;
+  const EditProgramPage({super.key, required this.programId});
 
   @override
   State<EditProgramPage> createState() => _EditProgramPageState();
@@ -64,7 +67,7 @@ class _EditProgramPageState extends State<EditProgramPage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Program 1', style: Theme.of(context).textTheme.titleLarge,),
+        title: Text('Program ${widget.programId}', style: Theme.of(context).textTheme.titleLarge,),
         actions: [
           GestureDetector(
             child: Padding(
@@ -117,6 +120,15 @@ class _EditProgramPageState extends State<EditProgramPage> {
             onPressed: (){
               final currentState = context.read<EditProgramBloc>().state;
               if(currentState is EditProgramLoaded){
+                for(var zone = 0;zone < currentState.editProgramEntity.zones.length;zone++){
+                  if(currentState.editProgramEntity.zones[zone].active && currentState.editProgramEntity.zones[zone].valves.isEmpty){
+                    showErrorAlert(
+                        context: context,
+                        message: 'Atleast one valve should be selected in Block ${zone + 1}'
+                    );
+                    return;
+                  }
+                }
                 context.read<EditProgramBloc>().add(
                     SaveProgramEvent(
                         userId: currentState.userId,
@@ -288,23 +300,76 @@ class _EditProgramPageState extends State<EditProgramPage> {
                                     ],
                                   );
                                 }),
-
                               ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                  )
+                  ),
+                  SizedBox(height: 20,),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      CustomMaterialButton(
+                          onPressed: (){
+                            final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+                            context.read<EditProgramBloc>().add(
+                                SendViewMessageEvent(
+                                    userId: controllerContext.userId,
+                                    controllerId: controllerContext.controllerId,
+                                    programId: '0',
+                                    deviceId: controllerContext.deviceId,
+                                    payload: 'VZONETIMERSETP${state.editProgramEntity.programId}01,'
+                                )
+                            );
+                          },
+                          title: 'View Irrigation'
+                      ),
+                      CustomMaterialButton(
+                          onPressed: (){
+                            final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+                            context.read<EditProgramBloc>().add(
+                                SendViewMessageEvent(
+                                    userId: controllerContext.userId,
+                                    controllerId: controllerContext.controllerId,
+                                    programId: '0',
+                                    deviceId: controllerContext.deviceId,
+                                    payload: 'VFERTTIMERSETP${state.editProgramEntity.programId}F${selectedChannel+1}01,'
+                                )
+                            );
+                          },
+                          title: 'View Dosing'
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20,),
                 ],
               ),
             );
           }
           return Placeholder();
-
         },
         listener: (BuildContext context, state) {
-
+          print(state);
+          if(state is EditProgramLoaded){
+            print("state.sendViewMessageStatusEnum :: ${state.sendViewMessageStatusEnum}");
+          }
+          if(state is EditProgramLoaded && state.sendViewMessageStatusEnum == SendViewMessageStatusEnum.loading){
+            showGradientLoadingDialog(context);
+          }else if(state is EditProgramLoaded && state.sendViewMessageStatusEnum == SendViewMessageStatusEnum.failure){
+            context.pop();
+            showErrorAlert(context: context, message: 'View Command Failed');
+          }else if(state is EditProgramLoaded && state.sendViewMessageStatusEnum == SendViewMessageStatusEnum.success){
+            context.pop();
+            showSuccessAlert(
+                context: context,
+                message: 'View Command Send Successfully.',
+                onPressed: (){
+                  context.pop();
+                }
+            );
+          }
         },
       ),
     );
@@ -361,7 +426,6 @@ class _EditProgramPageState extends State<EditProgramPage> {
     final String mm = time.minute.toString().padLeft(2, '0');
     return '$hh:$mm';
   }
-
 
   Widget leafBox({required Widget child}){
     return Container(
@@ -605,12 +669,12 @@ class _EditProgramPageState extends State<EditProgramPage> {
                       context.read<EditProgramBloc>().add(AddZoneEvent());
                     }
                 ),
-                const SizedBox(width: 12),
-                _buildActionButton(
-                    icon: Icons.touch_app_outlined,
-                    color: Colors.lightBlue[50]!,
-                    iconName: 'select_all_icon', onTap: () {  }
-                ),
+                // const SizedBox(width: 12),
+                // _buildActionButton(
+                //     icon: Icons.touch_app_outlined,
+                //     color: Colors.lightBlue[50]!,
+                //     iconName: 'select_all_icon', onTap: () {  }
+                // ),
                 const SizedBox(width: 12),
                 _buildActionButton(
                     icon: Icons.delete_outline,

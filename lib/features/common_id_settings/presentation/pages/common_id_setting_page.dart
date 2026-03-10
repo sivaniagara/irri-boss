@@ -11,6 +11,8 @@ import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presen
 import '../../../../core/widgets/alert_dialog.dart';
 import '../../../../core/widgets/app_alerts.dart';
 import '../../../../core/widgets/gradiant_background.dart';
+import '../enums/reset_common_id_enum.dart';
+import '../enums/view_common_id_enum.dart';
 
 class CommonIdSettingPage extends StatelessWidget {
   const CommonIdSettingPage({super.key});
@@ -20,30 +22,51 @@ class CommonIdSettingPage extends StatelessWidget {
     return Scaffold(
       appBar: CustomAppBar(title: 'Common Id Settings'),
       body: BlocListener<CommonIdSettingsBloc, CommonIdSettingsState>(
-        listenWhen: (previous, current){
-          if(current is CommonIdSettingsLoaded && current.commonIdSettingsUpdateStatus == CommonIdSettingsUpdateStatus.idle){
-            return false;
+        listener: (context, state){
+          if(state is CommonIdSettingsLoaded && state.commonIdSettingsUpdateStatus == CommonIdSettingsUpdateStatus.loading){
+            showGradientLoadingDialog(context);
+          }else if(state is CommonIdSettingsLoaded && state.commonIdSettingsUpdateStatus == CommonIdSettingsUpdateStatus.failure){
+            context.pop();
+            showErrorAlert(context: context, message: CommonIdSettingsUpdateStatus.failure.getMessage());
+          }else if(state is CommonIdSettingsLoaded && state.commonIdSettingsUpdateStatus == CommonIdSettingsUpdateStatus.success){
+            context.pop();
+            showSuccessAlert(
+                context: context,
+                message: CommonIdSettingsUpdateStatus.success.getMessage(),
+                onPressed: (){
+                  context.pop();
+                }
+            );
+          }else if(state is CommonIdSettingsLoaded && state.viewCommonIdEnum == ViewCommonIdEnum.loading){
+            showGradientLoadingDialog(context);
+          }else if(state is CommonIdSettingsLoaded && state.viewCommonIdEnum == ViewCommonIdEnum.failure){
+            context.pop();
+            showErrorAlert(context: context, message: ViewCommonIdEnum.failure.getMessage());
+          }else if(state is CommonIdSettingsLoaded && state.viewCommonIdEnum == ViewCommonIdEnum.success){
+            context.pop();
+            showSuccessAlert(
+                context: context,
+                message: ViewCommonIdEnum.success.getMessage(),
+                onPressed: (){
+                  context.pop();
+                }
+            );
+          }else if(state is CommonIdSettingsLoaded && state.resetCommonIdEnum == ResetCommonIdEnum.loading){
+            showGradientLoadingDialog(context);
+          }else if(state is CommonIdSettingsLoaded && state.resetCommonIdEnum == ResetCommonIdEnum.failure){
+            context.pop();
+            showErrorAlert(context: context, message: ResetCommonIdEnum.failure.getMessage());
+          }else if(state is CommonIdSettingsLoaded && state.resetCommonIdEnum == ResetCommonIdEnum.success){
+            context.pop();
+            showSuccessAlert(
+                context: context,
+                message: ResetCommonIdEnum.success.getMessage(),
+                onPressed: (){
+                  context.pop();
+                }
+            );
           }
-
-          return true;
         },
-          listener: (context, state){
-            if(state is CommonIdSettingsLoaded && state.commonIdSettingsUpdateStatus == CommonIdSettingsUpdateStatus.loading){
-              showGradientLoadingDialog(context);
-            }else if(state is CommonIdSettingsLoaded && state.commonIdSettingsUpdateStatus == CommonIdSettingsUpdateStatus.failure){
-              context.pop();
-              showErrorAlert(context: context, message: CommonIdSettingsUpdateStatus.failure.getMessage());
-            }else if(state is CommonIdSettingsLoaded && state.commonIdSettingsUpdateStatus == CommonIdSettingsUpdateStatus.success){
-              context.pop();
-              showSuccessAlert(
-                  context: context,
-                  message: CommonIdSettingsUpdateStatus.success.getMessage(),
-                  onPressed: (){
-                    context.pop();
-                  }
-              );
-            }
-          },
         child: BlocBuilder<CommonIdSettingsBloc, CommonIdSettingsState>(
             builder: (context, state){
               if(state is CommonIdSettingsLoading){

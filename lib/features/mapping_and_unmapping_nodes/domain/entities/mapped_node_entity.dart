@@ -1,3 +1,5 @@
+import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/presentation/enums/resend_command_enum.dart';
+
 class MappedNodeEntity {
   final int nodeId;
   final int categoryId;
@@ -10,6 +12,7 @@ class MappedNodeEntity {
   final String userName;
   final String mobileNumber;
   bool select;
+  ResendCommandEnum status;
 
   MappedNodeEntity({
     required this.nodeId,
@@ -23,9 +26,10 @@ class MappedNodeEntity {
     required this.userName,
     required this.mobileNumber,
     this.select = false,
+    this.status = ResendCommandEnum.idle,
   });
 
-  MappedNodeEntity copyWidth([bool? isSelect]){
+  MappedNodeEntity copyWidth({bool? isSelect, ResendCommandEnum? status}){
     return MappedNodeEntity(
         nodeId: nodeId,
         categoryId: categoryId,
@@ -37,7 +41,8 @@ class MappedNodeEntity {
         dateManufacture: dateManufacture,
         userName: userName,
         mobileNumber: mobileNumber,
-      select: isSelect ?? select
+      select: isSelect ?? select,
+      status: status ?? this.status
     );
   }
 }

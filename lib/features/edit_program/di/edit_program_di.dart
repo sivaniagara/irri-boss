@@ -1,4 +1,5 @@
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/usecases/delete_zone_usecase.dart';
+import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/usecases/send_view_message_usecase.dart';
 
 import '../../../core/di/injection.dart';
 import '../data/data_source/edit_program_remote_source.dart';
@@ -8,6 +9,7 @@ import '../domain/usecases/get_program_usecase.dart';
 import '../domain/usecases/save_program_usecase.dart';
 import '../domain/usecases/send_zone_configuration_payload_usecase.dart';
 import '../domain/usecases/send_zone_set_payload_usecase.dart';
+import '../domain/usecases/send_zone_view_command_usecase.dart';
 import '../presentation/bloc/edit_program_bloc.dart';
 
 void initEditProgramDependencies() async{
@@ -17,7 +19,11 @@ void initEditProgramDependencies() async{
     sendZoneConfigurationPayloadUsecase: sl(),
     sendZoneSetPayloadUsecase: sl(),
     deleteZoneEditProgramUseCase: sl(),
+    sendViewMessageUsecase: sl(),
+    sendZoneViewCommandUseCase: sl(),
   ));
+  sl.registerLazySingleton(()=>SendZoneViewCommandUseCase(repository: sl()));
+  sl.registerLazySingleton(()=>SendViewMessageUsecase(repository: sl()));
   sl.registerLazySingleton(()=>GetProgramUsecase(repository: sl()));
   sl.registerLazySingleton(()=>SaveProgramUsecase(repository: sl()));
   sl.registerLazySingleton(()=>SendZoneConfigurationPayloadUsecase(repository: sl()));

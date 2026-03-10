@@ -7,6 +7,7 @@ import 'package:niagara_smart_drip_irrigation/core/widgets/alert_dialog.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/app_alerts.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_switch.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/controller_context_cubit.dart';
+import 'package:readmore/readmore.dart';
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/services/mqtt/mqtt_manager.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
@@ -585,6 +586,42 @@ class _Dashboard20State extends State<Dashboard20> {
                   value: '${_safeParse(liveMessageEntity.wellPercent).toStringAsFixed(0)}%',
                 ),
               ],
+            )
+          ],
+        ),
+      ),
+      dashboardCard(
+        child: Column(
+          spacing: 20,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            iconWithHeader(
+              title: 'Latest Message',
+              iconBackgroundColor: const Color(0xffB4E7FF),
+              iconColor: Theme.of(context).colorScheme.primary,
+              icon: Icon(Icons.message, color: Theme.of(context).colorScheme.primary),
+            ),
+            Text(controllerEntity.msgDesc, style: const TextStyle(fontSize: 16, color: Color(0xff424242),),),
+            ReadMoreText(
+              controllerEntity.ctrlLatestMsg,
+              trimLines: 2, // number of lines before collapsing
+              trimMode: TrimMode.Line,
+              trimCollapsedText: ' Show more',
+              trimExpandedText: ' Show less',
+              style: const TextStyle(
+                fontSize: 16,
+                color: Color(0xff424242),
+              ),
+              moreStyle: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).primaryColor,
+              ),
+              lessStyle: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).primaryColor,
+              ),
             )
           ],
         ),

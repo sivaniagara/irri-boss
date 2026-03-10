@@ -20,7 +20,12 @@ final commonIdSettingsGoRoutes = [
         return MultiBlocProvider(
             providers: [
               BlocProvider(
-                create: (context)=> di.sl<CommonIdSettingsBloc>()..add(FetchCommonIdSettings(userId: controllerContext.userId, controllerId: controllerContext.controllerId)),
+                create: (context)=> di.sl<CommonIdSettingsBloc>()..add(
+                    FetchCommonIdSettings(
+                      userId: controllerContext.userId,
+                      controllerId: controllerContext.controllerId,
+                      deviceId: controllerContext.deviceId,
+                    )),
               ),
             ],
             child: CommonIdSettingPage()

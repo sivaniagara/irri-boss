@@ -53,3 +53,19 @@ class ResendNodeDetailsMqttEvent extends MappingAndUnmappingNodesEvent {
 
   ResendNodeDetailsMqttEvent({required this.mappedNodeEntity});
 }
+
+class ResendMultipleNodeDetailsMqttEvent extends MappingAndUnmappingNodesEvent {
+  final List<MappedNodeEntity> mappedNodeEntities;
+
+  ResendMultipleNodeDetailsMqttEvent({required this.mappedNodeEntities});
+}
+
+class UpdateResendStatusToIdle extends MappingAndUnmappingNodesEvent {
+}
+
+class ToggleMappedNodeSelectionEvent extends MappingAndUnmappingNodesEvent {
+  final int nodeId;
+  final bool isSelected;
+
+  ToggleMappedNodeSelectionEvent({required this.nodeId, required this.isSelected});
+}

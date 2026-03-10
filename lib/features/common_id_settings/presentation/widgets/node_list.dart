@@ -105,18 +105,31 @@ class _NodeListState extends State<NodeList> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      CustomOutlinedButton(
-                        onPressed: () {
-                          context.pop();
-                        },
-                        title: 'Cancel',
-                      ),
                       CustomMaterialButton(
                           onPressed: () {
+                            context.read<CommonIdSettingsBloc>().add(ViewCommonIdEvent(categoryIndex: widget.categoryIndex));
+                          },
+                          title: 'View'),
+                      CustomOutlinedButton(
+                          title: 'Reset',
+                          onPressed: () {
+                            context.read<CommonIdSettingsBloc>().add(ResetCommonIdEvent(categoryIndex: widget.categoryIndex));
+                          }),
+                      IconButton(
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStatePropertyAll(Theme.of(context).primaryColor)
+                        ),
+                          onPressed: (){
                             context.read<CommonIdSettingsBloc>().add(EditNodesSerialNo(nodes: listOfCategoryNode, categoryIndex: widget.categoryIndex));
                           },
-                          title: 'Send'
+                          icon: Icon(Icons.send)
                       )
+                      // CustomMaterialButton(
+                      //     onPressed: () {
+                      //       context.read<CommonIdSettingsBloc>().add(EditNodesSerialNo(nodes: listOfCategoryNode, categoryIndex: widget.categoryIndex));
+                      //     },
+                      //     title: 'Send'
+                      // )
                     ],
                   ),
                 ),

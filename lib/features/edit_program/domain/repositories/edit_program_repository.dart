@@ -5,14 +5,19 @@ import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/entit
 import '../usecases/delete_zone_usecase.dart';
 import '../usecases/get_program_usecase.dart';
 import '../usecases/save_program_usecase.dart';
+import '../usecases/send_view_message_usecase.dart';
 import '../usecases/send_zone_configuration_payload_usecase.dart';
 import '../usecases/send_zone_set_payload_usecase.dart';
+import '../usecases/send_zone_view_command_usecase.dart';
 
 abstract class EditProgramRepository{
 
   Future<Either<Failure, EditProgramEntity>> getProgram(GetProgramParams params);
   Future<Either<Failure, Unit>> saveProgram(SaveProgramParams params);
   Future<Either<Failure, Unit>> sendZoneConfigurationPayload(SendZoneConfigurationParams params);
+  Future<Either<Failure, Unit>> sendZoneViewCommandPayload(SendZoneViewCommandParams params);
   Future<Either<Failure, Unit>> sendZoneSetPayload(SendZoneSetPayloadParams params);
   Future<Either<Failure, Unit>> deleteZone(DeleteZoneParamsEditProgram params);
+  Future<Either<Failure, Unit>> sendViewMessage(SendViewMessageParam params);
+
 }
