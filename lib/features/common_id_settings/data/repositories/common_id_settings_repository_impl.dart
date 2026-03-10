@@ -9,6 +9,8 @@ import 'package:niagara_smart_drip_irrigation/features/common_id_settings/domain
 
 import '../../domain/repositories/common_id_settings_repository.dart';
 import '../../domain/usecases/get_common_id_settings_usecase.dart';
+import '../../domain/usecases/reset_common_id_usecase.dart';
+import '../../domain/usecases/view_common_id_usecase.dart';
 import '../data_source/common_id_settings_remote_source.dart';
 
 class CommonIdSettingsRepositoryImpl implements CommonIdSettingsRepository{
@@ -78,5 +80,48 @@ class CommonIdSettingsRepositoryImpl implements CommonIdSettingsRepository{
     }
   }
 
+
+  @override
+  Future<Either<Failure, Unit>> resetCommonId(ResetCommonIdParams params) async{
+    try {
+      CategoryModel categoryModel = CategoryModel.fromEntity(params.categoryEntity);
+      String payload = categoryModel.resetPayload();
+      final result = await commonIdSettingsDataSource.sendMessageViaMqtt(
+        deviceId: params.deviceId,
+        payload: payload,
+        userId: params.userId,
+        controllerId: params.controllerId,
+        programId: '0',
+      );
+      if(result){
+        return const Right(unit);
+      }else{
+        return Left(ServerFailure('Reset Command Failed'));
+      }
+    } catch (e) {
+      return Left(ServerFailure('Reset Command via MQTT Failed :: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> viewCommonId(ViewCommonIdParams params) async{
+    try {
+      CategoryModel categoryModel = CategoryModel.fromEntity(params.categoryEntity);
+      String payload = categoryModel.viewPayload();      final result = await commonIdSettingsDataSource.sendMessageViaMqtt(
+        deviceId: params.deviceId,
+        payload: payload,
+        userId: params.userId,
+        controllerId: params.controllerId,
+        programId: '0',
+      );
+      if(result){
+        return const Right(unit);
+      }else{
+        return Left(ServerFailure('Reset Command Failed'));
+      }
+    } catch (e) {
+      return Left(ServerFailure('Reset Command via MQTT Failed :: ${e.toString()}'));
+    }
+  }
 
 }

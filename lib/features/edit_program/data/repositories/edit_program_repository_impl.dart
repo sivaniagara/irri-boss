@@ -111,6 +111,7 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
       await Future.delayed(Duration(seconds: 2));
       return Right(unit);
     } catch (e, stackTrace) {
+
       if (kDebugMode) {
         print('sendZoneViewCommandPayload Failure: $e');
         print(stackTrace);

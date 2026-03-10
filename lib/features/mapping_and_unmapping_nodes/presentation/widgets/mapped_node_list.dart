@@ -26,17 +26,18 @@ class MappedNodeList extends StatefulWidget {
 
 class _MappedNodeListState extends State<MappedNodeList> {
   late List<MappedNodeEntity> listOfMappedNode;
+  bool payloadSending = false;
+
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     final currentState = context.read<MappingAndUnmappingNodesBloc>().state as MappingAndUnmappingNodesLoaded;
     listOfMappedNode = currentState.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity.map(((e){
       return e.copyWidth();
     })).toList();
+    context.read<MappingAndUnmappingNodesBloc>().add(UpdateResendStatusToIdle());
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -70,25 +71,16 @@ class _MappedNodeListState extends State<MappedNodeList> {
                   context.pop();
                 }
             );
-          }else if(state is MappingAndUnmappingNodesLoaded && state.resendCommandEnum == ResendCommandEnum.loading){
-            showGradientLoadingDialog(context);
-          }else if(state is MappingAndUnmappingNodesLoaded && state.resendCommandEnum == ResendCommandEnum.failure){
-            context.pop();
-            showErrorAlert(context: context, message: state.message);
-          }else if(state is MappingAndUnmappingNodesLoaded && state.resendCommandEnum == ResendCommandEnum.success){
-            context.pop();
-            showSuccessAlert(
-                context: context,
-                message: state.resendCommandEnum.getMessage(),
-                onPressed: (){
-                  context.pop();
-                }
-            );
           }
+          // We intentionally DO NOT handle ResendMultipleNodeDetailsMqttEvent status here 
+          // because we want to show it in the list tile, not in an alert box.
         },
       child: BlocBuilder<MappingAndUnmappingNodesBloc, MappingAndUnmappingNodesState>(
           builder: (context, state){
             if(state is MappingAndUnmappingNodesLoaded){
+              // Sync with Bloc state to get individual node statuses
+              listOfMappedNode = state.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity;
+
               return SizedBox(
                 height: MediaQuery.of(context).size.height * 0.7,
                 width: MediaQuery.of(context).size.width,
@@ -106,27 +98,35 @@ class _MappedNodeListState extends State<MappedNodeList> {
                       ),
                     ),
                     Expanded(
-                      child: state.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity.isNotEmpty
+                      child: listOfMappedNode.isNotEmpty
                           ? ListView.builder(
-                        itemCount: state.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity.length,
+                        itemCount: listOfMappedNode.length,
                         itemBuilder: (context, index) {
-                          final node = state.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity[index];
-
+                          final node = listOfMappedNode[index];
                           return Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               ListTile(
+                                leading: Checkbox(
+                                  value: node.select,
+                                  onChanged: (bool? value) {
+                                    if(!payloadSending){
+                                      setState(() {
+                                        node.select = value ?? false;
+                                      });
+                                    }
+                                  },
+                                ),
                                 onTap: (){
                                   _showNodeDetailsBottomSheet(context, node);
                                 },
                                 dense: true,
                                 contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-
                                 title: Row(
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        'Node: ${node.serialNo ?? "—"}',
+                                        node.serialNo ?? "—",
                                         style: const TextStyle(
                                           fontWeight: FontWeight.w700,
                                           fontSize: 15,
@@ -144,7 +144,6 @@ class _MappedNodeListState extends State<MappedNodeList> {
                                     ),
                                   ],
                                 ),
-
                                 subtitle: Padding(
                                   padding: const EdgeInsets.only(top: 4),
                                   child: Text(
@@ -156,22 +155,15 @@ class _MappedNodeListState extends State<MappedNodeList> {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
+                                    _getStatusWidget(node.status), // Show status in list tile trailing
                                     IconButton(
                                       icon: const Icon(Icons.visibility_outlined),
                                       tooltip: "View Details",
                                       onPressed: () {
                                         context.read<MappingAndUnmappingNodesBloc>().add(ViewNodeDetailsMqttEvent(mappedNodeEntity: node));
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.send),
-                                      tooltip: "Send",
-                                      onPressed: () {
-                                        context.read<MappingAndUnmappingNodesBloc>().add(ResendNodeDetailsMqttEvent(mappedNodeEntity: node));
                                       },
                                     ),
                                     IconButton(
@@ -194,9 +186,8 @@ class _MappedNodeListState extends State<MappedNodeList> {
                                   ],
                                 ),
                               ),
-
                               // Divider after each item (except possibly the last one)
-                              if (index < state.mappingAndUnmappingNodeEntity.listOfMappedNodeEntity.length - 1)
+                              if (index < listOfMappedNode.length - 1)
                                 Divider(
                                   height: 1,
                                   thickness: 0.8,
@@ -221,13 +212,32 @@ class _MappedNodeListState extends State<MappedNodeList> {
                         height: MediaQuery.of(context).size.height * 0.105,
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.end,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             CustomMaterialButton(
                                 onPressed: () {
                                   context.pop();
                                 },
-                                title: 'Go Back')
+                                title: 'Go Back'),
+                            if(!payloadSending)
+                              CustomMaterialButton(
+                                  onPressed: () {
+                                    final selectedNodes = listOfMappedNode.where((n) => n.select).toList();
+                                    if (selectedNodes.isNotEmpty) {
+                                      context.read<MappingAndUnmappingNodesBloc>().add(
+                                        ResendMultipleNodeDetailsMqttEvent(mappedNodeEntities: selectedNodes)
+                                      );
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Please select at least one node')),
+                                      );
+                                    }
+                                    setState(() {
+                                      payloadSending = !payloadSending;
+                                    });
+                                  },
+                                  title: 'Resend'
+                              ),
                           ],
                         ),
                       ),
@@ -236,11 +246,47 @@ class _MappedNodeListState extends State<MappedNodeList> {
                 ),
               );
             }else{
-              return Placeholder();
+              return const Center(child: CircularProgressIndicator());
             }
           }
       ),
     );
+  }
+
+  Widget _getStatusWidget(ResendCommandEnum status) {
+    switch (status) {
+      case ResendCommandEnum.resendLoading:
+        return const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8.0),
+          child: SizedBox(
+            width: 24,
+            height: 24,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+            ),
+          ),
+        );
+      case ResendCommandEnum.success:
+        return const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8.0),
+          child: Icon(
+            Icons.check_circle,
+            color: Colors.green,
+            size: 26,
+          ),
+        );
+      case ResendCommandEnum.failure:
+        return const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 8.0),
+          child: Icon(
+            Icons.error,
+            color: Colors.red,
+            size: 26,
+          ),
+        );
+      default:
+        return const SizedBox.shrink();
+    }
   }
 
   void _showNodeDetailsBottomSheet(
@@ -310,39 +356,40 @@ class _MappedNodeListState extends State<MappedNodeList> {
       },
     );
   }
-}
 
-Widget _detailTile(String label, String? value) {
-  return Container(
-    margin: const EdgeInsets.only(bottom: 12),
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: Colors.grey[100],
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Row(
-      children: [
-        Expanded(
-          flex: 2,
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
+  Widget _detailTile(String label, String? value) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
             ),
           ),
-        ),
-        Expanded(
-          flex: 3,
-          child: Text(
-            value ?? "—",
-            style: const TextStyle(
-              fontSize: 14,
+          Expanded(
+            flex: 3,
+            child: Text(
+              value ?? "—",
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.blueGrey[800],
+              ),
             ),
-            textAlign: TextAlign.right,
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }

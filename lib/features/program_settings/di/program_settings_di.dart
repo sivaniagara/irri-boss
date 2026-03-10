@@ -53,16 +53,16 @@ void initProgramSettingDependencies() async{
 
 
   /// Common Id Settings Sub Module
-  sl.registerFactory(()=> CommonIdSettingsBloc(
-      getCommonIdSettingsUsecase: sl(), submitCategoryUsecase: sl(),
-  ));
-  sl.registerLazySingleton(()=> GetCommonIdSettingsUsecase(commonIdSettingsRepository: sl()));
-  sl.registerLazySingleton(()=> SubmitCategoryUsecase(commonIdSettingsRepository: sl()));
-  sl.registerLazySingleton<CommonIdSettingsRepository>(
-        () => CommonIdSettingsRepositoryImpl(
-       commonIdSettingsDataSource: sl(),
-    ),
-  );
-  sl.registerLazySingleton<CommonIdSettingsRemoteSource>(()=> CommonIdSettingsDataSourceImpl(apiClient: sl()));
+  // sl.registerFactory(()=> CommonIdSettingsBloc(
+  //     getCommonIdSettingsUsecase: sl(), submitCategoryUsecase: sl(),
+  // ));
+  // sl.registerLazySingleton(()=> GetCommonIdSettingsUsecase(commonIdSettingsRepository: sl()));
+  // sl.registerLazySingleton(()=> SubmitCategoryUsecase(commonIdSettingsRepository: sl()));
+  // sl.registerLazySingleton<CommonIdSettingsRepository>(
+  //       () => CommonIdSettingsRepositoryImpl(
+  //      commonIdSettingsDataSource: sl(),
+  //   ),
+  // );
+  // sl.registerLazySingleton<CommonIdSettingsRemoteSource>(()=> CommonIdSettingsDataSourceImpl(apiClient: sl()));
 
 }

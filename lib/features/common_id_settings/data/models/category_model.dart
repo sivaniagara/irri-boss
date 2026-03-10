@@ -51,4 +51,14 @@ class CategoryModel extends CategoryEntity {
       "sentSms" : "${smsFormatJson[smsFormatJson.keys.first]},${nodeSerialNoList.join(',')}"
     };
   }
+
+  String viewPayload(){
+    Map<String, dynamic> smsFormatJson = jsonDecode(smsFormat);
+    return smsFormatJson[smsFormatJson.keys.last];
+  }
+
+  String resetPayload(){
+    Map<String, dynamic> smsFormatJson = jsonDecode(smsFormat);
+    return '${smsFormatJson[smsFormatJson.keys.first]},000,000,000,000,000,000,000';
+  }
 }

@@ -43,19 +43,19 @@ final programSettingsGoRoutes = [
         );
       }
   ),
-  GoRoute(
-      path: ProgramSettingsRoutes.commonIdSettings,
-      builder: (context, state){
-        final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
-        return MultiBlocProvider(
-            providers: [
-              BlocProvider(
-                create: (context)=> di.sl<CommonIdSettingsBloc>()..add(FetchCommonIdSettings(userId: controllerContext.userId, controllerId: controllerContext.controllerId)),
-              ),
-              BlocProvider.value(value: context.read<ProgramBloc>())
-            ],
-            child: CommonIdSettingPage()
-        );
-      }
-  ),
+  // GoRoute(
+  //     path: ProgramSettingsRoutes.commonIdSettings,
+  //     builder: (context, state){
+  //       final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
+  //       return MultiBlocProvider(
+  //           providers: [
+  //             BlocProvider(
+  //               create: (context)=> di.sl<CommonIdSettingsBloc>()..add(FetchCommonIdSettings(userId: controllerContext.userId, controllerId: controllerContext.controllerId)),
+  //             ),
+  //             BlocProvider.value(value: context.read<ProgramBloc>())
+  //           ],
+  //           child: CommonIdSettingPage()
+  //       );
+  //     }
+  // ),
 ];
