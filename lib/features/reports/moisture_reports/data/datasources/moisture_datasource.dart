@@ -22,7 +22,7 @@ class MoistureRemoteDataSourceImpl extends MoistureRemoteDataSource {
     required int userId,
     required int subuserId,
     required int controllerId,
-   }) async {
+  }) async {
     try {
       /// Validate required params
 
@@ -34,7 +34,7 @@ class MoistureRemoteDataSourceImpl extends MoistureRemoteDataSource {
 
       /// Make API call
       final response = await apiClient.get(endpoint);
-       print("endpoint--->$endpoint");
+      print("endpoint--->$endpoint");
 
       if (response == null) {
         throw ServerException(statusCode: 500, message: "Empty server response");
@@ -51,7 +51,7 @@ class MoistureRemoteDataSourceImpl extends MoistureRemoteDataSource {
         message: response["message"] ?? "Unknown error in sendrev API",
       );
     } catch (e) {
-        throw ServerException(statusCode: 500, message: e.toString());
+      throw ServerException(statusCode: 500, message: e.toString());
     }
   }
 }

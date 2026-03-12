@@ -47,6 +47,8 @@ class LiveMessageModel extends LiveMessageEntity {
     required super.versionModule,
     required super.versionBoard,
     required super.lastsync,
+    super.fullMessage = '',
+    super.msgDesc = '',
   });
 
   factory LiveMessageModel.fromLiveMessage(String? message, {String? typeCode, String? externalLastSync}) {
@@ -148,9 +150,12 @@ class LiveMessageModel extends LiveMessageEntity {
       zoneRemainingTime = safeString(19, '00:00:00');
       prsIn = safeString(20, '0.0');
       prsOut = safeString(21, '0.0');
-      flowRate = safeString(25, '0.0');
+      flowRate = safeString(22, '0.0');
       wellLevel = safeString(23, '0');
       wellPercent = safeString(23, '0');
+      fertStatus = safeList(24, ['0', '0', '0', '0', '0', '0'], separator: ':');
+      ec = safeString(25, '0');
+      ph = safeString(26, '0');
       runTimeToday = safeString(27, '00:00:00');
       runTimePrevious = safeString(28, '00:00:00');
       flowToday = safeString(29, '0');
@@ -159,14 +164,12 @@ class LiveMessageModel extends LiveMessageEntity {
       moisture2 = safeString(32, '0');
       energy = safeString(33, '0');
       powerFactor = safeString(34, '0');
-      fertStatus = safeList(24, ['0', '0', '0', '0', '0', '0'], separator: ':');
       fertValues = safeList(36, ['0', '0', '0', '0', '0', '0'], separator: ';');
-      batVolt = safeString(48, '0');
-      ec = safeString(25, '0');
-      ph = safeString(26, '0'); // Corrected from 25 to 26
       versionModule = safeString(39, '');
       versionBoard = safeString(40, '');
+      batVolt = safeString(48, '0');
     } else {
+      // Standard LD01 / LD06
       motorOnOff = safeString(0, '0');
       valveOnOff = safeString(1, '0');
       liveDisplay1 = safeString(3, '');
@@ -181,7 +184,6 @@ class LiveMessageModel extends LiveMessageEntity {
       yCurrent = safeString(12, '0.0');
       bCurrent = safeString(13, '0.0');
       phase = safeString(5, '0') != '0' ? "3 PHASE" : "NA";
-      signal = safeString(37, '0');
       modeOfOperation = safeString(14, '');
       programName = safeString(15, '');
       zoneNo = safeString(16, '0');
@@ -193,19 +195,20 @@ class LiveMessageModel extends LiveMessageEntity {
       flowRate = safeString(22, '0.0');
       wellLevel = safeString(23, '0');
       wellPercent = safeString(23, '0');
+      fertStatus = safeList(24, ['0', '0', '0', '0', '0', '0'], separator: ':');
+      ec = safeString(25, '0');
+      ph = safeString(26, '0');
       runTimeToday = safeString(27, '00:00:00');
       runTimePrevious = safeString(28, '00:00:00');
-      flowToday = safeString(30, '0');
       flowPrevDay = safeString(29, '0');
+      flowToday = safeString(30, '0');
       moisture1 = safeString(31, '0');
       moisture2 = safeString(32, '0');
       energy = safeString(33, '0');
       powerFactor = safeString(34, '0');
-      fertStatus = safeList(24, ['0', '0', '0', '0', '0', '0'], separator: ':');
       fertValues = safeList(36, ['0', '0', '0', '0', '0', '0'], separator: ';');
+      signal = safeString(37, '0');
       batVolt = safeString(38, '0');
-      ec = safeString(25, '0');
-      ph = safeString(26, '0'); // Corrected from 25 to 26
       versionModule = safeString(39, '');
       versionBoard = safeString(40, '');
     }
@@ -256,6 +259,7 @@ class LiveMessageModel extends LiveMessageEntity {
       versionModule: versionModule,
       versionBoard: versionBoard,
       lastsync: lastsync,
+      fullMessage: message,
     );
   }
 
@@ -315,6 +319,109 @@ class LiveMessageModel extends LiveMessageEntity {
       versionModule: '',
       versionBoard: '',
       lastsync: sync ?? '--',
+      fullMessage: '',
+      msgDesc: '',
+    );
+  }
+
+  @override
+  LiveMessageModel copyWith({
+    String? cd,
+    String? ct,
+    String? motorOnOff,
+    String? valveOnOff,
+    String? liveDisplay1,
+    String? liveDisplay2,
+    String? rVoltage,
+    String? yVoltage,
+    String? bVoltage,
+    String? ryVoltage,
+    String? ybVoltage,
+    String? brVoltage,
+    String? rCurrent,
+    String? yCurrent,
+    String? bCurrent,
+    String? phase,
+    String? signal,
+    String? batVolt,
+    String? modeOfOperation,
+    String? programName,
+    String? zoneNo,
+    String? valveForZone,
+    String? zoneDuration,
+    String? zoneRemainingTime,
+    String? prsIn,
+    String? prsOut,
+    String? flowRate,
+    String? wellLevel,
+    String? wellPercent,
+    List<String>? fertStatus,
+    String? ec,
+    String? ph,
+    String? totalMeterFlow,
+    String? runTimeToday,
+    String? runTimePrevious,
+    String? flowPrevDay,
+    String? flowToday,
+    String? moisture1,
+    String? moisture2,
+    String? energy,
+    String? powerFactor,
+    List<String>? fertValues,
+    String? versionModule,
+    String? versionBoard,
+    String? lastsync,
+    String? fullMessage,
+    String? msgDesc,
+  }) {
+    return LiveMessageModel(
+      cd: cd ?? this.cd,
+      ct: ct ?? this.ct,
+      motorOnOff: motorOnOff ?? this.motorOnOff,
+      valveOnOff: valveOnOff ?? this.valveOnOff,
+      liveDisplay1: liveDisplay1 ?? this.liveDisplay1,
+      liveDisplay2: liveDisplay2 ?? this.liveDisplay2,
+      rVoltage: rVoltage ?? this.rVoltage,
+      yVoltage: yVoltage ?? this.yVoltage,
+      bVoltage: bVoltage ?? this.bVoltage,
+      ryVoltage: ryVoltage ?? this.ryVoltage,
+      ybVoltage: ybVoltage ?? this.ybVoltage,
+      brVoltage: brVoltage ?? this.brVoltage,
+      rCurrent: rCurrent ?? this.rCurrent,
+      yCurrent: yCurrent ?? this.yCurrent,
+      bCurrent: bCurrent ?? this.bCurrent,
+      phase: phase ?? this.phase,
+      signal: signal ?? this.signal,
+      batVolt: batVolt ?? this.batVolt,
+      modeOfOperation: modeOfOperation ?? this.modeOfOperation,
+      programName: programName ?? this.programName,
+      zoneNo: zoneNo ?? this.zoneNo,
+      valveForZone: valveForZone ?? this.valveForZone,
+      zoneDuration: zoneDuration ?? this.zoneDuration,
+      zoneRemainingTime: zoneRemainingTime ?? this.zoneRemainingTime,
+      prsIn: prsIn ?? this.prsIn,
+      prsOut: prsOut ?? this.prsOut,
+      flowRate: flowRate ?? this.flowRate,
+      wellLevel: wellLevel ?? this.wellLevel,
+      wellPercent: wellPercent ?? this.wellPercent,
+      fertStatus: fertStatus ?? this.fertStatus,
+      ec: ec ?? this.ec,
+      ph: ph ?? this.ph,
+      totalMeterFlow: totalMeterFlow ?? this.totalMeterFlow,
+      runTimeToday: runTimeToday ?? this.runTimeToday,
+      runTimePrevious: runTimePrevious ?? this.runTimePrevious,
+      flowPrevDay: flowPrevDay ?? this.flowPrevDay,
+      flowToday: flowToday ?? this.flowToday,
+      moisture1: moisture1 ?? this.moisture1,
+      moisture2: moisture2 ?? this.moisture2,
+      energy: energy ?? this.energy,
+      powerFactor: powerFactor ?? this.powerFactor,
+      fertValues: fertValues ?? this.fertValues,
+      versionModule: versionModule ?? this.versionModule,
+      versionBoard: versionBoard ?? this.versionBoard,
+      lastsync: lastsync ?? this.lastsync,
+      fullMessage: fullMessage ?? this.fullMessage,
+      msgDesc: msgDesc ?? this.msgDesc,
     );
   }
 }

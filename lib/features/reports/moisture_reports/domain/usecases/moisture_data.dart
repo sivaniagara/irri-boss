@@ -10,11 +10,11 @@ class FetchMoistureData {
     required int userId,
     required int subuserId,
     required int controllerId,
-   }) {
+  }) {
     return repository.getMoistureData(
       userId: userId,
       subuserId: subuserId,
       controllerId: controllerId,
-     );
+    );
   }
 }

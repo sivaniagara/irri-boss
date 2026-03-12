@@ -38,14 +38,14 @@ class ZoneItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "ZONE ${zone.zoneNumber.padLeft(3, '0')}",
+                  "BLOCK ${zone.zoneNumber.padLeft(3, '0')}",
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: Colors.black87,
                   ),
                 ),
                 Text(
-                  "Irrigation Zone",
+                  "Irrigation Block",
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
                 ),
               ],

@@ -46,6 +46,8 @@ class LiveMessageEntity extends Equatable {
   final String versionModule;
   final String versionBoard;
   final String lastsync;
+  final String fullMessage;
+  final String msgDesc;
 
   const LiveMessageEntity({
     required this.cd,
@@ -93,6 +95,8 @@ class LiveMessageEntity extends Equatable {
     required this.versionModule,
     required this.versionBoard,
     required this.lastsync,
+    this.fullMessage = '',
+    this.msgDesc = '',
   });
 
   @override
@@ -142,6 +146,8 @@ class LiveMessageEntity extends Equatable {
     versionModule,
     versionBoard,
     lastsync,
+    fullMessage,
+    msgDesc,
   ];
 
   LiveMessageEntity copyWith({
@@ -190,6 +196,8 @@ class LiveMessageEntity extends Equatable {
     String? versionModule,
     String? versionBoard,
     String? lastsync,
+    String? fullMessage,
+    String? msgDesc,
   }) {
     return LiveMessageEntity(
       cd: cd ?? this.cd,
@@ -237,6 +245,8 @@ class LiveMessageEntity extends Equatable {
       versionModule: versionModule ?? this.versionModule,
       versionBoard: versionBoard ?? this.versionBoard,
       lastsync: lastsync ?? this.lastsync,
+      fullMessage: fullMessage ?? this.fullMessage,
+      msgDesc: msgDesc ?? this.msgDesc,
     );
   }
 }

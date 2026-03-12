@@ -170,7 +170,7 @@ class CtrlLivePage extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(liveData.liveDisplay1.toUpperCase(), 
+          Text("${liveData.liveDisplay1} ${liveData.liveDisplay2}".trim().toUpperCase(),
             textAlign: TextAlign.center, 
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87)),
           const SizedBox(height: 16),

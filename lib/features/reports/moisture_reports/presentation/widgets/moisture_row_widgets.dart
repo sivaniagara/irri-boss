@@ -55,7 +55,7 @@ Widget zoneCard(int index, dynamic zone) {
           ),
         ),
 
-         _zoneRow("On Time:", zone.onTime, "Off Time:", zone.offTime),
+        _zoneRow("On Time:", zone.onTime, "Off Time:", zone.offTime),
         _zoneRow("Duration:", zone.duration, "Flow:", "${zone.flow} Lts"),
         _zoneRow("EC:", zone.ec, "pH:", zone.ph),
         _zoneRow("Pressure In:", zone.pressureIn,"Pressure Out:", zone.pressureOut),

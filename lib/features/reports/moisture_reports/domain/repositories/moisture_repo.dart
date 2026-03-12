@@ -8,5 +8,5 @@ abstract class MoistureRepository {
     required int userId,
     required int subuserId,
     required int controllerId,
-   });
+  });
 }

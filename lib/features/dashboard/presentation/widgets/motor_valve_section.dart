@@ -38,16 +38,16 @@ class MotorValveSection extends StatelessWidget {
               onPressed: () {
                 AnimatedSwitcher(duration: const Duration(milliseconds: 400));
                 HapticFeedback.mediumImpact();
-                   HapticFeedback.mediumImpact();
+                HapticFeedback.mediumImpact();
 
-                  dialogContext.read<DashboardCubit>().motorOnOff(
-                    userId: userData['userId'],
-                    subUserId: userData['subUserId'],
-                    controllerId: userData['controllerId'],
-                    isOn: true,
-                    dualPump: model == 27,
-                    deviceId: userData['deviceId'],
-                  );
+                dialogContext.read<DashboardCubit>().motorOnOff(
+                  userId: userData['userId'],
+                  subUserId: userData['subUserId'],
+                  controllerId: userData['controllerId'],
+                  isOn: true,
+                  dualPump: model == 27,
+                  deviceId: userData['deviceId'],
+                );
 
               },
               style: ElevatedButton.styleFrom(
@@ -78,15 +78,15 @@ class MotorValveSection extends StatelessWidget {
                 shape: const CircleBorder(),
                 padding: const EdgeInsets.all(20),
                 side: const BorderSide(color: Colors.grey, width: 4),
-                 elevation: 5,
+                elevation: 5,
               ),
-               child: const Text("OFF"),
+              child: const Text("OFF"),
             ),
           ],
         ),
 
         // 🔹 Valve image
-       ( model == 1 || model == 5) ?
+        ( model == 1 || model == 5) ?
         GestureDetector(
           onTap: () {
             dialogContext.push(DashBoardRoutes.nodeStatus, extra: userData);
@@ -101,14 +101,14 @@ class MotorValveSection extends StatelessWidget {
             height: 60,
           ),
         ) :  ( model == 27) ? Image.asset(
-         motorOn2 == "1"
-             ? 'assets/images/common/ui_motor.gif' // motor ON
-             : motorOn2 == "0"
-             ? 'assets/images/common/live_motor_off.png' // motor OFF
-             : 'assets/images/common/ui_motor_yellow.png', // no status
-         width: 60,
-         height: 60,
-       ) : Container(),
+          motorOn2 == "1"
+              ? 'assets/images/common/ui_motor.gif' // motor ON
+              : motorOn2 == "0"
+              ? 'assets/images/common/live_motor_off.png' // motor OFF
+              : 'assets/images/common/ui_motor_yellow.png', // no status
+          width: 60,
+          height: 60,
+        ) : Container(),
       ],
     );
   }
