@@ -94,15 +94,20 @@ class ControllerDetailsBloc
       ToggleSwitchEvent event,
       Emitter<ControllerDetailsState> emit,
       ) async {
-    emit(SwitchToggleLoading());
+    // Check if we already have data loaded
+    if (state is ControllerDetailsLoaded) {
+      final currentState = state as ControllerDetailsLoaded;
 
-    // TODO: Implement API
+      // 1. Create a modified copy of the current data
+      // Note: You need a 'copyWith' method in your ControllerDetailsEntities
+      final updatedData = currentState.data.copyWith(
+        gprsMode: event.switchName == "gprsMode" ? (event.isOn ? "4" : "1") : null,
+        dndStatus: event.switchName == "dndStatus" ? (event.isOn ? "1" : "0") : null,
+      );
 
-    emit(
-      SwitchToggleSuccess(
-        switchName: event.switchName,
-        newValue: event.isOn,
-      ),
-    );
+      // 2. Emit the Loaded state with updated data
+      // This triggers the UI to rebuild while keeping the rest of the info
+      emit(ControllerDetailsLoaded(updatedData, currentState.groupDetails));
+    }
   }
 }
