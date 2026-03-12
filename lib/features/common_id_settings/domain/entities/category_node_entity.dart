@@ -11,6 +11,7 @@ class CategoryNodeEntity {
   String serialNo;
   int? orderNumber;
   final List<SerialNoEntity> serialNumbers;
+  String key;
 
   CategoryNodeEntity({
     required this.nodeId,
@@ -21,6 +22,7 @@ class CategoryNodeEntity {
     required this.serialNo,
     required this.orderNumber,
     required this.serialNumbers,
+    this.key = '0',
   });
 
   CategoryNodeEntity copyWith(CategoryNodeEntity entity, String? updatedSerialNo){

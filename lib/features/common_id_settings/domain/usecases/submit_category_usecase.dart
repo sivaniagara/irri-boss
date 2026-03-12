@@ -9,8 +9,14 @@ import '../repositories/common_id_settings_repository.dart';
 class SubmitCategoryParams{
   final String userId;
   final String controllerId;
+  final String deviceId;
   final CategoryEntity categoryEntity;
-  SubmitCategoryParams({required this.userId, required this.controllerId, required this.categoryEntity});
+  SubmitCategoryParams({
+    required this.userId,
+    required this.controllerId,
+    required this.deviceId,
+    required this.categoryEntity
+  });
 }
 
 class SubmitCategoryUsecase extends UseCase<Unit, SubmitCategoryParams>{

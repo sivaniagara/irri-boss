@@ -4,6 +4,7 @@ import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
 import 'package:niagara_smart_drip_irrigation/core/usecases/usecase.dart';
 
 import '../entities/category_entity.dart';
+import '../entities/category_node_entity.dart';
 import '../repositories/common_id_settings_repository.dart';
 
 class ResetCommonIdParams{
@@ -11,11 +12,14 @@ class ResetCommonIdParams{
   final String controllerId;
   final String deviceId;
   final CategoryEntity categoryEntity;
+  final List<CategoryNodeEntity> listOfCategoryNodeEntity;
+
   ResetCommonIdParams({
     required this.userId,
     required this.controllerId,
     required this.deviceId,
-    required this.categoryEntity
+    required this.categoryEntity,
+    required this.listOfCategoryNodeEntity,
   });
 }
 

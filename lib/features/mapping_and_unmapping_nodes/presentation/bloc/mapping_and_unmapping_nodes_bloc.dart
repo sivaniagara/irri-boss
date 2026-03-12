@@ -96,6 +96,9 @@ class MappingAndUnmappingNodesBloc extends Bloc<MappingAndUnmappingNodesEvent, M
             deleteStatus: DeleteMappedNodeEnum.failure,
             msg: failure.message,
           ));
+          emit(currentState.copyWith(
+            deleteStatus: DeleteMappedNodeEnum.idle,
+          ));
         },
             (success) {
           emit(currentState.copyWith(

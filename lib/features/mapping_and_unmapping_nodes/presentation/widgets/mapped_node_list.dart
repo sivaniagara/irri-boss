@@ -155,34 +155,37 @@ class _MappedNodeListState extends State<MappedNodeList> {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                trailing: Row(
+                                trailing:  Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     _getStatusWidget(node.status), // Show status in list tile trailing
-                                    IconButton(
-                                      icon: const Icon(Icons.visibility_outlined),
-                                      tooltip: "View Details",
-                                      onPressed: () {
-                                        context.read<MappingAndUnmappingNodesBloc>().add(ViewNodeDetailsMqttEvent(mappedNodeEntity: node));
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.link_off_rounded),
-                                      tooltip: "Unmap Node",
-                                      onPressed: () {
-                                        final controllerContext =
-                                        context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+                                    if(!payloadSending)
+                                      ...[
+                                        IconButton(
+                                          icon: const Icon(Icons.visibility_outlined),
+                                          tooltip: "View Details",
+                                          onPressed: () {
+                                            context.read<MappingAndUnmappingNodesBloc>().add(ViewNodeDetailsMqttEvent(mappedNodeEntity: node));
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(Icons.link_off_rounded),
+                                          tooltip: "Unmap Node",
+                                          onPressed: () {
+                                            final controllerContext =
+                                            context.read<ControllerContextCubit>().state as ControllerContextLoaded;
 
-                                        context.read<MappingAndUnmappingNodesBloc>().add(
-                                          DeleteMappedNodeEvent(
-                                            userId: controllerContext.userId,
-                                            controllerId: controllerContext.controllerId,
-                                            mappedNodeEntity: node,
-                                            deviceId: controllerContext.deviceId,
-                                          ),
-                                        );
-                                      },
-                                    ),
+                                            context.read<MappingAndUnmappingNodesBloc>().add(
+                                              DeleteMappedNodeEvent(
+                                                userId: controllerContext.userId,
+                                                controllerId: controllerContext.controllerId,
+                                                mappedNodeEntity: node,
+                                                deviceId: controllerContext.deviceId,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ]
                                   ],
                                 ),
                               ),

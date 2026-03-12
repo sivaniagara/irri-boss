@@ -35,11 +35,30 @@ class _NodeListState extends State<NodeList> {
           nodeName: e.nodeName,
           serialNo: e.serialNo,
           orderNumber: e.orderNumber,
-          serialNumbers: e.serialNumbers
+          serialNumbers: e.serialNumbers,
+        key: e.nodeId.toString()
       );
     }).toList();
-  }
+    for(var i = 0;i < 6;i++){
+      if(i < listOfCategoryNode.length){
 
+      }else{
+        listOfCategoryNode.add(
+            CategoryNodeEntity(
+                nodeId: i,
+                categoryId: 0,
+                categoryName: '',
+                qrCode: '00000000',
+                nodeName: '',
+                serialNo: '000',
+                orderNumber: 0,
+                serialNumbers: [],
+              key: '#$i'
+            )
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +88,7 @@ class _NodeListState extends State<NodeList> {
                       itemBuilder: (context, index){
                         CategoryNodeEntity categoryNodeEntity = listOfCategoryNode[index];
                         return ListTile(
-                          key: ValueKey(categoryNodeEntity.nodeId), // ✅ stable & unique
+                          key: ValueKey(categoryNodeEntity.key), // ✅ stable & unique
                           title: Text(categoryNodeEntity.qrCode),
                           trailing: ReorderableDragStartListener(
                             index: index,
@@ -113,7 +132,7 @@ class _NodeListState extends State<NodeList> {
                       CustomOutlinedButton(
                           title: 'Reset',
                           onPressed: () {
-                            context.read<CommonIdSettingsBloc>().add(ResetCommonIdEvent(categoryIndex: widget.categoryIndex));
+                            context.read<CommonIdSettingsBloc>().add(ResetCommonIdEvent(categoryIndex: widget.categoryIndex, listOfCategoryNodeEntity: listOfCategoryNode));
                           }),
                       IconButton(
                         style: ButtonStyle(

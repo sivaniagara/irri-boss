@@ -25,5 +25,6 @@ class ViewCommonIdEvent extends CommonIdSettingsEvent {
 }
 class ResetCommonIdEvent extends CommonIdSettingsEvent {
   final int categoryIndex;
-  ResetCommonIdEvent({required this.categoryIndex});
+  final List<CategoryNodeEntity> listOfCategoryNodeEntity;
+  ResetCommonIdEvent({required this.categoryIndex, required this.listOfCategoryNodeEntity});
 }

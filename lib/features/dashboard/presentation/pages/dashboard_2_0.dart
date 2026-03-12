@@ -316,11 +316,11 @@ class _Dashboard20State extends State<Dashboard20> {
               children: [
                 Image.asset(
                   'assets/images/common/motor_${liveMessageEntity.motorOnOff == '1' ? 'g' : 'r'}.png',
-                  width: 80,
+                  width: 50,
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 10,
+                  spacing: 5,
                   children: [
                     Row(
                       spacing: 10,
@@ -344,12 +344,12 @@ class _Dashboard20State extends State<Dashboard20> {
                           child: Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(width: 3, color: liveMessageEntity.motorOnOff == '1' ? Colors.green : Colors.red),
+                              borderRadius: BorderRadius.circular(5),
+                              border: Border.all(width: 2, color: liveMessageEntity.motorOnOff == '1' ? Colors.green : Colors.red),
                             ),
                             child: Image.asset(
                               'assets/images/icons/switch_${liveMessageEntity.motorOnOff == '1' ? 'on' : 'off'}_icon.png',
-                              width: 30,
+                              width: 20,
                             ),
                           ),
                         )
@@ -445,6 +445,7 @@ class _Dashboard20State extends State<Dashboard20> {
               children: [
                 iconWithHeader(
                   title: 'Program',
+                  subTitle: '12:31 PM',
                   iconBackgroundColor: const Color(0xffB1E4AA),
                   iconColor: Theme.of(context).colorScheme.primary,
                   icon: Image.asset(
@@ -631,12 +632,18 @@ class _Dashboard20State extends State<Dashboard20> {
 
   List<String> getZoneNumberOfActiveProgram({required ControllerEntity controllerEntity, required LiveMessageEntity liveMessageEntity}){
     List<String> zoneNumbers = [];
+    print("controllerEntity.programList : ${controllerEntity.programList}");
+    print("liveMessageEntity.programName : ${liveMessageEntity.programName}");
     for(var program = 0;program < controllerEntity.programList.length;program++){
       if(liveMessageEntity.programName == 'program${program+1}'){
+        print('isthere');
+        print("controllerEntity.programList[program].listOfZone : ${controllerEntity.programList[program].listOfZone}");
         zoneNumbers = controllerEntity.programList[program].listOfZone.map((e) => e.zoneNumber).toList();
       }
     }
-    return zoneNumbers;
+    print("zoneNumbers : ${zoneNumbers}");
+   return zoneNumbers;
+
   }
 
   String getDate({required LiveMessageEntity liveData}){
