@@ -8,13 +8,26 @@ import '../../utils/common_id_settings_urls.dart';
 
 abstract class CommonIdSettingsRemoteSource{
   Future<Map<String, dynamic>> getCommonIdSettings(Map<String, String> data);
-  Future<Map<String, dynamic>> updateCategoryNodeSerialNo({required Map<String, String> urlData, required Map<String, dynamic> body});
+  Future<Map<String, dynamic>> updateCategoryNodeSerialNo({
+    required Map<String, String> urlData,
+    required String deviceId,
+    required Map<String, dynamic> body
+  });
   Future<bool> sendMessageViaMqtt({
     required String userId,
     required String controllerId,
     required String programId,
     required String deviceId,
-    required String payload
+    required String payload,
+  });
+
+  Future<bool> resetId({
+    required String userId,
+    required String controllerId,
+    required String programId,
+    required String deviceId,
+    required String payload,
+    required List<Map<String, dynamic>> nodeList,
   });
 }
 
@@ -39,10 +52,15 @@ class CommonIdSettingsDataSourceImpl extends CommonIdSettingsRemoteSource{
   }
 
   @override
-  Future<Map<String, dynamic>> updateCategoryNodeSerialNo({required Map<String, String> urlData, required Map<String, dynamic> body}) async{
+  Future<Map<String, dynamic>> updateCategoryNodeSerialNo({
+    required Map<String, String> urlData,
+    required String deviceId,
+    required Map<String, dynamic> body
+  }) async{
     try{
-      String endpoint = buildUrl(CommonIdSettingsUrls.getCommonIdSettings, urlData);
+      String endpoint = buildUrl(ProgramSettingsUrls.getCommonIdSettings, urlData);
       final response = await apiClient.post(endpoint, body: body);
+      mqttManager.publish(deviceId, PublishMessageHelper.settingsPayload(body['sentSms']));
       return response;
     }catch (e){
       print('updateCategoryNodeSerialNo error in data source impl : ${e.toString()}');
@@ -56,7 +74,7 @@ class CommonIdSettingsDataSourceImpl extends CommonIdSettingsRemoteSource{
     required String controllerId,
     required String programId,
     required String deviceId,
-    required String payload
+    required String payload,
   }) async{
     try{
       String endPoint = buildUrl(
@@ -74,6 +92,42 @@ class CommonIdSettingsDataSourceImpl extends CommonIdSettingsRemoteSource{
             "sentAndReceived": [
               PublishMessageHelper.settingsPayload(payload)
             ]}
+      );
+      mqttManager.publish(deviceId, PublishMessageHelper.settingsPayload(payload));
+      if(response['code'] == 200){
+        return true;
+      }else{
+        return false;
+      }
+    }catch (e){
+      rethrow;
+    }
+  }
+
+  @override
+  Future<bool> resetId({
+    required String userId,
+    required String controllerId,
+    required String programId,
+    required String deviceId,
+    required String payload,
+    required List<Map<String, dynamic>> nodeList,
+  }) async{
+    try{
+      String endPoint = buildUrl(
+          CommonIdSettingsUrls.resetId,
+          {
+            'userId': userId,
+            'controllerId': controllerId,
+          }
+      );
+
+      final response = await apiClient.post(
+          endPoint,
+          body: {
+            "sentSms": payload,
+            "nodeList": nodeList
+          }
       );
       mqttManager.publish(deviceId, PublishMessageHelper.settingsPayload(payload));
       if(response['code'] == 200){

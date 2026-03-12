@@ -59,10 +59,11 @@ class CommonIdSettingsRepositoryImpl implements CommonIdSettingsRepository{
       var bodyData = categoryModel.updateCategoryNodeSerialNoPayload();
       print('bodyData : $bodyData');
       final response =
-          await commonIdSettingsDataSource.updateCategoryNodeSerialNo(
-              urlData: urlData,
-              body: bodyData
-          );
+      await commonIdSettingsDataSource.updateCategoryNodeSerialNo(
+          urlData: urlData,
+          body: bodyData,
+          deviceId: params.deviceId
+      );
       if(response['code'] == 200){
         return Right(unit);
       }else{
@@ -86,12 +87,17 @@ class CommonIdSettingsRepositoryImpl implements CommonIdSettingsRepository{
     try {
       CategoryModel categoryModel = CategoryModel.fromEntity(params.categoryEntity);
       String payload = categoryModel.resetPayload();
-      final result = await commonIdSettingsDataSource.sendMessageViaMqtt(
+      final result = await commonIdSettingsDataSource.resetId(
         deviceId: params.deviceId,
         payload: payload,
         userId: params.userId,
         controllerId: params.controllerId,
         programId: '0',
+        nodeList: params.listOfCategoryNodeEntity.map((e){
+          return {
+            'nodeId': e.key.contains('#') ? '0' : e.nodeId,
+          };
+        }).toList()
       );
       if(result){
         return const Right(unit);

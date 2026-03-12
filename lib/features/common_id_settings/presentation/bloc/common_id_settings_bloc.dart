@@ -74,19 +74,20 @@ class CommonIdSettingsBloc extends Bloc<CommonIdSettingsEvent, CommonIdSettingsS
       SubmitCategoryParams submitCategoryParams = SubmitCategoryParams(
           userId: current.userId,
           controllerId: current.controllerId,
-          categoryEntity: current.listOfCategoryEntity[event.categoryIndex]
+          categoryEntity: current.listOfCategoryEntity[event.categoryIndex],
+          deviceId: current.deviceId
       );
       final result = await submitCategoryUsecase(submitCategoryParams);
       result
           .fold(
               (failure){
-                emit(current.copyWith(status: CommonIdSettingsUpdateStatus.failure));
-                emit(current.copyWith(status: CommonIdSettingsUpdateStatus.idle));
-              },
+            emit(current.copyWith(status: CommonIdSettingsUpdateStatus.failure));
+            emit(current.copyWith(status: CommonIdSettingsUpdateStatus.idle));
+          },
               (success){
-                emit(current.copyWith(status: CommonIdSettingsUpdateStatus.success));
-                emit(current.copyWith(status: CommonIdSettingsUpdateStatus.idle));
-              }
+            emit(current.copyWith(status: CommonIdSettingsUpdateStatus.success));
+            emit(current.copyWith(status: CommonIdSettingsUpdateStatus.idle));
+          }
       );
     });
 
@@ -133,7 +134,8 @@ class CommonIdSettingsBloc extends Bloc<CommonIdSettingsEvent, CommonIdSettingsS
           userId: current.userId,
           controllerId: current.controllerId,
           categoryEntity: current.listOfCategoryEntity[event.categoryIndex],
-          deviceId: current.deviceId
+          deviceId: current.deviceId,
+        listOfCategoryNodeEntity: event.listOfCategoryNodeEntity
       );
       final result = await resetCommonIdUsecase(resetCommonIdParams);
       result

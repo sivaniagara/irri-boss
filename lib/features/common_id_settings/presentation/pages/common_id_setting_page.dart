@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_list_tile.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/custom_material_button.dart';
 import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presentation/bloc/common_id_settings_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presentation/bloc/common_id_settings_state.dart';
 import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presentation/enums/common_id_settings_enum.dart';
@@ -11,6 +12,8 @@ import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presen
 import '../../../../core/widgets/alert_dialog.dart';
 import '../../../../core/widgets/app_alerts.dart';
 import '../../../../core/widgets/gradiant_background.dart';
+import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
+import '../bloc/common_id_settings_event.dart';
 import '../enums/reset_common_id_enum.dart';
 import '../enums/view_common_id_enum.dart';
 
@@ -96,7 +99,21 @@ class CommonIdSettingPage extends StatelessWidget {
                   ),
                 );
               }
-              return Placeholder();
+              return Center(
+                child: CustomMaterialButton(
+                    onPressed: (){
+                      final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
+                      context.read<CommonIdSettingsBloc>().add(
+                          FetchCommonIdSettings(
+                            userId: controllerContext.userId,
+                            controllerId: controllerContext.controllerId,
+                            deviceId: controllerContext.deviceId,
+                          )
+                      );
+                    },
+                    title: 'Retry'
+                ),
+              );
             }
         ),
       ),

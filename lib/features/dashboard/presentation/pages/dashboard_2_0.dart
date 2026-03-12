@@ -632,11 +632,16 @@ class _Dashboard20State extends State<Dashboard20> {
 
   List<String> getZoneNumberOfActiveProgram({required ControllerEntity controllerEntity, required LiveMessageEntity liveMessageEntity}){
     List<String> zoneNumbers = [];
+    print("controllerEntity.programList : ${controllerEntity.programList}");
+    print("liveMessageEntity.programName : ${liveMessageEntity.programName}");
     for(var program = 0;program < controllerEntity.programList.length;program++){
       if(liveMessageEntity.programName == 'program${program+1}'){
+        print('isthere');
+        print("controllerEntity.programList[program].listOfZone : ${controllerEntity.programList[program].listOfZone}");
         zoneNumbers = controllerEntity.programList[program].listOfZone.map((e) => e.zoneNumber).toList();
       }
     }
+    print("zoneNumbers : ${zoneNumbers}");
    return zoneNumbers;
   }
 

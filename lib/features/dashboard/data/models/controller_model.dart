@@ -12,15 +12,15 @@ class ProgramModel extends ProgramEntity {
   });
 
   factory ProgramModel.fromJson(Map<String, dynamic> json) {
+    print("json ====> ${json}");
     return ProgramModel(
       programId: json['programId'] as int? ?? 0,
       programName: json['programName'] as String? ?? '',
       programNameDefault: json['programNameDefault'] as String? ?? '',
-      listOfZone: const [],
+      listOfZone: json['zones'].map<ZoneEntity>((e) => ZoneEntity(zoneNumber: e['zoneNumber'])).toList(),
     );
   }
 }
-
 class ControllerModel extends ControllerEntity {
   const ControllerModel({
     required super.userDeviceId,

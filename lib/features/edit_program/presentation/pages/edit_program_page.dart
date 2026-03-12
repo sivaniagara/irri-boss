@@ -348,10 +348,25 @@ class _EditProgramPageState extends State<EditProgramPage> {
               ),
             );
           }
-          return Placeholder();
+          return Center(
+            child: CustomMaterialButton(
+                onPressed: (){
+                  final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
+                  context.read<EditProgramBloc>().add(
+                      GetProgramEvent(
+                          userId: controllerContext.userId,
+                          controllerId: controllerContext.controllerId,
+                          subUserId: controllerContext.subUserId,
+                          programId: int.parse(widget.programId),
+                          deviceId: controllerContext.deviceId
+                      )
+                  );
+                },
+                title: 'Retry'
+            ),
+          );
         },
         listener: (BuildContext context, state) {
-          print(state);
           if(state is EditProgramLoaded){
             print("state.sendViewMessageStatusEnum :: ${state.sendViewMessageStatusEnum}");
           }
