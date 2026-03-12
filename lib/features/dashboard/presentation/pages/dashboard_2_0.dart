@@ -445,7 +445,6 @@ class _Dashboard20State extends State<Dashboard20> {
               children: [
                 iconWithHeader(
                   title: 'Program',
-                  subTitle: '12:31 PM',
                   iconBackgroundColor: const Color(0xffB1E4AA),
                   iconColor: Theme.of(context).colorScheme.primary,
                   icon: Image.asset(
