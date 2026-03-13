@@ -27,6 +27,7 @@ class MappedNodeList extends StatefulWidget {
 class _MappedNodeListState extends State<MappedNodeList> {
   late List<MappedNodeEntity> listOfMappedNode;
   bool payloadSending = false;
+  bool selectAll = false;
 
 
   @override
@@ -96,6 +97,21 @@ class _MappedNodeListState extends State<MappedNodeList> {
                             fontSize: 22,
                             fontWeight: FontWeight.bold),
                       ),
+                    ),
+                    Row(
+                      children: [
+                        Checkbox(
+                            value: selectAll,
+                            onChanged: (value){
+                              selectAll = value!;
+                              for (var element in listOfMappedNode) {
+                                element.select = value;
+                              }
+                              setState(() {
+                              });
+                            }
+                        )
+                      ],
                     ),
                     Expanded(
                       child: listOfMappedNode.isNotEmpty

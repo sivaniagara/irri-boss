@@ -312,12 +312,20 @@ class _Dashboard20State extends State<Dashboard20> {
           spacing: 20,
           children: [
             Row(
-              spacing: 10,
               children: [
-                Image.asset(
-                  'assets/images/common/motor_${liveMessageEntity.motorOnOff == '1' ? 'g' : 'r'}.png',
-                  width: 50,
+                Column(
+                  children: [
+                    Image.asset(
+                      'assets/images/common/motor_${liveMessageEntity.motorOnOff == '1' ? 'g' : 'r'}.png',
+                      width: 60,
+                    ),
+                    Text(
+                      'Motor',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+                    ),
+                  ],
                 ),
+                const Spacer(),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   spacing: 5,
@@ -325,34 +333,64 @@ class _Dashboard20State extends State<Dashboard20> {
                     Row(
                       spacing: 10,
                       children: [
-                        Text(
-                          'Motor',
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
-                        ),
-                        InkWell(
-                          onTap: (){
-                            final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
-                            String payload = liveMessageEntity.motorOnOff == '1' ? 'MTROF,' : 'MTRON,';
-                            context.read<DashboardPageCubit>().controlMotorStatus(
-                                userId: controllerContext.userId,
-                                controllerId: controllerContext.controllerId,
-                                programId: liveMessageEntity.programName.split('program')[1],
-                                deviceId: controllerContext.deviceId,
-                                payload: payload
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(5),
-                              border: Border.all(width: 2, color: liveMessageEntity.motorOnOff == '1' ? Colors.green : Colors.red),
-                            ),
-                            child: Image.asset(
-                              'assets/images/icons/switch_${liveMessageEntity.motorOnOff == '1' ? 'on' : 'off'}_icon.png',
-                              width: 20,
-                            ),
+                        IconButton(
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStatePropertyAll(Colors.red)
                           ),
-                        )
+                            onPressed: (){
+                              final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+                              String payload = 'MTROF,';
+                              context.read<DashboardPageCubit>().controlMotorStatus(
+                                  userId: controllerContext.userId,
+                                  controllerId: controllerContext.controllerId,
+                                  programId: liveMessageEntity.programName.split('program')[1],
+                                  deviceId: controllerContext.deviceId,
+                                  payload: payload
+                              );
+                            },
+                            icon: Icon(Icons.power_settings_new, color: Colors.white,)
+                        ),
+                        IconButton(
+                            style: ButtonStyle(
+                                backgroundColor: WidgetStatePropertyAll(Colors.green)
+                            ),
+                            onPressed: (){
+                              final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+                              String payload = 'MTRON,';
+                              context.read<DashboardPageCubit>().controlMotorStatus(
+                                  userId: controllerContext.userId,
+                                  controllerId: controllerContext.controllerId,
+                                  programId: liveMessageEntity.programName.split('program')[1],
+                                  deviceId: controllerContext.deviceId,
+                                  payload: payload
+                              );
+                            },
+                            icon: Icon(Icons.power_settings_new, color: Colors.white,)
+                        ),
+                        // InkWell(
+                        //   onTap: (){
+                        //     final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+                        //     String payload = liveMessageEntity.motorOnOff == '1' ? 'MTROF,' : 'MTRON,';
+                        //     context.read<DashboardPageCubit>().controlMotorStatus(
+                        //         userId: controllerContext.userId,
+                        //         controllerId: controllerContext.controllerId,
+                        //         programId: liveMessageEntity.programName.split('program')[1],
+                        //         deviceId: controllerContext.deviceId,
+                        //         payload: payload
+                        //     );
+                        //   },
+                        //   child: Container(
+                        //     padding: const EdgeInsets.all(4),
+                        //     decoration: BoxDecoration(
+                        //       borderRadius: BorderRadius.circular(5),
+                        //       border: Border.all(width: 2, color: liveMessageEntity.motorOnOff == '1' ? Colors.green : Colors.red),
+                        //     ),
+                        //     child: Image.asset(
+                        //       'assets/images/icons/switch_${liveMessageEntity.motorOnOff == '1' ? 'on' : 'off'}_icon.png',
+                        //       width: 20,
+                        //     ),
+                        //   ),
+                        // )
                       ],
                     ),
                     Text(liveMessageEntity.modeOfOperation, style: Theme.of(context).textTheme.bodySmall)
