@@ -109,8 +109,14 @@ class _MappedNodeListState extends State<MappedNodeList> {
                               }
                               setState(() {
                               });
-                            }
-                        )
+                            },
+                          side: BorderSide(
+                            color: Colors.black, // border color when unchecked
+                            width: 2,            // border thickness
+                          ),
+
+                        ),
+                        Text('Select All')
                       ],
                     ),
                     Expanded(
@@ -132,6 +138,10 @@ class _MappedNodeListState extends State<MappedNodeList> {
                                       });
                                     }
                                   },
+                                  side: BorderSide(
+                                    color: Colors.black, // border color when unchecked
+                                    width: 2,            // border thickness
+                                  ),
                                 ),
                                 onTap: (){
                                   _showNodeDetailsBottomSheet(context, node);
@@ -251,9 +261,9 @@ class _MappedNodeListState extends State<MappedNodeList> {
                                         const SnackBar(content: Text('Please select at least one node')),
                                       );
                                     }
-                                    setState(() {
-                                      payloadSending = !payloadSending;
-                                    });
+                                    // setState(() {
+                                    //   payloadSending = !payloadSending;
+                                    // });
                                   },
                                   title: 'Resend'
                               ),
