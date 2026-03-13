@@ -213,7 +213,7 @@ class _Dashboard20State extends State<Dashboard20> {
             ],
           ),
         ),
-      const SizedBox(height: 100,)
+      const SizedBox(height: 100, )
     ];
   }
 
@@ -244,7 +244,7 @@ class _Dashboard20State extends State<Dashboard20> {
               const Spacer(),
               InkWell(
                 onTap: () {
-                  context.push(DashBoardRoutes.ctrlLivePage, extra: liveMessageEntity);
+                  context.push(DashBoardRoutes.ctrlLivePage, extra: controllerEntity);
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -807,12 +807,12 @@ class _Dashboard20State extends State<Dashboard20> {
                     payload: payload
                 );
               },
-              icon: const Icon(Icons.power_settings_new,),
+              icon: const Icon(Icons.power_settings_new, ),
               style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all(const Color(0xff4DB53D))
               ),
             ),
-            Text('ON', style: Theme.of(context).textTheme.labelLarge,)
+            Text('ON', style: Theme.of(context).textTheme.labelLarge, )
           ],
         ),
         Column(
@@ -829,12 +829,12 @@ class _Dashboard20State extends State<Dashboard20> {
                     payload: payload
                 );
               },
-              icon: const Icon(Icons.power_settings_new,),
+              icon: const Icon(Icons.power_settings_new, ),
               style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all(const Color(0xffE9352B))
               ),
             ),
-            Text('OFF', style: Theme.of(context).textTheme.labelLarge,)
+            Text('OFF', style: Theme.of(context).textTheme.labelLarge, )
           ],
         ),
       ],
@@ -855,7 +855,7 @@ class _Dashboard20State extends State<Dashboard20> {
       child: Column(
         spacing: 5,
         children: [
-          Text(phase, style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),),
+          Text(phase, style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white), ),
           IntrinsicWidth(
             child: Container(
               width: 60,
@@ -863,7 +863,7 @@ class _Dashboard20State extends State<Dashboard20> {
               color: Colors.white,
             ),
           ),
-          Text('$value V', style: const TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),),
+          Text('$value V', style: const TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold), ),
         ],
       ),
     );

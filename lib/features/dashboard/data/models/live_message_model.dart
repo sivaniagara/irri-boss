@@ -141,7 +141,6 @@ class LiveMessageModel extends LiveMessageEntity {
       yCurrent = safeString(10, '0.0');
       bCurrent = safeString(11, '0.0');
       phase = "3 PHASE";
-      signal = safeString(47, '0');
       modeOfOperation = safeString(14, '');
       programName = safeString(15, '');
       zoneNo = safeString(16, '0');
@@ -151,11 +150,32 @@ class LiveMessageModel extends LiveMessageEntity {
       prsIn = safeString(20, '0.0');
       prsOut = safeString(21, '0.0');
       flowRate = safeString(22, '0.0');
-      wellLevel = safeString(23, '0');
-      wellPercent = safeString(23, '0');
+
+      // Well data at 23
+      String rawWell = safeString(23, '0');
+      if (rawWell.contains('F-')) {
+        final wellParts = rawWell.split('F-');
+        wellLevel = wellParts[0];
+        wellPercent = wellParts.length > 1 ? wellParts[1] : '0';
+      } else {
+        wellPercent = rawWell;
+        wellLevel = safeString(41, '0');
+      }
+
       fertStatus = safeList(24, ['0', '0', '0', '0', '0', '0'], separator: ':');
-      ec = safeString(25, '0');
-      ph = safeString(26, '0');
+
+      // EC and PH packed at 25 (e.g., 0.0:0.0)
+      String rawEcPh = safeString(25, '0:0');
+      if (rawEcPh.contains(':')) {
+        final ecPhParts = rawEcPh.split(':');
+        ec = ecPhParts[0];
+        ph = ecPhParts.length > 1 ? ecPhParts[1] : '0';
+      } else {
+        ec = rawEcPh;
+        ph = safeString(26, '0');
+      }
+      totalMeterFlow = safeString(26, '0');
+
       runTimeToday = safeString(27, '00:00:00');
       runTimePrevious = safeString(28, '00:00:00');
       flowToday = safeString(29, '0');
@@ -167,6 +187,7 @@ class LiveMessageModel extends LiveMessageEntity {
       fertValues = safeList(36, ['0', '0', '0', '0', '0', '0'], separator: ';');
       versionModule = safeString(39, '');
       versionBoard = safeString(40, '');
+      signal = safeString(47, '0');
       batVolt = safeString(48, '0');
     } else {
       // Standard LD01 / LD06
@@ -193,11 +214,32 @@ class LiveMessageModel extends LiveMessageEntity {
       prsIn = safeString(20, '0.0');
       prsOut = safeString(21, '0.0');
       flowRate = safeString(22, '0.0');
-      wellLevel = safeString(23, '0');
-      wellPercent = safeString(23, '0');
+
+      // Well data at 23
+      String rawWell = safeString(23, '0');
+      if (rawWell.contains('F-')) {
+        final wellParts = rawWell.split('F-');
+        wellLevel = wellParts[0];
+        wellPercent = wellParts.length > 1 ? wellParts[1] : '0';
+      } else {
+        wellPercent = rawWell;
+        wellLevel = safeString(41, '0');
+      }
+
       fertStatus = safeList(24, ['0', '0', '0', '0', '0', '0'], separator: ':');
-      ec = safeString(25, '0');
-      ph = safeString(26, '0');
+
+      // EC and PH packed at 25 (e.g., 0.0:0.0)
+      String rawEcPh = safeString(25, '0:0');
+      if (rawEcPh.contains(':')) {
+        final ecPhParts = rawEcPh.split(':');
+        ec = ecPhParts[0];
+        ph = ecPhParts.length > 1 ? ecPhParts[1] : '0';
+      } else {
+        ec = rawEcPh;
+        ph = safeString(26, '0');
+      }
+      totalMeterFlow = safeString(26, '0');
+
       runTimeToday = safeString(27, '00:00:00');
       runTimePrevious = safeString(28, '00:00:00');
       flowPrevDay = safeString(29, '0');
@@ -207,10 +249,12 @@ class LiveMessageModel extends LiveMessageEntity {
       energy = safeString(33, '0');
       powerFactor = safeString(34, '0');
       fertValues = safeList(36, ['0', '0', '0', '0', '0', '0'], separator: ';');
-      signal = safeString(37, '0');
+
+      // Signal and Battery indices adjusted for LD01 based on provided samples
       batVolt = safeString(38, '0');
-      versionModule = safeString(39, '');
-      versionBoard = safeString(40, '');
+      signal = safeString(39, '0');
+      versionModule = safeString(40, '');
+      versionBoard = safeString(41, '');
     }
 
     return LiveMessageModel(
