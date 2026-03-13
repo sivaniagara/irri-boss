@@ -9,12 +9,12 @@ class GetMoistureParams extends Equatable {
     required this.userId,
     required this.subuserId,
     required this.controllerId,
-   });
+  });
 
   @override
   List<Object?> get props => [
     userId,
     subuserId,
     controllerId,
-   ];
+  ];
 }

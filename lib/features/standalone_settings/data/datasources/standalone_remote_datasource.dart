@@ -51,16 +51,18 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
     required String settingsId,
   }) async {
     final settingsEndpoint = 'user/$userId/subuser/$subuserId/controller/$controllerId/menu/$menuId/settings/$settingsId';
-    final zoneListEndpoint = 'user/$userId/subuser/$subuserId/controller/$controllerId/zonelistv2';
+    
+    // Program 1 is the standard source for Standalone template configuration
+    final programSettingsEndpoint = 'user/$userId/controller/$controllerId/program/1/timeflowsetting';
 
     try {
       final results = await Future.wait([
         sl<ApiClient>().get(settingsEndpoint),
-        sl<ApiClient>().get(zoneListEndpoint),
+        sl<ApiClient>().get(programSettingsEndpoint),
       ]);
 
       final dynamic rawSettings = results[0];
-      final dynamic rawZoneList = results[1];
+      final dynamic rawProgramData = results[1];
 
       Map<String, dynamic> settingsJson = {};
       if (rawSettings is Map<String, dynamic>) {
@@ -70,57 +72,24 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
       }
 
       List<dynamic> zoneListJson = [];
-      final Set<String> uniqueZoneIds = {};
-
-      void processZones(List<dynamic> list) {
-        for (var zone in list) {
-          if (zone is! Map) continue;
-          final rawId = zone['zoneNumber'] ?? zone['zoneName'] ?? zone['zone_number'] ?? zone['zoneId'] ?? zone['id'];
-          if (rawId != null) {
-            final normalized = StandaloneModel.normalizeZoneId(rawId);
-            
-            // FILTER: A zone is "Created" if it has hardware mapping, valves, or is active
-            final bool hasNode = zone['nodeId'] != null && zone['nodeId'] != 0 && zone['nodeId'] != '0';
-            final bool hasValves = zone['valves'] is List && (zone['valves'] as List).isNotEmpty;
-            final bool isActive = zone['active'] == true || zone['status'] == 1 || zone['status'] == "1";
-
-            // If any of these are true, the zone is considered "configured/created"
-            if ((hasNode || hasValves || isActive) && !uniqueZoneIds.contains(normalized)) {
-              uniqueZoneIds.add(normalized);
-              zoneListJson.add(zone);
-            }
-          }
+      
+      // Navigate the program data: data -> setting -> zones
+      if (rawProgramData is Map && rawProgramData['data'] != null) {
+        final data = rawProgramData['data'];
+        
+        // Structure A: data -> setting -> zones (Standard for Program API)
+        if (data is Map && data['setting'] != null && data['setting']['zones'] is List) {
+          final List<dynamic> allZones = data['setting']['zones'];
+          zoneListJson = _filterActiveZones(allZones);
+        } 
+        // Structure B: data -> zones (Fallback)
+        else if (data is Map && data['zones'] is List) {
+          zoneListJson = _filterActiveZones(data['zones']);
         }
-      }
-
-      if (rawZoneList is Map) {
-        final data = rawZoneList['data'];
-        if (data is List) {
-          for (var item in data) {
-             // Handle list of programs or direct list of zones. 
-             // Support 'setting' -> 'zones' structure commonly found in program responses.
-             final List<dynamic> list = (item is Map && item.containsKey('zoneList')) 
-                 ? item['zoneList'] 
-                 : (item is Map && item.containsKey('zones')) 
-                     ? item['zones'] 
-                     : (item is Map && item['setting'] != null && item['setting'] is Map && item['setting'].containsKey('zones'))
-                        ? item['setting']['zones']
-                        : [item];
-             
-             processZones(list);
-          }
-        } else if (data is Map) {
-          // Single program or configuration object
-          final List<dynamic> sourceList = data['zoneList'] ?? 
-                                         (data['setting'] != null && data['setting'] is Map ? data['setting']['zones'] : null) ?? 
-                                         data['zones'] ?? [];
-          processZones(sourceList);
-        } else if (rawZoneList['code'] == 200 && rawZoneList['message'] != null) {
-           // Fallback for cases where 'data' might be null or missing but top level has info
-           // though usually handled by the 'Map' check above.
+        // Structure C: data is a direct List (Alternative fallback)
+        else if (data is List) {
+          zoneListJson = _filterActiveZones(data);
         }
-      } else if (rawZoneList is List) {
-        processZones(rawZoneList);
       }
 
       return StandaloneModel.fromCombinedJson(
@@ -130,6 +99,25 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
     } catch (e) {
       throw Exception('Failed to fetch standalone data: $e');
     }
+  }
+
+  /// Filters zones that are considered "Configured" or "Active" by the user.
+  /// This ensures every customer sees exactly the blocks they've set up in Edit Program.
+  List<dynamic> _filterActiveZones(List<dynamic> zones) {
+    return zones.where((z) {
+      if (z is! Map) return false;
+      
+      // Check for 'active' flag (boolean or string)
+      final active = z['active'];
+      final bool isActive = active == true || active == 1 || active.toString().toLowerCase() == 'true';
+      
+      // Check for 'status' flag as backup
+      final status = z['status'];
+      final bool hasStatus = status == true || status == 1 || status.toString() == '1' || status.toString().toLowerCase() == 'true';
+      
+      // If the block is active or has status, it's a configured block
+      return isActive || hasStatus;
+    }).toList();
   }
 
   @override

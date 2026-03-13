@@ -47,7 +47,7 @@ class FertilizerRemoteDataSourceImpl extends FertilizerRemoteDataSource {
 
       /// Make API call
       final response = await apiClient.get(endpoint);
-       print("endpoint--->$endpoint");
+      print("endpoint--->$endpoint");
 
       if (response == null) {
         throw ServerException(statusCode: 500, message: "Empty server response");
@@ -64,7 +64,7 @@ class FertilizerRemoteDataSourceImpl extends FertilizerRemoteDataSource {
         message: response["message"] ?? "Unknown error in sendrev API",
       );
     } catch (e) {
-        throw ServerException(statusCode: 500, message: e.toString());
+      throw ServerException(statusCode: 500, message: e.toString());
     }
   }
 }

@@ -1,6 +1,6 @@
 
 
- import '../../../../core/di/injection.dart';
+import '../../../../core/di/injection.dart';
 import '../data/datasources/fertilizer_datasource.dart';
 import '../data/repositories/fertilizer_repositories.dart';
 import '../domain/repositories/fertilizer_repo.dart';

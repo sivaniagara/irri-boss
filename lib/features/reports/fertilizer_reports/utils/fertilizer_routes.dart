@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/di/injection.dart' as di;
- import '../presentation/bloc/fertilizer_bloc.dart';
+import '../presentation/bloc/fertilizer_bloc.dart';
 import '../presentation/bloc/fertilizer_bloc_event.dart';
 import '../presentation/pages/fertilizer_page.dart';
 
@@ -18,8 +18,8 @@ class FertilizerPageUrls {
   static const String getFertilizerUrl =
       'user/:userId/subuser/:subuserId/controller/:controllerId/report?&fromDate=%27:fromDate%27'
       '&toDate=%27:toDate%27&type=fertpumpruntime';
- }
- /// GoRouter config
+}
+/// GoRouter config
 final fertilizerRoutes = <GoRoute>[
   GoRoute(
     path: FertilizerPageRoutes.Fertilizerpage,
@@ -37,29 +37,29 @@ final fertilizerRoutes = <GoRoute>[
           DateFormat('yyyy-MM-dd').format(DateTime.now());
 
 
-     return  MultiBlocProvider(
-      providers: [
-        BlocProvider<FertilizerBloc>(
-          create: (_) => di.sl<FertilizerBloc>()
-            ..add(
-              FetchFertilizerEvent(
-                userId: userId,
-                subuserId: subuserId,
-                controllerId: controllerId,
-                fromDate: fromDate,
-                toDate: toDate,
+      return  MultiBlocProvider(
+        providers: [
+          BlocProvider<FertilizerBloc>(
+            create: (_) => di.sl<FertilizerBloc>()
+              ..add(
+                FetchFertilizerEvent(
+                  userId: userId,
+                  subuserId: subuserId,
+                  controllerId: controllerId,
+                  fromDate: fromDate,
+                  toDate: toDate,
+                ),
               ),
-            ),
-        ),
-
-       ],
-         child: FertilizerPage(
-           userId: userId,
-           subuserId: subuserId,
-           controllerId: controllerId,
-           fromDate: fromDate,
-           toDate: toDate,
           ),
+
+        ],
+        child: FertilizerPage(
+          userId: userId,
+          subuserId: subuserId,
+          controllerId: controllerId,
+          fromDate: fromDate,
+          toDate: toDate,
+        ),
       );
     },
   ),

@@ -4,12 +4,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
-import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
-import 'package:niagara_smart_drip_irrigation/features/dashboard/domain/entities/livemessage_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/data/models/program_view_model.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/domain/entities/livemessage_entity.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/services/mqtt/mqtt_manager.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
+import '../../../../core/widgets/leaf_box.dart';
 import '../cubit/dashboard_page_cubit.dart';
 import '../../utils/program_preview_dispatcher.dart';
 
@@ -29,6 +29,9 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
   bool _isLoading = true;
   String? _error;
   late AnimationController _refreshController;
+
+  static const Color niagaraRed = Color(0xFFD32F2F);
+  static const Color niagaraGreen = Color(0xFF2E7D32);
 
   @override
   void initState() {
@@ -55,7 +58,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
 
     if (cachedProg != null) {
       final raw = (cachedProg["cM"] ?? '').toString();
-      final ts = "${cachedProg["cT"] ?? ''} ${cachedProg["cD"] ?? ''}";
+      final ts = "${cachedProg["cT"] ?? ''}\n${cachedProg["cD"] ?? ''}";
       _program = ProgramViewModel.fromRawString(raw, externalLastSync: ts);
       _lastSync = ts;
       hasData = true;
@@ -112,6 +115,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
     }
 
     final mqtt = sl.get<MqttManager>();
+
     mqtt.publish(widget.deviceId, jsonEncode(PublishMessageHelper.requestProgramPreview));
     mqtt.publish(widget.deviceId, jsonEncode(PublishMessageHelper.requestLive));
 
@@ -136,7 +140,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
       final String mC = (message["mC"] ?? '').toString();
       final String rawMessage = (message["cM"] ?? '').toString();
       if (rawMessage.isEmpty) return;
-      final String currentTimestamp = "${message["cT"] ?? ''} ${message["cD"] ?? ''}";
+      final String currentTimestamp = "${message["cT"] ?? ''}\n${message["cD"] ?? ''}";
 
       if (mC == "V01") {
         try {
@@ -162,7 +166,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
       final String mC = (message["mC"] ?? '').toString();
       final String rawMessage = (message["cM"] ?? '').toString();
       if (rawMessage.isEmpty) return;
-      final String currentTimestamp = "${message["cT"] ?? ''} ${message["cD"] ?? ''}";
+      final String currentTimestamp = "${message["cT"] ?? ''}\n${message["cD"] ?? ''}";
 
       if (mC == "V02") {
         try {
@@ -211,6 +215,9 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primaryColor = theme.primaryColor;
+
     return BlocBuilder<DashboardPageCubit, DashboardState>(
       builder: (context, state) {
         LiveMessageEntity? liveMessage;
@@ -220,6 +227,9 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
             for (var controller in groupControllers) {
               if (controller.deviceId == widget.deviceId) {
                 liveMessage = controller.liveMessage;
+                if (_refreshController.isAnimating && liveMessage.lastsync.isNotEmpty) {
+                  _refreshController.stop();
+                }
                 break;
               }
             }
@@ -231,13 +241,18 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
           _isLoading = false;
         }
 
-        final bool isOnline = liveMessage?.motorOnOff == "1";
+        final String currentProgName = liveMessage?.programName ?? _program?.programName ?? "1";
         final String lastSyncToDisplay = _lastSync ?? liveMessage?.lastsync ?? "--";
+
+        final bool isOnline = liveMessage?.motorOnOff == "1";
 
         return Scaffold(
           backgroundColor: AppThemes.scaffoldBackGround,
-          appBar: CustomAppBar(
-            title: "Program Preview",
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
+            title: const Text("Program Preview", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18)),
             actions: [
               AnimatedBuilder(
                 animation: _refreshController,
@@ -251,42 +266,77 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
                   );
                 },
               ),
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: Center(child: _buildConnectionBadge(isOnline)),
+              ),
+            ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(60),
+              child: Container(
+                height: 60,
                 decoration: BoxDecoration(
-                  color: isOnline ? Colors.green.shade50 : Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(25),
-                  border: Border.all(color: isOnline ? Colors.green.shade400 : Colors.red.shade400, width: 1.5),
+                  color: primaryColor.withValues(alpha: 0.9),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(25),
+                    topRight: Radius.circular(25),
+                  ),
                 ),
+                margin: const EdgeInsets.symmetric(horizontal: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   children: [
-                    Icon(Icons.circle, size: 10, color: isOnline ? Colors.green : Colors.red),
-                    const SizedBox(width: 6),
-                    Text(
-                      isOnline ? "ONLINE" : "OFFLINE",
-                      style: TextStyle(
-                        color: isOnline ? Colors.green.shade700 : Colors.red.shade700,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
+                    Image.asset("assets/images/icons/program_icon.png", width: 30, height: 30, color: Colors.white),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(currentProgName.toUpperCase().contains("PROGRAM") ? currentProgName.toUpperCase() : "PROGRAM $currentProgName",
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 1)),
+                    ),
+                    const SizedBox(width: 10),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text("Last Sync", style: TextStyle(color: Colors.white70, fontSize: 9, fontWeight: FontWeight.bold)),
+                        Text(lastSyncToDisplay.replaceAll('\n', ' '), style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                      ],
                     ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
           body: (_isLoading && _program == null && zoneList.isEmpty)
-              ? const Center(child: CircularProgressIndicator())
+              ? const Center(child: CircularProgressIndicator(color: Colors.black45))
               : _error != null && _program == null && zoneList.isEmpty
               ? _buildErrorState()
               : RefreshIndicator(
             onRefresh: () => _requestMessage(),
-            child: _buildContent(liveMessage, isOnline, lastSyncToDisplay),
+            color: primaryColor,
+            child: _buildContent(liveMessage, isOnline),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildConnectionBadge(bool isActive) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: isActive ? Colors.green.shade50 : Colors.red.shade50,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: isActive ? Colors.green.shade700 : Colors.red.shade700, width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(width: 8, height: 8, decoration: BoxDecoration(color: isActive ? Colors.green.shade700 : Colors.red.shade700, shape: BoxShape.circle)),
+          const SizedBox(width: 6),
+          Text(isActive ? "ONLINE" : "OFFLINE", style: TextStyle(color: isActive ? Colors.green.shade900 : Colors.red.shade900, fontSize: 9, fontWeight: FontWeight.w900)),
+        ],
+      ),
     );
   }
 
@@ -295,16 +345,12 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.error_outline, size: 80, color: Colors.red),
+          const Icon(Icons.sync_problem, size: 64, color: Colors.white70),
           const SizedBox(height: 16),
-          Text(_error ?? "Unknown Error", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+          Text(_error ?? "Unknown Error", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           const SizedBox(height: 24),
           ElevatedButton(
               onPressed: () => _requestMessage(),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
               child: const Text("RETRY")
           ),
         ],
@@ -312,603 +358,192 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
     );
   }
 
-  Widget _buildContent(LiveMessageEntity? liveMessage, bool isOnline, String lastSync) {
-    if (_program == null) return const SizedBox.shrink();
+  Widget _buildContent(LiveMessageEntity? liveMessage, bool isOnline) {
+    final bool isValveOn = liveMessage != null ? liveMessage.valveOnOff == "1" : (_program?.valveStatus == "1");
+    final String currentProgName = liveMessage?.programName ?? _program?.programName ?? "1";
 
     return ListView(
-      padding: const EdgeInsets.all(16),
-      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 40),
       children: [
-        _buildHeaderCard(liveMessage?.programName ?? _program?.programName ?? "1", lastSync),
-        const SizedBox(height: 20),
-        _buildSectionHeader("GENERAL STATUS", Icons.dashboard_outlined),
+        Row(
+          children: [
+            Expanded(child: _buildRowBox("Current Program", currentProgName, isBadge: false, iconPath: "assets/images/icons/program_icon.png")),
+            const SizedBox(width: 10),
+            Expanded(child: _buildRowBox("Valve", isValveOn ? "ON" : "OFF", isBadge: true, badgeOn: isValveOn, iconPath: "assets/images/icons/valve_icon.png")),
+          ],
+        ),
         const SizedBox(height: 10),
-        _buildGeneralInfoSection(liveMessage),
-        const SizedBox(height: 20),
-        if (liveMessage != null) ...[
-          _buildSectionHeader("SENSORS & LIVE DATA", Icons.sensors_rounded),
-          const SizedBox(height: 10),
-          _buildLiveSensorsSection(liveMessage),
-          const SizedBox(height: 20),
-        ],
-        _buildRTCTimerSection(),
-        const SizedBox(height: 20),
-        _buildSectionHeader("ADJUSTMENTS", Icons.tune_rounded),
+        Row(
+          children: [
+            Expanded(child: _buildRowBox("Irrigation", _program?.irrigationMode.toUpperCase() ?? "NA", isBadge: true, badgeMode: true, iconPath: "assets/images/icons/irrigation_setting_icon.png")),
+            const SizedBox(width: 10),
+            Expanded(child: _buildRowBox("Dosing", _program?.dosingMode.toUpperCase() ?? "NA", isBadge: true, badgeMode: true, iconPath: "assets/images/icons/fertilizer_pump_icon.png")),
+          ],
+        ),
         const SizedBox(height: 10),
-        _buildAdjustPercentSection(),
-        const SizedBox(height: 20),
-        _buildSectionHeader("FERTILIZER CONFIG", Icons.opacity_rounded),
+        Row(
+          children: [
+            Expanded(child: _buildRowBox("Decide Last", _program?.decideLast ?? "0", isBadge: false, blueVal: true)),
+            const SizedBox(width: 10),
+            Expanded(child: _buildRowBox("FB Last", _program?.decideFeedbackLast ?? "0", isBadge: false, blueVal: true)),
+          ],
+        ),
         const SizedBox(height: 10),
-        _buildFertilizerSection(liveMessage),
-        const SizedBox(height: 20),
-        _buildSectionHeader("TIMING PARAMETERS", Icons.timer_outlined),
+        Row(
+          children: [
+            Expanded(child: _buildRowBox("Delay Valve", _program?.delayValve ?? "0", isBadge: false, blueVal: true)),
+            const SizedBox(width: 10),
+            Expanded(child: _buildRowBox("FB Valve", _program?.feedbackTime ?? "0", isBadge: false, blueVal: true)),
+          ],
+        ),
         const SizedBox(height: 10),
-        _buildPrePostSection(),
-        const SizedBox(height: 20),
+        Row(
+          children: [
+            Expanded(child: _buildRowBox("Drip Cyc Rst", (_program?.dripCycRst == "1") ? "ON" : "OFF", isBadge: true, badgeOn: _program?.dripCycRst == "1")),
+            const SizedBox(width: 10),
+            Expanded(child: _buildRowBox("Timer", _program?.dripCycRstTime ?? "00:00", isBadge: false, blueVal: true, iconPath: "assets/images/icons/timer_icon.png")),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(child: _buildRowBox("Zone Cyc Rst", (_program?.zoneCycRst == "1") ? "ON" : "OFF", isBadge: true, badgeOn: _program?.zoneCycRst == "1")),
+            const SizedBox(width: 6),
+            Expanded(child: _buildStartFromBox()),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(child: _buildRowBox("Sump", (_program?.sumpStatus == "1") ? "ON" : "OFF", isBadge: true, badgeOn: _program?.sumpStatus == "1", iconPath: "assets/images/icons/over_head_tank_icon.png")),
+            const SizedBox(width: 10),
+            Expanded(child: _buildRowBox("Drip Sump Rst", (_program?.dripSumpStatus == "1") ? "ON" : "OFF", isBadge: true, badgeOn: _program?.dripSumpStatus == "1")),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(child: _buildRowBox("Day Count RTC", _program?.dayCountRtcTimer ?? "0", isBadge: false, blueVal: true, iconPath: "assets/images/icons/timer_icon.png")),
+            const SizedBox(width: 10),
+            Expanded(child: _buildSkipDaysBox()),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildRTCGridSection(),
+        const SizedBox(height: 16),
+
+        ConfigSection(
+          title: "Adjust Settings",
+          icon: Icons.tune,
+          children: [
+            ConfigGridRow(
+              label: "Adjust Percent(%)",
+              values: (liveMessage != null && liveMessage.fertValues.length >= 12)
+                  ? liveMessage.fertValues.sublist(8, 12)
+                  : (_program?.adjustPercent ?? ["100", "100", "100", "100"]),
+              columnLabels: ["Time", "Flow", "Moisture", "Fert"],
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildFertilizerGridSection(liveMessage),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(child: _buildRowBox("Pre Quantity", _program?.preQty ?? "0", isBadge: false, blueVal: true, iconPath: "assets/images/icons/flow_icon.png")),
+            const SizedBox(width: 10),
+            Expanded(child: _buildRowBox("Post Quantity", _program?.postQty ?? "0", isBadge: false, blueVal: true, iconPath: "assets/images/icons/flow_icon.png")),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(child: _buildRowBox("Pre Time", _program?.preTime ?? "00:00", isBadge: false, blueVal: true, iconPath: "assets/images/icons/timer_icon.png")),
+            const SizedBox(width: 10),
+            Expanded(child: _buildRowBox("Post Time(%)", _program?.postTimePercent ?? "0", isBadge: false, blueVal: true, iconPath: "assets/images/icons/timer_icon.png")),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+
         if (zoneList.isNotEmpty) ...[
-          _buildSectionHeader("ZONES DETAILS", Icons.layers_outlined),
-          const SizedBox(height: 10),
-          ...zoneList.map((z) => _buildZoneSection(z, liveMessage, isOnline)),
-        ],
-        const SizedBox(height: 60),
-      ],
-    );
-  }
-
-  Widget _buildSectionHeader(String title, IconData icon) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: AppThemes.primaryColor),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: TextStyle(
-            color: Colors.black54,
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-            letterSpacing: 1.2,
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: LeafBox(
+              height: 45,
+              margin: EdgeInsets.zero,
+              child: Center(child: Text("ZONE DETAILS", style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor, fontSize: 16))),
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(child: Divider(color: Colors.grey.shade300)),
-      ],
-    );
-  }
+          ...zoneList.map((z) {
+            final bool isRunning = isOnline && liveMessage != null &&
+                _normalize(liveMessage.zoneNo) == _normalize(z.zoneNumber) &&
+                _normalize(liveMessage.zoneNo) != "0" &&
+                _normalize(liveMessage.programName) == _normalize(_program?.programName ?? "");
 
-  Widget _buildHeaderCard(String programName, String lastSync) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
-        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "PROGRAM $programName".toUpperCase(),
-                style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w900, fontSize: 20, letterSpacing: 1),
-              ),
-              const SizedBox(height: 4),
-              const Text("CONTROLLER PREVIEW", style: TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-            ],
-          ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppThemes.scaffoldBackGround,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+            return ConfigSection(
+              title: "Zone ${z.zoneNumber}",
+              trailing: isRunning ? _buildBadge("RUNNING", isOn: true) : null,
               children: [
-                const Text("LAST SYNC", style: TextStyle(color: Colors.grey, fontSize: 9, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 2),
-                Text(lastSync, style: const TextStyle(color: AppThemes.primaryColor, fontSize: 11, fontWeight: FontWeight.w600)),
-              ],
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGeneralInfoSection(LiveMessageEntity? liveMessage) {
-    final String currentProg = liveMessage?.programName ?? _program?.programName ?? "";
-    final String valveStatus = liveMessage?.valveOnOff ?? _program?.valveStatus ?? "0";
-    final String irrigationMode = liveMessage?.modeOfOperation ?? _program?.irrigationMode ?? "";
-
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(child: _buildDataCard("Current Program", currentProg, Icons.settings_applications_outlined)),
-            const SizedBox(width: 10),
-            Expanded(child: _buildDataCard("Valve", valveStatus == "1" ? "ON" : "OFF", Icons.settings_input_component_outlined, isBadge: true)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(child: _buildDataCard("Irrigation", irrigationMode, Icons.water_drop_outlined)),
-            const SizedBox(width: 10),
-            Expanded(child: _buildDataCard("Dosing", _program?.dosingMode ?? "", Icons.science_outlined)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(child: _buildDataCard("Decide Last", _program?.decideLast ?? "", Icons.history_rounded)),
-            const SizedBox(width: 10),
-            Expanded(child: _buildDataCard("FB Last", _program?.decideFeedbackLast ?? "", Icons.feedback_outlined)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(child: _buildDataCard("Delay Valve", _program?.delayValve ?? "", Icons.hourglass_bottom_rounded)),
-            const SizedBox(width: 10),
-            Expanded(child: _buildDataCard("FB Valve", _program?.feedbackTime ?? "", Icons.timer_outlined)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(child: _buildDataCard("Drip Cyc Rst", _program?.dripCycRst == "1" ? "ON" : "OFF", Icons.loop_rounded, isBadge: true)),
-            const SizedBox(width: 10),
-            Expanded(child: _buildDataCard("Timer", _program?.dripCycRstTime ?? "00:00:00", Icons.access_time_rounded)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(child: _buildDataCard("Zone Cyc Rst", _program?.zoneCycRst == "1" ? "ON" : "OFF", Icons.refresh_rounded, isBadge: true)),
-            const SizedBox(width: 10),
-            Expanded(child: _buildDataCard("Start frm", "prg: ${_program?.programStartNumber}, zone: 1", Icons.play_circle_outline_rounded, isSmallValue: true)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(child: _buildDataCard("Sump", _program?.sumpStatus == "1" ? "ON" : "OFF", Icons.waves_rounded, isBadge: true, isNegative: true)),
-            const SizedBox(width: 10),
-            Expanded(child: _buildDataCard("Drip Sump Rst", _program?.dripSumpStatus == "1" ? "ON" : "OFF", Icons.restart_alt_rounded, isBadge: true, isNegative: true)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(child: _buildDataCard("Day Count RTC", _program?.dayCountRtcTimer ?? "00:00:00", Icons.calendar_today_outlined)),
-            const SizedBox(width: 10),
-            Expanded(child: _buildDataBadgeRow("Skip Days", _program?.skipDays ?? "0", _program?.skipDaysStatus == "1")),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLiveSensorsSection(LiveMessageEntity live) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(child: _buildDataCard("R-Y-B Voltage", "${live.rVoltage}v | ${live.yVoltage}v | ${live.bVoltage}v", Icons.electrical_services_rounded, isSmallValue: true)),
-            const SizedBox(width: 10),
-            Expanded(child: _buildDataCard("R-Y-B Current", "${live.rCurrent}A | ${live.yCurrent}A | ${live.bCurrent}A", Icons.bolt_rounded, isSmallValue: true)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(child: _buildDataCard("Pressure In/Out", "${live.prsIn} / ${live.prsOut} bar", Icons.compress_rounded)),
-            const SizedBox(width: 10),
-            Expanded(child: _buildDataCard("Flow Rate", "${live.flowRate} m³/h", Icons.speed_rounded)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(child: _buildDataCard("EC / PH", "${live.ec} / ${live.ph}", Icons.science_outlined)),
-            const SizedBox(width: 10),
-            Expanded(child: _buildDataCard("Moisture 1/2", "${live.moisture1}% / ${live.moisture2}%", Icons.water_drop_outlined)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(child: _buildDataCard("Well Level", "${live.wellPercent}%", Icons.waves_rounded)),
-            const SizedBox(width: 10),
-            Expanded(child: _buildDataCard("Signal/Bat", "${live.signal}% / ${live.batVolt}v", Icons.signal_cellular_alt_rounded)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(child: _buildDataCard("Today Flow", "${live.flowToday} m³", Icons.summarize_outlined)),
-            const SizedBox(width: 10),
-            Expanded(child: _buildDataCard("Today RunTime", live.runTimeToday, Icons.history_toggle_off_rounded)),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRTCTimerSection() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
-        ],
-        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: AppThemes.scaffoldBackGround,
-              borderRadius: const BorderRadius.only(topRight: Radius.circular(15)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Row(
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
                   children: [
-                    Icon(Icons.schedule_rounded, color: Colors.black87, size: 20),
-                    SizedBox(width: 8),
-                    Text("RTC Timer Configuration", style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 14)),
+                    _buildIconValue("assets/images/icons/timer_icon.png", "Irrigation Time", isRunning ? liveMessage.zoneRemainingTime : z.irrigationTime),
+                    _buildIconValue("assets/images/icons/flow_icon.png", "Flow", z.irrigationFlow),
+                    _buildIconValue("assets/images/icons/valve_icon.png", "Valves", z.activeValves.split(':').where((v) => v != "V0").join(', ')),
                   ],
                 ),
-                _buildBadge(_program?.rtcOnOff == "1" ? "ON" : "OFF", isNegative: _program?.rtcOnOff != "1", elevated: false),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Divider(height: 1),
+                ),
+                Row(
+                  children: [
+                    Image.asset("assets/images/icons/fertilizer_icon.png", width: 20, height: 20, color: Theme.of(context).primaryColor),
+                    const SizedBox(width: 8),
+                    const Text("Fertilizer Timer", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ConfigRow(value: z.fertigationTimes, splitBy: "-"),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Image.asset("assets/images/icons/flow_meter_icon.png", width: 20, height: 20, color: Theme.of(context).primaryColor),
+                    const SizedBox(width: 8),
+                    const Text("Fertilizer Flow", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                ConfigRow(value: z.fertigationFlows, splitBy: ":"),
               ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(
-              children: [
-                const SizedBox(width: 44),
-                Expanded(child: Center(child: Text("ON TIME", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey.shade600, letterSpacing: 0.5)))),
-                Expanded(child: Center(child: Text("OFF TIME", style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey.shade600, letterSpacing: 0.5)))),
-              ],
-            ),
-          ),
-          ...List.generate(_program!.rtcTimers.length, (index) {
-            final times = _program!.rtcTimers[index].split(';');
-            final onTime = times.isNotEmpty ? times[0] : "00:00";
-            final offTime = times.length > 1 ? times[1] : "00:00";
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
-              child: Row(
-                children: [
-                  Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      color: AppThemes.scaffoldBackGround,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(child: Text("${index + 1}", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: AppThemes.primaryColor))),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildValueBox(onTime, highlighted: false)),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildValueBox(offTime, highlighted: false)),
-                ],
-              ),
             );
           }),
-          const SizedBox(height: 8),
         ],
-      ),
-    );
-  }
-
-  Widget _buildAdjustPercentSection() {
-    final adjust = _program?.adjustPercent ?? ["100", "100", "100", "100"];
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
-        ],
-        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
-      ),
-      child: Row(
-        children: [
-          _buildColumnLabelValue("Time (%)", adjust.isNotEmpty ? adjust[0] : "100", Icons.access_time_filled_rounded),
-          _buildColumnLabelValue("Flow (%)", adjust.length > 1 ? adjust[1] : "100", Icons.speed_rounded),
-          _buildColumnLabelValue("Moist (%)", adjust.length > 2 ? adjust[2] : "100", Icons.water_rounded),
-          _buildColumnLabelValue("Fert (%)", adjust.length > 3 ? adjust[3] : "100", Icons.science_rounded),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFertilizerSection(LiveMessageEntity? liveMessage) {
-    // Corrected: Always use _program data for configuration view.
-    // LiveMessage data (fertStatus/fertValues) represents real-time activity, not saved config.
-    final List<String> currentFertStatus = _program?.fertilizerStatus ?? List.filled(6, "0");
-    final List<String> currentFertRates = _program?.fertilizerRates ?? List.filled(6, "00:00");
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
-        ],
-        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: List.generate(6, (i) => Expanded(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 2),
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: AppThemes.scaffoldBackGround,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Center(child: Text("F${i + 1}", style: const TextStyle(color: AppThemes.primaryColor, fontSize: 10, fontWeight: FontWeight.bold))),
-              ),
-            )),
-          ),
-          const SizedBox(height: 12),
-          _buildFertRow("STATUS", (i) {
-            final val = i < currentFertStatus.length ? currentFertStatus[i] : "0";
-            return _buildBadge(val == "1" ? "ON" : "OFF", isNegative: val != "1", small: true);
-          }),
-          const SizedBox(height: 10),
-          _buildFertRow("RATE", (i) {
-            final val = i < currentFertRates.length ? currentFertRates[i] : "00:00";
-            return _buildValueBox(val, small: true);
-          }),
-          const SizedBox(height: 10),
-          _buildFertRow("FLOW", (i) {
-            final val = (_program != null && i < _program!.ventFlows.length) ? _program!.ventFlows[i] : "0.0";
-            return _buildValueBox(val, small: true);
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFertRow(String label, Widget Function(int) builder) {
-    return Row(
-      children: [
-        SizedBox(width: 60, child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey.shade600))),
-        ...List.generate(6, (i) => Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: builder(i),
-          ),
-        )),
+        const SizedBox(height: 40),
       ],
     );
   }
 
-  Widget _buildPrePostSection() {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(child: _buildDataCard("Pre Quantity", _program?.preQty ?? "0.00", Icons.keyboard_double_arrow_right_rounded)),
-            const SizedBox(width: 10),
-            Expanded(child: _buildDataCard("Post Quantity", _program?.postQty ?? "0.00", Icons.keyboard_double_arrow_left_rounded)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(child: _buildDataCard("Pre Time", _program?.preTime ?? "0.00:0", Icons.first_page_rounded)),
-            const SizedBox(width: 10),
-            Expanded(child: _buildDataCard("Post Time (%)", _program?.postTimePercent ?? "0.00:0", Icons.last_page_rounded)),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildZoneSection(ZoneViewModel z, LiveMessageEntity? liveMessage, bool isOnline) {
-    final bool isRunning = isOnline && liveMessage != null &&
-        _normalize(liveMessage.zoneNo) == _normalize(z.zoneNumber);
-
+  Widget _buildIconValue(String iconPath, String label, String value) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: isRunning ? Colors.green.shade50 : Colors.white,
-        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
-        border: isRunning ? Border.all(color: Colors.green.shade200, width: 1.5) : Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: isRunning ? Colors.green.shade100 : AppThemes.scaffoldBackGround,
-              borderRadius: const BorderRadius.only(topRight: Radius.circular(15)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: const BoxDecoration(color: AppThemes.primaryColor, shape: BoxShape.circle),
-                      child: const Icon(Icons.grid_view_rounded, color: Colors.white, size: 14),
-                    ),
-                    const SizedBox(width: 10),
-                    Text("Zone ${z.zoneNumber}", style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, letterSpacing: 0.5)),
-                  ],
-                ),
-                if (isRunning)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(color: Colors.green, borderRadius: BorderRadius.circular(12)),
-                    child: const Text("RUNNING", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 10)),
-                  ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    _buildZoneInfoChip(Icons.timer_outlined, "TIME", isRunning ? liveMessage!.zoneRemainingTime : z.irrigationTime),
-                    const SizedBox(width: 8),
-                    _buildZoneInfoChip(Icons.water_drop_outlined, "FLOW", z.irrigationFlow),
-                    const SizedBox(width: 8),
-                    Expanded(child: _buildZoneInfoChip(Icons.settings_input_hdmi_rounded, "VALVES", z.activeValves.split(':').where((v) => v != "V0").join(','))),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _buildSmallLabel("FERTILIZER TIMERS"),
-                const SizedBox(height: 6),
-                Row(
-                  children: List.generate(6, (i) => Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: _buildValueBox(z.fertTimers.length > i ? z.fertTimers[i] : "00:00", small: true, highlighted: isRunning),
-                    ),
-                  )),
-                ),
-                const SizedBox(height: 16),
-                _buildSmallLabel("FERTILIZER FLOWS"),
-                const SizedBox(height: 6),
-                Row(
-                  children: List.generate(6, (i) => Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: _buildValueBox(z.fertFlows.length > i ? z.fertFlows[i] : "0", small: true, highlighted: isRunning),
-                    ),
-                  )),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSmallLabel(String text) {
-    return Text(text, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.grey.shade600, letterSpacing: 0.5));
-  }
-
-  Widget _buildZoneInfoChip(IconData icon, String label, String value) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.3)),
+        border: Border.all(color: Colors.grey.shade200),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
+          Image.asset(iconPath, width: 18, height: 18, color: Theme.of(context).primaryColor),
+          const SizedBox(width: 6),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(icon, size: 10, color: AppThemes.primaryColor),
-              const SizedBox(width: 4),
-              Text(label, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.grey.shade600)),
-            ],
-          ),
-          const SizedBox(height: 2),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Colors.black87)),
-        ],
-      ),
-    );
-  }
-
-  // --- Helper Widgets ---
-
-  Widget _buildDataCard(String label, String value, IconData icon, {bool isBadge = false, bool isNegative = false, bool isSmallValue = false}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 4))
-        ],
-        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 14, color: AppThemes.primaryColor),
-              const SizedBox(width: 6),
-              Expanded(child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.grey.shade600, letterSpacing: 0.2))),
-            ],
-          ),
-          const SizedBox(height: 8),
-          isBadge
-              ? _buildBadge(value, isNegative: (value == "OFF" || isNegative))
-              : _buildValueBox(value, small: isSmallValue),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDataBadgeRow(String label, String value, bool status) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(15), topRight: Radius.circular(15)),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 8, offset: const Offset(0, 4))
-        ],
-        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.skip_next_rounded, size: 14, color: AppThemes.primaryColor),
-              const SizedBox(width: 6),
-              Expanded(child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: Colors.grey.shade600))),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(value, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13)),
-              _buildBadge(status ? "ON" : "OFF", isNegative: !status, small: true),
+              Text(label, style: const TextStyle(fontSize: 9, color: Colors.grey, fontWeight: FontWeight.bold)),
+              Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
             ],
           ),
         ],
@@ -916,62 +551,348 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
     );
   }
 
-  Widget _buildValueBox(String value, {bool small = false, bool highlighted = false}) {
+  Widget _buildRowBox(String label, String value, {required bool isBadge, bool? badgeOn, bool badgeMode = false, bool blueVal = false, String? iconPath}) {
+    final primaryColor = Theme.of(context).primaryColor;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: small ? 4 : 8),
+      height: 60,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: highlighted ? Colors.green.shade50 : AppThemes.scaffoldBackGround.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(small ? 8 : 10),
-        border: Border.all(color: highlighted ? Colors.green.shade200 : Theme.of(context).colorScheme.outline.withOpacity(0.2), width: 1),
-      ),
-      child: Center(
-        child: Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-            fontSize: small ? 10 : 13,
-            color: highlighted ? Colors.green.shade900 : Colors.black87,
-            fontFamily: 'monospace',
+          color: Colors.white.withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))]),
+      child: Row(
+        children: [
+          if (iconPath != null) ...[
+            Image.asset(iconPath, width: 24, height: 24, color: primaryColor),
+            const SizedBox(width: 10),
+          ],
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Colors.black54)),
+                const SizedBox(height: 2),
+                if (isBadge)
+                  _buildBadge(value, isOn: badgeOn, isMode: badgeMode)
+                else
+                  Text(value, style: TextStyle(fontWeight: FontWeight.bold, color: blueVal ? primaryColor : Colors.black87, fontSize: 14)),
+              ],
+            ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBadge(String text, {bool? isOn, bool isMode = false}) {
+    Color bg = const Color(0xFFE3F2FD);
+    Color textCol = Colors.black87;
+    BoxBorder? border;
+
+    if (isMode) {
+      bg = Colors.white;
+      textCol = niagaraGreen;
+      border = Border.all(color: niagaraGreen.withValues(alpha: 0.3));
+    } else if (isOn != null) {
+      bg = isOn ? niagaraGreen : niagaraRed;
+      textCol = Colors.white;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+        border: border,
+      ),
+      child: Text(text, style: TextStyle(color: textCol, fontWeight: FontWeight.bold, fontSize: 10)),
+    );
+  }
+
+  Widget _buildStartFromBox() {
+    final String raw = _program?.programStartNumber ?? "1:1";
+    final parts = raw.split(':');
+    final prgm = parts.isNotEmpty ? parts[0] : raw;
+    final zone = parts.length > 1 ? parts[1] : "1";
+    final primaryColor = Theme.of(context).primaryColor;
+
+    return Container(
+      height: 60,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))]),
+      child: Row(
+        children: [
+          const Expanded(child: Text("Start from", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Colors.black54))),
+          _miniValueCol("PRGM", prgm, primaryColor),
+          const SizedBox(width: 8),
+          _miniValueCol("ZONE", zone, primaryColor),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSkipDaysBox() {
+    final primaryColor = Theme.of(context).primaryColor;
+    return Container(
+      height: 60,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))]),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text("Skip Days", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Colors.black54)),
+          Row(
+            children: [
+              Text(_program?.skipDays ?? "0", style: TextStyle(fontWeight: FontWeight.bold, color: primaryColor, fontSize: 16)),
+              const SizedBox(width: 10),
+              _buildBadge((_program?.skipDaysStatus == "1") ? "ON" : "OFF", isOn: _program?.skipDaysStatus == "1"),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _miniValueCol(String label, String val, Color primaryColor) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.grey)),
+        const SizedBox(height: 2),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(color: primaryColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
+          child: Text(val, style: TextStyle(fontWeight: FontWeight.bold, color: primaryColor, fontSize: 12)),
         ),
-      ),
+      ],
     );
   }
 
-  Widget _buildBadge(String text, {bool isNegative = false, bool small = false, bool elevated = false}) {
-    final color = isNegative ? Colors.red.shade600 : Colors.green.shade600;
+  Widget _buildRTCGridSection() {
+    final List<String> rtc = _program?.rtcTimers ?? List.filled(4, "00:00;00:00");
+    final primaryColor = Theme.of(context).primaryColor;
+
+    return ConfigSection(
+      title: "RTC Timers",
+      icon: Icons.timer_outlined,
+      trailing: _buildBadge((_program?.rtcOnOff == "1") ? "ON" : "OFF", isOn: _program?.rtcOnOff == "1"),
+      children: [
+        Row(
+          children: [
+            const SizedBox(width: 40),
+            Expanded(child: Center(child: Text("ON TIME", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: primaryColor.withValues(alpha: 0.6))))),
+            const SizedBox(width: 10),
+            Expanded(child: Center(child: Text("OFF TIME", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: primaryColor.withValues(alpha: 0.6))))),
+          ],
+        ),
+        const SizedBox(height: 8),
+        ...List.generate(rtc.length, (i) {
+          final times = rtc[i].split(";");
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              children: [
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(color: primaryColor.withValues(alpha: 0.1), shape: BoxShape.circle),
+                  child: Center(child: Text("${i + 1}", style: TextStyle(fontWeight: FontWeight.bold, color: primaryColor, fontSize: 12))),
+                ),
+                const SizedBox(width: 10),
+                Expanded(child: _dataValueBox(times[0])),
+                const SizedBox(width: 10),
+                Expanded(child: _dataValueBox(times.length > 1 ? times[1] : "00:00")),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildFertilizerGridSection(LiveMessageEntity? live) {
+    final fertStatus = live != null ? live.fertStatus : (_program?.fertilizerStatus ?? List.filled(6, "0"));
+    final fertRates = live != null ? live.fertValues : (_program?.fertilizerRates ?? List.filled(6, "0"));
+    final primaryColor = Theme.of(context).primaryColor;
+
+    return ConfigSection(
+      title: "Fertilizer Channels",
+      icon: Icons.opacity,
+      children: [
+        Row(
+          children: [
+            const SizedBox(width: 85),
+            ...List.generate(6, (i) => Expanded(child: Center(child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              padding: const EdgeInsets.symmetric(vertical: 5),
+              decoration: BoxDecoration(color: primaryColor, borderRadius: BorderRadius.circular(6)),
+              child: Text("F${i + 1}", style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+            )))),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            const SizedBox(width: 85, child: Text("Status", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.black54))),
+            ...List.generate(6, (i) {
+              final String status = fertStatus.length > i ? fertStatus[i] : "0";
+              final bool isOn = status == "1" || status.endsWith("1");
+              return Expanded(child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: _buildBadge(isOn ? "ON" : "OFF", isOn: isOn),
+              ));
+            }),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            const SizedBox(width: 85, child: Text("Rate", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.black54))),
+            ...List.generate(6, (i) => Expanded(child: _dataValueBox(fertRates.length > i ? fertRates[i] : "0", small: true))),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            const SizedBox(width: 85, child: Text("Vent Flow", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.black54))),
+            ...List.generate(6, (i) => Expanded(child: _dataValueBox((_program?.ventFlows.length ?? 0) > i ? _program!.ventFlows[i] : "0.0", small: true))),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _dataValueBox(String val, {bool small = false}) {
+    final primaryColor = Theme.of(context).primaryColor;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: small ? 8 : 12, vertical: small ? 3 : 6),
+      margin: const EdgeInsets.symmetric(horizontal: 2),
+      padding: EdgeInsets.symmetric(vertical: small ? 8 : 10),
       decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(small ? 6 : 10),
-        boxShadow: elevated ? [BoxShadow(color: color.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 4))] : null,
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
           color: Colors.white,
-          fontWeight: FontWeight.w900,
-          fontSize: small ? 9 : 11,
-          letterSpacing: 0.5,
-        ),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.grey.shade200)),
+      child: Center(child: Text(val, style: TextStyle(color: primaryColor, fontSize: small ? 11 : 14, fontWeight: FontWeight.bold))),
+    );
+  }
+}
+
+class ConfigSection extends StatelessWidget {
+  final String title;
+  final List<Widget> children;
+  final Widget? trailing;
+  final IconData? icon;
+  const ConfigSection({super.key, required this.title, required this.children, this.trailing, this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).primaryColor;
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+          color: primaryColor.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: primaryColor.withValues(alpha: 0.1))
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (title.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      if (icon != null) ...[
+                        Icon(icon, size: 20, color: primaryColor),
+                        const SizedBox(width: 10),
+                      ],
+                      Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: primaryColor)),
+                    ],
+                  ),
+                  if (trailing != null) trailing!,
+                ],
+              ),
+            ),
+          ...children,
+        ],
       ),
     );
   }
+}
 
-  Widget _buildColumnLabelValue(String label, String value, IconData icon) {
-    return Expanded(
-      child: Column(
+class ConfigRow extends StatelessWidget {
+  final String? label;
+  final String value;
+  final String splitBy;
+  const ConfigRow({super.key, this.label, required this.value, required this.splitBy});
+
+  @override
+  Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).primaryColor;
+    final values = value.split(splitBy).where((e) => e.trim().isNotEmpty).toList();
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
         children: [
-          Icon(icon, size: 14, color: AppThemes.primaryColor),
-          const SizedBox(height: 4),
-          Text(label, style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.grey.shade600)),
-          const SizedBox(height: 6),
-          _buildValueBox(value, small: true),
+          if (label != null)
+            SizedBox(width: 85, child: Text(label!, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.black54))),
+          ...values.map((v) => Expanded(child: Center(child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey.shade200)),
+              child: Center(child: Text(v, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: primaryColor))))))),
         ],
       ),
+    );
+  }
+}
+
+class ConfigGridRow extends StatelessWidget {
+  final String label;
+  final List<String> values;
+  final List<String> columnLabels;
+  const ConfigGridRow({super.key, required this.label, required this.values, required this.columnLabels});
+
+  @override
+  Widget build(BuildContext context) {
+    final primaryColor = Theme.of(context).primaryColor;
+    return Row(
+      children: [
+        SizedBox(width: 110, child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11, color: Colors.black54))),
+        Expanded(
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  for (var colLabel in columnLabels)
+                    Expanded(child: Center(child: Text(colLabel, style: TextStyle(fontSize: 10, color: primaryColor.withValues(alpha: 0.7), fontWeight: FontWeight.bold)))),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  for (var val in values)
+                    Expanded(child: Center(child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 2),
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: Colors.grey.shade200)),
+                        child: Center(child: Text(val, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: primaryColor)))))),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

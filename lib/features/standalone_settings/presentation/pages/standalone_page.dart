@@ -228,7 +228,40 @@ class _StandalonePageState extends State<StandalonePage> {
           context,
           padding: EdgeInsets.zero,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "CONFIGURED BLOCKS",
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        "${standaloneData.zones.length} Blocks",
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
               ...standaloneData.zones.asMap().entries.map((entry) {
                 return ZoneItem(index: entry.key, zone: entry.value);
               }),
@@ -248,13 +281,13 @@ class _StandalonePageState extends State<StandalonePage> {
                   subUserId: subUserId,
                   menuId: "2",
                   settingsId: "59",
-                  successMessage: "Zones configured successfully",
+                  successMessage: "Blocks configured successfully",
                   sendType: StandaloneSendType.zones,
                 ),
               );
             },
             icon: const Icon(Icons.send_rounded, size: 18, color: Colors.white),
-            label: const Text("SEND ZONES", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+            label: const Text("SEND BLOCKS", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -365,7 +398,40 @@ class _StandalonePageState extends State<StandalonePage> {
           context,
           padding: EdgeInsets.zero,
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "CONFIGURED BLOCKS",
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        "${standaloneData.zones.length} Blocks",
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
               ...standaloneData.zones.asMap().entries.map((entry) {
                 return ZoneItem(index: entry.key, zone: entry.value);
               }),
@@ -385,13 +451,13 @@ class _StandalonePageState extends State<StandalonePage> {
                   subUserId: subUserId,
                   menuId: "94",
                   settingsId: "500",
-                  successMessage: "Zone configuration saved",
+                  successMessage: "Block configuration saved",
                   sendType: StandaloneSendType.zones,
                 ),
               );
             },
             icon: const Icon(Icons.send_rounded, size: 18, color: Colors.white),
-            label: const Text("SEND ZONES", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+            label: const Text("SEND BLOCKS", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
