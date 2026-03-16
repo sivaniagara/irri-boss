@@ -68,7 +68,7 @@ class _VoltageGraphPageState extends State<VoltageGraphPage> {
                     const SizedBox(height: 12),
                     _totalPowerCard(data.last.totalPowerOnTime ?? "0:00"),
                     const SizedBox(height: 12),
-                    ...data.map((e) => _dataCard(e)).toList(),
+                    ...data.map((e) => dataCard(e)).toList(),
                   ],
                 );
               }
@@ -263,113 +263,171 @@ class _VoltageGraphPageState extends State<VoltageGraphPage> {
   }
 
 
-  Widget _dataCard(dynamic e) {
-    return Row(
-      children: [
-        _timeBox(e.time),
-        Expanded(
-          child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 6),
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEFEFEF),
-              borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(16),
-                bottomRight: Radius.circular(16),
+
+  Widget dataCard(dynamic e) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          )
+        ],
+      ),
+      child: Row(
+        children: [
+          timeBox(e.time),
+
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                children: [
+
+                  phaseCard(
+                    color: const Color(0xffE53935),
+                    r: e.r,
+                    ry: e.ry,
+                    c: e.c1,
+                  ),
+
+                  phaseCard(
+                    color: const Color(0xffD4A017),
+                    r: e.y,
+                    ry: e.ry,
+                    c: e.c1,
+                  ),
+
+                  phaseCard(
+                    color: const Color(0xff3B82C4),
+                    r: e.b,
+                    ry: e.ry,
+                    c: e.c1,
+                  ),
+
+                  wellLevelCard(e.wellPercentage,e.wellLevel),
+                ],
               ),
             ),
-            child: Row(
-              children: [
-                const SizedBox(width: 8),
-
-                _phasePill(
-                  title: 'R Phase',
-                  value: '${e.r} V',
-                  color: const Color(0xFFE21E11),
-                ),
-                _phasePill(
-                  title: 'Y Phase',
-                  value: '${e.y} V',
-                  color: const Color(0xFFDAB222),
-                ),
-                _phasePill(
-                  title: 'B Phase',
-                  value: '${e.b} V',
-                  color: const Color(0xFF3B83C5),
-                ),
-                _phasePill(
-                  title: 'Well Level',
-                  value: '${e.wellPercentage}%',
-                  color: const Color(0xFF8AC7FF),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _timeBox(String time) {
-    return Container(
-      width: 70,
-      height: 68,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: const Color(0xFFDCEEFF),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(12),
-          bottomLeft: Radius.circular(12),
-        ),
-      ),
-      child: Text(
-        time,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: Color(0xFF1A73E8),
-        ),
+          )
+        ],
       ),
     );
   }
 
-  Widget _phasePill({
-    required String title,
-    required String value,
+   Widget phaseCard({
     required Color color,
+    required dynamic r,
+    required dynamic ry,
+    required dynamic c,
   }) {
     return Expanded(
       child: Container(
-        height: 56,
+        height: 80,
         margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
           color: color,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 11,
-                color: Colors.white,
-              ),
+
+            Text("R $r V",
+                style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.white, fontSize: 12)),
+            Padding(
+              padding: EdgeInsets.only(left: 10,right: 10,top: 2,bottom: 2),
+              child: Container(color: Colors.white,height: 0.5,),
             ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+
+            Text("RY $ry V",
+                style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.white, fontSize: 12)),
+            Padding(
+              padding: EdgeInsets.only(left: 10,right: 10,top: 2,bottom: 2),
+              child: Container(color: Colors.white,height: 0.5,),
             ),
+
+            Text("C1 $c A",
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold)),
           ],
         ),
       ),
     );
   }
+  Widget wellLevelCard(String percentage , String feet) {
+    return Container(
+      width: 70,
+      height: 80,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xffA8D4FF),
+            Color(0xff4A90E2),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+           const Text(
+            "Well Level",
+            style: TextStyle(color: Colors.white, fontSize: 11),
+          ),
+          Text(
+            "$feet",
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          Text(
+            "$percentage%",
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          )
+        ],
+      ),
+    );
+  }
+  Widget timeBox(String time) {
+    return Container(
+      width: 70,
+      height: 100,
+      alignment: Alignment.center,
+      decoration: const BoxDecoration(
+        color: Color(0xffBFD1E5),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          bottomLeft: Radius.circular(16),
+        ),
+      ),
+      child: Text(
+        time,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.blue,
+        ),
+      ),
+    );
+  }
+
+
 
   double _getMaxVoltage(List data) {
     double maxValue = 0;
