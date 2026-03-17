@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/foundation.dart';
@@ -83,11 +84,39 @@ const int fakeGroupId = 0;
 class _DashboardPageState extends State<DashboardPage> {
   BottomNavigationOption selectedBottomNavigation = BottomNavigationOption.home;
   final NotchBottomBarController _controller = NotchBottomBarController(index: 0);
+  Timer? _liveTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Logic removed from here to prevent ProviderNotFoundError
+  }
+
+  void _startLiveSync(DashboardPageCubit cubit) {
+    if (_liveTimer != null) return; // Ensure only one timer runs
+    
+    _liveTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      if (mounted && selectedBottomNavigation == BottomNavigationOption.home) {
+        final state = cubit.state;
+        if (state is DashboardGroupsLoaded) {
+          final groupId = state.selectedGroupId;
+          final controllerIndex = state.selectedControllerIndex;
+          if (groupId != null && controllerIndex != null) {
+            final controllers = state.groupControllers[groupId] ?? [];
+            if (controllerIndex < controllers.length) {
+              cubit.getLive(controllers[controllerIndex].deviceId);
+            }
+          }
+        }
+      }
+    });
+  }
 
   @override
   void dispose() {
-    super.dispose();
+    _liveTimer?.cancel();
     _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -117,6 +146,10 @@ class _DashboardPageState extends State<DashboardPage> {
       child: Builder(
         builder: (context) {
           final cubit = context.read<DashboardPageCubit>();
+          
+          // Start the sync timer using the cubit instance from this context
+          _startLiveSync(cubit);
+
           _initializeCubit(cubit, context, userId, userType, groupId);
 
           return BlocBuilder<DashboardPageCubit, DashboardState>(

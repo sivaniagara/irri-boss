@@ -12,6 +12,7 @@ import '../../../../core/di/injection.dart' as di;
 import '../../../../core/services/mqtt/mqtt_manager.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/utils/app_images.dart';
+import '../../../../core/utils/safe_parser.dart';
 import '../../../edit_program/utils/edit_program_routes.dart';
 import '../../domain/entities/controller_entity.dart';
 import '../../domain/entities/livemessage_entity.dart';
@@ -29,25 +30,59 @@ class Dashboard20 extends StatefulWidget {
 
 class _Dashboard20State extends State<Dashboard20> {
 
-  double _safeParse(String? value) {
-    if (value == null || value.isEmpty) return 0.0;
-    String cleanValue = value.replaceAll('F', '').trim();
-    return double.tryParse(cleanValue) ?? 0.0;
-  }
-
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<DashboardPageCubit, DashboardState>(
         builder: (context, state){
-          if(state is! DashboardGroupsLoaded) return Placeholder();
-          ControllerEntity controllerEntity = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!];
-          LiveMessageEntity liveMessageEntity = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!].liveMessage;
+          if(state is DashboardLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          
+          if(state is DashboardError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 60, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text(state.message, style: const TextStyle(fontSize: 16)),
+                  TextButton(
+                    onPressed: () {
+                      // Logic to retry could go here if needed
+                    },
+                    child: const Text('Retry'),
+                  )
+                ],
+              ),
+            );
+          }
+
+          if(state is! DashboardGroupsLoaded) return const SizedBox.shrink();
+
+          final groupId = state.selectedGroupId;
+          final controllerIndex = state.selectedControllerIndex;
+
+          if (groupId == null || controllerIndex == null || 
+              state.groupControllers[groupId] == null || 
+              state.groupControllers[groupId]!.isEmpty) {
+            return const Center(child: Text("No Controllers Found"));
+          }
+
+          ControllerEntity controllerEntity = state.groupControllers[groupId]![controllerIndex];
+          LiveMessageEntity liveMessageEntity = controllerEntity.liveMessage;
+          
+          if (kDebugMode) {
+            print("DASHBOARD_2_0: Rebuilding for ${controllerEntity.deviceName}");
+            print("Sync Time: ${controllerEntity.livesyncTime} Date: ${controllerEntity.livesyncDate}");
+            print("LiveMessage Time: ${liveMessageEntity.ct} Date: ${liveMessageEntity.cd}");
+          }
+
           return RefreshIndicator(
             onRefresh: () async {
               context.read<DashboardPageCubit>().getLive(controllerEntity.deviceId);
             },
             child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(), // important
+              physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
                 spacing: 10,
                 children: [
@@ -68,7 +103,6 @@ class _Dashboard20State extends State<Dashboard20> {
           );
         },
         listener: (context, state){
-          print('listening state :: $state');
           if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.loading){
             showGradientLoadingDialog(context);
           }else if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.success){
@@ -111,6 +145,10 @@ class _Dashboard20State extends State<Dashboard20> {
   }
 
   Widget mountainWidget(LiveMessageEntity liveMessageEntity){
+    // Use fields that are guaranteed to update from MQTT
+    String syncTime = liveMessageEntity.ct;
+    String syncDate = liveMessageEntity.cd;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       width: double.infinity,
@@ -141,7 +179,7 @@ class _Dashboard20State extends State<Dashboard20> {
                       children: [
                         const Icon(Icons.signal_cellular_alt, color: Colors.green),
                         Text(
-                          'Good Signal',
+                          '${liveMessageEntity.signal}%',
                           style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w400),
                         ),
                       ],
@@ -150,7 +188,7 @@ class _Dashboard20State extends State<Dashboard20> {
                       children: [
                         const Icon(Icons.battery_6_bar_rounded, color: Colors.green),
                         Text(
-                          'Battery ${liveMessageEntity.batVolt}% | ${getDate(liveData: liveMessageEntity)}',
+                          'Battery ${SafeParser.parseDouble(liveMessageEntity.batVolt).toStringAsFixed(0)}% | ${getDate(liveData: liveMessageEntity)}',
                           overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w400),
                         ),
@@ -165,7 +203,7 @@ class _Dashboard20State extends State<Dashboard20> {
                       children: [
                         const Icon(Icons.circle, color: Colors.green),
                         Text(
-                          'Live Sync At : ${liveMessageEntity.cd}, ${liveMessageEntity.ct}',
+                          'Live Sync At : $syncDate, $syncTime',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ],
@@ -196,24 +234,44 @@ class _Dashboard20State extends State<Dashboard20> {
       voltageAndCurrent(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity),
       if(controllerEntity.modelId == 27)
         doublePumpWidget(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity),
-      if([11, 27].contains(controllerEntity.modelId))
-        dashboardCard(
-          child: Column(
-            spacing: 20,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              iconWithHeader(
-                title: 'Latest Message',
-                iconBackgroundColor: const Color(0xffB4E7FF),
-                iconColor: Theme.of(context).colorScheme.primary,
-                icon: Icon(Icons.message, color: Theme.of(context).colorScheme.primary),
+      
+      dashboardCard(
+        child: Column(
+          spacing: 20,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            iconWithHeader(
+              title: 'Latest Message',
+              iconBackgroundColor: const Color(0xffB4E7FF),
+              iconColor: Theme.of(context).colorScheme.primary,
+              icon: Icon(Icons.message, color: Theme.of(context).colorScheme.primary),
+            ),
+            Text(controllerEntity.msgDesc, style: const TextStyle(fontSize: 16, color: Color(0xff424242),),),
+            ReadMoreText(
+              controllerEntity.ctrlLatestMsg,
+              trimLines: 2, // number of lines before collapsing
+              trimMode: TrimMode.Line,
+              trimCollapsedText: ' Show more',
+              trimExpandedText: ' Show less',
+              style: const TextStyle(
+                fontSize: 16,
+                color: Color(0xff424242),
               ),
-              Text(controllerEntity.msgDesc, style: const TextStyle(fontSize: 16, color: Color(0xff424242),),),
-              Text(controllerEntity.ctrlLatestMsg, style: const TextStyle(fontSize: 16, color: Color(0xff424242),),)
-            ],
-          ),
+              moreStyle: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).primaryColor,
+              ),
+              lessStyle: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).primaryColor,
+              ),
+            )
+          ],
         ),
-      const SizedBox(height: 100,)
+      ),
+      const SizedBox(height: 100, )
     ];
   }
 
@@ -244,7 +302,7 @@ class _Dashboard20State extends State<Dashboard20> {
               const Spacer(),
               InkWell(
                 onTap: () {
-                  context.push(DashBoardRoutes.ctrlLivePage, extra: liveMessageEntity);
+                  context.push(DashBoardRoutes.ctrlLivePage, extra: controllerEntity);
                 },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -334,7 +392,7 @@ class _Dashboard20State extends State<Dashboard20> {
                       spacing: 10,
                       children: [
                         IconButton(
-                          style: ButtonStyle(
+                          style: const ButtonStyle(
                             backgroundColor: WidgetStatePropertyAll(Colors.red)
                           ),
                             onPressed: (){
@@ -343,15 +401,15 @@ class _Dashboard20State extends State<Dashboard20> {
                               context.read<DashboardPageCubit>().controlMotorStatus(
                                   userId: controllerContext.userId,
                                   controllerId: controllerContext.controllerId,
-                                  programId: liveMessageEntity.programName.split('program')[1],
+                                  programId: SafeParser.getProgramId(liveMessageEntity.programName),
                                   deviceId: controllerContext.deviceId,
                                   payload: payload
                               );
                             },
-                            icon: Icon(Icons.power_settings_new, color: Colors.white,)
+                            icon: const Icon(Icons.power_settings_new, color: Colors.white,)
                         ),
                         IconButton(
-                            style: ButtonStyle(
+                            style: const ButtonStyle(
                                 backgroundColor: WidgetStatePropertyAll(Colors.green)
                             ),
                             onPressed: (){
@@ -360,37 +418,13 @@ class _Dashboard20State extends State<Dashboard20> {
                               context.read<DashboardPageCubit>().controlMotorStatus(
                                   userId: controllerContext.userId,
                                   controllerId: controllerContext.controllerId,
-                                  programId: liveMessageEntity.programName.split('program')[1],
+                                  programId: SafeParser.getProgramId(liveMessageEntity.programName),
                                   deviceId: controllerContext.deviceId,
                                   payload: payload
                               );
                             },
-                            icon: Icon(Icons.power_settings_new, color: Colors.white,)
+                            icon: const Icon(Icons.power_settings_new, color: Colors.white,)
                         ),
-                        // InkWell(
-                        //   onTap: (){
-                        //     final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
-                        //     String payload = liveMessageEntity.motorOnOff == '1' ? 'MTROF,' : 'MTRON,';
-                        //     context.read<DashboardPageCubit>().controlMotorStatus(
-                        //         userId: controllerContext.userId,
-                        //         controllerId: controllerContext.controllerId,
-                        //         programId: liveMessageEntity.programName.split('program')[1],
-                        //         deviceId: controllerContext.deviceId,
-                        //         payload: payload
-                        //     );
-                        //   },
-                        //   child: Container(
-                        //     padding: const EdgeInsets.all(4),
-                        //     decoration: BoxDecoration(
-                        //       borderRadius: BorderRadius.circular(5),
-                        //       border: Border.all(width: 2, color: liveMessageEntity.motorOnOff == '1' ? Colors.green : Colors.red),
-                        //     ),
-                        //     child: Image.asset(
-                        //       'assets/images/icons/switch_${liveMessageEntity.motorOnOff == '1' ? 'on' : 'off'}_icon.png',
-                        //       width: 20,
-                        //     ),
-                        //   ),
-                        // )
                       ],
                     ),
                     Text(liveMessageEntity.modeOfOperation, style: Theme.of(context).textTheme.bodySmall)
@@ -425,7 +459,7 @@ class _Dashboard20State extends State<Dashboard20> {
                               ),
                               TextSpan(
                                 text: liveMessageEntity.prsOut,
-                                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                                style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
                               ),
                             ],
                           ),
@@ -505,7 +539,7 @@ class _Dashboard20State extends State<Dashboard20> {
                     context.read<DashboardPageCubit>().updateChangeFrom(
                         userId: controllerContext.userId,
                         controllerId: controllerContext.controllerId,
-                        programId: liveMessageEntity.programName.split('program')[1],
+                        programId: SafeParser.getProgramId(liveMessageEntity.programName),
                         deviceId: controllerContext.deviceId,
                         payload: payload
                     );
@@ -614,13 +648,13 @@ class _Dashboard20State extends State<Dashboard20> {
                   moonColor: const Color(0xffD4EAFF),
                   skyColor: const Color(0xffE6F7FF),
                   title: 'Max Level',
-                  value: '${_safeParse(liveMessageEntity.wellLevel).toStringAsFixed(1)} Feet',
+                  value: '${SafeParser.parseDouble(liveMessageEntity.wellLevel).toStringAsFixed(1)} Feet',
                 ),
                 moonCard(
                   moonColor: const Color(0xffD4EAFF),
                   skyColor: const Color(0xffE6F7FF),
                   title: 'Current Level',
-                  value: '${_safeParse(liveMessageEntity.wellPercent).toStringAsFixed(0)}%',
+                  value: '${SafeParser.parseDouble(liveMessageEntity.wellPercent).toStringAsFixed(0)}%',
                 ),
               ],
             )
@@ -669,22 +703,17 @@ class _Dashboard20State extends State<Dashboard20> {
 
   List<String> getZoneNumberOfActiveProgram({required ControllerEntity controllerEntity, required LiveMessageEntity liveMessageEntity}){
     List<String> zoneNumbers = [];
-    print("controllerEntity.programList : ${controllerEntity.programList}");
-    print("liveMessageEntity.programName : ${liveMessageEntity.programName}");
     for(var program = 0;program < controllerEntity.programList.length;program++){
       if(liveMessageEntity.programName == 'program${program+1}'){
-        print('isthere');
-        print("controllerEntity.programList[program].listOfZone : ${controllerEntity.programList[program].listOfZone}");
         zoneNumbers = controllerEntity.programList[program].listOfZone.map((e) => e.zoneNumber).toList();
       }
     }
-    print("zoneNumbers : ${zoneNumbers}");
    return zoneNumbers;
-
   }
 
   String getDate({required LiveMessageEntity liveData}){
     try{
+      if (liveData.cd.isEmpty) return '---';
       return DateFormat("d/MMM/yyyy").format(DateTime(int.parse(liveData.cd.split('/')[2]), int.parse(liveData.cd.split('/')[1]), int.parse(liveData.cd.split('/')[0]))).toUpperCase();
     }catch(e){
       if (kDebugMode) {
@@ -807,12 +836,12 @@ class _Dashboard20State extends State<Dashboard20> {
                     payload: payload
                 );
               },
-              icon: const Icon(Icons.power_settings_new,),
+              icon: const Icon(Icons.power_settings_new, ),
               style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all(const Color(0xff4DB53D))
               ),
             ),
-            Text('ON', style: Theme.of(context).textTheme.labelLarge,)
+            const Text('ON', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12), )
           ],
         ),
         Column(
@@ -829,12 +858,12 @@ class _Dashboard20State extends State<Dashboard20> {
                     payload: payload
                 );
               },
-              icon: const Icon(Icons.power_settings_new,),
+              icon: const Icon(Icons.power_settings_new, ),
               style: ButtonStyle(
                   backgroundColor: WidgetStateProperty.all(const Color(0xffE9352B))
               ),
             ),
-            Text('OFF', style: Theme.of(context).textTheme.labelLarge,)
+            const Text('OFF', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12), )
           ],
         ),
       ],
@@ -855,7 +884,7 @@ class _Dashboard20State extends State<Dashboard20> {
       child: Column(
         spacing: 5,
         children: [
-          Text(phase, style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.bold, color: Colors.white),),
+          Text(phase, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14), ),
           IntrinsicWidth(
             child: Container(
               width: 60,
@@ -863,7 +892,7 @@ class _Dashboard20State extends State<Dashboard20> {
               color: Colors.white,
             ),
           ),
-          Text('$value V', style: const TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold),),
+          Text('$value V', style: const TextStyle(fontSize: 20, color: Colors.white, fontWeight: FontWeight.bold), ),
         ],
       ),
     );
@@ -913,8 +942,7 @@ class _Dashboard20State extends State<Dashboard20> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 80,
-            height: 40,
+            width: 80, height: 40,
             decoration: BoxDecoration(
               borderRadius: const BorderRadius.only(
                 bottomRight: Radius.circular(12),
@@ -925,7 +953,7 @@ class _Dashboard20State extends State<Dashboard20> {
             child: Center(
               child: Text(
                 title,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(color: Colors.white),
+                style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -967,7 +995,7 @@ class _Dashboard20State extends State<Dashboard20> {
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Text(title, style: Theme.of(context).textTheme.labelLarge?.copyWith(color: Colors.black)),
+                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 14)),
                 Text(
                   value,
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black45),

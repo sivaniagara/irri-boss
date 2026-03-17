@@ -26,6 +26,7 @@ import 'features/controller_details/presentation/bloc/controller_details_bloc.da
 import 'features/controller_details/presentation/bloc/controller_details_bloc_event.dart';
 import 'features/controller_details/presentation/pages/controller_details_page.dart';
 import 'features/controller_settings/utils/controller_settings_routes.dart';
+import 'features/dashboard/domain/entities/controller_entity.dart';
 import 'features/dashboard/domain/entities/livemessage_entity.dart';
 import 'features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'features/dashboard/presentation/cubit/dashboard_page_cubit.dart';
@@ -313,13 +314,28 @@ class AppRouter {
             path: DashBoardRoutes.ctrlLivePage,
             builder: (context, state) {
               print('Building ctrlLivePage, AuthBloc state: ${sl.get<AuthBloc>().state}');
-              final selectedController = state.extra as LiveMessageEntity?;
+              
+              LiveMessageEntity? liveMessage;
+              String? deviceId;
+              
+              if (state.extra is ControllerEntity) {
+                final controller = state.extra as ControllerEntity;
+                liveMessage = controller.liveMessage;
+                deviceId = controller.deviceId;
+              } else if (state.extra is LiveMessageEntity) {
+                liveMessage = state.extra as LiveMessageEntity;
+              }
+
               return MultiBlocProvider(
                 providers: [
                   BlocProvider.value(value: sl.get<AuthBloc>()),
                   BlocProvider.value(value: sl.get<DashboardPageCubit>()),
                 ],
-                child: CtrlLivePage(selectedController: selectedController),
+                child: CtrlLivePage(
+                  selectedController: liveMessage, 
+                  deviceId: deviceId,
+                  lastSync: '',
+                ),
               );
             },
             routes: [

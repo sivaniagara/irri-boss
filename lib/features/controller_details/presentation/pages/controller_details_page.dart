@@ -26,6 +26,7 @@ class _ControllerDetailsPageState extends State<ControllerDetailsPage> {
   late TextEditingController simController;
   late TextEditingController countrycodeController;
   String? selectedGroupName;
+  bool _isInitialized = false;
 
   @override
   void initState() {
@@ -43,12 +44,13 @@ class _ControllerDetailsPageState extends State<ControllerDetailsPage> {
     super.dispose();
   }
 
-  void _initializeControllers(dynamic controller) {
-    if (devicenameController.text.isEmpty) {
-      devicenameController.text = controller.deviceName;
-      simController.text = controller.simNumber;
-      countrycodeController.text = controller.customerCountryCode;
-      selectedGroupName = controller.groupName;
+  void _initializeControllers(dynamic data) {
+    if (!_isInitialized) {
+      devicenameController.text = data.deviceName;
+      simController.text = data.simNumber;
+      countrycodeController.text = data.customerCountryCode;
+      selectedGroupName = data.groupName;
+      _isInitialized = true;
     }
   }
 
@@ -57,109 +59,147 @@ class _ControllerDetailsPageState extends State<ControllerDetailsPage> {
     return Scaffold(
       backgroundColor: AppThemes.scaffoldBackGround,
       appBar: const CustomAppBar(title: "CONTROLLER DETAILS"),
-      body: BlocBuilder<ControllerDetailsBloc, ControllerDetailsState>(
-        builder: (context, state) {
-          if (state is ControllerDetailsInitial || state is ControllerDetailsLoading) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (state is ControllerDetailsError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.error_outline, size: 60, color: Colors.red),
-                  const SizedBox(height: 16),
-                  Text("Error: ${state.message}", style: const TextStyle(color: Colors.black87)),
-                ],
+      body: BlocListener<ControllerDetailsBloc, ControllerDetailsState>(
+        listener: (context, state) {
+          if (state is UpdateControllerSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Controller details updated successfully"),
+                backgroundColor: Colors.green,
+              ),
+            );
+            Navigator.pop(context);
+          } else if (state is ControllerDetailsError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
               ),
             );
           }
-
-          if (state is ControllerDetailsLoaded) {
-            final controller = state.data;
-            final groupList = state.groupDetails;
-            _initializeControllers(controller);
-
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSectionTitle("DEVICE IDENTIFICATION"),
-                  const SizedBox(height: 10),
-                  _buildInfoCard(
-                    label: "Device ID",
-                    value: controller.deviceId,
-                    icon: Icons.fingerprint,
-                    onTap: () {
-                      Clipboard.setData(ClipboardData(text: controller.deviceId));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Device ID copied to clipboard")),
-                      );
-                    },
-                  ),
-                  _buildDropdownCard(
-                    label: "Group Name",
-                    value: selectedGroupName ?? controller.groupName,
-                    items: groupList.map((g) => g.groupName).toList(),
-                    icon: Icons.group_work_outlined,
-                    onChanged: (val) {
-                      setState(() {
-                        selectedGroupName = val;
-                      });
-                    },
-                  ),
-                  _buildTextFieldCard(
-                    label: "Device Name",
-                    controller: devicenameController,
-                    icon: Icons.edit_outlined,
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  _buildSectionTitle("CONNECTIVITY & COMMUNICATION"),
-                  const SizedBox(height: 10),
-                  _buildPhoneInputCard(
-                    countryCodeCtrl: countrycodeController,
-                    simNumberCtrl: simController,
-                  ),
-                  _buildSwitchCard(
-                    title: "INTERNET 4G",
-                    value: controller.gprsMode == "4",
-                    onChanged: (val) {
-                      context.read<ControllerDetailsBloc>().add(
-                        ToggleSwitchEvent(switchName: "gprsMode", isOn: val),
-                      );
-                    },
-                  ),
-                  _buildSwitchCard(
-                    title: "DND (Do Not Disturb)",
-                    value: controller.dndStatus == "1",
-                    onChanged: (val) {
-                      context.read<ControllerDetailsBloc>().add(
-                        ToggleSwitchEvent(switchName: "dndStatus", isOn: val),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-                  _buildSectionTitle("SYSTEM INFORMATION"),
-                  const SizedBox(height: 10),
-                  _buildReadOnlyInfoCard("Dealer Name", controller.dealerName, Icons.person_outline),
-                  _buildReadOnlyInfoCard("Model", controller.modelName, Icons.model_training),
-                  _buildReadOnlyInfoCard("Customer Name", controller.customerName, Icons.account_circle_outlined),
-                  _buildReadOnlyInfoCard("Customer Number", controller.customerNumber, Icons.phone_android),
-
-                  const SizedBox(height: 30),
-                  _buildActionButtons(context, controller, groupList),
-                  const SizedBox(height: 40),
-                ],
-              ),
-            );
-          }
-
-          return Center(child: noDataNew);
         },
+        child: BlocBuilder<ControllerDetailsBloc, ControllerDetailsState>(
+          builder: (context, state) {
+            if (state is ControllerDetailsInitial || state is ControllerDetailsLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (state is ControllerDetailsError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 60, color: Colors.red),
+                    const SizedBox(height: 16),
+                    Text("Error: ${state.message}", style: const TextStyle(color: Colors.black87)),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<ControllerDetailsBloc>().add(
+                          GetControllerDetailsEvent(
+                            userId: widget.params.userId,
+                            controllerId: widget.params.controllerId,
+                            deviceId: widget.params.deviceId,
+                          ),
+                        );
+                      },
+                      child: const Text("Retry"),
+                    )
+                  ],
+                ),
+              );
+            }
+
+            if (state is ControllerDetailsLoaded || state is UpdateControllerSuccess) {
+              final data = (state is ControllerDetailsLoaded) 
+                  ? state.data 
+                  : (context.read<ControllerDetailsBloc>().state as ControllerDetailsLoaded).data;
+              
+              final groupList = (state is ControllerDetailsLoaded) 
+                  ? state.groupDetails 
+                  : (context.read<ControllerDetailsBloc>().state as ControllerDetailsLoaded).groupDetails;
+
+              _initializeControllers(data);
+
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionTitle("DEVICE IDENTIFICATION"),
+                    const SizedBox(height: 10),
+                    _buildInfoCard(
+                      label: "Device ID",
+                      value: data.deviceId,
+                      icon: Icons.fingerprint,
+                      onTap: () {
+                        Clipboard.setData(ClipboardData(text: data.deviceId));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Device ID copied to clipboard")),
+                        );
+                      },
+                    ),
+                    _buildDropdownCard(
+                      label: "Group Name",
+                      value: selectedGroupName ?? data.groupName,
+                      items: groupList.map((g) => g.groupName).toList(),
+                      icon: Icons.group_work_outlined,
+                      onChanged: (val) {
+                        setState(() {
+                          selectedGroupName = val;
+                        });
+                      },
+                    ),
+                    _buildTextFieldCard(
+                      label: "Device Name",
+                      controller: devicenameController,
+                      icon: Icons.edit_outlined,
+                    ),
+                    
+                    const SizedBox(height: 20),
+                    _buildSectionTitle("CONNECTIVITY & COMMUNICATION"),
+                    const SizedBox(height: 10),
+                    _buildPhoneInputCard(
+                      countryCodeCtrl: countrycodeController,
+                      simNumberCtrl: simController,
+                    ),
+                    _buildSwitchCard(
+                      title: "INTERNET 4G",
+                      value: data.gprsMode == "4",
+                      onChanged: (val) {
+                        context.read<ControllerDetailsBloc>().add(
+                          ToggleSwitchEvent(switchName: "gprsMode", isOn: val),
+                        );
+                      },
+                    ),
+                    _buildSwitchCard(
+                      title: "DND (Do Not Disturb)",
+                      value: data.dndStatus == "1",
+                      onChanged: (val) {
+                        context.read<ControllerDetailsBloc>().add(
+                          ToggleSwitchEvent(switchName: "dndStatus", isOn: val),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 20),
+                    _buildSectionTitle("SYSTEM INFORMATION"),
+                    const SizedBox(height: 10),
+                    _buildReadOnlyInfoCard("Dealer Name", data.dealerName, Icons.person_outline),
+                    _buildReadOnlyInfoCard("Model", data.modelName, Icons.model_training),
+                    _buildReadOnlyInfoCard("Customer Name", data.customerName, Icons.account_circle_outlined),
+                    _buildReadOnlyInfoCard("Customer Number", data.customerNumber, Icons.phone_android),
+
+                    const SizedBox(height: 30),
+                    _buildActionButtons(context, data, groupList),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              );
+            }
+
+            return Center(child: noDataNew);
+          },
+        ),
       ),
     );
   }
@@ -329,13 +369,16 @@ class _ControllerDetailsPageState extends State<ControllerDetailsPage> {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, dynamic controller, dynamic groupList) {
+  Widget _buildActionButtons(BuildContext context, dynamic data, dynamic groupList) {
     return Row(
       children: [
         Expanded(
           child: ElevatedButton(
             onPressed: () {
-              final selectedGroup = groupList.firstWhere((g) => g.groupName == (selectedGroupName ?? controller.groupName));
+              final selectedGroup = groupList.firstWhere(
+                (g) => g.groupName == (selectedGroupName ?? data.groupName),
+                orElse: () => groupList.first,
+              );
               context.read<ControllerDetailsBloc>().add(
                 UpdateControllerEvent(
                   userId: '${widget.params.userId}',
@@ -344,9 +387,9 @@ class _ControllerDetailsPageState extends State<ControllerDetailsPage> {
                   simNumber: simController.text,
                   deviceName: devicenameController.text,
                   groupId: selectedGroup.userGroupId,
-                  operationMode: controller.operationMode,
-                  gprsMode: controller.gprsMode,
-                  appSmsMode: controller.appSmsMode,
+                  operationMode: data.operationMode,
+                  gprsMode: data.gprsMode,
+                  appSmsMode: data.appSmsMode,
                   sentSms: "",
                   editType: "0",
                 ),
