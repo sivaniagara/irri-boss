@@ -43,7 +43,7 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
     if (widget.deviceId != null) {
       di.sl.get<MqttManager>().subscribe(widget.deviceId!);
       _refreshData();
-      
+
       // Start periodic sync every 30 seconds while on this page
       _liveTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
         _refreshData();
@@ -69,7 +69,7 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
       if (!_refreshController.isAnimating) _refreshController.repeat();
       final mqttManager = di.sl.get<MqttManager>();
       mqttManager.publish(widget.deviceId!, jsonEncode(PublishMessageHelper.requestLive));
-      
+
       await Future.delayed(const Duration(seconds: 2));
       if (mounted) _refreshController.stop();
     }
@@ -137,7 +137,7 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
                   children: [
                     _buildMountainHeader(liveMessage),
                     const SizedBox(height: 10),
-                    
+
                     _buildDashboardCard(
                       child: _buildMotorValveControl(liveMessage),
                     ),
@@ -550,9 +550,9 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppThemes.scaffoldBackGround, 
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey.shade300)
+          color: AppThemes.scaffoldBackGround,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.grey.shade300)
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -605,9 +605,9 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Colors.white, 
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey.shade200)
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.grey.shade200)
         ),
         child: Column(
           children: [

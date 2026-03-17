@@ -144,7 +144,7 @@ class _Dashboard20State extends State<Dashboard20> {
     );
   }
 
-  Widget mountainWidget(LiveMessageEntity liveMessageEntity){
+  Widget mountainWidget(ControllerEntity controllerEntity, LiveMessageEntity liveMessageEntity){
     // Use fields that are guaranteed to update from MQTT
     String syncTime = liveMessageEntity.ct;
     String syncDate = liveMessageEntity.cd;
@@ -170,7 +170,7 @@ class _Dashboard20State extends State<Dashboard20> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
-              spacing: 20,
+              spacing: 15,
               children: [
                 Row(
                   spacing: 5,
@@ -199,14 +199,33 @@ class _Dashboard20State extends State<Dashboard20> {
                 Row(
                   spacing: 5,
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.circle, color: Colors.green),
-                        Text(
-                          'Live Sync At : $syncDate, $syncTime',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.circle, color: Colors.green, size: 10),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Live Sync : $syncDate, $syncTime',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          if(controllerEntity.modelId == 27)
+                            Row(
+                              children: [
+                                const Icon(Icons.circle, color: Colors.orange, size: 10),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'SMS Sync : ${controllerEntity.smsSyncTime}',
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
                     ),
                     Row(
                       children: [
@@ -230,7 +249,7 @@ class _Dashboard20State extends State<Dashboard20> {
 
   List<Widget> pumpDashboard({required ControllerEntity controllerEntity, required LiveMessageEntity liveMessageEntity}){
     return [
-      mountainWidget(liveMessageEntity),
+      mountainWidget(controllerEntity, liveMessageEntity),
       voltageAndCurrent(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity),
       if(controllerEntity.modelId == 27)
         doublePumpWidget(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity),
@@ -300,6 +319,7 @@ class _Dashboard20State extends State<Dashboard20> {
               ),
               Text('Current', style: Theme.of(context).textTheme.labelLarge),
               const Spacer(),
+              if (controllerEntity.modelId != 27)
               InkWell(
                 onTap: () {
                   context.push(DashBoardRoutes.ctrlLivePage, extra: controllerEntity);
@@ -363,7 +383,7 @@ class _Dashboard20State extends State<Dashboard20> {
 
   List<Widget> dripDashboard({required ControllerEntity controllerEntity, required LiveMessageEntity liveMessageEntity}){
     return [
-      mountainWidget(liveMessageEntity),
+      mountainWidget(controllerEntity, liveMessageEntity),
       voltageAndCurrent(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity),
       dashboardCard(
         child: Column(

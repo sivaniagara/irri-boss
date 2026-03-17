@@ -8,6 +8,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../../../features/dashboard/data/models/live_message_model.dart';
 import '../../../features/dashboard/domain/entities/livemessage_entity.dart';
+import '../../../features/dashboard/presentation/helper/get_sms_sync.dart';
 
 class MqttMessageType {
   final String code;
@@ -325,9 +326,7 @@ class MqttMessageHelper {
     }
 
     String trimmedMsg = msg.trim();
-    String msgCode = trimmedMsg.length > 2 ? trimmedMsg.substring(2) : '';
-    msgCode = msgCode.trim();
-    msgCode = msgCode.length >= 3 ? msgCode.substring(0, 3) : msgCode;
+    String msgCode = getMsgCode(trimmedMsg);
     String msgDesc = FaultSms.smsMessage(msgCode);
 
     final type = MqttMessageType.fromCode(typeStr);
@@ -356,14 +355,18 @@ class MqttMessageHelper {
         print('Dispatching Live Update: Date=$cd Time=$ct Msg=$trimmedMsg');
       }
 
-      // Update Dashboard with ALL fields from MQTT
+      // Format the display message instead of using raw MQTT message
+      // Prefer 'cl' (Latest Message from MQTT) if available, otherwise format 'cM'
+      String formattedDisplayMsg = cl.isNotEmpty ? cl : getDisplayMessage(trimmedMsg);
+
+      // Update Dashboard with formatted fields
       dispatcher.onLiveUpdate(
           qrCode,
           liveModel,
           date: cd,
           time: ct,
           msgDesc: msgDesc,
-          fullMsg: trimmedMsg
+          fullMsg: formattedDisplayMsg
       );
     }
 

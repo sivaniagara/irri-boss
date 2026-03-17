@@ -380,10 +380,30 @@ class DashboardPageCubit extends Cubit<DashboardState> {
   }
 
   void updateServerTime(String deviceId, {String? date, String? time}) {
-    _updateSingleDeviceState(deviceId, (ctrl) {
-      final model = ctrl as ControllerModel;
-      return model.copyWith(livesyncDate: date, livesyncTime: time);
+    if (state is! DashboardGroupsLoaded) return;
+    final currentState = state as DashboardGroupsLoaded;
+
+    final newGroupControllers =
+    Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
+
+    bool updated = false;
+
+    newGroupControllers.forEach((groupId, controllers) {
+      final index = controllers.indexWhere((c) => c.deviceId == deviceId);
+      if (index != -1) {
+        final List<ControllerEntity> updatedList = List.from(controllers);
+        updatedList[index] = updatedList[index].copyWith(
+          livesyncDate: date,
+          livesyncTime: time,
+        );
+        newGroupControllers[groupId] = updatedList;
+        updated = true;
+      }
     });
+
+    if (updated && !isClosed) {
+      emit(currentState.copyWith(groupControllers: newGroupControllers));
+    }
   }
 
   Future<void> updateChangeFrom({
@@ -446,7 +466,9 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
   @override
   Future<void> close() {
-    _deviceTimers.values.forEach((t) => t.cancel());
+    for (final t in _deviceTimers.values) {
+      t.cancel();
+    }
     return super.close();
   }
 }
