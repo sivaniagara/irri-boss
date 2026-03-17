@@ -4,12 +4,14 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
+import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
+import 'package:niagara_smart_drip_irrigation/features/edit_program/presentation/widgets/custom_card.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/services/mqtt/mqtt_manager.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../core/di/injection.dart';
 import '../../../core/services/mqtt/app_message_dispatcher.dart';
-import '../../../core/widgets/no_data.dart';
 import '../../report_downloader/utils/report_downloaderRoute.dart';
 import 'fert_live_dispatcher.dart';
 import 'fertstate.dart';
@@ -34,6 +36,12 @@ class _FertilizerLiveScreenState extends State<FertilizerLivePage> {
     super.initState();
     _dispatcher = FertilizerLiveDispatcher();
 
+    fertilizerState = FertilizerLiveDispatcher.getLastState(widget.deviceId);
+
+    if (fertilizerState == null) {
+      _loadFromPrefs();
+    }
+
     final appDispatcher = sl<AppMessageDispatcher>();
     appDispatcher.fertilizerLiveDispatcher = _dispatcher;
 
@@ -42,10 +50,12 @@ class _FertilizerLiveScreenState extends State<FertilizerLivePage> {
           deviceId.contains(widget.deviceId) ||
           widget.deviceId.contains(deviceId)) {
         final newState = fertilizerLiveStateFromRaw(rawMessage);
-        if (mounted) {
-          setState(() {
-            fertilizerState = newState;
-          });
+        if (newState.lastSyncTime != "NA") {
+          if (mounted) {
+            setState(() {
+              fertilizerState = newState;
+            });
+          }
         }
       }
     };
@@ -54,6 +64,36 @@ class _FertilizerLiveScreenState extends State<FertilizerLivePage> {
 
     _startAutoRefresh();
     _requestLiveData();
+  }
+
+  Future<void> _loadFromPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedData = prefs.getString('FERTLIVEMSG_${widget.deviceId}');
+      if (savedData != null && savedData.isNotEmpty) {
+        final parts = savedData.split(',');
+        if (parts.length >= 3) {
+          final ct = parts.last;
+          final cd = parts[parts.length - 2];
+          final cm = parts.sublist(0, parts.length - 2).join(',');
+
+          final reconstructed = {
+            'cM': cm,
+            'cD': cd,
+            'cT': ct,
+          };
+
+          final state = fertilizerLiveStateFromRaw(reconstructed);
+          if (mounted && fertilizerState == null) {
+            setState(() {
+              fertilizerState = state;
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Error loading fert live from prefs: $e");
+    }
   }
 
   void _requestLiveData() {
@@ -80,162 +120,123 @@ class _FertilizerLiveScreenState extends State<FertilizerLivePage> {
 
   @override
   Widget build(BuildContext context) {
-    return GlassyWrapper(
-      child: Scaffold(
-        backgroundColor: const Color(0xFFE5F1F1),
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          centerTitle: true,
-          automaticallyImplyLeading: false,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Color(0xFF37474F), size: 24),
-            onPressed: () => Navigator.of(context).pop(),
+    return Scaffold(
+      backgroundColor: AppThemes.scaffoldBackGround,
+      appBar: CustomAppBar(
+        title: "FERTILIZER LIVE",
+        actions: [
+          IconButton(
+            onPressed: _requestLiveData,
+            icon: const Icon(Icons.refresh, color: Colors.black),
           ),
-          title: const Text(
-            "Fertilizer Live Data",
-            style: TextStyle(
-              color: Color(0xFF263238),
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
+          IconButton(
+            onPressed: () {
+              if (fertilizerState != null) {
+                final Map<String, dynamic> excelData = {
+                  "Date": fertilizerState!.lastSyncDate,
+                  "Time": fertilizerState!.lastSyncTime,
+                  "Program": fertilizerState!.program,
+                  "Mode": fertilizerState!.modeType,
+                  "Pre-Water": fertilizerState!.preWater,
+                  "Post-Water": fertilizerState!.postWater,
+                  "Motor Status": fertilizerState!.motorStatus,
+                  "EC": fertilizerState!.ec,
+                  "pH": fertilizerState!.ph,
+                  "Pressure": fertilizerState!.pressure,
+                };
+
+                for (int i = 0; i < 6; i++) {
+                  excelData["F${i + 1} Level"] = fertilizerState!.tankLevels[i];
+                  excelData["F${i + 1} Set Time"] = fertilizerState!.setTimes[i];
+                  excelData["F${i + 1} Remain Time"] = fertilizerState!.remainTimes[i];
+                }
+
+                context.push(
+                  ReportDownloadPageRoutes.ReportDownloadPage,
+                  extra: {
+                    "title": "Fertilizer Live Report",
+                    "data": [excelData],
+                  },
+                );
+              }
+            },
+            icon: const Icon(Icons.download_rounded, color: Colors.black),
           ),
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: IconButton(
-                onPressed: () {
-                  setState(() {
-                    _requestLiveData();
-                  });
-                },
-                icon: Icon(Icons.refresh),
-              ),
-
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: IconButton(
-                onPressed: () {
-                  if (fertilizerState != null) {
-                    final Map<String, dynamic> excelData = {
-                      "Date": fertilizerState!.lastSyncDate,
-                      "Time": fertilizerState!.lastSyncTime,
-                      "Program": fertilizerState!.program,
-                      "Mode": fertilizerState!.modeType,
-                      "Pre-Water": fertilizerState!.preWater,
-                      "Post-Water": fertilizerState!.postWater,
-                      "Motor Status": fertilizerState!.motorStatus,
-                      "EC": fertilizerState!.ec,
-                      "pH": fertilizerState!.ph,
-                      "Pressure": fertilizerState!.pressure,
-                    };
-                    
-                    for (int i = 0; i < 6; i++) {
-                      excelData["F${i+1} Level"] = fertilizerState!.tankLevels[i];
-                      excelData["F${i+1} Set Time"] = fertilizerState!.setTimes[i];
-                      excelData["F${i+1} Remain Time"] = fertilizerState!.remainTimes[i];
-                    }
-
-                    context.push(
-                      ReportDownloadPageRoutes.ReportDownloadPage,
-                      extra: {
-                        "title": "Fertilizer Live Report",
-                        "data": [excelData],
-                      },
-                    );
-                  }
-                },
-                icon: Image.asset(
-                  'assets/images/icons/download-arrow-down.png',
-                  width: 24,
-                  height: 24,
-                  color: const Color(0xFF37474F),
-                ),
-              ),
-            ),
-          ],
+        ],
+      ),
+      body: fertilizerState == null
+          ? const Center(child: CircularProgressIndicator(color: AppThemes.primaryColor))
+          : RefreshIndicator(
+        color: AppThemes.primaryColor,
+        onRefresh: () async => _requestLiveData(),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _headerCard(),
+              const SizedBox(height: 20),
+              _sectionLabel("ACTIVE INJECTION POINTS"),
+              _fertilizerRow(),
+              const SizedBox(height: 20),
+              _sectionLabel("TANK LEVELS (%)"),
+              _tankLevelSection(),
+              const SizedBox(height: 20),
+              _sectionLabel("LIVE SENSORS"),
+              _sensorSection(),
+              const SizedBox(height: 20),
+              _sectionLabel("SCHEDULES"),
+              _timeModeSection(),
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
-        body: fertilizerState == null
-            ? Center(child: noDataNew)
-            : SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _headerCard(),
-                    const SizedBox(height: 24),
-                    _sectionLabel("Fertilizer Status"),
-                    const SizedBox(height: 8),
-                    _fertilizerRow(),
-                    const SizedBox(height: 24),
-                    _sectionLabel("Tank Levels"),
-                    const SizedBox(height: 8),
-                    _tankLevelSection(),
-                    const SizedBox(height: 24),
-                    _sectionLabel("Live Sensors"),
-                    const SizedBox(height: 8),
-                    _sensorSection(),
-                    const SizedBox(height: 24),
-                    _sectionLabel("Time Mode Schedules"),
-                    const SizedBox(height: 8),
-                    _timeModeSection(),
-                  ],
-                ),
-              ),
       ),
     );
   }
 
   Widget _sectionLabel(String text) {
     return Padding(
-      padding: const EdgeInsets.only(left: 4),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
       child: Text(
         text,
         style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          color: Colors.black54,
-          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: Colors.black,
+          fontSize: 12,
+          letterSpacing: 0.5,
         ),
       ),
     );
   }
 
   Widget _headerCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          )
-        ],
-      ),
+    final String cleanProgram = fertilizerState!.program
+        .replaceAll(RegExp(r'[pP]rogram\s*'), '')
+        .replaceAll(RegExp(r'^[pP]'), '')
+        .trim();
+
+    return CustomCard(
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.access_time, size: 14, color: Colors.blueAccent),
+              const Icon(Icons.sync, size: 14, color: AppThemes.primaryColor),
               const SizedBox(width: 6),
               Text(
-                "Last sync: ${fertilizerState!.lastSyncDate} | ${fertilizerState!.lastSyncTime}",
-                style: const TextStyle(fontSize: 13, color: Colors.blueAccent, fontWeight: FontWeight.w500),
+                "LAST SYNC: ${fertilizerState!.lastSyncDate}, ${fertilizerState!.lastSyncTime}",
+                style: const TextStyle(fontSize: 11, color: AppThemes.primaryColor, fontWeight: FontWeight.bold),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const Divider(height: 32),
           Text(
-            "${fertilizerState!.modeType} (Program ${fertilizerState!.program})",
+            "${fertilizerState!.modeType.toUpperCase()} | PROGRAM $cleanProgram",
             style: const TextStyle(
-              color: Color(0xFF2E7D32),
-              fontWeight: FontWeight.w800,
+              color: Colors.black87,
+              fontWeight: FontWeight.w900,
               fontSize: 15,
             ),
           ),
@@ -243,9 +244,9 @@ class _FertilizerLiveScreenState extends State<FertilizerLivePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _valveStatus("Pre-Water", fertilizerState!.preWater),
+              _valveStatus("PRE-WATER", fertilizerState!.preWater),
               _motorStatusBox(),
-              _valveStatus("Post-Water", fertilizerState!.postWater),
+              _valveStatus("POST-WATER", fertilizerState!.postWater),
             ],
           ),
         ],
@@ -255,96 +256,94 @@ class _FertilizerLiveScreenState extends State<FertilizerLivePage> {
 
   Widget _motorStatusBox() {
     final bool motorOn = fertilizerState?.motorOn ?? false;
-    final Color boxColor = motorOn ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE);
-    final Color textColor = motorOn ? const Color(0xFF2E7D32) : const Color(0xFFC62828);
-    final Color shadowColor = motorOn ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2);
+    final Color statusColor = motorOn ? Colors.green : Colors.red;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-      decoration: BoxDecoration(
-        color: boxColor,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: shadowColor,
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-        fertilizerState!.motorStatuslive,
-            style: TextStyle(
-              fontWeight: FontWeight.w900,
-              fontSize: 17,
-              color: textColor,
-              letterSpacing: 0.5,
+    return Column(
+      children: [
+        Container(
+          width: 70, height: 70,
+          decoration: BoxDecoration(
+            color: statusColor.withOpacity(0.05),
+            shape: BoxShape.circle,
+            border: Border.all(color: statusColor.withOpacity(0.2), width: 2),
+          ),
+          child: Center(
+            child: Image.asset(
+              motorOn ? 'assets/images/common/ui_motor.gif' : 'assets/images/common/live_motor_off.png',
+              width: 40,
+              height: 40,
             ),
           ),
-
-        ],
-      ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          motorOn ? "RUNNING" : "STOPPED",
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 10,
+            color: statusColor,
+          ),
+        ),
+      ],
     );
   }
 
   Widget _valveStatus(String label, String time) {
+    final bool isRunning = time != "00:00" && (fertilizerState?.motorOn ?? false);
     return Column(
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.blueGrey),
+          style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.grey),
         ),
-        const SizedBox(height: 10),
-        Image.asset('assets/images/common/valve.png', width: 44, height: 44),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
+        Image.asset(
+          isRunning ? 'assets/images/common/valve_open.gif' : 'assets/images/common/valve_stop.png',
+          width: 40,
+          height: 40,
+        ),
+        const SizedBox(height: 8),
         Text(
           time,
-          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.black87),
+          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: isRunning ? Colors.green : Colors.black87),
         ),
       ],
     );
   }
 
   Widget _fertilizerRow() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
+    return CustomCard(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: List.generate(6, (index) {
-          final active = fertilizerState?.fertilizerActive[index] ?? false;
-          return Container(
-            width: 44,
-            height: 36,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF44336),
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.red.withOpacity(0.2),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                )
-              ],
-            ),
-            child: Text(
-              "F${index + 1}",
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-            ),
+          final bool active = fertilizerState?.fertilizerActive[index] ?? false;
+          return Column(
+            children: [
+              Container(
+                width: 45,
+                height: 45,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: active ? Colors.green : Colors.red,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: (active ? Colors.green : Colors.red).withOpacity(0.2),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    )
+                  ],
+                ),
+                child: Text(
+                  "F${index + 1}",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ],
           );
         }),
       ),
@@ -352,75 +351,46 @@ class _FertilizerLiveScreenState extends State<FertilizerLivePage> {
   }
 
   Widget _tankLevelSection() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
+    return CustomCard(
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: List.generate(6, (index) {
-          return _tankWidget(fertilizerState!.tankLevels[index]);
+          return _tankWidget(index, fertilizerState!.tankLevels[index]);
         }),
       ),
     );
   }
 
-  Widget _tankWidget(int level) {
+  Widget _tankWidget(int index, int level) {
     final displayLevel = level.clamp(0, 1000);
-    
-    // Liquid color changes based on level for "water filling game" effect
-    Color liquidColor;
-    if (displayLevel < 200) {
-      liquidColor = Colors.red[700]!;
-    } else if (displayLevel < 500) {
-      liquidColor = Colors.orange[700]!;
-    } else if (displayLevel < 800) {
-      liquidColor = Colors.blue[600]!;
-    } else {
-      liquidColor = Colors.blue[800]!;
-    }
+    final bool active = fertilizerState?.fertilizerActive[index] ?? false;
+
+    Color liquidColor = active ? Colors.green : Colors.red;
 
     return Column(
       children: [
         SizedBox(
-          height: 220,
-          width: 50,
+          height: 140,
+          width: 35,
           child: Stack(
             alignment: Alignment.bottomCenter,
             children: [
               Container(
-                width: 32,
-                height: 200,
+                width: 24,
+                height: 130,
                 decoration: BoxDecoration(
-                  color: Colors.blueGrey[50]!.withOpacity(0.3),
-                  border: Border.all(color: Colors.black87, width: 1.5),
-                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.grey.shade50,
+                  border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                  borderRadius: BorderRadius.circular(4),
                 ),
               ),
               Positioned.fill(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.symmetric(vertical: 6),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: List.generate(11, (i) {
-                      int val = (10 - i) * 100;
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(width: 6, height: 1.2, color: Colors.black38),
-                          const SizedBox(width: 2),
-                          Text("$val", style: const TextStyle(fontSize: 6.5, fontWeight: FontWeight.bold, color: Colors.black54)),
-                        ],
-                      );
+                      return Container(width: i % 5 == 0 ? 8 : 4, height: 1, color: Colors.grey.shade300);
                     }),
                   ),
                 ),
@@ -428,52 +398,44 @@ class _FertilizerLiveScreenState extends State<FertilizerLivePage> {
               Positioned(
                 bottom: 2,
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 800),
-                  curve: Curves.easeInOut,
-                  width: 28.5,
-                  height: (displayLevel / 1000) * 196,
+                  duration: const Duration(seconds: 1),
+                  curve: Curves.easeOutCubic,
+                  width: 20,
+                  height: (displayLevel / 1000) * 126,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [liquidColor.withOpacity(0.8), liquidColor],
-                    ),
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: const Radius.circular(14),
-                      bottomRight: const Radius.circular(14),
-                      topLeft: displayLevel > 950 ? const Radius.circular(14) : Radius.zero,
-                      topRight: displayLevel > 950 ? const Radius.circular(14) : Radius.zero,
-                    ),
+                    color: liquidColor.withOpacity(0.8),
+                    borderRadius: const BorderRadius.vertical(bottom: Radius.circular(2)),
                   ),
                 ),
               ),
             ],
           ),
         ),
+        const SizedBox(height: 10),
+        Text(
+          "${(displayLevel / 10).round()}%",
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            color: active ? Colors.green : Colors.red,
+          ),
+        ),
+        Text(
+          "F${index + 1}",
+          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey),
+        ),
       ],
     );
   }
 
   Widget _sensorSection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
+    return CustomCard(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _sensorItem(Icons.water_drop_outlined, "EC", fertilizerState!.ec.toString().split('.').first, Colors.blue),
-          _sensorItem(Icons.science_outlined, "pH", fertilizerState!.ph.toString().split('.').first, Colors.teal),
-          _sensorItem(Icons.speed_outlined, "Pressure", fertilizerState!.pressure.toStringAsFixed(1), Colors.indigo, unit: "Bar"),
+          _sensorItem(Icons.water_drop_outlined, "EC LEVEL", fertilizerState!.ec.toStringAsFixed(1), Colors.blue),
+          _sensorItem(Icons.science_outlined, "PH LEVEL", fertilizerState!.ph.toStringAsFixed(1), Colors.teal),
+          _sensorItem(Icons.speed_outlined, "PRESSURE", fertilizerState!.pressure.toStringAsFixed(1), Colors.indigo, unit: "BAR"),
         ],
       ),
     );
@@ -483,31 +445,22 @@ class _FertilizerLiveScreenState extends State<FertilizerLivePage> {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(color: color.withOpacity(0.05), shape: BoxShape.circle),
           child: Icon(icon, color: color, size: 22),
         ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 2),
+        const SizedBox(height: 10),
+        Text(label, style: const TextStyle(fontSize: 9, color: Colors.grey, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
         Row(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.baseline,
           textBaseline: TextBaseline.alphabetic,
           children: [
-            Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16),
-            ),
+            Text(value, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: AppThemes.primaryColor)),
             if (unit != null) ...[
               const SizedBox(width: 2),
-              Text(unit, style: const TextStyle(fontSize: 9, color: Colors.grey, fontWeight: FontWeight.bold)),
+              Text(unit, style: const TextStyle(fontSize: 8, color: Colors.grey, fontWeight: FontWeight.bold)),
             ]
           ],
         ),
@@ -516,87 +469,66 @@ class _FertilizerLiveScreenState extends State<FertilizerLivePage> {
   }
 
   Widget _timeModeSection() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
-              color: Colors.blueGrey[50],
-              child: Row(
-                children: const [
-                  Expanded(flex: 3, child: SizedBox()),
-                  Expanded(flex: 2, child: Text("SET TIME", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11, color: Colors.blueGrey, letterSpacing: 0.5))),
-                  Expanded(flex: 2, child: Text("REMAIN", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11, color: Colors.blueGrey, letterSpacing: 0.5))),
-                ],
-              ),
-            ),
-            ...List.generate(6, (index) {
-              return Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: Text(
-                            "Fertilizer ${index + 1}",
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF263238)),
-                          ),
+    return CustomCard(
+      child: Column(
+        children: [
+          Row(
+            children: const [
+              Expanded(flex: 3, child: SizedBox()),
+              Expanded(flex: 2, child: Text("SET TIME", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Colors.grey))),
+              Expanded(flex: 2, child: Text("REMAIN", textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Colors.grey))),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ...List.generate(6, (index) {
+            final bool isActive = fertilizerState?.fertilizerActive[index] ?? false;
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Row(
+                          children: [
+                            Icon(Icons.opacity_rounded, size: 14, color: isActive ? Colors.green : Colors.grey),
+                            const SizedBox(width: 8),
+                            Text(
+                              "Fertilizer ${index + 1}",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: isActive ? Colors.black87 : Colors.grey,
+                              ),
+                            ),
+                          ],
                         ),
-                        Expanded(
-                          flex: 2,
-                          child: _timeBox(fertilizerState!.setTimes[index]),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          flex: 2,
-                          child: _timeBox(fertilizerState!.remainTimes[index], isRemain: true),
-                        ),
-                      ],
-                    ),
+                      ),
+                      Expanded(flex: 2, child: _timeBox(fertilizerState!.setTimes[index], isActive: isActive)),
+                      const SizedBox(width: 12),
+                      Expanded(flex: 2, child: _timeBox(fertilizerState!.remainTimes[index], isRemain: true, isActive: isActive)),
+                    ],
                   ),
-                  if (index < 5) Divider(height: 1, color: Colors.grey[100]),
-                ],
-              );
-            }),
-          ],
-        ),
+                ),
+                if (index < 5) const Divider(height: 1, thickness: 0.5),
+              ],
+            );
+          }),
+        ],
       ),
     );
   }
 
-  Widget _timeBox(String time, {bool isRemain = false}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-      decoration: BoxDecoration(
-        color: isRemain ? Colors.red[50] : const Color(0xFFF5F5F5),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: isRemain ? Colors.red[100]! : Colors.grey[200]!),
-      ),
-      child: Center(
-        child: Text(
-          time,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w900,
-            color: isRemain ? Colors.red[700] : const Color(0xFF263238),
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-        ),
+  Widget _timeBox(String time, {bool isRemain = false, bool isActive = false}) {
+    return Text(
+      time,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w900,
+        color: isActive ? (isRemain ? Colors.green : Colors.black87) : Colors.grey,
+        fontFeatures: const [FontFeature.tabularFigures()],
       ),
     );
   }

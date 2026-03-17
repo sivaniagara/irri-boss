@@ -439,8 +439,8 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       (failure) => emit(currentState.copyWith(
           controlMotorStatus: ControlMotorStatus.failure,
           errorMsg: failure.message)),
-      (_) => emit(currentState.copyWith(
-          controlMotorStatus: ControlMotorStatus.success)),
+      (_) => emit(
+          currentState.copyWith(controlMotorStatus: ControlMotorStatus.success)),
     );
   }
 

@@ -42,9 +42,10 @@ class AppThemes {
 
 
   static const Color appWhiteColor = Colors.white;
-  static const Color gradientTopColor = Color(0xFFE6F0FF);
-  static const Color gradientMidColor = Color(0xFF67C8F1);
-  static const Color gradientBottomColor = Color(0xFF6DA8F5);
+  // Reverted gradient colors to original values
+  static const Color gradientTopColor = Color(0xFFE1EEEE);
+  static const Color gradientMidColor = Color(0xFFC1E2FF);
+  static const Color gradientBottomColor = Color(0xFF5385B2);
   static  Color shadowBlackColor = Colors.black.withValues(alpha: 0.12);
 
   // Create a custom swatch for primary color
@@ -64,7 +65,7 @@ class AppThemes {
     },
   );
 
-  static Color scaffoldBackGround = Color(0xffE1EEEE);
+  static Color scaffoldBackGround = const Color(0xffE1EEEE); // Reverted to original light blue/teal
 
   // Light Theme
   static final ThemeData _irriBossLightTheme = ThemeData(
@@ -72,43 +73,43 @@ class AppThemes {
     brightness: Brightness.light,
     primarySwatch: primarySwatch,
     primaryColor: primaryColor,
-    primaryColorLight: Color(0xffC1E2FF),
-    iconTheme: IconThemeData(color: Colors.white),
+    primaryColorLight: const Color(0xffC1E2FF),
+    iconTheme: const IconThemeData(color: Colors.white), // Reverted to white
     colorScheme: ColorScheme.fromSeed(
       primary: primaryColor,
       secondary: secondaryColor,
       surface: Colors.white,
-      background: primarySwatch.shade50,
+      background: primarySwatch.shade50, // Reverted to swatch shade
       error: Colors.red,
       onSecondary: Colors.white,
       onSurface: Colors.black,
       onBackground: primaryColor.withOpacity(0.1),
       onError: Colors.white,
       seedColor: primaryColor,
-      outline: Color(0xffABABAB)
+      outline: const Color(0xffABABAB)
     ),
     appBarTheme: AppBarTheme(
       iconTheme: const IconThemeData(
-        color: Colors.black
+        color: Colors.black 
       ),
-      backgroundColor: scaffoldBackGround,
-      /*foregroundColor: Colors.white,
-      elevation: 0,*/
+      backgroundColor: scaffoldBackGround, // Reverted to scaffold background
+      elevation: 0,
+      titleTextStyle: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
         ),
       ),
     ),
-    listTileTheme: ListTileThemeData(
+    listTileTheme: const ListTileThemeData(
       // textColor: Colors.white,
       // titleTextStyle: TextStyle(color: Colors.black, fontSize: 20)
     ),
-    textTheme: TextTheme(
+    textTheme: const TextTheme(
       titleLarge: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500), // use
       labelMedium: TextStyle(color: Colors.black),
       labelSmall: TextStyle(fontSize: 14,color: Colors.black, fontWeight: FontWeight.w500), // use
@@ -118,7 +119,7 @@ class AppThemes {
       bodyMedium: TextStyle(color: Colors.black),
     ),
     inputDecorationTheme: InputDecorationTheme(
-      labelStyle: TextStyle(color: Color(0xffB6AAAA), fontWeight: FontWeight.w400),
+      labelStyle: const TextStyle(color: Color(0xffB6AAAA), fontWeight: FontWeight.w400),
       border: UnderlineInputBorder(
         borderRadius: BorderRadius.circular(0),
       ),
@@ -129,11 +130,11 @@ class AppThemes {
         borderRadius: BorderRadius.circular(0),
       ),
       errorBorder: UnderlineInputBorder(
-        borderSide: BorderSide(color: Colors.redAccent),
+        borderSide: const BorderSide(color: Colors.redAccent),
         borderRadius: BorderRadius.circular(0),
       ),
       focusedErrorBorder: UnderlineInputBorder(
-        borderSide: BorderSide(color: Colors.redAccent, width: 2.0),
+        borderSide: const BorderSide(color: Colors.redAccent, width: 2.0),
         borderRadius: BorderRadius.circular(0),
       ),
       disabledBorder: UnderlineInputBorder(
@@ -158,15 +159,15 @@ class AppThemes {
       trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
     ),
     checkboxTheme: CheckboxThemeData(
-      fillColor: MaterialStateProperty.resolveWith((states) {
-        if (states.contains(MaterialState.selected)) {
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
           return Colors.green;
         }
         return Colors.transparent;
       }),
       splashRadius: 5,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-      checkColor: MaterialStateProperty.all(Colors.white),
+      checkColor: WidgetStateProperty.all(Colors.white),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(2),
       ),
@@ -189,7 +190,7 @@ class AppThemes {
       style: ElevatedButton.styleFrom(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(8)),
         ),
       ),

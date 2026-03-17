@@ -30,6 +30,7 @@ class CtrlLivePage extends StatefulWidget {
 
 class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderStateMixin {
   late AnimationController _refreshController;
+  Timer? _liveTimer;
 
   @override
   void initState() {
@@ -42,11 +43,17 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
     if (widget.deviceId != null) {
       di.sl.get<MqttManager>().subscribe(widget.deviceId!);
       _refreshData();
+      
+      // Start periodic sync every 30 seconds while on this page
+      _liveTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+        _refreshData();
+      });
     }
   }
 
   @override
   void dispose() {
+    _liveTimer?.cancel();
     _refreshController.dispose();
     super.dispose();
   }
@@ -192,7 +199,8 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: List.generate(6, (i) {
-                              final isOn = _fert(liveMessage!, i) == "1";
+                              final status = _fert(liveMessage!, i);
+                              final isOn = status.endsWith("1");
                               return _buildFertCircle("F${i + 1}", isOn);
                             }),
                           ),
@@ -287,7 +295,7 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
                     const Icon(Icons.signal_cellular_alt, color: Colors.green, size: 18),
                     const SizedBox(width: 4),
                     Text(
-                      'Signal ${live.signal}%',
+                      '${live.signal}%',
                       style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 13),
                     ),
                     const SizedBox(width: 16),

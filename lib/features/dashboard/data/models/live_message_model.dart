@@ -252,9 +252,9 @@ class LiveMessageModel extends LiveMessageEntity {
 
       // Signal and Battery indices adjusted for LD01 based on provided samples
       batVolt = safeString(38, '0');
-      signal = safeString(39, '0');
-      versionModule = safeString(40, '');
-      versionBoard = safeString(41, '');
+      signal = safeString(37, '0');
+      versionModule = safeString(39, '');
+      versionBoard = safeString(40, '');
     }
 
     return LiveMessageModel(

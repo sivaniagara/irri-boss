@@ -306,7 +306,9 @@ class MqttMessageHelper {
       qrCode = (jsonObject['cC'] ?? '').toString().trim();
 
       if (kDebugMode) {
-        print('MQTT Message Received: Type=$typeStr Device=$qrCode');
+        print('--- MQTT PACKET RECEIVED ---');
+        print('Raw: $mqttMsg');
+        print('Type: $typeStr | Device: $qrCode');
       }
     } catch (e) {
       if (kDebugMode) debugPrint('MQTT JSON Parse Error: $e | Raw: $mqttMsg');
@@ -318,6 +320,10 @@ class MqttMessageHelper {
     final String ct = (jsonObject['cT'] ?? '').toString();
     String cl = (jsonObject['cL'] ?? '').toString();
 
+    if (kDebugMode) {
+      print('Extracted Data -> Date: $cd, Time: $ct');
+    }
+
     String trimmedMsg = msg.trim();
     String msgCode = trimmedMsg.length > 2 ? trimmedMsg.substring(2) : '';
     msgCode = msgCode.trim();
@@ -328,6 +334,7 @@ class MqttMessageHelper {
 
     // ✅ UPDATE SERVER TIME FOR EVERY PACKET
     if (cd.isNotEmpty && ct.isNotEmpty) {
+      if (kDebugMode) print('Updating Server Time -> $cd $ct');
       dispatcher.onServerTimeUpdate(qrCode, date: cd, time: ct);
     }
 
@@ -344,6 +351,10 @@ class MqttMessageHelper {
       SharedPreferences.getInstance().then((prefs) {
         prefs.setString('LIVEMSG_$qrCode', '$trimmedMsg,$cd,$ct');
       });
+
+      if (kDebugMode) {
+        print('Dispatching Live Update: Date=$cd Time=$ct Msg=$trimmedMsg');
+      }
 
       // Update Dashboard with ALL fields from MQTT
       dispatcher.onLiveUpdate(
@@ -378,6 +389,12 @@ class MqttMessageHelper {
 
     if(type == MqttMessageType.sms) {
       dispatcher.onViewSettings(qrCode, jsonObject);
+      
+      // Also update Live Sync UI with timestamp from SMS packet if available
+      if (cd.isNotEmpty && ct.isNotEmpty) {
+        if (kDebugMode) print('SMS Packet Update -> Syncing time from SMS packet');
+        dispatcher.onServerTimeUpdate(qrCode, date: cd, time: ct);
+      }
     }
 
     String displayMsg = trimmedMsg.length > 6 ? trimmedMsg.substring(6) : trimmedMsg;

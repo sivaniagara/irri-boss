@@ -3,7 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/alert_dialog.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_switch.dart';
-import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
+import 'package:niagara_smart_drip_irrigation/features/edit_program/presentation/widgets/custom_card.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/retry.dart';
 import '../../domain/entities/menu_item_entity.dart';
 import '../bloc/pump_settings_event.dart';
@@ -17,7 +18,7 @@ import '../../utils/pump_settings_images.dart';
 import '../../utils/pump_settings_page_routes.dart';
 
 class PumpSettingsMenuPage extends StatelessWidget {
-  final int userId, subUserId, controllerId;
+  final int userId, subUserId, controllerId, modelId;
   final String deviceId;
 
   const PumpSettingsMenuPage({
@@ -26,6 +27,7 @@ class PumpSettingsMenuPage extends StatelessWidget {
     required this.subUserId,
     required this.controllerId,
     required this.deviceId,
+    required this.modelId,
   });
 
   @override
@@ -56,12 +58,12 @@ class PumpSettingsMenuPage extends StatelessWidget {
         ),
       ],
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text("Pump Settings Menu"),
+        appBar: CustomAppBar(
+          title: "Pump Settings Menu",
           actions: [
             Builder(
               builder: (ctx) => IconButton(
-                icon: const Icon(Icons.hide_source),
+                icon: const Icon(Icons.hide_source, color: Colors.black),
                 onPressed: () => _showHideMenuDialog(ctx),
               ),
             ),
@@ -72,6 +74,7 @@ class PumpSettingsMenuPage extends StatelessWidget {
           subUserId: subUserId,
           controllerId: controllerId,
           deviceId: deviceId,
+          modelId: modelId,
         ),
       ),
     );
@@ -103,7 +106,7 @@ class PumpSettingsMenuPage extends StatelessWidget {
 }
 
 class _MenuListView extends StatelessWidget {
-  final int userId, subUserId, controllerId;
+  final int userId, subUserId, controllerId, modelId;
   final String deviceId;
 
   const _MenuListView({
@@ -111,6 +114,7 @@ class _MenuListView extends StatelessWidget {
     required this.subUserId,
     required this.controllerId,
     required this.deviceId,
+    required this.modelId,
   });
 
   @override
@@ -186,31 +190,31 @@ class _MenuListView extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: Text(
                 groupName,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: 14,
-                  color: const Color(0xff303030),
-                  fontWeight: FontWeight.w500,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            GlassCard(
-              opacity: 1,
-              blur: 0,
-              margin: EdgeInsets.zero,
-              padding: EdgeInsets.zero,
-              borderRadius: const BorderRadius.all(Radius.circular(12)),
+            const SizedBox(height: 10),
+            CustomCard(
               child: Column(
                 children: List.generate(
-                  groupItems.length,
-                      (index) => _MenuItemTile(
-                    item: groupItems[index],
-                    isLast: index == groupItems.length - 1,
-                    userId: userId,
-                    subUserId: subUserId,
-                    controllerId: controllerId,
-                    deviceId: deviceId,
-                  ),
+                  groupItems.length * 2 - 1,
+                      (index) {
+                    if (index.isOdd) {
+                      return const Divider(thickness: 0.6);
+                    }
+                    final itemIndex = index ~/ 2;
+                    return _MenuItemTile(
+                      item: groupItems[itemIndex],
+                      userId: userId,
+                      subUserId: subUserId,
+                      controllerId: controllerId,
+                      deviceId: deviceId,
+                      modelId: modelId,
+                    );
+                  },
                 ),
               ),
             ),
@@ -233,16 +237,12 @@ class _MenuListView extends StatelessWidget {
         final isOn = setting.value == "ON";
         final isSending = context.watch<PumpSettingsCubit>().state is SettingsSendStartedState;
 
-        return GlassCard(
-          opacity: 1,
-          blur: 0,
-          margin: EdgeInsets.zero,
-          padding: EdgeInsets.zero,
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
+        return CustomCard(
           child: Row(
             children: [
               Expanded(
-                child: SettingListTile(
+                child: _navigationRow(
+                  context,
                   title: setting.title,
                   trailing: SizedBox(
                     width: 55,
@@ -291,63 +291,70 @@ class _MenuListView extends StatelessWidget {
     cubit.sendCurrentSetting(0, 0, deviceId, userId, subUserId, controllerId, item);
     context.read<PumpSettingsViewResponseCubit>().clear();
   }
+
+  static Widget _navigationRow(BuildContext context, {required String title, Widget? trailing, VoidCallback? onTap, String? image}) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          children: [
+            if (image != null) ...[
+              Image.asset(
+                image,
+                width: 25,
+                height: 25,
+              ),
+              const SizedBox(width: 10),
+            ],
+            Text(title, style: Theme.of(context).textTheme.labelLarge),
+            const Spacer(),
+            if (trailing != null) trailing else const Icon(Icons.arrow_forward_ios, color: Colors.black, size: 14,),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _MenuItemTile extends StatelessWidget {
   final MenuItemEntity item;
-  final bool isLast;
-  final int userId, subUserId, controllerId;
+  final int userId, subUserId, controllerId, modelId;
   final String deviceId;
 
   const _MenuItemTile({
     required this.item,
-    required this.isLast,
     required this.userId,
     required this.subUserId,
     required this.controllerId,
     required this.deviceId,
+    required this.modelId,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: Column(
-        children: [
-          ListTile(
-            leading: Image.asset(
-              PumpSettingsImages.getMenuIcons(item.menu.menuSettingId),
-              width: 20,
-              height: 20,
-            ),
-            title: Text(
-              item.menu.menuItem,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            trailing: const Icon(Icons.chevron_right_rounded),
-            onTap: () {
-              final extra = {
-                'userId': userId,
-                'subUserId': subUserId,
-                'controllerId': controllerId,
-                'deviceId': deviceId,
-              };
+    return _MenuListView._navigationRow(
+      context,
+      image: PumpSettingsImages.getMenuIcons(item.menu.menuSettingId),
+      title: item.menu.menuItem,
+      onTap: () {
+        final extra = {
+          'userId': userId,
+          'subUserId': subUserId,
+          'controllerId': controllerId,
+          'deviceId': deviceId,
+          'modelId': modelId,
+        };
 
-              final route = _getRouteForMenuId(item.menu.menuSettingId);
+        final route = _getRouteForMenuId(item.menu.menuSettingId);
 
-              context.push(
-                route,
-                extra: item.menu.menuSettingId == 514 || item.menu.menuSettingId == 515
-                    ? extra
-                    : {...extra, 'menuId': item.menu.menuSettingId, 'menuName': item.menu.menuItem},
-              );
-            },
-          ),
-          if (!isLast) const Divider(height: 1, indent: 16, endIndent: 16),
-        ],
-      ),
+        context.push(
+          route,
+          extra: item.menu.menuSettingId == 514 || item.menu.menuSettingId == 515
+              ? extra
+              : {...extra, 'menuId': item.menu.menuSettingId, 'menuName': item.menu.menuItem},
+        );
+      },
     );
   }
 
