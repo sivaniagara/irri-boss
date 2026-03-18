@@ -16,86 +16,93 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
+    return BlocBuilder<ControllerContextCubit, ControllerContextState>(
+      builder: (context, state) {
+        if (state is! ControllerContextLoaded) {
+          return const Center(child: Text("Please select a controller first."));
+        }
+        final controllerContext = state;
 
-        _buildSettingsItem(
-            context: context,
-            title: 'Controller Details',
-            iconPath: AppImages.ControllerDetailsIcon,
-            onTap: () {
-              final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
-              context.push(
-                RouteConstants.ctrlDetailsPage,
-                extra: GetControllerDetailsParams(
-                  userId: int.parse(controllerContext.userId),
-                  controllerId: int.parse(controllerContext.controllerId),
-                  deviceId: controllerContext.deviceId,
-                ),
-              );
-            }
-        ),
-        _buildSettingsItem(
-            context: context,
-            title: 'Pump Settings',
-            iconPath: AppImages.pumpSettingIcon,
-            onTap: () {
-              final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
-              context.push(
-                  PumpSettingsPageRoutes.pumpSettingMenuList,
-                extra: {
-                    'userId': int.parse(controllerContext.userId).toString(),
-                    'controllerId': int.parse(controllerContext.controllerId).toString(),
-                    'userType': int.parse(controllerContext.userType).toString(),
-                    'subUserId': int.parse(controllerContext.subUserId).toString(),
-                    'deviceId': controllerContext.deviceId,
-                }
-              );
-            }
-        ),
-        _buildSettingsItem(
-            context: context,
-            title: 'Irrigation Settings',
-            iconPath: AppImages.irrigationSettingIcon,
-            onTap: () {
-              context.push(IrrigationSettingsRoutes.irrigationSettings);
-            }
-        ),
-        _buildSettingsItem(
-            context: context,
-            title: 'Node Settings',
-            iconPath: AppImages.irrigationSettingIcon,
-            onTap: () {
-              context.push(MappingAndUnmappingNodesRoutes.nodeSetting);
-            }
-        ),
-        _buildSettingsItem(
-            context: context,
-            title: 'Common Id Settings',
-            iconPath: AppImages.irrigationSettingIcon,
-            onTap: () {
-              context.push(CommonIdSettingsRoutes.commonIdSettings);
-            }
-        ),
-
-        _buildSettingsItem(
-            context: context,
-            title: 'Serial Set',
-            iconPath: AppImages.setserialIcon,
-            onTap: () {
-              final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
-              context.push(
-                  SerialSetRoutes.serialSetMenu,
-                  extra: {
-                    'userId': controllerContext.userId,
-                    'controllerId': controllerContext.controllerId,
-                    'deviceId': controllerContext.deviceId,
-                    'subUserId': controllerContext.subUserId,
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              _buildSettingsItem(
+                  context: context,
+                  title: 'Controller Details',
+                  iconPath: AppImages.ControllerDetailsIcon,
+                  onTap: () {
+                    context.push(
+                      RouteConstants.ctrlDetailsPage,
+                      extra: GetControllerDetailsParams(
+                        userId: int.parse(controllerContext.userId),
+                        controllerId: int.parse(controllerContext.controllerId),
+                        deviceId: controllerContext.deviceId,
+                      ),
+                    );
                   }
-              );
-            }
-        ),
-      ],
+              ),
+              _buildSettingsItem(
+                  context: context,
+                  title: 'Pump Settings',
+                  iconPath: AppImages.pumpSettingIcon,
+                  onTap: () {
+                    context.push(
+                        PumpSettingsPageRoutes.pumpSettingMenuList,
+                      extra: {
+                          'userId': int.parse(controllerContext.userId).toString(),
+                          'controllerId': int.parse(controllerContext.controllerId).toString(),
+                          'userType': int.parse(controllerContext.userType).toString(),
+                          'subUserId': int.parse(controllerContext.subUserId).toString(),
+                          'deviceId': controllerContext.deviceId,
+                      }
+                    );
+                  }
+              ),
+              _buildSettingsItem(
+                  context: context,
+                  title: 'Irrigation Settings',
+                  iconPath: AppImages.irrigationSettingIcon,
+                  onTap: () {
+                    context.push(IrrigationSettingsRoutes.irrigationSettings);
+                  }
+              ),
+              _buildSettingsItem(
+                  context: context,
+                  title: 'Node Settings',
+                  iconPath: AppImages.irrigationSettingIcon,
+                  onTap: () {
+                    context.push(MappingAndUnmappingNodesRoutes.nodeSetting);
+                  }
+              ),
+              _buildSettingsItem(
+                  context: context,
+                  title: 'Common Id Settings',
+                  iconPath: AppImages.irrigationSettingIcon,
+                  onTap: () {
+                    context.push(CommonIdSettingsRoutes.commonIdSettings);
+                  }
+              ),
+          
+              _buildSettingsItem(
+                  context: context,
+                  title: 'Serial Set',
+                  iconPath: AppImages.setserialIcon,
+                  onTap: () {
+                    context.push(
+                        SerialSetRoutes.serialSetMenu,
+                        extra: {
+                          'userId': controllerContext.userId,
+                          'controllerId': controllerContext.controllerId,
+                          'deviceId': controllerContext.deviceId,
+                          'subUserId': controllerContext.subUserId,
+                        }
+                    );
+                  }
+              ),
+            ],
+          ),
+        );
+      }
     );
   }
 
@@ -119,5 +126,4 @@ class SettingsPage extends StatelessWidget {
       ),
     );
   }
-
 }

@@ -28,17 +28,17 @@ final PowerGraphRoutes = <GoRoute>[
     path: PowerGraphPageRoutes.PowerGraphPage,
     name: 'PowerGraphPage',
     builder: (context, state) {
-      /// Safe param extraction
-      final params = state.extra as Map<String, dynamic>? ?? {};
+      final extra = state.extra as Map<String, dynamic>? ?? {};
+      final queryParams = state.uri.queryParameters;
 
-      final int userId = params['userId'] ?? 0;
-      final int subuserId = params['subuserId'] ?? 0;
-      final int controllerId = params['controllerId'] ?? 0;
+      final int userId = int.tryParse(extra['userId']?.toString() ?? queryParams['userId'] ?? '0') ?? 0;
+      final int subuserId = int.tryParse(extra['subUserId']?.toString() ?? queryParams['subUserId'] ?? '0') ?? 0;
+      final int controllerId = int.tryParse(extra['controllerId']?.toString() ?? queryParams['controllerId'] ?? '0') ?? 0;
 
-      final String fromDate = params['fromDate'] ??
+      final String fromDate = extra['fromDate']?.toString() ??
           DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-      final String toDate = params['toDate'] ??
+      final String toDate = extra['toDate']?.toString() ??
           DateFormat('yyyy-MM-dd').format(DateTime.now());
 
      return  MultiBlocProvider(

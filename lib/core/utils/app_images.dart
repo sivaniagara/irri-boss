@@ -7,7 +7,8 @@ class AppImages {
   static const String iconPath = 'assets/images/icons';
   static const String mountain = '$commonPath/mountain.png';
   static const String motorG = '$commonPath/motor_g.png';
-
+  static const String activefaultmsgicon = '$iconPath/active_faultmsg_icon.png';
+  static const String inActivefaultmsgicon = '$iconPath/inactive_faultmsg_icon.png';
   static const String activeHomeIcon = '$iconPath/active_home_icon.png';
   static const String inActiveHomeIcon = '$iconPath/inactive_home_icon.png';
   static const String activeReportIcon = '$iconPath/active_report_icon.png';
@@ -41,5 +42,4 @@ class AppImages {
   static const String setserialIcon = '$iconPath/set_serial_icon.png';
   static const String ControllerDetailsIcon = '$iconPath/controller_details_icon.png';
   static const String currentIcon = '$commonPath/current_icon.png';
-
 }

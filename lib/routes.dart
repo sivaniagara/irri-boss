@@ -184,7 +184,15 @@ class AppRouter {
         ),
         ShellRoute(
             builder: (context, state, child){
-              return DashboardPage(userData: {}, child: child,);
+              final authState = authBloc.state;
+              Map<String, dynamic> userData = {};
+              if (authState is Authenticated) {
+                userData = {
+                  'userId': authState.user.userDetails.id,
+                  'userType': authState.user.userDetails.userType,
+                };
+              }
+              return DashboardPage(userData: userData, child: child,);
             },
             routes: [
               GoRoute(
@@ -228,18 +236,18 @@ class AppRouter {
               GoRoute(
                   path: DashBoardRoutes.standalone,
                   builder: (context, state) {
-                    final params = state.extra as Map<String, dynamic>;
-                    final String userId = params["userId"].toString();
-                    final String controllerId = params["controllerId"].toString();
+                    final params = state.extra as Map<String, dynamic>? ?? {};
+                    final String userId = params["userId"]?.toString() ?? '';
+                    final String controllerId = params["controllerId"]?.toString() ?? '';
                     final String deviceId = params["deviceId"]?.toString() ?? '';
-                    final String subUserId = params["subUserId"].toString();
+                    final String subUserId = params["subUserId"]?.toString() ?? '0';
 
                     return BlocProvider.value(
                       value: di.sl<StandaloneBloc>(),
                       child: Builder(
                         builder: (context) {
                           final bloc = context.read<StandaloneBloc>();
-                          if (bloc.state is StandaloneInitial) {
+                          if (bloc.state is StandaloneInitial && userId.isNotEmpty) {
                             bloc.add(FetchStandaloneDataEvent(
                                 userId: userId,
                                 controllerId: controllerId,
@@ -278,6 +286,9 @@ class AppRouter {
                     );
                   },
               ),
+              ...pumpSettingsRoutes,
+              ...PowerGraphRoutes,
+              ...FaultMsgPagesRoutes,
             ]
         ),
         GoRoute(
@@ -387,12 +398,9 @@ class AppRouter {
         ...DealerRoutes.dealerRoutes,
         ...serviceRequestRoutes,
         ...sideDrawerRoutes,
-        ...pumpSettingsRoutes,
         ...reportPageRoutes,
         ...sendRevPageRoutes,
-        ...FaultMsgPagesRoutes,
         ...voltGraphRoutes,
-        ...PowerGraphRoutes,
         ...ReportDownloadRoutes,
         ...MotorCyclicRoutes,
         ...ZoneDurationRoutes,

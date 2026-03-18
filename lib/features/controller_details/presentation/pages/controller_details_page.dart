@@ -164,7 +164,7 @@ class _ControllerDetailsPageState extends State<ControllerDetailsPage> {
                     ),
                     _buildSwitchCard(
                       title: "INTERNET 4G",
-                      value: data.gprsMode == "4",
+                      value: data.gprsMode == "5",
                       onChanged: (val) {
                         context.read<ControllerDetailsBloc>().add(
                           ToggleSwitchEvent(switchName: "gprsMode", isOn: val),

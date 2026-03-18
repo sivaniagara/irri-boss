@@ -12,12 +12,14 @@ import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/auth.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/dashboard_page_cubit.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/widgets/drip_bottom_navigation_bar.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/bloc/standalone_bloc.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/theme/app_themes.dart';
+import '../../../../core/utils/app_constants.dart';
 import '../../../../core/utils/app_images.dart';
 import '../../../../core/utils/common_date_picker.dart';
 import '../../../controller_details/domain/usecase/controller_details_params.dart';
@@ -32,6 +34,7 @@ import '../widgets/ctrl_display.dart';
 import '../widgets/latestmsg_section.dart';
 import '../widgets/motor_valve_section.dart';
 import '../widgets/pressure_section.dart';
+import '../widgets/pump_bottom_navigation_bar.dart';
 import '../widgets/ryb_section.dart';
 import '../widgets/sync_section.dart';
 import '../widgets/timer_section.dart';
@@ -40,7 +43,7 @@ import '../../domain/entities/group_entity.dart';
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 
 
-enum BottomNavigationOption{home, report, manual, setting, sentAndReceive}
+enum BottomNavigationOption{home, report, manual, setting, sentAndReceive, faultMsgMsgPage}
 
 extension BottomNavivigationOptionExtension on BottomNavigationOption{
   String title(){
@@ -55,6 +58,8 @@ extension BottomNavivigationOptionExtension on BottomNavigationOption{
         return 'Setting';
       case BottomNavigationOption.sentAndReceive:
         return 'Sent And Receive';
+      case BottomNavigationOption.faultMsgMsgPage:
+        return 'Fault MSG';
     }
   }
 }
@@ -94,7 +99,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
   void _startLiveSync(DashboardPageCubit cubit) {
     if (_liveTimer != null) return; // Ensure only one timer runs
-    
+
     _liveTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       if (mounted && selectedBottomNavigation == BottomNavigationOption.home) {
         final state = cubit.state;
@@ -122,11 +127,18 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     final queryParams = GoRouterState.of(context).uri.queryParameters;
-    late int userId;
-    late int userType;
+    final authState = context.read<AuthBloc>().state;
+    
+    int userId = 0;
+    int userType = 1;
+
+    // Source of truth priority: Query Params -> AuthBloc -> widget.userData
     if (queryParams.containsKey('userId') && queryParams['userId'] != null) {
       userId = int.parse(queryParams['userId']!);
       userType = int.parse(queryParams['userType']!);
+    } else if (authState is Authenticated) {
+      userId = authState.user.userDetails.id;
+      userType = authState.user.userDetails.userType;
     } else {
       userId = int.parse(widget.userData['userId']?.toString() ?? '0');
       userType = int.parse(widget.userData['userType']?.toString() ?? '1');
@@ -146,7 +158,7 @@ class _DashboardPageState extends State<DashboardPage> {
       child: Builder(
         builder: (context) {
           final cubit = context.read<DashboardPageCubit>();
-          
+
           // Start the sync timer using the cubit instance from this context
           _startLiveSync(cubit);
 
@@ -296,6 +308,32 @@ class _DashboardPageState extends State<DashboardPage> {
 
     final (selectedGroup, selectedController, controllers) = _getSelectedGroupAndController(loadedState);
 
+    // Identify if the current route is one that should show the shell (Appbar/Nav)
+    final matchedLocation = GoRouterState.of(context).matchedLocation;
+    
+    // Primary tabs show both AppBar and Bottom Navigation Bar
+    final bool isDashboard = matchedLocation == DashBoardRoutes.dashboard;
+    final bool isReport = matchedLocation == DashBoardRoutes.report;
+    final bool isStandalone = matchedLocation == DashBoardRoutes.standalone;
+    final bool isSettings = matchedLocation == DashBoardRoutes.settings;
+    final bool isSentAndReceive = matchedLocation == DashBoardRoutes.sentAndReceive;
+    final bool isPrimaryTab = isDashboard || isReport || isStandalone || isSettings || isSentAndReceive;
+
+    // Sub-pages within Dashboard that should show the bottom navigation bar
+    final bool isPumpSubPage = matchedLocation.startsWith('/setting') || 
+                               matchedLocation.startsWith('/pumpSettings') ||
+                               matchedLocation.startsWith('/notifications') ||
+                               matchedLocation.startsWith('/viewSettings');
+                               
+    final bool isIrrigationSubPage = matchedLocation.startsWith('/irrigationSettings') ||
+                                     matchedLocation.startsWith('/templateSetting');
+
+    final bool showBottomNav = isPrimaryTab || isPumpSubPage || isIrrigationSubPage;
+    
+    // Show the shell's AppBar for all primary tabs.
+    // Differentiate between the complex Dashboard AppBar and the simple ones.
+    final bool showShellAppBar = isPrimaryTab;
+
     return BlocListener<DashboardPageCubit, DashboardState>(
       listener: (context, state) {
         if (state is DashboardGroupsLoaded &&
@@ -314,86 +352,9 @@ class _DashboardPageState extends State<DashboardPage> {
       },
       child: Scaffold(
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: AnimatedNotchBottomBar(
-          notchBottomBarController: _controller,
-          color: Colors.white,
-          showLabel: true,
-          textOverflow: TextOverflow.visible,
-          maxLine: 1,
-          shadowElevation: 5,
-          kBottomRadius: 28.0,
-          notchColor: Colors.white,
-          removeMargins: true,
-          showShadow: false,
-          durationInMilliSeconds: 300,
-          itemLabelStyle: const TextStyle(fontSize: 10, color: Colors.black),
-          bottomBarItems: [
-            BottomBarItem(
-              inActiveItem: Image.asset(AppImages.inActiveHomeIcon,),
-              activeItem: Image.asset(AppImages.activeHomeIcon),
-              itemLabel: 'Home',
-            ),
-            BottomBarItem(
-              inActiveItem: Image.asset(AppImages.inActiveReportIcon,),
-              activeItem: Image.asset(AppImages.activeReportIcon),
-              itemLabel: 'Report',
-            ),
-            BottomBarItem(
-              inActiveItem: Image.asset(AppImages.inActiveManualIcon,),
-              activeItem: Image.asset(AppImages.activeManualIcon),
-              itemLabel: 'Manual',
-            ),
-            BottomBarItem(
-              inActiveItem: Image.asset(AppImages.inActiveSettingIcon,),
-              activeItem: Image.asset(AppImages.activeSettingIcon),
-              itemLabel: 'Settings',
-            ),
-            BottomBarItem(
-              inActiveItem: Image.asset(AppImages.inActiveSentIcon,),
-              activeItem: Image.asset(AppImages.activeSentIcon),
-              itemLabel: 'Message',
-            ),
-          ],
-          onTap: (index) {
-            if(index == 0){
-              selectedBottomNavigation = BottomNavigationOption.home;
-              context.pushReplacement("${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType");
-            }else if(index == 1){
-              selectedBottomNavigation = BottomNavigationOption.report;
-              final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
-print("controllerContext.userId:${controllerContext.userId},controllerContext.controllerId:${controllerContext.controllerId},");
-              context.pushReplacement("${DashBoardRoutes.report}?userId=$userId&userType=$userType",  extra: {
-                "userId": controllerContext.userId,
-                "controllerId": controllerContext.controllerId,
-                "userType": controllerContext.userType,
-                "subUserId": controllerContext.subUserId,
-                "deviceId": controllerContext.deviceId,
-              });
-            }else if(index == 2){
-              selectedBottomNavigation = BottomNavigationOption.manual;
-              final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
-              context.pushReplacement(
-                  "${DashBoardRoutes.standalone}?userId=$userId&userType=$userType",
-                extra: {
-                    "userId": controllerContext.userId,
-                    "controllerId": controllerContext.controllerId,
-                    "userType": controllerContext.userType,
-                    "subUserId": controllerContext.subUserId,
-                    "deviceId": controllerContext.deviceId,
-                }
-              );
-            }else if(index == 3){
-              selectedBottomNavigation = BottomNavigationOption.setting;
-              context.pushReplacement("${DashBoardRoutes.settings}?userId=$userId&userType=$userType");
-            }else if(index == 4){
-              selectedBottomNavigation = BottomNavigationOption.sentAndReceive;
-              context.pushReplacement("${DashBoardRoutes.sentAndReceive}?userId=$userId&userType=$userType");
-            }
-            setState(() {});
-          },
-          kIconSize: 24.0,
-        ),
-        appBar: selectedBottomNavigation == BottomNavigationOption.home ? _buildAppBar(
+        floatingActionButton: showBottomNav ? _buildBottomNavigationBar(userId, userType, selectedController?.modelId ?? 4) : null,
+        appBar: showShellAppBar ? _buildProperAppBar(
+          matchedLocation,
           selectedGroup,
           selectedController,
           controllers,
@@ -402,12 +363,7 @@ print("controllerContext.userId:${controllerContext.userId},controllerContext.co
           context,
           userId,
           userType,
-        ) : selectedBottomNavigation == BottomNavigationOption.sentAndReceive
-            ? null
-            : CustomAppBar(
-                title: selectedBottomNavigation.title(),
-
-        ),
+        ) : null,
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         drawer: userType == 1 ? AppDrawer(userData: widget.userData,) : null,
         body: selectedController == null
@@ -415,6 +371,17 @@ print("controllerContext.userId:${controllerContext.userId},controllerContext.co
             : widget.child,
       ),
     );
+  }
+
+  Widget _buildBottomNavigationBar(int userId, int userType, int modelId) {
+    if (AppConstants.isIrrigationLive(modelId)) {
+      return DripBottomNavigationBar(userId: userId, userType: userType, modelId: modelId);
+    } else if (AppConstants.isPumpLive(modelId) || AppConstants.isDoublePumpLive(modelId)) {
+      return PumpBottomNavigationBar(userId: userId, userType: userType, modelId: modelId);
+    } else {
+      // Fallback or default navigation bar if needed
+      return PumpBottomNavigationBar(userId: userId, userType: userType, modelId: modelId);
+    }
   }
 
   (GroupDetailsEntity, ControllerEntity?, List<ControllerEntity>)
@@ -431,6 +398,46 @@ print("controllerContext.userId:${controllerContext.userId},controllerContext.co
     final selectedController = controllers.isNotEmpty ? controllers[effectiveIndex] : null;
 
     return (selectedGroup, selectedController, controllers);
+  }
+
+  PreferredSizeWidget? _buildProperAppBar(
+      String location,
+      GroupDetailsEntity selectedGroup,
+      ControllerEntity? selectedController,
+      List<ControllerEntity> controllers,
+      DashboardGroupsLoaded state,
+      DashboardPageCubit cubit,
+      BuildContext context,
+      int userId,
+      int userType,
+      ) {
+    if (location == DashBoardRoutes.dashboard) {
+      return _buildAppBar(selectedGroup, selectedController, controllers, state, cubit, context, userId, userType);
+    }
+
+    String? title;
+    if (location == DashBoardRoutes.report) title = "Report";
+    else if (location == DashBoardRoutes.standalone) title = "Manual";
+    else if (location == DashBoardRoutes.settings) title = "Setting";
+    else if (location == DashBoardRoutes.sentAndReceive) title = "Sent And Receive";
+
+    if (title != null) {
+      return AppBar(
+        title: Text(title, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+      );
+    }
+
+    return null;
   }
 
   PreferredSizeWidget _buildAppBar(
@@ -562,7 +569,7 @@ print("controllerContext.userId:${controllerContext.userId},controllerContext.co
             print("groupId change ");
             print(groupId);
             print(userId);
-             cubit.selectGroup(groupId, userId, GoRouterState.of(context));
+            cubit.selectGroup(groupId, userId, GoRouterState.of(context));
             context.read<ControllerContextCubit>().toInitial();
           },
           itemBuilder: (context) => state.groups.map((group) {

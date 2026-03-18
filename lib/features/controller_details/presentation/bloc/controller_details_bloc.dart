@@ -101,7 +101,7 @@ class ControllerDetailsBloc
       // 1. Create a modified copy of the current data
       // Note: You need a 'copyWith' method in your ControllerDetailsEntities
       final updatedData = currentState.data.copyWith(
-        gprsMode: event.switchName == "gprsMode" ? (event.isOn ? "4" : "1") : null,
+        gprsMode: event.switchName == "gprsMode" ? (event.isOn ? "5" : "1") : null,
         dndStatus: event.switchName == "dndStatus" ? (event.isOn ? "1" : "0") : null,
       );
 

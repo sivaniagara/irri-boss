@@ -29,6 +29,7 @@ class Dashboard20 extends StatefulWidget {
 }
 
 class _Dashboard20State extends State<Dashboard20> {
+  List<int> pumpModel =[4,11, 27];
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +38,7 @@ class _Dashboard20State extends State<Dashboard20> {
           if(state is DashboardLoading) {
             return const Center(child: CircularProgressIndicator());
           }
-          
+
           if(state is DashboardError) {
             return Center(
               child: Column(
@@ -62,15 +63,15 @@ class _Dashboard20State extends State<Dashboard20> {
           final groupId = state.selectedGroupId;
           final controllerIndex = state.selectedControllerIndex;
 
-          if (groupId == null || controllerIndex == null || 
-              state.groupControllers[groupId] == null || 
+          if (groupId == null || controllerIndex == null ||
+              state.groupControllers[groupId] == null ||
               state.groupControllers[groupId]!.isEmpty) {
             return const Center(child: Text("No Controllers Found"));
           }
 
           ControllerEntity controllerEntity = state.groupControllers[groupId]![controllerIndex];
           LiveMessageEntity liveMessageEntity = controllerEntity.liveMessage;
-          
+
           if (kDebugMode) {
             print("DASHBOARD_2_0: Rebuilding for ${controllerEntity.deviceName}");
             print("Sync Time: ${controllerEntity.livesyncTime} Date: ${controllerEntity.livesyncDate}");
@@ -87,7 +88,8 @@ class _Dashboard20State extends State<Dashboard20> {
                 spacing: 10,
                 children: [
                   const SizedBox(height: 20),
-                  if ([11, 27].contains(controllerEntity.modelId))
+                  Text('${controllerEntity.modelId}'),
+                  if (pumpModel.contains(controllerEntity.modelId))
                     ...pumpDashboard(
                       controllerEntity: controllerEntity,
                       liveMessageEntity: liveMessageEntity,
@@ -251,9 +253,8 @@ class _Dashboard20State extends State<Dashboard20> {
     return [
       mountainWidget(controllerEntity, liveMessageEntity),
       voltageAndCurrent(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity),
-      if(controllerEntity.modelId == 27)
-        doublePumpWidget(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity),
-      
+      doublePumpWidget(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity),
+
       dashboardCard(
         child: Column(
           spacing: 20,
@@ -319,34 +320,34 @@ class _Dashboard20State extends State<Dashboard20> {
               ),
               Text('Current', style: Theme.of(context).textTheme.labelLarge),
               const Spacer(),
-              if (controllerEntity.modelId != 27)
-              InkWell(
-                onTap: () {
-                  context.push(DashBoardRoutes.ctrlLivePage, extra: controllerEntity);
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xffE6F2FF),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.developer_board, size: 20, color: Colors.black),
-                      SizedBox(width: 8),
-                      Text(
-                        "Controller Live",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 14,
+              if(!pumpModel.contains(controllerEntity.modelId))
+                InkWell(
+                  onTap: () {
+                    context.push(DashBoardRoutes.ctrlLivePage, extra: controllerEntity);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xffE6F2FF),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.developer_board, size: 20, color: Colors.black),
+                        SizedBox(width: 8),
+                        Text(
+                          "Controller Live",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           Row(
