@@ -399,7 +399,7 @@ class _Dashboard20State extends State<Dashboard20> {
                     ),
                     Text(
                       'Motor',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600, color: liveMessageEntity.motorOnOff == '1' ? Colors.green : Colors.red),
                     ),
                   ],
                 ),
@@ -490,7 +490,7 @@ class _Dashboard20State extends State<Dashboard20> {
                 )
               ],
             ),
-            Row(
+            Row( 
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 scheduleTimeCard(
@@ -744,6 +744,7 @@ class _Dashboard20State extends State<Dashboard20> {
   }
 
   Widget doublePumpWidget({required ControllerEntity controllerEntity, required LiveMessageEntity liveMessageEntity}){
+    final bool isMotorOn = liveMessageEntity.motorOnOff == '1' || (controllerEntity.modelId == 27 && liveMessageEntity.valveOnOff == '1');
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -762,11 +763,13 @@ class _Dashboard20State extends State<Dashboard20> {
                   children: [
                     iconWithHeader(
                       title: 'Motor',
-                      iconBackgroundColor: const Color(0xffB1E4AA),
-                      iconColor: Theme.of(context).colorScheme.primary,
+                      iconBackgroundColor: isMotorOn ? const Color(0xffB1E4AA) : const Color(0xffFFCDD2),
+                      iconColor: isMotorOn ? Colors.green : Colors.red,
+                      titleColor: isMotorOn ? Colors.green : Colors.red,
                       icon: Image.asset(
                         'assets/images/common/motor_icon.png',
                         width: 20,
+                        color: isMotorOn ? Colors.green : Colors.red,
                       ),
                     ),
                     const Spacer(),
@@ -924,6 +927,7 @@ class _Dashboard20State extends State<Dashboard20> {
     required Color iconBackgroundColor,
     required Color iconColor,
     required Widget icon,
+    Color? titleColor,
   }) {
     return Row(
       spacing: 10,
@@ -939,7 +943,7 @@ class _Dashboard20State extends State<Dashboard20> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: Theme.of(context).textTheme.labelLarge),
+            Text(title, style: Theme.of(context).textTheme.labelLarge?.copyWith(color: titleColor)),
             if (subTitle != null) Text(subTitle, style: Theme.of(context).textTheme.bodySmall),
           ],
         )

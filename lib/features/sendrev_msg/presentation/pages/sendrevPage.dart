@@ -155,7 +155,7 @@ class _SendRevPageState extends State<SendRevPage> {
                     date: m.date,
                     msgType: m.msgType,
                     ctrlMsg: m.ctrlMsg,
-                    ctrlDesc: m.ctrlMsg,
+                    ctrlDesc: m.ctrlDesc,
                     status: m.status,
                     msgCode: "",
                     time: m.time,

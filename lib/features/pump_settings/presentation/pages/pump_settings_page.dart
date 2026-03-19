@@ -521,6 +521,7 @@ class _SettingRow extends StatelessWidget {
       SettingWidgetType.phone => _PhoneInput(setting: setting, onChanged: _onChanged(context)),
       SettingWidgetType.multiTime => _MultiTimeInput(setting: setting, onChanged: _onChanged(context), isSinglePump: isSinglePump),
       SettingWidgetType.fullText => _TextInput(
+        key: ValueKey(setting.value), // 👈 Force rebuild on value change
         setting: setting,
         onChanged: _onChanged(context),
         label: setting.title,
@@ -543,6 +544,7 @@ class _SettingRow extends StatelessWidget {
       SettingWidgetType.text => SizedBox(
         width: 100,
         child: _TextInput(
+          key: ValueKey(setting.value), // 👈 Force rebuild on value change
           setting: setting,
           onChanged: _onChanged(context),
           menuId: menuItemEntity.menu.menuSettingId,
@@ -624,6 +626,7 @@ class _PhoneInput extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: IntlPhoneField(
+        key: ValueKey(setting.value), // 👈 Force rebuild on value change
         initialValue: setting.value.trim().isNotEmpty ? setting.value.trim() : null,
         initialCountryCode: 'IN',
         validator: (phone) {
@@ -648,6 +651,7 @@ class _TextInput extends StatelessWidget {
   final int menuId;
 
   const _TextInput({
+    super.key, // 👈 Important to pass key
     required this.setting,
     required this.onChanged,
     this.label,
@@ -731,6 +735,7 @@ class _MultiTimeInput extends StatelessWidget {
     return Column(
       children: filteredIndices.map((i) => _navigationRow(
         context,
+        key: ValueKey(values[i]), // 👈 Force rebuild on value change
         title: titles[i],
         trailing: Text(
           values[i],
@@ -752,8 +757,9 @@ class _MultiTimeInput extends StatelessWidget {
     );
   }
 
-  Widget _navigationRow(BuildContext context, {required String title, Widget? trailing, VoidCallback? onTap}) {
+  Widget _navigationRow(BuildContext context, {Key? key, required String title, Widget? trailing, VoidCallback? onTap}) {
     return InkWell(
+      key: key,
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
@@ -835,6 +841,7 @@ class _MultiTextInput extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 6),
                     child: TextFormField(
+                      key: ValueKey(values[index]), // 👈 Force rebuild on value change
                       initialValue: index < values.length ? values[index] : "0",
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       inputFormatters: isVoltageWhole
