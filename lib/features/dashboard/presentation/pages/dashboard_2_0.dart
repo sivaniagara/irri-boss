@@ -88,7 +88,6 @@ class _Dashboard20State extends State<Dashboard20> {
                 spacing: 10,
                 children: [
                   const SizedBox(height: 20),
-                  Text('${controllerEntity.modelId}'),
                   if (pumpModel.contains(controllerEntity.modelId))
                     ...pumpDashboard(
                       controllerEntity: controllerEntity,

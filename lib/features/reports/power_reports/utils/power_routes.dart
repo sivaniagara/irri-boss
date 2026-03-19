@@ -34,6 +34,7 @@ final PowerGraphRoutes = <GoRoute>[
       final int userId = int.tryParse(extra['userId']?.toString() ?? queryParams['userId'] ?? '0') ?? 0;
       final int subuserId = int.tryParse(extra['subUserId']?.toString() ?? queryParams['subUserId'] ?? '0') ?? 0;
       final int controllerId = int.tryParse(extra['controllerId']?.toString() ?? queryParams['controllerId'] ?? '0') ?? 0;
+      final int modelId = int.tryParse(extra['modelId']?.toString() ?? queryParams['modelId'] ?? '7') ?? 7;
 
       final String fromDate = extra['fromDate']?.toString() ??
           DateFormat('yyyy-MM-dd').format(DateTime.now());
@@ -64,6 +65,7 @@ final PowerGraphRoutes = <GoRoute>[
            controllerId: controllerId,
            fromDate: fromDate,
            toDate: toDate,
+           modelId: modelId,
           ),
       );
     },
