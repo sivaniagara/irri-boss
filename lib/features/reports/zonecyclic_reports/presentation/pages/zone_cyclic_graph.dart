@@ -55,7 +55,7 @@ class ZoneCyclicGraph extends StatelessWidget {
                                 show: true,
                                 drawVerticalLine: false,
                                 getDrawingHorizontalLine: (value) => FlLine(
-                                  color: Colors.grey.withOpacity(0.1),
+                                  color: Colors.grey.withValues(alpha: 0.1),
                                   strokeWidth: 1,
                                 ),
                               ),
@@ -109,7 +109,7 @@ class ZoneCyclicGraph extends StatelessWidget {
     return BarTouchData(
       enabled: true,
       touchTooltipData: BarTouchTooltipData(
-        tooltipRoundedRadius: 8,
+        getTooltipColor: (group) => Colors.blueGrey.withValues(alpha: 0.8),
         getTooltipItem: (group, groupIndex, rod, rodIndex) {
           final zone = zones[group.x.toInt()];
           return BarTooltipItem(
@@ -141,7 +141,7 @@ class ZoneCyclicGraph extends StatelessWidget {
             backDrawRodData: BackgroundBarChartRodData(
               show: true,
               toY: _calculateMaxY(),
-              color: Colors.grey.withOpacity(0.05),
+              color: Colors.grey.withValues(alpha: 0.05),
             ),
           ),
         ],

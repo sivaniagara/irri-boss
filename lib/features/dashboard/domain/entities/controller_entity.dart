@@ -163,12 +163,10 @@ class ControllerEntity extends Equatable {
     String? motorStatus,
     String? flowRate,
     List<ProgramEntity>? programList,
-    String? msgDesc,
     String? livesyncDate,
     String? livesyncTime,
     String? smsSyncTime,
     String? status,
-    String? ctrlLatestMsg,
   }) {
     return ControllerEntity(
       userDeviceId: userDeviceId,

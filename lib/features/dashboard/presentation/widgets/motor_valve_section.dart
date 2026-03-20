@@ -46,7 +46,7 @@ class MotorValveSection extends StatelessWidget {
                   controllerId: userData['controllerId'],
                   isOn: true,
                   dualPump: model == 27,
-                  deviceId: userData['deviceId'],
+                  deviceId: userData['deviceId'], m1on: false, m2on: true, mOff: false,
                 );
 
               },
@@ -70,7 +70,7 @@ class MotorValveSection extends StatelessWidget {
                   controllerId: userData['controllerId'],
                   isOn: false,
                   dualPump: model == 27,
-                  deviceId: userData['deviceId'],
+                  deviceId: userData['deviceId'], m1on: false, m2on: false, mOff: true,
                 );
               },
               style: ElevatedButton.styleFrom(

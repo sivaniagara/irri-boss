@@ -366,18 +366,10 @@ class DashboardPageCubit extends Cubit<DashboardState> {
           liveMessage: liveMessage,
           livesyncDate: date,
           livesyncTime: time,
-          ctrlLatestMsg: fullMsg,
-          msgDesc: msgDesc);
+          );
     });
   }
 
-  void updateControllerMessage(String deviceId,
-      {String? fullMsg, String? msgDesc}) {
-    _updateSingleDeviceState(deviceId, (ctrl) {
-      final model = ctrl as ControllerModel;
-      return model.copyWith(ctrlLatestMsg: fullMsg, msgDesc: msgDesc);
-    });
-  }
 
   void updateServerTime(String deviceId, {String? date, String? time}) {
     if (state is! DashboardGroupsLoaded) return;

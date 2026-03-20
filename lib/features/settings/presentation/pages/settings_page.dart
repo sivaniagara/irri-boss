@@ -34,23 +34,22 @@ class SettingsPage extends StatelessWidget {
         return SingleChildScrollView(
           child: Column(
             children: [
-              // Hide Controller Details for Single and Double Pump models
-              if (!isAnyPump)
-                _buildSettingsItem(
-                    context: context,
-                    title: 'Controller Details',
-                    iconPath: AppImages.ControllerDetailsIcon,
-                    onTap: () {
-                      context.push(
-                        RouteConstants.ctrlDetailsPage,
-                        extra: GetControllerDetailsParams(
-                          userId: int.parse(controllerContext.userId),
-                          controllerId: int.parse(controllerContext.controllerId),
-                          deviceId: controllerContext.deviceId,
-                        ),
-                      );
-                    }
-                ),
+              // Always show Controller Details for all models including Single and Double Pump
+              _buildSettingsItem(
+                  context: context,
+                  title: 'Controller Details',
+                  iconPath: AppImages.ControllerDetailsIcon,
+                  onTap: () {
+                    context.push(
+                      RouteConstants.ctrlDetailsPage,
+                      extra: GetControllerDetailsParams(
+                        userId: int.parse(controllerContext.userId),
+                        controllerId: int.parse(controllerContext.controllerId),
+                        deviceId: controllerContext.deviceId,
+                      ),
+                    );
+                  }
+              ),
 
               // Always Show Pump Settings (Required for Drip and Standalone Pumps)
               _buildSettingsItem(

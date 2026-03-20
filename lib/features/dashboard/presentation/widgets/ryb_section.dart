@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
 class RYBSection extends StatelessWidget {
-  final String r, y, b;
-  final String c1, c2, c3;
+  final String rVoltage, yVoltage, bVoltage;
+  final String rCurrent, yCurrent, bCurrent;
 
   const RYBSection({
     super.key,
-    required this.r,
-    required this.y,
-    required this.b,
-    required this.c1,
-    required this.c2,
-    required this.c3,
+    required this.rVoltage,
+    required this.yVoltage,
+    required this.bVoltage,
+    required this.rCurrent,
+    required this.yCurrent,
+    required this.bCurrent,
   });
 
   Widget _buildBox(BuildContext context, Color color, String phase, String value) {
@@ -61,9 +61,9 @@ class RYBSection extends StatelessWidget {
       children: [
         Row(
           children: [
-            _buildBox(context, const Color(0xffE21E11), 'R Phase', r),
-            _buildBox(context, const Color(0xffFEC106), 'Y Phase', y),
-            _buildBox(context, const Color(0xff6C8DB7), 'B Phase', b),
+            _buildBox(context, const Color(0xffE21E11), 'R Phase', rVoltage),
+            _buildBox(context, const Color(0xffFEC106), 'Y Phase', yVoltage),
+            _buildBox(context, const Color(0xff6C8DB7), 'B Phase', bVoltage),
           ],
         ),
         const SizedBox(height: 12),
@@ -76,7 +76,7 @@ class RYBSection extends StatelessWidget {
           ),
           child: Center(
             child: Text(
-              'Current : C1 ${c1}A , C2 ${c2}A , C3 ${c3}A',
+              'Current : C1 ${rCurrent}A , C2 ${yCurrent}A , C3 ${bCurrent}A',
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,

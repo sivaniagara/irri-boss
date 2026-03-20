@@ -22,32 +22,47 @@ class DashboardCubit extends Cubit<bool> {
     required String deviceId,
     required bool isOn,
     required bool dualPump,
+    required bool m1on,
+    required bool m2on,
+    required bool mOff,
   }) async {
     emit(true);
 
-    final sms = dualPump
-        ? (isOn ? "MOTOR1ON" : "MTROF")
-        : (isOn ? "MOTORON" : "MTROF");
-
     try {
-      /// 🔹 API CALL
       await remote.motorOnOff(
         userId: userId,
         subUserId: subUserId,
         controllerId: controllerId,
         status: isOn ? "1" : "0",
-        deviceId:deviceId,
+        deviceId: deviceId,
         dualPump: dualPump,
+        m1on: m1on,
+        m2on: m2on ,
+        mOff: mOff,
       );
-      sl.get<MqttService>().publish(
-          deviceId,
-          jsonEncode(sms)
-      );
+
+      final mqtt = sl.get<MqttService>();
+
+      if (isOn && !dualPump) {
+        mqtt.publish(deviceId, jsonEncode({"sentSms": "MTROF"}));
+        await Future.delayed(const Duration(seconds: 5));
+        final onSms =  "MTRON";
+        mqtt.publish(deviceId, jsonEncode({"sentSms": onSms}));
+      } else if (isOn && dualPump) {
+        mqtt.publish(deviceId, jsonEncode({"sentSms": "MTROF"}));
+        await Future.delayed(const Duration(seconds: 5));
+        final onSms = m1on ? "MOTOR1ON" : "MOTOR2ON";
+        mqtt.publish(deviceId, jsonEncode({"sentSms": onSms}));
+      }
+      else {
+        mqtt.publish(deviceId, jsonEncode({"sentSms": "MTROF"}));
+      }
     } catch (e) {
       debugPrint("Motor switch error: $e");
     }
 
     emit(false);
   }
+
 }
 

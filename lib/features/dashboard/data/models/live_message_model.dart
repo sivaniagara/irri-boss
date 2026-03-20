@@ -129,50 +129,49 @@ class LiveMessageModel extends LiveMessageEntity {
     bool isPumpLive = typeCode == 'LD04' || message.startsWith('LD04');
 
     if (isPumpLive) {
-      motorOnOff = safeString(1, '0');
-      valveOnOff = safeString(2, '0');
-      rVoltage = safeString(3, '0');
-      yVoltage = safeString(4, '0');
-      bVoltage = safeString(5, '0');
-      ryVoltage = safeString(6, '0');
-      ybVoltage = safeString(7, '0');
-      brVoltage = safeString(8, '0');
-      rCurrent = safeString(9, '0.0');
-      yCurrent = safeString(10, '0.0');
-      bCurrent = safeString(11, '0.0');
+      motorOnOff = safeString(0, '0');
+      rVoltage = safeString(1, '0');
+      yVoltage = safeString(2, '0');
+      bVoltage = safeString(3, '0');
+      ryVoltage = safeString(4, '0');
+      ybVoltage = safeString(5, '0');
+      brVoltage = safeString(6, '0');
+      rCurrent = safeString(7, '0.0');
+      yCurrent = safeString(8, '0.0');
+      bCurrent = safeString(9, '0.0');
       phase = "3 PHASE";
-      modeOfOperation = safeString(14, '');
-      programName = safeString(15, '');
-      zoneNo = safeString(16, '0');
-      valveForZone = safeString(17, '');
-      zoneDuration = safeString(18, '00:00:00');
-      zoneRemainingTime = safeString(19, '00:00:00');
-      prsIn = safeString(20, '0.0');
-      prsOut = safeString(21, '0.0');
-      flowRate = safeString(22, '0.0');
+      modeOfOperation = safeString(10, '');
+      programName = safeString(11, '');
+      zoneNo = safeString(12, '0');
+      valveForZone = safeString(15, '');
+      zoneDuration = safeString(13, '00:00:00');
+      zoneRemainingTime = safeString(14, '00:00:00');
+      prsIn = safeString(19, '0.0');
+      prsOut = safeString(20, '0.0');
+      flowRate = safeString(21, '0.0');
 
-      // Well data at 23
-      String rawWell = safeString(23, '0');
+      // Well data at 38
+      String rawWell = safeString(38, '0');
       if (rawWell.contains('F-')) {
         final wellParts = rawWell.split('F-');
         wellLevel = wellParts[0];
         wellPercent = wellParts.length > 1 ? wellParts[1] : '0';
       } else {
         wellPercent = rawWell;
-        wellLevel = safeString(41, '0');
+        wellLevel = safeString(39, '0');
       }
 
       fertStatus = safeList(24, ['0', '0', '0', '0', '0', '0'], separator: ':');
 
-      // EC and PH packed at 25 (e.g., 0.0:0.0)
-      String rawEcPh = safeString(25, '0:0');
+      // EC and PH 
+      String rawEcPh = safeString(23, '0:0');
       if (rawEcPh.contains(':')) {
         final ecPhParts = rawEcPh.split(':');
         ec = ecPhParts[0];
         ph = ecPhParts.length > 1 ? ecPhParts[1] : '0';
       } else {
         ec = rawEcPh;
-        ph = safeString(26, '0');
+        ph = safeString(25, '0');
       }
       totalMeterFlow = safeString(26, '0');
 
@@ -185,10 +184,10 @@ class LiveMessageModel extends LiveMessageEntity {
       energy = safeString(33, '0');
       powerFactor = safeString(34, '0');
       fertValues = safeList(36, ['0', '0', '0', '0', '0', '0'], separator: ';');
-      versionModule = safeString(39, '');
-      versionBoard = safeString(40, '');
-      signal = safeString(47, '0');
-      batVolt = safeString(48, '0');
+      versionModule = safeString(40, '');
+      versionBoard = safeString(44, '');
+      signal = safeString(46, '0');
+      batVolt = safeString(47, '0');
     } else {
       // Standard LD01 / LD06
       motorOnOff = safeString(0, '0');

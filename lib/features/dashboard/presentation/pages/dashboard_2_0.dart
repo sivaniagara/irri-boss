@@ -12,7 +12,9 @@ import '../../../../core/di/injection.dart' as di;
 import '../../../../core/services/mqtt/mqtt_manager.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/utils/app_images.dart';
+import '../../../../core/utils/route_constants.dart';
 import '../../../../core/utils/safe_parser.dart';
+import '../../../controller_details/domain/usecase/controller_details_params.dart';
 import '../../../edit_program/utils/edit_program_routes.dart';
 import '../../domain/entities/controller_entity.dart';
 import '../../domain/entities/livemessage_entity.dart';
@@ -268,7 +270,7 @@ class _Dashboard20State extends State<Dashboard20> {
             Text(controllerEntity.msgDesc, style: const TextStyle(fontSize: 16, color: Color(0xff424242),),),
             ReadMoreText(
               controllerEntity.ctrlLatestMsg,
-              trimLines: 2, // number of lines before collapsing
+              trimLines: 2,
               trimMode: TrimMode.Line,
               trimCollapsedText: ' Show more',
               trimExpandedText: ' Show less',
@@ -317,44 +319,70 @@ class _Dashboard20State extends State<Dashboard20> {
                   ),
                 ),
               ),
-              Text('Current', style: Theme.of(context).textTheme.labelLarge),
+              Text('Voltage & Current', style: Theme.of(context).textTheme.labelLarge),
               const Spacer(),
-              if(!pumpModel.contains(controllerEntity.modelId))
-                InkWell(
-                  onTap: () {
+              InkWell(
+                onTap: () {
+                  if (pumpModel.contains(controllerEntity.modelId)) {
+                    context.push(
+                      RouteConstants.ctrlDetailsPage,
+                      extra: GetControllerDetailsParams(
+                        userId: controllerEntity.userId,
+                        controllerId: controllerEntity.userDeviceId,
+                        deviceId: controllerEntity.deviceId,
+                      ),
+                    );
+                  } else {
                     context.push(DashBoardRoutes.ctrlLivePage, extra: controllerEntity);
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xffE6F2FF),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.developer_board, size: 20, color: Colors.black),
-                        SizedBox(width: 8),
-                        Text(
-                          "Controller Live",
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 14,
-                          ),
+                  }
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xffE6F2FF),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        pumpModel.contains(controllerEntity.modelId) ? Icons.info_outline : Icons.developer_board,
+                        size: 20,
+                        color: Colors.black,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        pumpModel.contains(controllerEntity.modelId) ? "Details" : "Controller Live",
+                        style: const TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
+              ),
             ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              rybWidget(backgroundColor: const Color(0xffE21E11), value: liveMessageEntity.rVoltage, phase: 'R Phase'),
-              rybWidget(backgroundColor: const Color(0xffFEC106), value: liveMessageEntity.yVoltage, phase: 'Y Phase'),
-              rybWidget(backgroundColor: const Color(0xff6C8DB7), value: liveMessageEntity.bVoltage, phase: 'B Phase'),
+              rybWidget(
+                backgroundColor: const Color(0xffE21E11),
+                value: liveMessageEntity.rVoltage,
+                phase: 'R Phase',
+              ),
+              rybWidget(
+                backgroundColor: const Color(0xffFEC106),
+                value: liveMessageEntity.yVoltage,
+                phase: 'Y Phase',
+              ),
+              rybWidget(
+                backgroundColor: const Color(0xff6C8DB7),
+                value: liveMessageEntity.bVoltage,
+                phase: 'B Phase',
+              ),
             ],
           ),
           Center(

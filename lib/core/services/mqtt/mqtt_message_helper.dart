@@ -430,6 +430,12 @@ class MqttMessageHelper {
         'iot_channel_id', 'IoT Notifications',
         importance: Importance.high, priority: Priority.high, icon: '@mipmap/ic_launcher'
     );
-    await notifications.show(0, title, body, const NotificationDetails(android: androidDetails), payload: payload);
+    await notifications.show(
+      id: 0,
+      title: title,
+      body: body,
+      notificationDetails: const NotificationDetails(android: androidDetails),
+      payload: payload,
+    );
   }
 }
