@@ -784,9 +784,22 @@ class _MultiTextInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rawTitles = setting.title.split(';').map((e) => e.trim()).toList();
-    final rawValues = setting.value.split(';').map((e) => e.trim()).toList();
+    var rawTitles = setting.title.split(';').map((e) => e.trim()).toList();
+    var rawValues = setting.value.split(';').map((e) => e.trim()).toList();
     final flags = setting.hiddenFlag.split(';');
+
+    final String format = setting.smsFormat.trim().toUpperCase();
+    final bool isVoltageCal = format == "VOLTCAL";
+    final bool isVoltageWhole = format == "VOLTAGCAL";
+    final bool isCurrentCal = format == "CURRCAL" || format == "CURCAL";
+    final bool isCurrentSecondRow = format == "CURRENTCAL";
+    final bool isDecimalOnlyLine = isVoltageCal || isCurrentCal;
+
+    // Fix: Force 3 fields for Voltage and Current calibration second rows
+    if ((isVoltageWhole || isCurrentSecondRow) && rawTitles.length < 3) {
+      while (rawTitles.length < 3) rawTitles.add("");
+      while (rawValues.length < 3) rawValues.add(rawValues.isNotEmpty ? rawValues[0] : "0");
+    }
 
     final List<int> filteredIndices = [];
     for (int i = 0; i < rawTitles.length; i++) {
@@ -801,13 +814,6 @@ class _MultiTextInput extends StatelessWidget {
 
     final titles = filteredIndices.map((i) => rawTitles[i]).toList();
     final values = filteredIndices.map((i) => i < rawValues.length ? rawValues[i] : "0").toList();
-
-    final String format = setting.smsFormat.trim().toUpperCase();
-    final bool isVoltageCal = format == "VOLTCAL";
-    final bool isVoltageWhole = format == "VOLTAGCAL";
-    final bool isCurrentCal = format == "CURRCAL" || format == "CURCAL";
-    final bool isCurrentSecondRow = format == "CURRENTCAL";
-    final bool isDecimalOnlyLine = isVoltageCal || isCurrentCal;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

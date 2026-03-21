@@ -2,15 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/alert_dialog.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/app_alerts.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_switch.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'package:readmore/readmore.dart';
-import '../../../../core/di/injection.dart' as di;
-import '../../../../core/services/mqtt/mqtt_manager.dart';
-import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/utils/app_images.dart';
 import '../../../../core/utils/route_constants.dart';
 import '../../../../core/utils/safe_parser.dart';
@@ -518,7 +514,7 @@ class _Dashboard20State extends State<Dashboard20> {
                 )
               ],
             ),
-            Row( 
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 scheduleTimeCard(
@@ -834,7 +830,7 @@ class _Dashboard20State extends State<Dashboard20> {
                         Image.asset(
                           'assets/images/common/motor_${liveMessageEntity.motorOnOff == '1' ? 'g' : 'r'}.png',
                           width: 80,
-                        ),
+                            ),
                         switches(
                             liveMessageEntity: liveMessageEntity,
                             motorNo: 1
@@ -878,11 +874,11 @@ class _Dashboard20State extends State<Dashboard20> {
             IconButton(
               onPressed: (){
                 final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
-                String payload = 'MTR${motorNo}ON,';
+                String payload = 'MTRON,';
                 context.read<DashboardPageCubit>().controlMotorStatus(
                     userId: controllerContext.userId,
                     controllerId: controllerContext.controllerId,
-                    programId: '0',
+                    programId: SafeParser.getProgramId(liveMessageEntity.programName),
                     deviceId: controllerContext.deviceId,
                     payload: payload
                 );
@@ -900,11 +896,11 @@ class _Dashboard20State extends State<Dashboard20> {
             IconButton(
               onPressed: (){
                 final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
-                String payload = 'MTR${motorNo}OF,';
+                String payload = 'MTROF,';
                 context.read<DashboardPageCubit>().controlMotorStatus(
                     userId: controllerContext.userId,
                     controllerId: controllerContext.controllerId,
-                    programId: '0',
+                    programId: SafeParser.getProgramId(liveMessageEntity.programName),
                     deviceId: controllerContext.deviceId,
                     payload: payload
                 );

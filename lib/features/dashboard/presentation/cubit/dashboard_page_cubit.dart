@@ -422,8 +422,10 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       (failure) => emit(currentState.copyWith(
           changeFromStatus: ChangeFromStatus.failure,
           errorMsg: failure.message)),
-      (_) => emit(
-          currentState.copyWith(changeFromStatus: ChangeFromStatus.success)),
+      (_) {
+        sl<MqttManager>().publish(deviceId, PublishMessageHelper.settingsPayload(payload));
+        emit(currentState.copyWith(changeFromStatus: ChangeFromStatus.success));
+      },
     );
   }
 
@@ -439,21 +441,69 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
     emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.loading));
 
-    final result = await controlMotorUsecase(ControlMotorParams(
-      userId: userId,
-      controllerId: controllerId,
-      programId: programId,
-      deviceId: deviceId,
-      payload: payload,
-    ));
+    final cleanPayload = payload.replaceAll(",", "");
 
-    result.fold(
-      (failure) => emit(currentState.copyWith(
-          controlMotorStatus: ControlMotorStatus.failure,
-          errorMsg: failure.message)),
-      (_) => emit(
-          currentState.copyWith(controlMotorStatus: ControlMotorStatus.success)),
-    );
+    if (cleanPayload.toUpperCase().contains("ON")) {
+      // Step 1: Send MTROF to API
+      await controlMotorUsecase(ControlMotorParams(
+        userId: userId,
+        controllerId: controllerId,
+        programId: programId,
+        deviceId: deviceId,
+        payload: "MTROF,",
+      ));
+      
+      // Publish MTROF to MQTT
+      sl<MqttManager>().publish(deviceId, PublishMessageHelper.settingsPayload("MTROF"));
+          
+      // Step 2: Wait for 5 seconds
+      await Future.delayed(const Duration(seconds: 5));
+
+      // Step 3: Send the original command (MTRON) to API
+      final onResult = await controlMotorUsecase(ControlMotorParams(
+        userId: userId,
+        controllerId: controllerId,
+        programId: programId,
+        deviceId: deviceId,
+        payload: payload,
+      ));
+
+      onResult.fold(
+        (failure) => emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.failure, errorMsg: failure.message)),
+        (_) {
+          // Publish original payload (MTRON) to MQTT
+          sl<MqttManager>().publish(deviceId, PublishMessageHelper.settingsPayload(cleanPayload));
+          emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.success));
+        },
+      );
+    } else {
+      // For OFF command (MTROF), send once to API and MQTT
+      final result = await controlMotorUsecase(ControlMotorParams(
+        userId: userId,
+        controllerId: controllerId,
+        programId: programId,
+        deviceId: deviceId,
+        payload: payload,
+      ));
+
+      result.fold(
+        (failure) => emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.failure, errorMsg: failure.message)),
+        (_) {
+          sl<MqttManager>().publish(deviceId, PublishMessageHelper.settingsPayload(cleanPayload));
+          emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.success));
+        },
+      );
+    }
+  }
+
+  void resetControlStatus() {
+    if (state is DashboardGroupsLoaded) {
+      final currentState = state as DashboardGroupsLoaded;
+      emit(currentState.copyWith(
+        controlMotorStatus: ControlMotorStatus.initial,
+        changeFromStatus: ChangeFromStatus.initial,
+      ));
+    }
   }
 
   @override

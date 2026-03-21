@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/theme/app_themes.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
 import '../../../../core/widgets/no_data.dart';
+import '../../data/models/controller_details_model.dart';
+import '../../domain/entities/controller_details_entities.dart';
 import '../../domain/usecase/controller_details_params.dart';
 import '../bloc/controller_details_bloc.dart';
 import '../bloc/controller_details_bloc_event.dart';
@@ -44,7 +47,7 @@ class _ControllerDetailsPageState extends State<ControllerDetailsPage> {
     super.dispose();
   }
 
-  void _initializeControllers(dynamic data) {
+  void _initializeControllers(ControllerDetailsEntities data) {
     if (!_isInitialized) {
       devicenameController.text = data.deviceName;
       simController.text = data.simNumber;
@@ -68,7 +71,7 @@ class _ControllerDetailsPageState extends State<ControllerDetailsPage> {
                 backgroundColor: Colors.green,
               ),
             );
-            Navigator.pop(context);
+            context.pop();
           } else if (state is ControllerDetailsError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -109,14 +112,9 @@ class _ControllerDetailsPageState extends State<ControllerDetailsPage> {
               );
             }
 
-            if (state is ControllerDetailsLoaded || state is UpdateControllerSuccess) {
-              final data = (state is ControllerDetailsLoaded) 
-                  ? state.data 
-                  : (context.read<ControllerDetailsBloc>().state as ControllerDetailsLoaded).data;
-              
-              final groupList = (state is ControllerDetailsLoaded) 
-                  ? state.groupDetails 
-                  : (context.read<ControllerDetailsBloc>().state as ControllerDetailsLoaded).groupDetails;
+            if (state is ControllerDetailsLoaded) {
+              final data = state.data;
+              final groupList = state.groupDetails;
 
               _initializeControllers(data);
 
@@ -195,6 +193,10 @@ class _ControllerDetailsPageState extends State<ControllerDetailsPage> {
                   ],
                 ),
               );
+            }
+
+            if (state is UpdateControllerSuccess) {
+              return const Center(child: CircularProgressIndicator());
             }
 
             return Center(child: noDataNew);
@@ -369,16 +371,24 @@ class _ControllerDetailsPageState extends State<ControllerDetailsPage> {
     );
   }
 
-  Widget _buildActionButtons(BuildContext context, dynamic data, dynamic groupList) {
+  Widget _buildActionButtons(BuildContext context, ControllerDetailsEntities data, List<GroupDetails> groupList) {
     return Row(
       children: [
         Expanded(
           child: ElevatedButton(
             onPressed: () {
+              if (groupList.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Unable to find group details. Please try again.")),
+                );
+                return;
+              }
+
               final selectedGroup = groupList.firstWhere(
                 (g) => g.groupName == (selectedGroupName ?? data.groupName),
                 orElse: () => groupList.first,
               );
+
               context.read<ControllerDetailsBloc>().add(
                 UpdateControllerEvent(
                   userId: '${widget.params.userId}',
@@ -406,7 +416,7 @@ class _ControllerDetailsPageState extends State<ControllerDetailsPage> {
         const SizedBox(width: 12),
         Expanded(
           child: OutlinedButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.pop(),
             style: OutlinedButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16),
               side: const BorderSide(color: AppThemes.primaryColor),
