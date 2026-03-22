@@ -12,7 +12,6 @@ import '../bloc/pump_settings_menu_bloc.dart';
 import '../bloc/pump_settings_state.dart';
 import '../cubit/pump_settings_cubit.dart';
 import '../cubit/pump_settings_view_response_cubit.dart';
-import '../widgets/setting_list_tile.dart';
 import '../../../../core/di/injection.dart' as di;
 import '../../utils/pump_settings_images.dart';
 import '../../utils/pump_settings_page_routes.dart';
@@ -63,7 +62,7 @@ class PumpSettingsMenuPage extends StatelessWidget {
           actions: [
             Builder(
               builder: (ctx) => IconButton(
-                icon: const Icon(Icons.hide_source, color: Colors.black),
+                icon: const Icon(Icons.settings_suggest_outlined, color: Colors.black),
                 onPressed: () => _showHideMenuDialog(ctx),
               ),
             ),
@@ -88,11 +87,14 @@ class PumpSettingsMenuPage extends StatelessWidget {
       title: "Hide/Show Menu",
       content: BlocProvider.value(
         value: cubit,
-        child: _HideShowSettingsDialog(
-          userId: userId,
-          subUserId: subUserId,
-          controllerId: controllerId,
-          deviceId: deviceId,
+        child: SizedBox(
+          width: double.maxFinite,
+          child: _HideShowSettingsDialog(
+            userId: userId,
+            subUserId: subUserId,
+            controllerId: controllerId,
+            deviceId: deviceId,
+          ),
         ),
       ),
       actions: [
@@ -172,14 +174,17 @@ class _MenuListView extends StatelessWidget {
     final groupNames = grouped.keys.toList();
 
     return ListView.builder(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       itemCount: groupNames.length,
       itemBuilder: (context, i) {
         final groupName = groupNames[i];
         final groupItems = grouped[groupName]!;
 
         if (groupName.isEmpty) {
-          return _buildSpecialTwoPhaseTile(context);
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: _buildSpecialTwoPhaseTile(context),
+          );
         }
 
         return Column(
@@ -187,35 +192,35 @@ class _MenuListView extends StatelessWidget {
           children: [
             const SizedBox(height: 16),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
               child: Text(
                 groupName,
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: Colors.black,
                   fontWeight: FontWeight.w400,
+                  letterSpacing: 0.5,
                 ),
               ),
             ),
             const SizedBox(height: 10),
             CustomCard(
-              child: Column(
-                children: List.generate(
-                  groupItems.length * 2 - 1,
-                      (index) {
-                    if (index.isOdd) {
-                      return const Divider(thickness: 0.6);
-                    }
-                    final itemIndex = index ~/ 2;
-                    return _MenuItemTile(
-                      item: groupItems[itemIndex],
-                      userId: userId,
-                      subUserId: subUserId,
-                      controllerId: controllerId,
-                      deviceId: deviceId,
-                      modelId: modelId,
-                    );
-                  },
-                ),
+              horizontalPadding: 0,
+              child: ListView.separated(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                padding: EdgeInsets.zero,
+                itemCount: groupItems.length,
+                separatorBuilder: (context, index) => const Divider(thickness: 0.6, height: 1, indent: 45,),
+                itemBuilder: (context, itemIndex) {
+                  return _MenuItemTile(
+                    item: groupItems[itemIndex],
+                    userId: userId,
+                    subUserId: subUserId,
+                    controllerId: controllerId,
+                    deviceId: deviceId,
+                    modelId: modelId,
+                  );
+                },
               ),
             ),
             const SizedBox(height: 8),
@@ -235,9 +240,10 @@ class _MenuListView extends StatelessWidget {
         if (setting.hiddenFlag == "0") return const SizedBox.shrink();
 
         final isOn = setting.value == "ON";
-        final isSending = context.watch<PumpSettingsCubit>().state is SettingsSendStartedState;
+        final isSending = context.watch<PumpSettingsCubit>().state is SettingSendingState;
 
         return CustomCard(
+          horizontalPadding: 16,
           child: Row(
             children: [
               Expanded(
@@ -245,11 +251,13 @@ class _MenuListView extends StatelessWidget {
                   context,
                   title: setting.title,
                   trailing: SizedBox(
-                    width: 55,
+                    width: 50,
                     height: 25,
-                    child: CustomSwitch(
-                      value: isOn,
-                      onChanged: (_) => _toggleTwoPhase(context, isOn, item),
+                    child: FittedBox(
+                      child: CustomSwitch(
+                        value: isOn,
+                        onChanged: (_) => _toggleTwoPhase(context, isOn, item),
+                      ),
                     ),
                   ),
                   onTap: () => _toggleTwoPhase(context, isOn, item),
@@ -258,18 +266,17 @@ class _MenuListView extends StatelessWidget {
               const SizedBox(width: 8),
               IconButton(
                 padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
                 icon: isSending
-                    ? const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-                    : Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: Image.asset(
-                    'assets/images/icons/send_icon.png',
-                    width: 25,
-                  ),
-                ),
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Image.asset(
+                        'assets/images/icons/send_icon.png',
+                        width: 22,
+                      ),
                 onPressed: isSending
                     ? null
                     : () => _sendTwoPhaseSettings(context, item),
@@ -296,20 +303,34 @@ class _MenuListView extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         child: Row(
           children: [
             if (image != null) ...[
               Image.asset(
                 image,
-                width: 25,
-                height: 25,
+                width: 22,
+                height: 22,
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
             ],
-            Text(title, style: Theme.of(context).textTheme.labelLarge),
-            const Spacer(),
-            if (trailing != null) trailing else const Icon(Icons.arrow_forward_ios, color: Colors.black, size: 14,),
+            Expanded(
+              child: Text(
+                title,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            if (trailing != null)
+              trailing
+            else
+              const Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.grey,
+                size: 14,
+              ),
           ],
         ),
       ),
@@ -393,8 +414,10 @@ class _HideShowSettingsDialog extends StatelessWidget {
         final setting = state.settings.template.sections[0].settings[0];
 
         return CheckboxListTile(
-          title: Text(setting.title),
+          title: Text(setting.title, style: const TextStyle(fontSize: 14),),
           value: setting.hiddenFlag == "1",
+          dense: true,
+          contentPadding: EdgeInsets.zero,
           onChanged: (bool? shouldHide) async {
             if (shouldHide == null) return;
 

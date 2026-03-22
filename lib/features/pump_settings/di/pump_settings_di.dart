@@ -25,7 +25,11 @@ void initPumpSettingsDependencies() {
 
   sl.registerLazySingleton(() => GetPumpSettingsUsecase(pumpSettingsRepository: sl()));
   sl.registerLazySingleton(() => SendPumpSettingsUsecase(pumpSettingsRepository: sl()));
-  sl.registerFactory(() => PumpSettingsCubit(getPumpSettingsUsecase: sl(), sendPumpSettingsUsecase: sl()));
+  sl.registerFactory(() => PumpSettingsCubit(
+    getPumpSettingsUsecase: sl(),
+    sendPumpSettingsUsecase: sl(),
+    sharedPreferences: sl(),
+  ));
 
   sl.registerLazySingleton(() => GetNotificationsUsecase(pumpSettingsRepository: sl()));
   sl.registerLazySingleton(() => SubscribeNotificationsUsecase(pumpSettingsRepository: sl()));

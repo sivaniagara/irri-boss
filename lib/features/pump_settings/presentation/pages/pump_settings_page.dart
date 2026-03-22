@@ -6,24 +6,27 @@ import 'package:go_router/go_router.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/action_button.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/alert_dialog.dart';
-import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
-import 'package:niagara_smart_drip_irrigation/features/edit_program/presentation/widgets/custom_card.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/leaf_box.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/retry.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/time_picker_service.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/menu_item_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/setting_widget_type.dart';
-import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/cubit/pump_settings_view_response_cubit.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/cubit/pump_settings_cubit.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/widgets/setting_list_tile.dart';
 
 import '../../../../core/di/injection.dart' as di;
+import '../../../../core/widgets/custom_switch.dart';
+import '../../../edit_program/presentation/widgets/custom_card.dart';
 import '../../../sendrev_msg/utils/senrev_routes.dart';
 import '../../domain/entities/template_json_entity.dart';
+import '../../utils/pump_settings_images.dart';
 import '../bloc/pump_setting_view_state.dart';
 import '../bloc/pump_settings_state.dart';
+import '../cubit/pump_settings_view_response_cubit.dart';
 
 class PumpSettingsPage extends StatelessWidget {
-  final int userId, subUserId, controllerId, menuId, modelId;
+  final int userId, subUserId, controllerId, menuId;
   final String? menuName;
   final String deviceId;
 
@@ -33,9 +36,9 @@ class PumpSettingsPage extends StatelessWidget {
     required this.subUserId,
     required this.controllerId,
     required this.menuId,
-    required this.modelId,
     required this.deviceId,
     this.menuName,
+    required int modelId,
   });
 
   @override
@@ -49,8 +52,12 @@ class PumpSettingsPage extends StatelessWidget {
           menuId: menuId,
         ),
       child: Scaffold(
-        appBar: CustomAppBar(
-          title: menuName ?? 'Pump Settings',
+
+        appBar: AppBar(
+          title: Text(menuName ?? 'Pump Settings'),
+          centerTitle: true,
+          elevation: 0,
+          foregroundColor: Colors.black,
           actions: [
             Builder(
               builder: (appBarContext) => IconButton(
@@ -61,17 +68,20 @@ class PumpSettingsPage extends StatelessWidget {
                     title: "Hide/Show Settings",
                     content: BlocProvider<PumpSettingsCubit>.value(
                       value: cubit,
-                      child: _HideShowSettingsDialog(),
+                      child: SizedBox(
+                        width: double.maxFinite,
+                        child: _HideShowSettingsDialog(),
+                      ),
                     ),
                     actions: [
                       ActionButton(
                         onPressed: () {
                           cubit.updateHiddenFlags(
-                              userId: userId,
-                              subUserId: subUserId,
-                              controllerId: controllerId,
-                              menuItemEntity: (cubit.state as GetPumpSettingsLoaded).settings,
-                              sentSms: "Hidden flag updated"
+                            userId: userId,
+                            subUserId: subUserId,
+                            controllerId: controllerId,
+                            menuItemEntity: (cubit.state as GetPumpSettingsLoaded).settings,
+                            sentSms: "",
                           );
                           Navigator.of(appBarContext).pop();
                         },
@@ -81,7 +91,7 @@ class PumpSettingsPage extends StatelessWidget {
                     ],
                   );
                 },
-                icon: const Icon(Icons.hide_source, color: Colors.black),
+                icon: const Icon(Icons.settings_suggest_outlined),
               ),
             ),
             IconButton(
@@ -91,44 +101,35 @@ class PumpSettingsPage extends StatelessWidget {
                   extra: {'userId': userId, 'controllerId': controllerId, 'subuserId': subUserId},
                 );
               },
-              icon: const Icon(Icons.message, color: Colors.black),
+              icon: const Icon(Icons.history_edu_outlined),
             )
           ],
         ),
         body: BlocListener<PumpSettingsCubit, PumpSettingsState>(
-          listenWhen: (previous, current) => current is SettingsSendStartedState
-              || current is SettingsSendSuccessState
-              || current is SettingsFailureState,
+          listenWhen: (previous, current) =>
+              current is SettingsSendStartedState ||
+              current is SettingsSendSuccessState ||
+              current is SettingsFailureState,
           listener: (context, state) {
             if (state is SettingsSendStartedState) {
-              Fluttertoast.showToast(
-                msg: "Sending...",
-                toastLength: Toast.LENGTH_LONG,
-                gravity: ToastGravity.BOTTOM,
-                backgroundColor: Colors.grey[800],
-              );
+              Fluttertoast.showToast(msg: "Sending...");
             } else if (state is SettingsSendSuccessState) {
               Fluttertoast.showToast(
                 msg: state.message,
-                toastLength: Toast.LENGTH_LONG,
-                gravity: ToastGravity.BOTTOM,
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: Colors.green,
               );
             } else if (state is SettingsFailureState) {
               Fluttertoast.showToast(
                 msg: state.message,
-                toastLength: Toast.LENGTH_LONG,
-                gravity: ToastGravity.BOTTOM,
                 backgroundColor: Colors.red,
               );
             }
           },
           child: BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
-            buildWhen: (previous, current) {
-              return current is GetPumpSettingsInitial ||
-                  current is GetPumpSettingsError ||
-                  current is GetPumpSettingsLoaded;
-            },
+            buildWhen: (previous, current) =>
+                current is GetPumpSettingsInitial ||
+                current is GetPumpSettingsError ||
+                current is GetPumpSettingsLoaded,
             builder: (context, state) {
               if (state is GetPumpSettingsInitial) {
                 return const Center(child: CircularProgressIndicator());
@@ -137,44 +138,59 @@ class PumpSettingsPage extends StatelessWidget {
                 return Center(
                   child: Retry(
                     message: state.message,
-                    onPressed: () => context.read<PumpSettingsCubit>()
-                        .loadSettings(
-                        userId: userId,
-                        subUserId: subUserId,
-                        controllerId: controllerId,
-                        menuId: menuId
-                    ),
+                    onPressed: () => context.read<PumpSettingsCubit>().loadSettings(
+                          userId: userId,
+                          subUserId: subUserId,
+                          controllerId: controllerId,
+                          menuId: menuId,
+                        ),
                   ),
                 );
               }
               final loadedState = state as GetPumpSettingsLoaded;
-              return Column(
-                children: [
-                  if ([509, 511].contains(menuId))
-                    BlocBuilder<PumpSettingsViewResponseCubit, PumpSettingViewState>(
-                      builder: (context, state) {
-                        if (state is PumpSettingsViewReceived) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                            child: CustomCard(
-                              child: Text(state.message, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.bold)),
-                            ),
-                          );
-                        }
-                        return const SizedBox();
-                      },
-                    ),
-                  Expanded(
-                    child: _SettingsList(
+              return SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  children: [
+                    if ([509, 511].contains(menuId))
+                      BlocBuilder<PumpSettingsViewResponseCubit, PumpSettingViewState>(
+                        builder: (context, state) {
+                          if (state is PumpSettingsViewReceived) {
+                            return Container(
+                              margin: const EdgeInsets.all(12),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.info_outline, color: Colors.blue),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      state.message,
+                                      style: const TextStyle(fontSize: 13, color: Colors.blueAccent),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                          return const SizedBox();
+                        },
+                      ),
+                    _SettingsList(
                       menu: loadedState.settings,
                       deviceId: deviceId,
                       userId: userId,
                       controllerId: controllerId,
                       subUserId: subUserId,
-                      modelId: modelId,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 32),
+                  ],
+                ),
               );
             },
           ),
@@ -195,81 +211,43 @@ class _HideShowSettingsDialog extends StatelessWidget {
         }
 
         final menu = state.settings;
-        return ListView.builder(
-          itemCount: menu.template.sections.length,
-          itemBuilder: (context, sectionIndex) {
-            final section = menu.template.sections[sectionIndex];
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
-                  child: Text(
-                    section.sectionName,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
+        return SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(menu.template.sections.length, (sectionIndex) {
+              final section = menu.template.sections[sectionIndex];
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    child: Text(
+                      section.sectionName,
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
                     ),
                   ),
-                ),
-                ...section.settings.map((setting) {
-                  final settingIndex = section.settings.indexOf(setting);
-                  final titles = setting.title.split(';');
-                  final flags = setting.hiddenFlag.split(';');
-
-                  // Ensure we have a flag for every title, default to "1" (visible)
-                  final actualFlags = List.generate(titles.length, (i) => i < flags.length ? flags[i] : "1");
-
-                  if (titles.length > 1) {
-                    // It's a multi-item setting like Motor 1; Motor 2
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ...List.generate(titles.length, (subIndex) {
-                          return CheckboxListTile(
-                            dense: true,
-                            title: Text(titles[subIndex].trim(), style: const TextStyle(fontSize: 14)),
-                            value: actualFlags[subIndex] == "1",
-                            onChanged: (bool? newValue) {
-                              actualFlags[subIndex] = (newValue == true) ? "1" : "0";
-                              context.read<PumpSettingsCubit>().updateSettingValue(
-                                actualFlags.join(';'),
-                                sectionIndex,
-                                settingIndex,
-                                menu,
-                                isHiddenFlag: true,
-                              );
-                            },
-                          );
-                        }),
-                        const Divider(indent: 16, endIndent: 16),
-                      ],
-                    );
-                  } else {
-                    // Single item setting
+                  ...section.settings.map((setting) {
+                    final settingIndex = section.settings.indexOf(setting);
                     return CheckboxListTile(
+                      title: Text(setting.title, style: const TextStyle(fontSize: 14)),
+                      value: setting.hiddenFlag == "1",
                       dense: true,
-                      title: Text(setting.title.trim(), style: const TextStyle(fontSize: 14)),
-                      value: actualFlags[0] == "1",
                       onChanged: (bool? newValue) {
-                        actualFlags[0] = (newValue == true) ? "1" : "0";
                         context.read<PumpSettingsCubit>().updateSettingValue(
-                          actualFlags.join(';'),
-                          sectionIndex,
-                          settingIndex,
-                          menu,
-                          isHiddenFlag: true,
-                        );
+                              newValue == true ? "1" : "0",
+                              sectionIndex,
+                              settingIndex,
+                              menu,
+                              isHiddenFlag: true,
+                            );
                       },
                     );
-                  }
-                }),
-                const SizedBox(height: 10),
-              ],
-            );
-          },
+                  }),
+                  if (sectionIndex < menu.template.sections.length - 1) const Divider(),
+                ],
+              );
+            }),
+          ),
         );
       },
     );
@@ -277,7 +255,7 @@ class _HideShowSettingsDialog extends StatelessWidget {
 }
 
 class _SettingsList extends StatelessWidget {
-  final int userId, subUserId, controllerId, modelId;
+  final int userId, subUserId, controllerId;
   final MenuItemEntity menu;
   final String deviceId;
 
@@ -287,146 +265,58 @@ class _SettingsList extends StatelessWidget {
     required this.userId,
     required this.subUserId,
     required this.controllerId,
-    required this.modelId,
   });
 
   @override
   Widget build(BuildContext context) {
-    bool isDoublePumpByModel = modelId == 27;
-    String pumpModeValue = "SINGLE";
-
-    for (var section in menu.template.sections) {
-      for (var setting in section.settings) {
-        final title = setting.title.toUpperCase();
-        if (title.contains("DUAL PUMP") || title.contains("PUMP COUNT")) {
-          pumpModeValue = setting.value.trim().toUpperCase();
-          break;
-        }
-      }
-    }
-
-    bool isSinglePump = !isDoublePumpByModel;
-    if (pumpModeValue == "DOUBLE" || pumpModeValue == "ON" || pumpModeValue == "2") {
-      isSinglePump = false;
-    }
-
     return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: menu.template.sections.length,
       itemBuilder: (context, sectionIndex) {
         final section = menu.template.sections[sectionIndex];
-
-        bool sectionHasVisibleItems = false;
-        for (var s in section.settings) {
-          final titles = s.title.split(';');
-          final flags = s.hiddenFlag.split(';');
-
-          for (int i = 0; i < titles.length; i++) {
-            final t = titles[i].toUpperCase();
-            final f = i < flags.length ? flags[i] : "1";
-
-            bool isMotor2 = t.contains("MOTOR 2") || t.contains("PUMP 2") || t.contains("MOTOR2") || t.contains("PUMP2");
-            bool isFilteredByPumpMode = isSinglePump && isMotor2;
-
-            // Item is visible if NOT filtered by single-pump mode AND NOT hidden by user
-            if (!isFilteredByPumpMode && f != "0") {
-              sectionHasVisibleItems = true;
-              break;
-            }
-          }
-          if (sectionHasVisibleItems) break;
-        }
-
-        if (!sectionHasVisibleItems) return const SizedBox.shrink();
-
+        if (section.settings.every((e) => e.hiddenFlag == "0")) return const SizedBox();
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12),
-              Text(
-                section.sectionName,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w400,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text(
+                  section.sectionName,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
               CustomCard(
-                child: Builder(
-                  builder: (context) {
-                    return ListView.separated(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemBuilder: (BuildContext context, int index) {
-                          final setting = section.settings[index];
-
-                          // Hide whole row if all its sub-items are suppressed
-                          final titles = setting.title.split(';');
-                          final flags = setting.hiddenFlag.split(';');
-                          bool rowHasVisibleSubItems = false;
-                          for (int i = 0; i < titles.length; i++) {
-                            final t = titles[i].toUpperCase();
-                            final f = i < flags.length ? flags[i] : "1";
-                            bool isMotor2 = t.contains("MOTOR 2") || t.contains("PUMP 2") || t.contains("MOTOR2") || t.contains("PUMP2");
-                            if (!(isSinglePump && isMotor2) && f != "0") {
-                              rowHasVisibleSubItems = true;
-                              break;
-                            }
-                          }
-
-                          if (!rowHasVisibleSubItems) return const SizedBox.shrink();
-
-                          return _SettingRow(
-                            menuItemEntity: menu,
-                            sectionIndex: sectionIndex,
-                            settingIndex: index,
-                            deviceId: deviceId,
-                            userId: userId,
-                            subUserId: subUserId,
-                            controllerId: controllerId,
-                            isSinglePump: isSinglePump,
-                          );
-                        },
-                        separatorBuilder: (BuildContext context, int index) {
-                          final setting = section.settings[index];
-                          final nextSetting = index + 1 < section.settings.length ? section.settings[index+1] : null;
-
-                          // Logic to hide divider if current row is hidden
-                          final titles = setting.title.split(';');
-                          final flags = setting.hiddenFlag.split(';');
-                          bool currentRowVisible = false;
-                          for (int i = 0; i < titles.length; i++) {
-                            final t = titles[i].toUpperCase();
-                            final f = i < flags.length ? flags[i] : "1";
-                            bool isMotor2 = t.contains("MOTOR 2") || t.contains("PUMP 2");
-                            if (!(isSinglePump && isMotor2) && f != "0") { currentRowVisible = true; break; }
-                          }
-                          if (!currentRowVisible) return const SizedBox.shrink();
-
-                          // Logic to hide divider if next row is hidden
-                          if (nextSetting != null) {
-                            final nTitles = nextSetting.title.split(';');
-                            final nFlags = nextSetting.hiddenFlag.split(';');
-                            bool nextRowVisible = false;
-                            for (int i = 0; i < nTitles.length; i++) {
-                              final nt = nTitles[i].toUpperCase();
-                              final nf = i < nFlags.length ? nFlags[i] : "1";
-                              bool nisMotor2 = nt.contains("MOTOR 2") || nt.contains("PUMP 2");
-                              if (!(isSinglePump && nisMotor2) && nf != "0") { nextRowVisible = true; break; }
-                            }
-                            if (!nextRowVisible) return const SizedBox.shrink();
-                          }
-
-                          if (section.settings[index].widgetType != SettingWidgetType.multiText) {
-                            return const Divider(thickness: 0.6);
-                          } else {
-                            return const SizedBox(height: 12);
-                          }
-                        },
-                        itemCount: section.settings.length
+                child: ListView.separated(
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  itemBuilder: (BuildContext context, int index) {
+                    if (section.settings[index].hiddenFlag == "0") return const SizedBox();
+                    return _SettingRow(
+                      menuItemEntity: menu,
+                      sectionIndex: sectionIndex,
+                      settingIndex: index,
+                      deviceId: deviceId,
+                      userId: userId,
+                      subUserId: subUserId,
+                      controllerId: controllerId,
                     );
                   },
+                  separatorBuilder: (BuildContext context, int index) {
+                    final setting = section.settings[index];
+                    if (setting.hiddenFlag == "0") return const SizedBox();
+                    if (setting.widgetType == SettingWidgetType.multiText) return const SizedBox.shrink();
+                    return const Divider(thickness: 0.6);
+                  },
+                  itemCount: section.settings.length,
                 ),
               )
             ],
@@ -443,7 +333,6 @@ class _SettingRow extends StatelessWidget {
   final int sectionIndex;
   final int settingIndex;
   final String deviceId;
-  final bool isSinglePump;
 
   const _SettingRow({
     super.key,
@@ -454,7 +343,6 @@ class _SettingRow extends StatelessWidget {
     required this.userId,
     required this.subUserId,
     required this.controllerId,
-    required this.isSinglePump,
   });
 
   static final _formKeys = <String, GlobalKey<FormState>>{};
@@ -465,75 +353,71 @@ class _SettingRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<PumpSettingsCubit>();
     final formKey = _formKeys.putIfAbsent(_formKeyId, () => GlobalKey<FormState>());
+    final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
+
+    final bool isSending = context.select((PumpSettingsCubit c) {
+      final s = c.state;
+      return s is SettingSendingState && s.sectionIndex == sectionIndex && s.settingIndex == settingIndex;
+    });
 
     return Form(
       key: formKey,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(child: _buildInput(context)),
-            const SizedBox(width: 8),
-            IconButton(
-              padding: EdgeInsets.zero,
-              icon: context.watch<PumpSettingsCubit>().state is SettingsSendStartedState
-                  ? const Padding(
-                padding: EdgeInsets.all(8.0),
-                child: CircularProgressIndicator(),
-              )
-                  : CircleAvatar(
-                backgroundColor: Theme.of(context).primaryColor,
-                child: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
-              ),
-              onPressed: () {
-                if (formKey.currentState!.validate()) {
-                  cubit.sendCurrentSetting(
-                    sectionIndex,
-                    settingIndex,
-                    deviceId,
-                    userId,
-                    subUserId,
-                    controllerId,
-                    menuItemEntity,
-                  );
-                  context.read<PumpSettingsViewResponseCubit>().clear();
-                } else {
-                  Fluttertoast.showToast(
-                    msg: "Please correct the highlighted fields",
-                    toastLength: Toast.LENGTH_LONG,
-                    gravity: ToastGravity.BOTTOM,
-                    backgroundColor: Colors.orange[800],
-                  );
-                }
-              },
-            ),
-          ],
-        ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(child: _buildInput(context)),
+          const SizedBox(width: 8),
+          _SendButton(
+            isSending: isSending,
+            onPressed: () {
+              if (formKey.currentState!.validate()) {
+                cubit.sendCurrentSetting(
+                  sectionIndex,
+                  settingIndex,
+                  deviceId,
+                  userId,
+                  subUserId,
+                  controllerId,
+                  menuItemEntity,
+                );
+                context.read<PumpSettingsViewResponseCubit>().clear();
+              } else {
+                Fluttertoast.showToast(msg: "Please correct the errors");
+              }
+            },
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildInput(BuildContext context) {
-    final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
+    final section = menuItemEntity.template.sections[sectionIndex];
+    final setting = section.settings[settingIndex];
+    final path = '${menuItemEntity.menu.menuSettingId}_${section.typeId}_${setting.serialNumber}';
+
     return switch (setting.widgetType) {
       SettingWidgetType.phone => _PhoneInput(setting: setting, onChanged: _onChanged(context)),
-      SettingWidgetType.multiTime => _MultiTimeInput(setting: setting, onChanged: _onChanged(context), isSinglePump: isSinglePump),
+      SettingWidgetType.multiTime => _MultiTimeInput(setting: setting, onChanged: _onChanged(context)),
       SettingWidgetType.fullText => _TextInput(
-        key: ValueKey(setting.value), // 👈 Force rebuild on value change
-        setting: setting,
-        onChanged: _onChanged(context),
-        label: setting.title,
-        menuId: menuItemEntity.menu.menuSettingId,
-      ),
-      SettingWidgetType.multiText => _MultiTextInput(setting: setting, onChanged: _onChanged(context), isSinglePump: isSinglePump),
-      _ => _navigationRow(
-        context,
-        title: setting.title,
-        trailing: _buildTrailing(context),
-        onTap: () => _handleTap(context),
-      ),
+          setting: setting,
+          onChanged: _onChanged(context),
+          label: setting.title,
+          menuId: menuItemEntity.menu.menuSettingId,
+          imagePath: ([508].contains(menuItemEntity.menu.menuSettingId) && ![1, 2].contains(section.typeId))
+              ? PumpSettingsImages.getCommunicationConfigIcons(path)
+              : null,
+        ),
+      SettingWidgetType.multiText => (["VOLTCAL", "VOLTAGCAL", "CURRCAL", "CURCAL", "CURRENTCAL"]
+              .contains(setting.smsFormat.trim().toUpperCase()))
+          ? _CalibrationInput(setting: setting, onChanged: _onChanged(context))
+          : _MultiTextInput(setting: setting, onChanged: _onChanged(context)),
+      _ => SettingListTile(
+          title: setting.title,
+          leadingIcon: [509].contains(menuItemEntity.menu.menuSettingId) ? PumpSettingsImages.getStatusCheckIcons(path) : null,
+          trailing: _buildTrailing(context),
+          onTap: () => _handleTap(context),
+        ),
     };
   }
 
@@ -542,34 +426,42 @@ class _SettingRow extends StatelessWidget {
     return switch (setting.widgetType) {
       SettingWidgetType.nothing => const SizedBox.shrink(),
       SettingWidgetType.text => SizedBox(
-        width: 100,
-        child: _TextInput(
-          key: ValueKey(setting.value), // 👈 Force rebuild on value change
-          setting: setting,
-          onChanged: _onChanged(context),
-          menuId: menuItemEntity.menu.menuSettingId,
+          width: 80,
+          child: _TextInput(
+            setting: setting,
+            onChanged: _onChanged(context),
+            menuId: menuItemEntity.menu.menuSettingId,
+          ),
         ),
-      ),
-      SettingWidgetType.toggle => Switch(
-        value: setting.value == "ON",
-        onChanged: (_) => _onChanged(context)(setting.value == "ON" ? "OF" : "ON"),
-      ),
-      SettingWidgetType.time => Text(
-          setting.value.trim().isEmpty ? "00:00" : setting.value.trim(),
-          style: Theme.of(context).textTheme.bodyMedium
-      ),
-      _ => Text(setting.value.trim(), style: Theme.of(context).textTheme.bodyMedium),
+      SettingWidgetType.toggle => CustomSwitch(
+          value: setting.value == "ON",
+          onChanged: (_) => _onChanged(context)(setting.value == "ON" ? "OF" : "ON"),
+        ),
+      SettingWidgetType.time => Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Text(
+            setting.value.isEmpty ? "00:00" : setting.value,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+      _ => Text(
+          setting.value,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
     };
   }
 
   void Function(String) _onChanged(BuildContext context) {
     return (String newValue) {
       context.read<PumpSettingsCubit>().updateSettingValue(
-        newValue,
-        sectionIndex,
-        settingIndex,
-        menuItemEntity,
-      );
+            newValue,
+            sectionIndex,
+            settingIndex,
+            menuItemEntity,
+            userId: userId,
+            subUserId: subUserId,
+            controllerId: controllerId,
+          );
     };
   }
 
@@ -586,7 +478,7 @@ class _SettingRow extends StatelessWidget {
         newValue = await TimePickerService.show(
           context: context,
           title: setting.title,
-          initialTime: setting.value.trim(),
+          initialTime: setting.value,
         );
         break;
 
@@ -598,20 +490,31 @@ class _SettingRow extends StatelessWidget {
       _onChanged(context)(newValue);
     }
   }
+}
 
-  Widget _navigationRow(BuildContext context, {required String title, Widget? trailing, VoidCallback? onTap}) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Text(title, style: Theme.of(context).textTheme.labelLarge),
-            const Spacer(),
-            if (trailing != null) trailing else const Icon(Icons.arrow_forward_ios, color: Colors.black, size: 14,),
-          ],
-        ),
-      ),
+class _SendButton extends StatelessWidget {
+  final bool isSending;
+  final VoidCallback onPressed;
+
+  const _SendButton({required this.isSending, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      padding: EdgeInsets.zero,
+      icon: isSending
+          ? const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(10),
+              child: Image.asset(
+                'assets/images/icons/send_icon.png',
+                width: 25,
+              ),
+            ),
+      onPressed: isSending ? null : onPressed,
     );
   }
 }
@@ -619,25 +522,21 @@ class _SettingRow extends StatelessWidget {
 class _PhoneInput extends StatelessWidget {
   final SettingsEntity setting;
   final ValueChanged<String> onChanged;
+
   const _PhoneInput({required this.setting, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: IntlPhoneField(
-        key: ValueKey(setting.value), // 👈 Force rebuild on value change
-        initialValue: setting.value.trim().isNotEmpty ? setting.value.trim() : null,
+        initialValue: setting.value.isNotEmpty ? setting.value : null,
         initialCountryCode: 'IN',
-        validator: (phone) {
-          if (phone == null || phone.completeNumber.isEmpty) {
-            return 'Phone number is required';
-          }
-          if (phone.completeNumber.length < 10) {
-            return 'Invalid phone number';
-          }
-          return null;
-        },
+        decoration: InputDecoration(
+          labelText: setting.title,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
         onChanged: (phone) => onChanged(phone.completeNumber),
       ),
     );
@@ -648,13 +547,14 @@ class _TextInput extends StatelessWidget {
   final SettingsEntity setting;
   final ValueChanged<String> onChanged;
   final String? label;
+  final String? imagePath;
   final int menuId;
 
   const _TextInput({
-    super.key, // 👈 Important to pass key
     required this.setting,
     required this.onChanged,
     this.label,
+    this.imagePath,
     required this.menuId,
   });
 
@@ -662,37 +562,47 @@ class _TextInput extends StatelessWidget {
   Widget build(BuildContext context) {
     final isTextOnly = menuId == 508;
 
-    return TextFormField(
-      initialValue: setting.value.trim(),
-      keyboardType: !isTextOnly ? const TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
-      textAlign: isTextOnly ? TextAlign.start : TextAlign.center,
-      style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-      onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-      inputFormatters: !isTextOnly
-          ? [
-        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-        LengthLimitingTextInputFormatter(10),
-      ]
-          : null,
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) return 'Req';
-        if (!isTextOnly) {
-          final num = double.tryParse(value.trim());
-          if (num == null) return 'Invalid';
-        }
-        return null;
-      },
-      decoration: InputDecoration(
-        labelText: label,
-        filled: true,
-        fillColor: Colors.white,
-        isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-        border: UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey.shade400)),
-        enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey.shade400)),
-        errorStyle: const TextStyle(height: 0, fontSize: 0),
-      ),
-      onChanged: (val) => onChanged(val.trim()),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        LeafBox(
+          height: isTextOnly ? 35 : 30,
+          padding: EdgeInsets.zero,
+          margin: isTextOnly ? const EdgeInsets.symmetric(horizontal: 5, vertical: 5) : EdgeInsets.zero,
+          child: TextFormField(
+            initialValue: setting.value,
+            keyboardType: !isTextOnly ? const TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
+            textAlign: isTextOnly ? TextAlign.start : TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+            onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+            inputFormatters: !isTextOnly
+                ? [
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,9}')),
+                    LengthLimitingTextInputFormatter(5),
+                  ]
+                : null,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) return 'Required';
+              return null;
+            },
+            decoration: InputDecoration(
+              labelText: label,
+              labelStyle: const TextStyle(fontSize: 12, color: Colors.grey),
+              border: InputBorder.none,
+              isDense: true,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              prefixIcon: imagePath != null
+                  ? Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Image.asset(imagePath!, width: 20),
+                    )
+                  : null,
+            ),
+            onChanged: onChanged,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -700,77 +610,130 @@ class _TextInput extends StatelessWidget {
 class _MultiTimeInput extends StatelessWidget {
   final SettingsEntity setting;
   final ValueChanged<String> onChanged;
-  final bool isSinglePump;
 
-  const _MultiTimeInput({required this.setting, required this.onChanged, required this.isSinglePump});
+  const _MultiTimeInput({required this.setting, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
     final titles = setting.title.split(';').map((e) => e.trim()).toList();
-    final rawValues = setting.value.split(';').map((e) => e.trim()).toList();
-    final flags = setting.hiddenFlag.split(';');
-
-    final hasSeconds = rawValues.any((v) => v.split(':').length > 2);
-    final defaultTime = hasSeconds ? "00:00:00" : "00:00";
-
-    final values = List<String>.generate(titles.length, (index) {
-      if (index < rawValues.length && rawValues[index].isNotEmpty) {
-        return rawValues[index];
-      }
-      return defaultTime;
-    });
-
-    final List<int> filteredIndices = [];
-    for (int i = 0; i < titles.length; i++) {
-      final t = titles[i].toUpperCase();
-      final f = i < flags.length ? flags[i] : "1";
-      bool isMotor2 = t.contains("MOTOR 2") || t.contains("PUMP 2") || t.contains(" M2") || t.contains(" P2");
-
-      // Filter based on both Single Pump configuration AND manual hide/show flags
-      if (!(isSinglePump && isMotor2) && f != "0") {
-        filteredIndices.add(i);
-      }
-    }
+    final values = setting.value.split(';').map((e) => e.trim()).toList();
 
     return Column(
-      children: filteredIndices.map((i) => _navigationRow(
-        context,
-        key: ValueKey(values[i]), // 👈 Force rebuild on value change
-        title: titles[i],
-        trailing: Text(
-          values[i],
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-        ),
-        onTap: () async {
-          final newTime = await TimePickerService.show(
-            context: context,
-            title: titles[i],
-            initialTime: values[i],
-          );
-          if (newTime != null) {
-            final newValues = List<String>.from(values);
-            newValues[i] = newTime;
-            onChanged(newValues.join(';'));
-          }
-        },
-      )).toList(),
-    );
-  }
-
-  Widget _navigationRow(BuildContext context, {Key? key, required String title, Widget? trailing, VoidCallback? onTap}) {
-    return InkWell(
-      key: key,
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            Text(title, style: Theme.of(context).textTheme.labelLarge),
-            const Spacer(),
-            if (trailing != null) trailing else const Icon(Icons.arrow_forward_ios, color: Colors.black, size: 14,),
-          ],
+      children: List.generate(
+        titles.length,
+        (i) => SettingListTile(
+          title: titles[i],
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            child: Text(
+              i < values.length && values[i].isNotEmpty ? values[i] : "00:00",
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
+          onTap: () async {
+            final newTime = await TimePickerService.show(
+              context: context,
+              title: titles[i],
+              initialTime: i < values.length ? values[i] : "00:00",
+            );
+            if (newTime != null) {
+              final newValues = List<String>.from(values);
+              while (newValues.length <= i) {
+                newValues.add("");
+              }
+              newValues[i] = newTime;
+              onChanged(newValues.join(';'));
+            }
+          },
         ),
       ),
+    );
+  }
+}
+
+class _CalibrationInput extends StatelessWidget {
+  final SettingsEntity setting;
+  final ValueChanged<String> onChanged;
+
+  const _CalibrationInput({required this.setting, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final rawTitles = setting.title.split(';').map((e) => e.trim()).toList();
+    final rawValues = setting.value.split(';').map((e) => e.trim()).toList();
+
+    final titles = List<String>.generate(3, (i) {
+      if (i < rawTitles.length && rawTitles[i].isNotEmpty) return rawTitles[i];
+      return i == 0 ? "VR" : (i == 1 ? "VY" : "VB");
+    });
+
+    final values = List<String>.generate(3, (i) {
+      if (i < rawValues.length) return rawValues[i];
+      return "0";
+    });
+
+    final String format = setting.smsFormat.trim().toUpperCase();
+    final bool isVoltageCal = format == "VOLTCAL";
+    final bool isVoltageWhole = format == "VOLTAGCAL";
+    final bool isCurrentCal = format == "CURRCAL" || format == "CURCAL";
+    final bool isCurrentSecondRow = format == "CURRENTCAL";
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 8, bottom: 4),
+          child: Row(
+            children: titles
+                .map((t) => Expanded(
+                      child: Text(
+                        t,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold),
+                      ),
+                    ))
+                .toList(),
+          ),
+        ),
+        Row(
+          children: List.generate(
+            3,
+            (i) => Expanded(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                child: LeafBox(
+                  height: 36,
+                  padding: EdgeInsets.zero,
+                  child: TextFormField(
+                    initialValue: i < values.length ? values[i] : "0",
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: isVoltageWhole
+                        ? [FilteringTextInputFormatter.digitsOnly]
+                        : [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    decoration: InputDecoration(
+                      hintText: isVoltageCal
+                          ? "0.0000"
+                          : (isCurrentCal ? "0.00000" : (isVoltageWhole ? "000" : (isCurrentSecondRow ? "0.00" : "0.0000"))),
+                      hintStyle: const TextStyle(fontSize: 10, color: Colors.grey),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                    ),
+                    onChanged: (newValue) {
+                      final newValues = List<String>.from(values);
+                      newValues[i] = newValue.trim();
+                      onChanged(newValues.join(';'));
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+      ],
     );
   }
 }
@@ -778,153 +741,66 @@ class _MultiTimeInput extends StatelessWidget {
 class _MultiTextInput extends StatelessWidget {
   final SettingsEntity setting;
   final ValueChanged<String> onChanged;
-  final bool isSinglePump;
 
-  const _MultiTextInput({required this.setting, required this.onChanged, required this.isSinglePump});
+  const _MultiTextInput({required this.setting, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
-    var rawTitles = setting.title.split(';').map((e) => e.trim()).toList();
-    var rawValues = setting.value.split(';').map((e) => e.trim()).toList();
-    final flags = setting.hiddenFlag.split(';');
-
-    final String format = setting.smsFormat.trim().toUpperCase();
-    final bool isVoltageCal = format == "VOLTCAL";
-    final bool isVoltageWhole = format == "VOLTAGCAL";
-    final bool isCurrentCal = format == "CURRCAL" || format == "CURCAL";
-    final bool isCurrentSecondRow = format == "CURRENTCAL";
-    final bool isDecimalOnlyLine = isVoltageCal || isCurrentCal;
-
-    // Fix: Force 3 fields for Voltage and Current calibration second rows
-    if ((isVoltageWhole || isCurrentSecondRow) && rawTitles.length < 3) {
-      while (rawTitles.length < 3) rawTitles.add("");
-      while (rawValues.length < 3) rawValues.add(rawValues.isNotEmpty ? rawValues[0] : "0");
-    }
-
-    final List<int> filteredIndices = [];
-    for (int i = 0; i < rawTitles.length; i++) {
-      final t = rawTitles[i].toUpperCase();
-      final f = i < flags.length ? flags[i] : "1";
-      bool isMotor2 = t.contains("MOTOR 2") || t.contains("PUMP 2") || t.contains(" M2") || t.contains(" P2");
-
-      if (!(isSinglePump && isMotor2) && f != "0") {
-        filteredIndices.add(i);
-      }
-    }
-
-    final titles = filteredIndices.map((i) => rawTitles[i]).toList();
-    final values = filteredIndices.map((i) => i < rawValues.length ? rawValues[i] : "0").toList();
+    final titles = setting.title.split(';').map((e) => e.trim()).toList();
+    final values = setting.value.split(';').map((e) => e.trim()).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (titles.any((t) => t.isNotEmpty))
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 0, 8, 4),
+            padding: const EdgeInsets.only(top: 8, bottom: 4),
             child: Row(
-              children: titles.map((t) => Expanded(
-                child: Text(
-                  t,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
-                    color: Colors.black54,
-                  ),
-                ),
-              )).toList(),
+              children: titles
+                  .map((t) => Expanded(
+                        child: Text(
+                          t,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold),
+                        ),
+                      ))
+                  .toList(),
             ),
           ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: List.generate(
-              titles.length,
-                  (index) {
-                final i = filteredIndices[index];
-                return Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: TextFormField(
-                      key: ValueKey(values[index]), // 👈 Force rebuild on value change
-                      initialValue: index < values.length ? values[index] : "0",
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: isVoltageWhole
-                          ? [FilteringTextInputFormatter.digitsOnly]
-                          : [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: Colors.black,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: isVoltageCal ? "0.0000" : (isCurrentCal ? "0.00000" : (isVoltageWhole ? "000" : (isCurrentSecondRow ? "0.00" : null))),
-                        hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
-                        filled: true,
-                        fillColor: Colors.white,
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-                        border: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey.shade400, width: 1),
-                        ),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey.shade400, width: 1),
-                        ),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
-                        ),
-                        errorStyle: const TextStyle(height: 0, fontSize: 0),
-                      ),
-                      validator: (val) {
-                        if (val == null || val.trim().isEmpty) return 'Req';
-                        final numValue = double.tryParse(val.trim());
-                        if (numValue == null) return 'Err';
-
-                        if (isDecimalOnlyLine) {
-                          if (!val.contains('.')) {
-                            Fluttertoast.showToast(
-                              msg: "Please Enter Decimal Values",
-                              toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.BOTTOM,
-                              backgroundColor: Colors.red[800],
-                            );
-                            return 'Dec';
-                          }
-                        } else if (isVoltageWhole) {
-                          if (val.contains('.')) return 'Int';
-                        } else if (isCurrentSecondRow) {
-                          if (val.contains('.')) {
-                            final parts = val.split('.');
-                            if (parts.length > 2 || parts[1].length > 2) {
-                              return 'Max 2 decimals';
-                            }
-                          }
-                        }
-
-                        if (numValue <= 0) return '>0';
-                        return null;
-                      },
-                      onChanged: (newValue) {
-                        final newRawValues = List<String>.from(rawValues);
-                        if (i < newRawValues.length) {
-                          newRawValues[i] = newValue.trim();
-                        } else {
-                          while (newRawValues.length <= i) {
-                            newRawValues.add("0");
-                          }
-                          newRawValues[i] = newValue.trim();
-                        }
-                        onChanged(newRawValues.join(';'));
-                      },
+        Row(
+          children: List.generate(
+            values.length,
+            (i) => Expanded(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                child: LeafBox(
+                  height: 36,
+                  padding: EdgeInsets.zero,
+                  child: TextFormField(
+                    initialValue: values[i],
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(vertical: 8),
                     ),
+                    onChanged: (newValue) {
+                      final newValues = List<String>.from(values);
+                      while (newValues.length <= i) {
+                        newValues.add("");
+                      }
+                      newValues[i] = newValue;
+                      onChanged(newValues.join(';'));
+                    },
                   ),
-                );
-              },
+                ),
+              ),
             ),
           ),
         ),
+        const SizedBox(height: 8),
       ],
     );
   }
