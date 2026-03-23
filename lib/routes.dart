@@ -300,7 +300,7 @@ class AppRouter {
                     ),
                   )
                 ],
-                child: TemplateSettingPage(appBarTitle: settingName)
+                child: TemplateSettingPage(appBarTitle: settingName, settingNo: settingNo,)
             );
           },
         ),

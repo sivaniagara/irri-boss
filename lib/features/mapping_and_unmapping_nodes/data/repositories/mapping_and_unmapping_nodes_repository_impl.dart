@@ -79,18 +79,19 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
           bodyData: {
             'nodeList' : List.generate(unmappedCategoryNodeModel.length, (index){
               int? serialNo;
-              for(var i = 1;i < params.listOfMappedNodeEntity.length;i++){
-                print('i : $i');
+              for(var i = 1;i < 100;i++){
                 if(!listOfMappedSerialNo.contains(i)){
                   serialNo = i;
                   listOfMappedSerialNo.add(i);
+                }
+                if(serialNo != null){
                   break;
                 }
               }
-              print((serialNo ?? params.listOfMappedNodeEntity.length).toString().padLeft(3, '0'));
+              print(serialNo.toString().padLeft(3, '0'));
               return unmappedCategoryNodeModel[index].formPayload(
                   params.categoryId,
-                  (serialNo ?? params.listOfMappedNodeEntity.length).toString().padLeft(3, '0')
+                  serialNo.toString().padLeft(3, '0')
               );
             })
           }
