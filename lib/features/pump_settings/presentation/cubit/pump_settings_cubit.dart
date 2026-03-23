@@ -7,6 +7,7 @@ import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/enti
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/setting_widget_type.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/template_json_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/usecsases/send_settings_usecase.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/di/injection.dart';
@@ -19,11 +20,24 @@ import '../bloc/pump_settings_state.dart';
 class PumpSettingsCubit extends Cubit<PumpSettingsState> {
   final GetPumpSettingsUsecase getPumpSettingsUsecase;
   final SendPumpSettingsUsecase sendPumpSettingsUsecase;
+  final SharedPreferences sharedPreferences;
 
   PumpSettingsCubit({
     required this.getPumpSettingsUsecase,
     required this.sendPumpSettingsUsecase,
+    required this.sharedPreferences,
   }) : super(GetPumpSettingsInitial());
+
+  String _getPrefKey({
+    required int userId,
+    required int subUserId,
+    required int controllerId,
+    required int menuId,
+    required int sectionIndex,
+    required int settingIndex,
+  }) {
+    return 'psv_${userId}_${subUserId}_${controllerId}_${menuId}_${sectionIndex}_$settingIndex';
+  }
 
   Future<void> loadSettings({
     required int userId,
@@ -42,11 +56,55 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
 
     result.fold(
           (failure) => emit(GetPumpSettingsError(message: failure.message)),
-          (menuItem) => emit(GetPumpSettingsLoaded(settings: menuItem)),
+          (menuItem) {
+            final updatedSections = menuItem.template.sections.asMap().entries.map((sectionEntry) {
+              final sectionIndex = sectionEntry.key;
+              final section = sectionEntry.value;
+
+              final updatedSettings = section.settings.asMap().entries.map((settingEntry) {
+                final settingIndex = settingEntry.key;
+                final setting = settingEntry.value;
+
+                final key = _getPrefKey(
+                  userId: userId,
+                  subUserId: subUserId,
+                  controllerId: controllerId,
+                  menuId: menuId,
+                  sectionIndex: sectionIndex,
+                  settingIndex: settingIndex,
+                );
+                final savedValue = sharedPreferences.getString(key);
+
+                if (savedValue != null && savedValue.isNotEmpty) {
+                  return setting.copyWith(value: savedValue);
+                }
+                return setting;
+              }).toList();
+
+              return section.copyWith(settings: updatedSettings);
+            }).toList();
+
+            final updatedMenuItem = menuItem.copyWith(
+              template: menuItem.template.copyWith(sections: updatedSections),
+            );
+
+            emit(GetPumpSettingsLoaded(settings: updatedMenuItem));
+          },
     );
   }
 
-  void updateSettingValue(String newValue, int sectionIndex, int settingIndex, MenuItemEntity menuItemEntity, {bool isHiddenFlag = false}) {
+  void updateSettingValue(
+      String newValue,
+      int sectionIndex,
+      int settingIndex,
+      MenuItemEntity menuItemEntity,
+      {
+        bool isHiddenFlag = false,
+        int? userId,
+        int? subUserId,
+        int? controllerId,
+      }
+      ) {
     final newSections = List<SettingSectionEntity>.from(menuItemEntity.template.sections);
     final targetSection = newSections[sectionIndex];
     final newSettings = List<SettingsEntity>.from(targetSection.settings);
@@ -103,6 +161,19 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       }
 
       newSettings[settingIndex] = setting.copyWith(value: processedValue);
+
+      // Save to SharedPreferences
+      if (userId != null && subUserId != null && controllerId != null) {
+        final key = _getPrefKey(
+          userId: userId,
+          subUserId: subUserId,
+          controllerId: controllerId,
+          menuId: menuItemEntity.menu.menuSettingId,
+          sectionIndex: sectionIndex,
+          settingIndex: settingIndex,
+        );
+        sharedPreferences.setString(key, processedValue);
+      }
     } else {
       newSettings[settingIndex] = newSettings[settingIndex].copyWith(hiddenFlag: newValue);
     }
@@ -128,7 +199,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
     String payload = SmsPayloadBuilder.build(setting, deviceId);
 
-    if (menuItemEntity.menu.menuSettingId == 508 && 
+    if (menuItemEntity.menu.menuSettingId == 508 &&
         menuItemEntity.template.sections[sectionIndex].typeId == 1 &&
         setting.serialNumber <= 4) {
       payload = '';

@@ -22,6 +22,7 @@ class PowerGraphPage extends StatelessWidget {
   final int controllerId;
   final String fromDate;
   final String toDate;
+  final int modelId; // 👈 Changed from hardcoded to final parameter
 
   const PowerGraphPage({
     super.key,
@@ -30,9 +31,9 @@ class PowerGraphPage extends StatelessWidget {
     required this.controllerId,
     required this.fromDate,
     required this.toDate,
+    required this.modelId, // 👈 Added to constructor
   });
 
-  final int modelId = 7;
   final DateTabType selectedTab = DateTabType.days;
 
   @override

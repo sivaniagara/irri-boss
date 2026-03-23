@@ -20,7 +20,7 @@ abstract class SendRevPageRoutes {
 class SendRevPageUrls {
   static const String getSendRevMsgUrl =
       'user/:userId/subuser/:subuserId/controller/:controllerId/report'
-      '?fromDate=":fromDate"&toDate=":toDate"&type=sendrevmsg';
+      '?fromDate=\':fromDate\'&toDate=\':toDate\'&type=sendrevmsg';
 }
 
 final sendRevPageRoutes = <GoRoute>[

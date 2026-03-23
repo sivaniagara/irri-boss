@@ -1,45 +1,34 @@
+import 'dart:async';
 import 'dart:convert';
-import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_manager.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:niagara_smart_drip_irrigation/features/auth/auth.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/dashboard_page_cubit.dart';
-import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/bloc/standalone_bloc.dart';
+import 'package:niagara_smart_drip_irrigation/features/fault_msg/utils/faultmsg_routes.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/theme/app_themes.dart';
+import '../../../../core/utils/app_constants.dart';
 import '../../../../core/utils/app_images.dart';
-import '../../../../core/utils/common_date_picker.dart';
-import '../../../controller_details/domain/usecase/controller_details_params.dart';
-import '../../../program_settings/utils/program_settings_routes.dart';
+import '../../../reports/power_reports/utils/Power_routes.dart';
 import '../../../sendrev_msg/presentation/bloc/sendrev_bloc.dart';
-import '../../../sendrev_msg/presentation/bloc/sendrev_bloc_event.dart';
 import '../../../side_drawer/groups/presentation/widgets/app_drawer.dart';
 import '../../utils/dashboard_routes.dart';
-import '../helper/get_sms_sync.dart';
-import '../widgets/actions_section.dart';
-import '../widgets/ctrl_display.dart';
-import '../widgets/latestmsg_section.dart';
-import '../widgets/motor_valve_section.dart';
-import '../widgets/pressure_section.dart';
-import '../widgets/ryb_section.dart';
-import '../widgets/sync_section.dart';
-import '../widgets/timer_section.dart';
+
 import '../../domain/entities/controller_entity.dart';
 import '../../domain/entities/group_entity.dart';
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 
 
-enum BottomNavigationOption{home, report, manual, setting, sentAndReceive}
+enum BottomNavigationOption{home, report, manual, setting, sentAndReceive, faultMsgMsgPage}
 
 extension BottomNavivigationOptionExtension on BottomNavigationOption{
   String title(){
@@ -54,6 +43,8 @@ extension BottomNavivigationOptionExtension on BottomNavigationOption{
         return 'Setting';
       case BottomNavigationOption.sentAndReceive:
         return 'Sent And Receive';
+      case BottomNavigationOption.faultMsgMsgPage:
+        return 'Fault MSG';
     }
   }
 }
@@ -83,21 +74,56 @@ const int fakeGroupId = 0;
 class _DashboardPageState extends State<DashboardPage> {
   BottomNavigationOption selectedBottomNavigation = BottomNavigationOption.home;
   final NotchBottomBarController _controller = NotchBottomBarController(index: 0);
+  Timer? _liveTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Logic removed from here to prevent ProviderNotFoundError
+  }
+
+  void _startLiveSync(DashboardPageCubit cubit) {
+    if (_liveTimer != null) return; // Ensure only one timer runs
+
+    _liveTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      if (mounted && selectedBottomNavigation == BottomNavigationOption.home) {
+        final state = cubit.state;
+        if (state is DashboardGroupsLoaded) {
+          final groupId = state.selectedGroupId;
+          final controllerIndex = state.selectedControllerIndex;
+          if (groupId != null && controllerIndex != null) {
+            final controllers = state.groupControllers[groupId] ?? [];
+            if (controllerIndex < controllers.length) {
+              cubit.getLive(controllers[controllerIndex].deviceId);
+            }
+          }
+        }
+      }
+    });
+  }
 
   @override
   void dispose() {
-    super.dispose();
+    _liveTimer?.cancel();
     _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final queryParams = GoRouterState.of(context).uri.queryParameters;
-    late int userId;
-    late int userType;
+    final authState = context.read<AuthBloc>().state;
+    
+    int userId = 0;
+    int userType = 1;
+
+    // Source of truth priority: Query Params -> AuthBloc -> widget.userData
     if (queryParams.containsKey('userId') && queryParams['userId'] != null) {
       userId = int.parse(queryParams['userId']!);
       userType = int.parse(queryParams['userType']!);
+    } else if (authState is Authenticated) {
+      userId = authState.user.userDetails.id;
+      userType = authState.user.userDetails.userType;
     } else {
       userId = int.parse(widget.userData['userId']?.toString() ?? '0');
       userType = int.parse(widget.userData['userType']?.toString() ?? '1');
@@ -117,6 +143,10 @@ class _DashboardPageState extends State<DashboardPage> {
       child: Builder(
         builder: (context) {
           final cubit = context.read<DashboardPageCubit>();
+
+          // Start the sync timer using the cubit instance from this context
+          _startLiveSync(cubit);
+
           _initializeCubit(cubit, context, userId, userType, groupId);
 
           return BlocBuilder<DashboardPageCubit, DashboardState>(
@@ -263,6 +293,23 @@ class _DashboardPageState extends State<DashboardPage> {
 
     final (selectedGroup, selectedController, controllers) = _getSelectedGroupAndController(loadedState);
 
+    // Identify if the current route is one that should show the shell (Appbar/Nav)
+    final String currentPath = GoRouterState.of(context).uri.path;
+    
+    // Define the 5 main tabs that should show the shell's AppBar
+    final bool isDashboard = currentPath == DashBoardRoutes.dashboard;
+    final bool isReport = currentPath == DashBoardRoutes.report;
+    final bool isStandalone = currentPath == DashBoardRoutes.standalone;
+    final bool isSettings = currentPath == DashBoardRoutes.settings;
+    final bool isSentAndReceive = currentPath == DashBoardRoutes.sentAndReceive;
+    
+    // Specific tabs for Standalone Pump models that should also show their "title" AppBar but NOT the dashboard's special AppBar
+    final bool isFaultMsg = currentPath == FaultMsgPageRoutes.FaultMsgMsgPage;
+    final bool isPowerGraph = currentPath == PowerGraphPageRoutes.PowerGraphPage;
+
+    // Determine if we are on a main tab
+    final bool isMainTab = isDashboard || isReport || isStandalone || isSettings || isSentAndReceive || isFaultMsg || isPowerGraph;
+
     return BlocListener<DashboardPageCubit, DashboardState>(
       listener: (context, state) {
         if (state is DashboardGroupsLoaded &&
@@ -275,106 +322,35 @@ class _DashboardPageState extends State<DashboardPage> {
             userId: authState.user.userDetails.id.toString(),
             controllerId: firstController.userDeviceId.toString(),
             userType: authState.user.userDetails.userType.toString(),
-            subUserId: '0', deviceId: firstController.deviceId,
+            subUserId: '0', 
+            deviceId: firstController.deviceId,
+            modelId: firstController.modelId,
           );
         }
       },
       child: Scaffold(
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: AnimatedNotchBottomBar(
-          notchBottomBarController: _controller,
-          color: Colors.white,
-          showLabel: true,
-          textOverflow: TextOverflow.visible,
-          maxLine: 1,
-          shadowElevation: 5,
-          kBottomRadius: 28.0,
-          notchColor: Colors.white,
-          removeMargins: true,
-          showShadow: false,
-          durationInMilliSeconds: 300,
-          itemLabelStyle: const TextStyle(fontSize: 10, color: Colors.black),
-          bottomBarItems: [
-            BottomBarItem(
-              inActiveItem: Image.asset(AppImages.inActiveHomeIcon,),
-              activeItem: Image.asset(AppImages.activeHomeIcon),
-              itemLabel: 'Home',
-            ),
-            BottomBarItem(
-              inActiveItem: Image.asset(AppImages.inActiveReportIcon,),
-              activeItem: Image.asset(AppImages.activeReportIcon),
-              itemLabel: 'Report',
-            ),
-            BottomBarItem(
-              inActiveItem: Image.asset(AppImages.inActiveManualIcon,),
-              activeItem: Image.asset(AppImages.activeManualIcon),
-              itemLabel: 'Manual',
-            ),
-            BottomBarItem(
-              inActiveItem: Image.asset(AppImages.inActiveSettingIcon,),
-              activeItem: Image.asset(AppImages.activeSettingIcon),
-              itemLabel: 'Settings',
-            ),
-            BottomBarItem(
-              inActiveItem: Image.asset(AppImages.inActiveSentIcon,),
-              activeItem: Image.asset(AppImages.activeSentIcon),
-              itemLabel: 'Message',
-            ),
-          ],
-          onTap: (index) {
-            if(index == 0){
-              selectedBottomNavigation = BottomNavigationOption.home;
-              context.pushReplacement("${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType");
-            }else if(index == 1){
-              selectedBottomNavigation = BottomNavigationOption.report;
-              final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
-print("controllerContext.userId:${controllerContext.userId},controllerContext.controllerId:${controllerContext.controllerId},");
-              context.pushReplacement("${DashBoardRoutes.report}?userId=$userId&userType=$userType",  extra: {
-                "userId": controllerContext.userId,
-                "controllerId": controllerContext.controllerId,
-                "userType": controllerContext.userType,
-                "subUserId": controllerContext.subUserId,
-                "deviceId": controllerContext.deviceId,
-              });
-            }else if(index == 2){
-              selectedBottomNavigation = BottomNavigationOption.manual;
-              final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
-              context.pushReplacement(
-                  "${DashBoardRoutes.standalone}?userId=$userId&userType=$userType",
-                extra: {
-                    "userId": controllerContext.userId,
-                    "controllerId": controllerContext.controllerId,
-                    "userType": controllerContext.userType,
-                    "subUserId": controllerContext.subUserId,
-                    "deviceId": controllerContext.deviceId,
-                }
-              );
-            }else if(index == 3){
-              selectedBottomNavigation = BottomNavigationOption.setting;
-              context.pushReplacement("${DashBoardRoutes.settings}?userId=$userId&userType=$userType");
-            }else if(index == 4){
-              selectedBottomNavigation = BottomNavigationOption.sentAndReceive;
-              context.pushReplacement("${DashBoardRoutes.sentAndReceive}?userId=$userId&userType=$userType");
-            }
-            setState(() {});
-          },
-          kIconSize: 24.0,
-        ),
-        appBar: selectedBottomNavigation == BottomNavigationOption.home ? _buildAppBar(
-          selectedGroup,
-          selectedController,
-          controllers,
-          loadedState,
-          cubit,
-          context,
-          userId,
-          userType,
-        ) : selectedBottomNavigation == BottomNavigationOption.sentAndReceive
-            ? null
-            : CustomAppBar(
-                title: selectedBottomNavigation.title(),
-
-        ),
+        floatingActionButton: _buildBottomNavigationBar(userId, userType, selectedController?.modelId ?? 4),
+        // Logic: ONLY show the shell's AppBar if we are on a main tab. 
+        // Sub-pages (like PumpSettingsMenu, SumpSettings) should have NO AppBar from this shell.
+        appBar: !isMainTab 
+            ? null 
+            : (selectedBottomNavigation == BottomNavigationOption.home && isDashboard) 
+                ? _buildAppBar(
+                    selectedGroup,
+                    selectedController,
+                    controllers,
+                    loadedState,
+                    cubit,
+                    context,
+                    userId,
+                    userType,
+                  ) 
+                : (selectedBottomNavigation == BottomNavigationOption.sentAndReceive && isSentAndReceive)
+                    ? null // Sent and Receive has its own or we hide it
+                    : CustomAppBar(
+                        title: selectedBottomNavigation.title(),
+                      ),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         drawer: userType == 1 ? AppDrawer(userData: widget.userData,) : null,
         body: selectedController == null
@@ -382,6 +358,181 @@ print("controllerContext.userId:${controllerContext.userId},controllerContext.co
             : widget.child,
       ),
     );
+  }
+  
+  Widget getBottomNavigationForDrip(int userId, int userType){
+    return AnimatedNotchBottomBar(
+      notchBottomBarController: _controller,
+      color: Colors.white,
+      showLabel: true,
+      textOverflow: TextOverflow.visible,
+      maxLine: 1,
+      shadowElevation: 5,
+      kBottomRadius: 28.0,
+      notchColor: Colors.white,
+      removeMargins: true,
+      showShadow: false,
+      durationInMilliSeconds: 300,
+      itemLabelStyle: const TextStyle(fontSize: 10, color: Colors.black),
+      bottomBarItems: [
+        BottomBarItem(
+          inActiveItem: Image.asset(AppImages.inActiveHomeIcon,),
+          activeItem: Image.asset(AppImages.activeHomeIcon),
+          itemLabel: 'Home',
+        ),
+        BottomBarItem(
+          inActiveItem: Image.asset(AppImages.inActiveReportIcon,),
+          activeItem: Image.asset(AppImages.activeReportIcon),
+          itemLabel: 'Report',
+        ),
+        BottomBarItem(
+          inActiveItem: Image.asset(AppImages.inActiveManualIcon,),
+          activeItem: Image.asset(AppImages.activeManualIcon),
+          itemLabel: 'Manual',
+        ),
+        BottomBarItem(
+          inActiveItem: Image.asset(AppImages.inActiveSettingIcon,),
+          activeItem: Image.asset(AppImages.activeSettingIcon),
+          itemLabel: 'Settings',
+        ),
+        BottomBarItem(
+          inActiveItem: Image.asset(AppImages.inActiveSentIcon,),
+          activeItem: Image.asset(AppImages.activeSentIcon),
+          itemLabel: 'Message',
+        ),
+      ],
+      onTap: (index) {
+        if(index == 0){
+          selectedBottomNavigation = BottomNavigationOption.home;
+          context.pushReplacement("${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType");
+        }else if(index == 1){
+          selectedBottomNavigation = BottomNavigationOption.report;
+          final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+          print("controllerContext.userId:${controllerContext.userId},controllerContext.controllerId:${controllerContext.controllerId},");
+          context.pushReplacement("${DashBoardRoutes.report}?userId=$userId&userType=$userType",  extra: {
+            "userId": controllerContext.userId,
+            "controllerId": controllerContext.controllerId,
+            "userType": controllerContext.userType,
+            "subUserId": controllerContext.subUserId,
+            "deviceId": controllerContext.deviceId,
+          });
+        }else if(index == 2){
+          selectedBottomNavigation = BottomNavigationOption.manual;
+          final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+          context.pushReplacement(
+              "${DashBoardRoutes.standalone}?userId=$userId&userType=$userType",
+              extra: {
+                "userId": controllerContext.userId,
+                "controllerId": controllerContext.controllerId,
+                "userType": controllerContext.userType,
+                "subUserId": controllerContext.subUserId,
+                "deviceId": controllerContext.deviceId,
+              }
+          );
+        }else if(index == 3){
+          selectedBottomNavigation = BottomNavigationOption.setting;
+          context.pushReplacement("${DashBoardRoutes.settings}?userId=$userId&userType=$userType");
+        }else if(index == 4){
+          selectedBottomNavigation = BottomNavigationOption.sentAndReceive;
+          context.pushReplacement("${DashBoardRoutes.sentAndReceive}?userId=$userId&userType=$userType");
+        }
+        setState(() {});
+      },
+      kIconSize: 24.0,
+    );
+  }
+  Widget getBottomNavigationForPump(int userId, int userType){
+    return AnimatedNotchBottomBar(
+      notchBottomBarController: _controller,
+      color: Colors.white,
+      showLabel: true,
+      textOverflow: TextOverflow.visible,
+      maxLine: 1,
+      shadowElevation: 5,
+      kBottomRadius: 28.0,
+      notchColor: Colors.white,
+      removeMargins: true,
+      showShadow: false,
+      durationInMilliSeconds: 300,
+      itemLabelStyle: const TextStyle(fontSize: 10, color: Colors.black),
+      bottomBarItems: [
+        BottomBarItem(
+          inActiveItem: Image.asset(AppImages.inActiveHomeIcon,),
+          activeItem: Image.asset(AppImages.activeHomeIcon),
+          itemLabel: 'Home',
+        ),
+        BottomBarItem(
+          inActiveItem: Image.asset(AppImages.inActiveReportIcon,),
+          activeItem: Image.asset(AppImages.activeReportIcon),
+          itemLabel: 'Power',
+        ),
+        BottomBarItem(
+          inActiveItem: Image.asset(AppImages.inActiveManualIcon,),
+          activeItem: Image.asset(AppImages.activeManualIcon),
+          itemLabel: 'Fault Msg',
+        ),
+        BottomBarItem(
+          inActiveItem: Image.asset(AppImages.inActiveSettingIcon,),
+          activeItem: Image.asset(AppImages.activeSettingIcon),
+          itemLabel: 'Settings',
+        ),
+        BottomBarItem(
+          inActiveItem: Image.asset(AppImages.inActiveSentIcon,),
+          activeItem: Image.asset(AppImages.activeSentIcon),
+          itemLabel: 'Message',
+        ),
+      ],
+      onTap: (index) {
+        if(index == 0){
+          selectedBottomNavigation = BottomNavigationOption.home;
+          context.pushReplacement("${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType");
+        }else if(index == 1){
+          selectedBottomNavigation = BottomNavigationOption.report;
+          final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+          print("controllerContext.userId:${controllerContext.userId},controllerContext.controllerId:${controllerContext.controllerId},");
+          context.pushReplacement("${PowerGraphPageRoutes.PowerGraphPage}?userId=$userId&userType=$userType",  extra: {
+            "userId": controllerContext.userId,
+            "controllerId": controllerContext.controllerId,
+            "userType": controllerContext.userType,
+            "subUserId": controllerContext.subUserId,
+            "deviceId": controllerContext.deviceId,
+            "modelId": controllerContext.modelId,
+          });
+        }else if(index == 2){
+          selectedBottomNavigation = BottomNavigationOption.faultMsgMsgPage;
+          final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+          context.pushReplacement(
+              "${FaultMsgPageRoutes.FaultMsgMsgPage}?userId=$userId&userType=$userType",
+              extra: {
+                "userId": controllerContext.userId,
+                "controllerId": controllerContext.controllerId,
+                "userType": controllerContext.userType,
+                "subUserId": controllerContext.subUserId,
+                "deviceId": controllerContext.deviceId,
+              }
+          );
+        }else if(index == 3){
+          selectedBottomNavigation = BottomNavigationOption.setting;
+          context.pushReplacement("${DashBoardRoutes.settings}?userId=$userId&userType=$userType");
+        }else if(index == 4){
+          selectedBottomNavigation = BottomNavigationOption.sentAndReceive;
+          context.pushReplacement("${DashBoardRoutes.sentAndReceive}?userId=$userId&userType=$userType");
+        }
+        setState(() {});
+      },
+      kIconSize: 24.0,
+    );
+  }
+
+  Widget _buildBottomNavigationBar(int userId, int userType, int modelId) {
+    if (AppConstants.isIrrigationLive(modelId)) {
+      return getBottomNavigationForDrip(userId, userType);
+    }
+    else {
+      return getBottomNavigationForPump(userId, userType);
+    }
+
+
   }
 
   (GroupDetailsEntity, ControllerEntity?, List<ControllerEntity>)
@@ -398,6 +549,47 @@ print("controllerContext.userId:${controllerContext.userId},controllerContext.co
     final selectedController = controllers.isNotEmpty ? controllers[effectiveIndex] : null;
 
     return (selectedGroup, selectedController, controllers);
+  }
+
+  PreferredSizeWidget? _buildProperAppBar(
+      String location,
+      GroupDetailsEntity selectedGroup,
+      ControllerEntity? selectedController,
+      List<ControllerEntity> controllers,
+      DashboardGroupsLoaded state,
+      DashboardPageCubit cubit,
+      BuildContext context,
+      int userId,
+      int userType,
+      ) {
+    if (location == DashBoardRoutes.dashboard) {
+      return _buildAppBar(selectedGroup, selectedController, controllers, state, cubit, context, userId, userType);
+    }
+
+    String? title;
+    if (location == DashBoardRoutes.report) title = "Report";
+    else if (location == DashBoardRoutes.standalone) title = "Manual";
+    else if (location == DashBoardRoutes.settings) title = "Setting";
+    else if (location == DashBoardRoutes.sentAndReceive) title = "Sent And Receive";
+    else if (location == FaultMsgPageRoutes.FaultMsgMsgPage) title = "Fault MSG";
+
+    if (title != null) {
+      return AppBar(
+        title: Text(title, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.black),
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+      );
+    }
+
+    return null;
   }
 
   PreferredSizeWidget _buildAppBar(
@@ -529,7 +721,7 @@ print("controllerContext.userId:${controllerContext.userId},controllerContext.co
             print("groupId change ");
             print(groupId);
             print(userId);
-             cubit.selectGroup(groupId, userId, GoRouterState.of(context));
+            cubit.selectGroup(groupId, userId, GoRouterState.of(context));
             context.read<ControllerContextCubit>().toInitial();
           },
           itemBuilder: (context) => state.groups.map((group) {
@@ -592,6 +784,7 @@ print("controllerContext.userId:${controllerContext.userId},controllerContext.co
           context.read<ControllerContextCubit>().updateController(
             controllerId: controllers[index].userDeviceId.toString(),
             deviceId: controllers[index].deviceId,
+            modelId: controllers[index].modelId,
           );
         },
         itemBuilder: (context) => controllers.asMap().entries.map((entry) {

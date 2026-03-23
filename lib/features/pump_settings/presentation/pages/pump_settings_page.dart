@@ -17,6 +17,7 @@ import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentatio
 
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/widgets/custom_switch.dart';
+import '../../../edit_program/presentation/widgets/custom_card.dart';
 import '../../../sendrev_msg/utils/senrev_routes.dart';
 import '../../domain/entities/template_json_entity.dart';
 import '../../utils/pump_settings_images.dart';
@@ -37,6 +38,7 @@ class PumpSettingsPage extends StatelessWidget {
     required this.menuId,
     required this.deviceId,
     this.menuName,
+    required int modelId,
   });
 
   @override
@@ -50,8 +52,12 @@ class PumpSettingsPage extends StatelessWidget {
           menuId: menuId,
         ),
       child: Scaffold(
+
         appBar: AppBar(
           title: Text(menuName ?? 'Pump Settings'),
+          centerTitle: true,
+          elevation: 0,
+          foregroundColor: Colors.black,
           actions: [
             Builder(
               builder: (appBarContext) => IconButton(
@@ -62,7 +68,10 @@ class PumpSettingsPage extends StatelessWidget {
                     title: "Hide/Show Settings",
                     content: BlocProvider<PumpSettingsCubit>.value(
                       value: cubit,
-                      child: _HideShowSettingsDialog(),
+                      child: SizedBox(
+                        width: double.maxFinite,
+                        child: _HideShowSettingsDialog(),
+                      ),
                     ),
                     actions: [
                       ActionButton(
@@ -82,7 +91,7 @@ class PumpSettingsPage extends StatelessWidget {
                     ],
                   );
                 },
-                icon: const Icon(Icons.hide_source),
+                icon: const Icon(Icons.settings_suggest_outlined),
               ),
             ),
             IconButton(
@@ -92,45 +101,35 @@ class PumpSettingsPage extends StatelessWidget {
                   extra: {'userId': userId, 'controllerId': controllerId, 'subuserId': subUserId},
                 );
               },
-              icon: const Icon(Icons.message),
+              icon: const Icon(Icons.history_edu_outlined),
             )
           ],
         ),
         body: BlocListener<PumpSettingsCubit, PumpSettingsState>(
           listenWhen: (previous, current) =>
-          current is SettingsSendStartedState ||
+              current is SettingsSendStartedState ||
               current is SettingsSendSuccessState ||
               current is SettingsFailureState,
           listener: (context, state) {
             if (state is SettingsSendStartedState) {
-              Fluttertoast.showToast(
-                msg: "Sending...",
-                toastLength: Toast.LENGTH_LONG,
-                gravity: ToastGravity.BOTTOM,
-                backgroundColor: Colors.grey[800],
-              );
+              Fluttertoast.showToast(msg: "Sending...");
             } else if (state is SettingsSendSuccessState) {
               Fluttertoast.showToast(
                 msg: state.message,
-                toastLength: Toast.LENGTH_LONG,
-                gravity: ToastGravity.BOTTOM,
-                backgroundColor: Theme.of(context).primaryColor,
+                backgroundColor: Colors.green,
               );
             } else if (state is SettingsFailureState) {
               Fluttertoast.showToast(
                 msg: state.message,
-                toastLength: Toast.LENGTH_LONG,
-                gravity: ToastGravity.BOTTOM,
                 backgroundColor: Colors.red,
               );
             }
           },
           child: BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
-            buildWhen: (previous, current) {
-              return current is GetPumpSettingsInitial ||
-                  current is GetPumpSettingsError ||
-                  current is GetPumpSettingsLoaded;
-            },
+            buildWhen: (previous, current) =>
+                current is GetPumpSettingsInitial ||
+                current is GetPumpSettingsError ||
+                current is GetPumpSettingsLoaded,
             builder: (context, state) {
               if (state is GetPumpSettingsInitial) {
                 return const Center(child: CircularProgressIndicator());
@@ -140,42 +139,58 @@ class PumpSettingsPage extends StatelessWidget {
                   child: Retry(
                     message: state.message,
                     onPressed: () => context.read<PumpSettingsCubit>().loadSettings(
-                      userId: userId,
-                      subUserId: subUserId,
-                      controllerId: controllerId,
-                      menuId: menuId,
-                    ),
+                          userId: userId,
+                          subUserId: subUserId,
+                          controllerId: controllerId,
+                          menuId: menuId,
+                        ),
                   ),
                 );
               }
               final loadedState = state as GetPumpSettingsLoaded;
-              return Column(
-                children: [
-                  if ([509, 511].contains(menuId))
-                    BlocBuilder<PumpSettingsViewResponseCubit, PumpSettingViewState>(
-                      builder: (context, state) {
-                        if (state is PumpSettingsViewReceived) {
-                          return GlassCard(
-                            margin: const EdgeInsets.symmetric(horizontal: 10),
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                            opacity: 1,
-                            blur: 0,
-                            child: Text(state.message),
-                          );
-                        }
-                        return const SizedBox();
-                      },
-                    ),
-                  Expanded(
-                    child: _SettingsList(
+              return SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Column(
+                  children: [
+                    if ([509, 511].contains(menuId))
+                      BlocBuilder<PumpSettingsViewResponseCubit, PumpSettingViewState>(
+                        builder: (context, state) {
+                          if (state is PumpSettingsViewReceived) {
+                            return Container(
+                              margin: const EdgeInsets.all(12),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.info_outline, color: Colors.blue),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      state.message,
+                                      style: const TextStyle(fontSize: 13, color: Colors.blueAccent),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                          return const SizedBox();
+                        },
+                      ),
+                    _SettingsList(
                       menu: loadedState.settings,
                       deviceId: deviceId,
                       userId: userId,
                       controllerId: controllerId,
                       subUserId: subUserId,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 32),
+                  ],
+                ),
               );
             },
           ),
@@ -196,36 +211,43 @@ class _HideShowSettingsDialog extends StatelessWidget {
         }
 
         final menu = state.settings;
-        return ListView.builder(
-          itemCount: menu.template.sections.length,
-          itemBuilder: (context, sectionIndex) {
-            final section = menu.template.sections[sectionIndex];
-            return Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(section.sectionName, style: Theme.of(context).textTheme.titleMedium),
-                ),
-                ...section.settings.map((setting) {
-                  final settingIndex = section.settings.indexOf(setting);
-                  return CheckboxListTile(
-                    title: Text(setting.title),
-                    value: setting.hiddenFlag == "1",
-                    onChanged: (bool? newValue) {
-                      context.read<PumpSettingsCubit>().updateSettingValue(
-                        newValue == true ? "1" : "0",
-                        sectionIndex,
-                        settingIndex,
-                        menu,
-                        isHiddenFlag: true,
-                      );
-                    },
-                  );
-                }),
-                const Divider(),
-              ],
-            );
-          },
+        return SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(menu.template.sections.length, (sectionIndex) {
+              final section = menu.template.sections[sectionIndex];
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    child: Text(
+                      section.sectionName,
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                    ),
+                  ),
+                  ...section.settings.map((setting) {
+                    final settingIndex = section.settings.indexOf(setting);
+                    return CheckboxListTile(
+                      title: Text(setting.title, style: const TextStyle(fontSize: 14)),
+                      value: setting.hiddenFlag == "1",
+                      dense: true,
+                      onChanged: (bool? newValue) {
+                        context.read<PumpSettingsCubit>().updateSettingValue(
+                              newValue == true ? "1" : "0",
+                              sectionIndex,
+                              settingIndex,
+                              menu,
+                              isHiddenFlag: true,
+                            );
+                      },
+                    );
+                  }),
+                  if (sectionIndex < menu.template.sections.length - 1) const Divider(),
+                ],
+              );
+            }),
+          ),
         );
       },
     );
@@ -248,6 +270,8 @@ class _SettingsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
       itemCount: menu.template.sections.length,
       itemBuilder: (context, sectionIndex) {
         final section = menu.template.sections[sectionIndex];
@@ -258,24 +282,22 @@ class _SettingsList extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 12),
-              Text(
-                section.sectionName,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontSize: 14,
-                  color: const Color(0xff303030),
-                  fontWeight: FontWeight.w400,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text(
+                  section.sectionName,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
-              GlassCard(
-                margin: EdgeInsets.zero,
-                padding: const EdgeInsets.symmetric(horizontal: 5),
-                opacity: 1,
-                blur: 0,
-                borderRadius: BorderRadius.circular(12),
+              CustomCard(
                 child: ListView.separated(
                   physics: const NeverScrollableScrollPhysics(),
                   shrinkWrap: true,
+                  padding: const EdgeInsets.symmetric(vertical: 4),
                   itemBuilder: (BuildContext context, int index) {
                     if (section.settings[index].hiddenFlag == "0") return const SizedBox();
                     return _SettingRow(
@@ -290,11 +312,9 @@ class _SettingsList extends StatelessWidget {
                   },
                   separatorBuilder: (BuildContext context, int index) {
                     final setting = section.settings[index];
-                    if (setting.widgetType != SettingWidgetType.multiText) {
-                      if (setting.hiddenFlag == "0") return const SizedBox();
-                      return const Divider();
-                    }
-                    return const SizedBox.shrink();
+                    if (setting.hiddenFlag == "0") return const SizedBox();
+                    if (setting.widgetType == SettingWidgetType.multiText) return const SizedBox.shrink();
+                    return const Divider(thickness: 0.6);
                   },
                   itemCount: section.settings.length,
                 ),
@@ -333,29 +353,22 @@ class _SettingRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<PumpSettingsCubit>();
     final formKey = _formKeys.putIfAbsent(_formKeyId, () => GlobalKey<FormState>());
+    final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
+
+    final bool isSending = context.select((PumpSettingsCubit c) {
+      final s = c.state;
+      return s is SettingSendingState && s.sectionIndex == sectionIndex && s.settingIndex == settingIndex;
+    });
 
     return Form(
       key: formKey,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Expanded(child: _buildInput(context)),
           const SizedBox(width: 8),
-          IconButton(
-            padding: EdgeInsets.zero,
-            icon: context.watch<PumpSettingsCubit>().state is SettingsSendStartedState
-                ? const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: CircularProgressIndicator(),
-            )
-                : Container(
-              padding: const EdgeInsets.all(10),
-              child: Image.asset(
-                'assets/images/icons/send_icon.png',
-                width: 25,
-              ),
-            ),
+          _SendButton(
+            isSending: isSending,
             onPressed: () {
               if (formKey.currentState!.validate()) {
                 cubit.sendCurrentSetting(
@@ -369,12 +382,7 @@ class _SettingRow extends StatelessWidget {
                 );
                 context.read<PumpSettingsViewResponseCubit>().clear();
               } else {
-                Fluttertoast.showToast(
-                  msg: "Please correct the highlighted fields",
-                  toastLength: Toast.LENGTH_LONG,
-                  gravity: ToastGravity.BOTTOM,
-                  backgroundColor: Colors.orange[800],
-                );
+                Fluttertoast.showToast(msg: "Please correct the errors");
               }
             },
           ),
@@ -384,32 +392,32 @@ class _SettingRow extends StatelessWidget {
   }
 
   Widget _buildInput(BuildContext context) {
-    final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
-    final path = '${menuItemEntity.menu.menuSettingId}_${menuItemEntity.template.sections[sectionIndex].typeId}_${setting.serialNumber}';
+    final section = menuItemEntity.template.sections[sectionIndex];
+    final setting = section.settings[settingIndex];
+    final path = '${menuItemEntity.menu.menuSettingId}_${section.typeId}_${setting.serialNumber}';
 
     return switch (setting.widgetType) {
       SettingWidgetType.phone => _PhoneInput(setting: setting, onChanged: _onChanged(context)),
       SettingWidgetType.multiTime => _MultiTimeInput(setting: setting, onChanged: _onChanged(context)),
       SettingWidgetType.fullText => _TextInput(
-        setting: setting,
-        onChanged: _onChanged(context),
-        label: setting.title,
-        menuId: menuItemEntity.menu.menuSettingId,
-        imagePath: ([508].contains(menuItemEntity.menu.menuSettingId) &&
-            ![1, 2].contains(menuItemEntity.template.sections[sectionIndex].typeId))
-            ? PumpSettingsImages.getCommunicationConfigIcons(path)
-            : null,
-      ),
+          setting: setting,
+          onChanged: _onChanged(context),
+          label: setting.title,
+          menuId: menuItemEntity.menu.menuSettingId,
+          imagePath: ([508].contains(menuItemEntity.menu.menuSettingId) && ![1, 2].contains(section.typeId))
+              ? PumpSettingsImages.getCommunicationConfigIcons(path)
+              : null,
+        ),
       SettingWidgetType.multiText => (["VOLTCAL", "VOLTAGCAL", "CURRCAL", "CURCAL", "CURRENTCAL"]
               .contains(setting.smsFormat.trim().toUpperCase()))
           ? _CalibrationInput(setting: setting, onChanged: _onChanged(context))
           : _MultiTextInput(setting: setting, onChanged: _onChanged(context)),
       _ => SettingListTile(
-        title: setting.title,
-        leadingIcon: [509].contains(menuItemEntity.menu.menuSettingId) ? PumpSettingsImages.getStatusCheckIcons(path) : null,
-        trailing: _buildTrailing(context),
-        onTap: () => _handleTap(context),
-      ),
+          title: setting.title,
+          leadingIcon: [509].contains(menuItemEntity.menu.menuSettingId) ? PumpSettingsImages.getStatusCheckIcons(path) : null,
+          trailing: _buildTrailing(context),
+          onTap: () => _handleTap(context),
+        ),
     };
   }
 
@@ -418,41 +426,42 @@ class _SettingRow extends StatelessWidget {
     return switch (setting.widgetType) {
       SettingWidgetType.nothing => const SizedBox.shrink(),
       SettingWidgetType.text => SizedBox(
-        width: 70,
-        child: _TextInput(
-          setting: setting,
-          onChanged: _onChanged(context),
-          menuId: menuItemEntity.menu.menuSettingId,
+          width: 80,
+          child: _TextInput(
+            setting: setting,
+            onChanged: _onChanged(context),
+            menuId: menuItemEntity.menu.menuSettingId,
+          ),
         ),
-      ),
       SettingWidgetType.toggle => CustomSwitch(
-        value: setting.value == "ON",
-        onChanged: (_) => _onChanged(context)(setting.value == "ON" ? "OF" : "ON"),
-      ),
-      SettingWidgetType.time => LeafBox(
-        margin: EdgeInsets.zero,
-        height: 30,
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        child: Text(
-          setting.value.isEmpty ? "00:00" : setting.value,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+          value: setting.value == "ON",
+          onChanged: (_) => _onChanged(context)(setting.value == "ON" ? "OF" : "ON"),
         ),
-      ),
+      SettingWidgetType.time => Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          child: Text(
+            setting.value.isEmpty ? "00:00" : setting.value,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
       _ => Text(
-        setting.value,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
-      ),
+          setting.value,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
     };
   }
 
   void Function(String) _onChanged(BuildContext context) {
     return (String newValue) {
       context.read<PumpSettingsCubit>().updateSettingValue(
-        newValue,
-        sectionIndex,
-        settingIndex,
-        menuItemEntity,
-      );
+            newValue,
+            sectionIndex,
+            settingIndex,
+            menuItemEntity,
+            userId: userId,
+            subUserId: subUserId,
+            controllerId: controllerId,
+          );
     };
   }
 
@@ -483,6 +492,33 @@ class _SettingRow extends StatelessWidget {
   }
 }
 
+class _SendButton extends StatelessWidget {
+  final bool isSending;
+  final VoidCallback onPressed;
+
+  const _SendButton({required this.isSending, required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      padding: EdgeInsets.zero,
+      icon: isSending
+          ? const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(10),
+              child: Image.asset(
+                'assets/images/icons/send_icon.png',
+                width: 25,
+              ),
+            ),
+      onPressed: isSending ? null : onPressed,
+    );
+  }
+}
+
 class _PhoneInput extends StatelessWidget {
   final SettingsEntity setting;
   final ValueChanged<String> onChanged;
@@ -492,20 +528,15 @@ class _PhoneInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: IntlPhoneField(
         initialValue: setting.value.isNotEmpty ? setting.value : null,
         initialCountryCode: 'IN',
-        style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
-        validator: (phone) {
-          if (phone == null || phone.completeNumber.isEmpty) {
-            return 'Phone number is required';
-          }
-          if (phone.completeNumber.length < 10) {
-            return 'Invalid phone number';
-          }
-          return null;
-        },
+        decoration: InputDecoration(
+          labelText: setting.title,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
         onChanged: (phone) => onChanged(phone.completeNumber),
       ),
     );
@@ -543,50 +574,30 @@ class _TextInput extends StatelessWidget {
             initialValue: setting.value,
             keyboardType: !isTextOnly ? const TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
             textAlign: isTextOnly ? TextAlign.start : TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
             inputFormatters: !isTextOnly
                 ? [
-              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,9}')),
-              LengthLimitingTextInputFormatter(5),
-            ]
+                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,9}')),
+                    LengthLimitingTextInputFormatter(5),
+                  ]
                 : null,
             validator: (value) {
-              if (value == null || value.trim().isEmpty) return 'This field is required';
-              if (!isTextOnly) {
-                final num = double.tryParse(value.trim());
-                if (num == null) return 'Please enter a valid number';
-                if (num <= 0) return 'Value must be greater than 0';
-              }
+              if (value == null || value.trim().isEmpty) return 'Required';
               return null;
             },
             decoration: InputDecoration(
               labelText: label,
+              labelStyle: const TextStyle(fontSize: 12, color: Colors.grey),
               border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
               isDense: true,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: isTextOnly ? 12 : 8,
-                vertical: 5,
-              ),
-              errorStyle: const TextStyle(height: 0, fontSize: 0),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               prefixIcon: imagePath != null
                   ? Padding(
-                padding: const EdgeInsets.only(right: 5),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(6),
-                      child: Image.asset(imagePath!, width: 22),
-                    ),
-                    const VerticalDivider(endIndent: 5, indent: 5, thickness: 1),
-                  ],
-                ),
-              )
+                      padding: const EdgeInsets.all(10),
+                      child: Image.asset(imagePath!, width: 20),
+                    )
                   : null,
-              prefixIconConstraints: const BoxConstraints(minWidth: 40, minHeight: 40),
             ),
             onChanged: onChanged,
           ),
@@ -612,27 +623,25 @@ class _MultiTimeInput extends StatelessWidget {
         titles.length,
         (i) => SettingListTile(
           title: titles[i],
-          trailing: LeafBox(
-            height: 30,
-            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-            child: Center(
-              child: Text(
-                values[i].isEmpty ? "00:00" : values[i],
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(fontWeight: FontWeight.w500),
-              ),
+          trailing: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            child: Text(
+              i < values.length && values[i].isNotEmpty ? values[i] : "00:00",
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
           onTap: () async {
             final newTime = await TimePickerService.show(
               context: context,
               title: titles[i],
-              initialTime: values[i],
+              initialTime: i < values.length ? values[i] : "00:00",
             );
             if (newTime != null) {
-              final newValues = [...values]..[i] = newTime;
+              final newValues = List<String>.from(values);
+              while (newValues.length <= i) {
+                newValues.add("");
+              }
+              newValues[i] = newTime;
               onChanged(newValues.join(';'));
             }
           },
@@ -653,7 +662,6 @@ class _CalibrationInput extends StatelessWidget {
     final rawTitles = setting.title.split(';').map((e) => e.trim()).toList();
     final rawValues = setting.value.split(';').map((e) => e.trim()).toList();
 
-    // Ensure exactly 3 titles and 3 values for consistent splitting
     final titles = List<String>.generate(3, (i) {
       if (i < rawTitles.length && rawTitles[i].isNotEmpty) return rawTitles[i];
       return i == 0 ? "VR" : (i == 1 ? "VY" : "VB");
@@ -670,97 +678,61 @@ class _CalibrationInput extends StatelessWidget {
     final bool isCurrentCal = format == "CURRCAL" || format == "CURCAL";
     final bool isCurrentSecondRow = format == "CURRENTCAL";
 
-    final bool isDecimalOnlyLine = isVoltageCal || isCurrentCal;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (rawTitles.any((t) => t.isNotEmpty))
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-            child: Row(
-              children: titles
-                  .map((t) => Expanded(
-                        child: Text(
-                          t,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ))
-                  .toList(),
-            ),
-          ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+          padding: const EdgeInsets.only(top: 8, bottom: 4),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: List.generate(
-              3,
-              (i) => Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: LeafBox(
-                    height: 36,
-                    padding: EdgeInsets.zero,
-                    margin: EdgeInsets.zero,
-                    child: TextFormField(
-                      initialValue: values[i],
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: isVoltageWhole
-                          ? [FilteringTextInputFormatter.digitsOnly]
-                          : [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        color: Colors.black,
+            children: titles
+                .map((t) => Expanded(
+                      child: Text(
+                        t,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold),
                       ),
-                      decoration: InputDecoration(
-                        hintText: isVoltageCal
-                            ? "0.0000"
-                            : (isCurrentCal
-                                ? "0.00000"
-                                : (isVoltageWhole
-                                    ? "000"
-                                    : (isCurrentSecondRow ? "0.00" : null))),
-                        hintStyle: const TextStyle(fontSize: 12, color: Colors.grey),
-                        border: InputBorder.none,
-                        isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                        errorStyle: const TextStyle(height: 0, fontSize: 0),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) return 'Req';
-                        final numValue = double.tryParse(value.trim());
-                        if (numValue == null) return 'Err';
-
-                        if (isDecimalOnlyLine && !value.contains('.')) return 'Dec';
-                        if (isVoltageWhole && value.contains('.')) return 'Int';
-                        
-                        if (isCurrentSecondRow && value.contains('.')) {
-                          final parts = value.split('.');
-                          if (parts.length > 2 || parts[1].length > 2) return 'Max 2';
-                        }
-
-                        if (numValue <= 0) return '>0';
-                        return null;
-                      },
-                      onChanged: (newValue) {
-                        final newValues = List<String>.from(values);
-                        newValues[i] = newValue.trim();
-                        onChanged(newValues.join(';'));
-                      },
+                    ))
+                .toList(),
+          ),
+        ),
+        Row(
+          children: List.generate(
+            3,
+            (i) => Expanded(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                child: LeafBox(
+                  height: 36,
+                  padding: EdgeInsets.zero,
+                  child: TextFormField(
+                    initialValue: i < values.length ? values[i] : "0",
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: isVoltageWhole
+                        ? [FilteringTextInputFormatter.digitsOnly]
+                        : [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    decoration: InputDecoration(
+                      hintText: isVoltageCal
+                          ? "0.0000"
+                          : (isCurrentCal ? "0.00000" : (isVoltageWhole ? "000" : (isCurrentSecondRow ? "0.00" : "0.0000"))),
+                      hintStyle: const TextStyle(fontSize: 10, color: Colors.grey),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
                     ),
+                    onChanged: (newValue) {
+                      final newValues = List<String>.from(values);
+                      newValues[i] = newValue.trim();
+                      onChanged(newValues.join(';'));
+                    },
                   ),
                 ),
               ),
             ),
           ),
         ),
+        const SizedBox(height: 8),
       ],
     );
   }
@@ -782,53 +754,44 @@ class _MultiTextInput extends StatelessWidget {
       children: [
         if (titles.any((t) => t.isNotEmpty))
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
+            padding: const EdgeInsets.only(top: 8, bottom: 4),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: titles
-                  .map((t) => t.isNotEmpty
-                  ? Expanded(
-                child: Center(
-                  child: Text(
-                    t,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              )
-                  : const SizedBox.shrink())
+                  .map((t) => Expanded(
+                        child: Text(
+                          t,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold),
+                        ),
+                      ))
                   .toList(),
             ),
           ),
         Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: List.generate(
             values.length,
-                (i) => Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+            (i) => Expanded(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
                 child: LeafBox(
                   height: 36,
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  padding: EdgeInsets.zero,
                   child: TextFormField(
                     initialValue: values[i],
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                     decoration: const InputDecoration(
                       border: InputBorder.none,
                       isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                      contentPadding: EdgeInsets.symmetric(vertical: 8),
                     ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) return 'Required';
-                      final num = double.tryParse(value.trim());
-                      if (num == null) return 'Invalid';
-                      if (num <= 0) return '> 0';
-                      return null;
-                    },
                     onChanged: (newValue) {
-                      final newValues = [...values]..[i] = newValue;
+                      final newValues = List<String>.from(values);
+                      while (newValues.length <= i) {
+                        newValues.add("");
+                      }
+                      newValues[i] = newValue;
                       onChanged(newValues.join(';'));
                     },
                   ),
@@ -837,6 +800,7 @@ class _MultiTextInput extends StatelessWidget {
             ),
           ),
         ),
+        const SizedBox(height: 8),
       ],
     );
   }

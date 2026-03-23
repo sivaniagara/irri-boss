@@ -10,12 +10,14 @@ class ControllerContextLoaded extends ControllerContextState{
   final String deviceId;
   final String userType;
   final String subUserId;
+  final int modelId; // 👈 Added modelId
   ControllerContextLoaded({
     required this.userId,
     required this.controllerId,
     required this.deviceId,
     required this.userType,
     required this.subUserId,
+    required this.modelId, // 👈 Added modelId
   });
 }
 
@@ -28,6 +30,7 @@ class ControllerContextCubit extends Cubit<ControllerContextState>{
     required String deviceId,
     required String userType,
     required String subUserId,
+    required int modelId, // 👈 Added modelId
   }){
     emit(
         ControllerContextLoaded(
@@ -36,9 +39,10 @@ class ControllerContextCubit extends Cubit<ControllerContextState>{
           deviceId: deviceId,
           userType: userType,
           subUserId: subUserId,
+          modelId: modelId, // 👈 Added modelId
         )
     );
-    print('ControllerContextLoaded updayed....');
+    print('ControllerContextLoaded updated....');
   }
 
   void toInitial(){
@@ -48,11 +52,10 @@ class ControllerContextCubit extends Cubit<ControllerContextState>{
   void updateController({
     required String controllerId,
     required String deviceId,
+    required int modelId, // 👈 Added modelId
   }) {
-    // print("controllerId ==> $controllerId");
     final currentState = state;
 
-    // ✅ SAFETY CHECK
     if (currentState is ControllerContextLoaded) {
       emit(
         ControllerContextLoaded(
@@ -61,6 +64,7 @@ class ControllerContextCubit extends Cubit<ControllerContextState>{
           userType: currentState.userType,
           subUserId: currentState.subUserId,
           deviceId: deviceId,
+          modelId: modelId, // 👈 Added modelId
         ),
       );
     }

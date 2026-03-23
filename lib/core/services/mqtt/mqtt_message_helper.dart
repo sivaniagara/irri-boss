@@ -8,6 +8,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../../../features/dashboard/data/models/live_message_model.dart';
 import '../../../features/dashboard/domain/entities/livemessage_entity.dart';
+import '../../../features/dashboard/presentation/helper/get_sms_sync.dart';
 
 class MqttMessageType {
   final String code;
@@ -306,7 +307,9 @@ class MqttMessageHelper {
       qrCode = (jsonObject['cC'] ?? '').toString().trim();
 
       if (kDebugMode) {
-        print('MQTT Message Received: Type=$typeStr Device=$qrCode');
+        print('--- MQTT PACKET RECEIVED ---');
+        print('Raw: $mqttMsg');
+        print('Type: $typeStr | Device: $qrCode');
       }
     } catch (e) {
       if (kDebugMode) debugPrint('MQTT JSON Parse Error: $e | Raw: $mqttMsg');
@@ -318,16 +321,19 @@ class MqttMessageHelper {
     final String ct = (jsonObject['cT'] ?? '').toString();
     String cl = (jsonObject['cL'] ?? '').toString();
 
+    if (kDebugMode) {
+      print('Extracted Data -> Date: $cd, Time: $ct');
+    }
+
     String trimmedMsg = msg.trim();
-    String msgCode = trimmedMsg.length > 2 ? trimmedMsg.substring(2) : '';
-    msgCode = msgCode.trim();
-    msgCode = msgCode.length >= 3 ? msgCode.substring(0, 3) : msgCode;
+    String msgCode = getMsgCode(trimmedMsg);
     String msgDesc = FaultSms.smsMessage(msgCode);
 
     final type = MqttMessageType.fromCode(typeStr);
 
     // ✅ UPDATE SERVER TIME FOR EVERY PACKET
     if (cd.isNotEmpty && ct.isNotEmpty) {
+      if (kDebugMode) print('Updating Server Time -> $cd $ct');
       dispatcher.onServerTimeUpdate(qrCode, date: cd, time: ct);
     }
 
@@ -345,14 +351,22 @@ class MqttMessageHelper {
         prefs.setString('LIVEMSG_$qrCode', '$trimmedMsg,$cd,$ct');
       });
 
-      // Update Dashboard with ALL fields from MQTT
+      if (kDebugMode) {
+        print('Dispatching Live Update: Date=$cd Time=$ct Msg=$trimmedMsg');
+      }
+
+      // Format the display message instead of using raw MQTT message
+      // Prefer 'cl' (Latest Message from MQTT) if available, otherwise format 'cM'
+      String formattedDisplayMsg = cl.isNotEmpty ? cl : getDisplayMessage(trimmedMsg);
+
+      // Update Dashboard with formatted fields
       dispatcher.onLiveUpdate(
           qrCode,
           liveModel,
           date: cd,
           time: ct,
           msgDesc: msgDesc,
-          fullMsg: trimmedMsg
+          fullMsg: formattedDisplayMsg
       );
     }
 
@@ -378,6 +392,12 @@ class MqttMessageHelper {
 
     if(type == MqttMessageType.sms) {
       dispatcher.onViewSettings(qrCode, jsonObject);
+      
+      // Also update Live Sync UI with timestamp from SMS packet if available
+      if (cd.isNotEmpty && ct.isNotEmpty) {
+        if (kDebugMode) print('SMS Packet Update -> Syncing time from SMS packet');
+        dispatcher.onServerTimeUpdate(qrCode, date: cd, time: ct);
+      }
     }
 
     String displayMsg = trimmedMsg.length > 6 ? trimmedMsg.substring(6) : trimmedMsg;
@@ -410,6 +430,12 @@ class MqttMessageHelper {
         'iot_channel_id', 'IoT Notifications',
         importance: Importance.high, priority: Priority.high, icon: '@mipmap/ic_launcher'
     );
-    await notifications.show(0, title, body, const NotificationDetails(android: androidDetails), payload: payload);
+    await notifications.show(
+      0,
+      title,
+      body,
+      const NotificationDetails(android: androidDetails),
+      payload: payload,
+    );
   }
 }

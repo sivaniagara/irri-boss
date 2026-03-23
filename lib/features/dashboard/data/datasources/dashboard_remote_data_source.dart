@@ -18,7 +18,7 @@ import '../../data/dashboard_data.dart';
 abstract class DashboardRemoteDataSource {
   Future<List<GroupDetailsEntity>> fetchDashboardGroups(int userId, GoRouterState routeState);
   Future<List<ControllerEntity>> fetchControllers(int userId, int groupId, GoRouterState routeState);
-  Future<void> motorOnOff({required int userId, required int controllerId, required String deviceId, required int subUserId, required String status, required bool dualPump,
+  Future<void> motorOnOff({required int userId, required int controllerId, required String deviceId, required int subUserId, required String status, required bool dualPump,required bool m1on,required bool m2on,required bool mOff,
   });
   Future<bool> changeFrom({
     required String userId,
@@ -97,11 +97,14 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
     required int subUserId,
     required String status,
     required String deviceId,
-     String? status2,
+    required bool m1on,
+    required bool m2on,
+    required bool mOff,
     required bool dualPump,
   }) async {
+    print("motor on off call");
     final motorSms = status == "1" ? "MOTORON" : "MTROF";
-    final motor2Sms = status2 == "1" ? "MOTOR1ON" : "MTROF";
+    final motor2Sms = status == "1" ?  m1on ? "MOTOR1ON"  : "MOTOR2ON" : "MTROF";
     final sendsmsName = dualPump ? motor2Sms : motorSms;
 
     final payload = {

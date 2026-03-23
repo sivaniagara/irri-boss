@@ -26,6 +26,7 @@ import 'features/controller_details/presentation/bloc/controller_details_bloc.da
 import 'features/controller_details/presentation/bloc/controller_details_bloc_event.dart';
 import 'features/controller_details/presentation/pages/controller_details_page.dart';
 import 'features/controller_settings/utils/controller_settings_routes.dart';
+import 'features/dashboard/domain/entities/controller_entity.dart';
 import 'features/dashboard/domain/entities/livemessage_entity.dart';
 import 'features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'features/dashboard/presentation/cubit/dashboard_page_cubit.dart';
@@ -183,7 +184,15 @@ class AppRouter {
         ),
         ShellRoute(
             builder: (context, state, child){
-              return DashboardPage(userData: {}, child: child,);
+              final authState = authBloc.state;
+              Map<String, dynamic> userData = {};
+              if (authState is Authenticated) {
+                userData = {
+                  'userId': authState.user.userDetails.id,
+                  'userType': authState.user.userDetails.userType,
+                };
+              }
+              return DashboardPage(userData: userData, child: child,);
             },
             routes: [
               GoRoute(
@@ -227,18 +236,18 @@ class AppRouter {
               GoRoute(
                   path: DashBoardRoutes.standalone,
                   builder: (context, state) {
-                    final params = state.extra as Map<String, dynamic>;
-                    final String userId = params["userId"].toString();
-                    final String controllerId = params["controllerId"].toString();
+                    final params = state.extra as Map<String, dynamic>? ?? {};
+                    final String userId = params["userId"]?.toString() ?? '';
+                    final String controllerId = params["controllerId"]?.toString() ?? '';
                     final String deviceId = params["deviceId"]?.toString() ?? '';
-                    final String subUserId = params["subUserId"].toString();
+                    final String subUserId = params["subUserId"]?.toString() ?? '0';
 
                     return BlocProvider.value(
                       value: di.sl<StandaloneBloc>(),
                       child: Builder(
                         builder: (context) {
                           final bloc = context.read<StandaloneBloc>();
-                          if (bloc.state is StandaloneInitial) {
+                          if (bloc.state is StandaloneInitial && userId.isNotEmpty) {
                             bloc.add(FetchStandaloneDataEvent(
                                 userId: userId,
                                 controllerId: controllerId,
@@ -277,6 +286,9 @@ class AppRouter {
                     );
                   },
               ),
+              ...pumpSettingsRoutes,
+              ...PowerGraphRoutes,
+              ...FaultMsgPagesRoutes,
             ]
         ),
         GoRoute(
@@ -313,13 +325,28 @@ class AppRouter {
             path: DashBoardRoutes.ctrlLivePage,
             builder: (context, state) {
               print('Building ctrlLivePage, AuthBloc state: ${sl.get<AuthBloc>().state}');
-              final selectedController = state.extra as LiveMessageEntity?;
+              
+              LiveMessageEntity? liveMessage;
+              String? deviceId;
+              
+              if (state.extra is ControllerEntity) {
+                final controller = state.extra as ControllerEntity;
+                liveMessage = controller.liveMessage;
+                deviceId = controller.deviceId;
+              } else if (state.extra is LiveMessageEntity) {
+                liveMessage = state.extra as LiveMessageEntity;
+              }
+
               return MultiBlocProvider(
                 providers: [
                   BlocProvider.value(value: sl.get<AuthBloc>()),
                   BlocProvider.value(value: sl.get<DashboardPageCubit>()),
                 ],
-                child: CtrlLivePage(selectedController: selectedController),
+                child: CtrlLivePage(
+                  selectedController: liveMessage, 
+                  deviceId: deviceId,
+                  lastSync: '',
+                ),
               );
             },
             routes: [
@@ -371,12 +398,9 @@ class AppRouter {
         ...DealerRoutes.dealerRoutes,
         ...serviceRequestRoutes,
         ...sideDrawerRoutes,
-        ...pumpSettingsRoutes,
         ...reportPageRoutes,
         ...sendRevPageRoutes,
-        ...FaultMsgPagesRoutes,
         ...voltGraphRoutes,
-        ...PowerGraphRoutes,
         ...ReportDownloadRoutes,
         ...MotorCyclicRoutes,
         ...ZoneDurationRoutes,

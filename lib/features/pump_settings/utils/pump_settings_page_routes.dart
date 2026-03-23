@@ -19,10 +19,11 @@ final pumpSettingsRoutes = <GoRoute>[
     builder: (context, state) {
       final params = state.extra as Map<String, dynamic>;
       return PumpSettingsMenuPage(
-        userId: int.parse(params['userId'].toString()),
-        subUserId: int.parse(params['subUserId'].toString()),
-        controllerId: int.parse(params['controllerId'].toString()),
-        deviceId: params['deviceId'].toString(),
+        userId: int.parse(params['userId']?.toString() ?? '0'),
+        subUserId: int.parse(params['subUserId']?.toString() ?? '0'),
+        controllerId: int.parse(params['controllerId']?.toString() ?? '0'),
+        deviceId: params['deviceId']?.toString() ?? '',
+        modelId: int.parse(params['modelId']?.toString() ?? '0'),
       );
     },
   ),
@@ -33,12 +34,13 @@ final pumpSettingsRoutes = <GoRoute>[
       final params = state.extra as Map<String, dynamic>;
 
       return PumpSettingsPage(
-        menuId: int.parse(params['menuId'].toString()),
-        userId: int.parse(params['userId'].toString()),
-        subUserId: int.parse(params['subUserId'].toString()),
-        controllerId: int.parse(params['controllerId'].toString()),
+        menuId: int.parse(params['menuId']?.toString() ?? '0'),
+        userId: int.parse(params['userId']?.toString() ?? '0'),
+        subUserId: int.parse(params['subUserId']?.toString() ?? '0'),
+        controllerId: int.parse(params['controllerId']?.toString() ?? '0'),
         menuName: params['menuName']?.toString(),
-        deviceId: params['deviceId'].toString(),
+        deviceId: params['deviceId']?.toString() ?? '',
+        modelId: int.parse(params['modelId']?.toString() ?? '0'),
       );
     }
   ),
@@ -48,9 +50,9 @@ final pumpSettingsRoutes = <GoRoute>[
       builder: (context, state) {
         final params = state.extra as Map<String, dynamic>;
         return NotificationsPage(
-          userId: int.parse(params['userId'].toString()),
-          subUserId: int.parse(params['subUserId'].toString()),
-          controllerId: int.parse(params['controllerId'].toString()),
+          userId: int.parse(params['userId']?.toString() ?? '0'),
+          subUserId: int.parse(params['subUserId']?.toString() ?? '0'),
+          controllerId: int.parse(params['controllerId']?.toString() ?? '0'),
         );
       }
   ),
@@ -60,10 +62,10 @@ final pumpSettingsRoutes = <GoRoute>[
       builder: (context, state) {
         final params = state.extra as Map<String, dynamic>;
         return ViewPumpSettingsPage(
-          deviceId: params['deviceId'].toString(),
-          userId: int.parse(params['userId'].toString()),
-          subuserId: int.parse(params['subUserId'].toString()),
-          controllerId: int.parse(params['controllerId'].toString()),
+          deviceId: params['deviceId']?.toString() ?? '',
+          userId: int.parse(params['userId']?.toString() ?? '0'),
+          subuserId: int.parse(params['subUserId']?.toString() ?? '0'),
+          controllerId: int.parse(params['controllerId']?.toString() ?? '0'),
         );
       }
   ),

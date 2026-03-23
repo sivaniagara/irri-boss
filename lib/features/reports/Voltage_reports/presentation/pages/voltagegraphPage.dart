@@ -1,12 +1,7 @@
-
-
-
 import 'dart:math';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../../core/theme/app_gradients.dart';
 import '../../../../../core/utils/common_date_picker.dart';
 import '../../../../../core/widgets/glassy_wrapper.dart';
 import '../../../../../core/widgets/no_data.dart';
@@ -45,37 +40,35 @@ class _VoltageGraphPageState extends State<VoltageGraphPage> {
     return GlassyWrapper(
       child: Scaffold(
         appBar: _appBar(context),
-        body: Container(
-          child: BlocBuilder<VoltageGraphBloc, VoltageGraphState>(
-            builder: (context, state) {
-              if (state is VoltageGraphLoading) {
-                return const Center(child: CircularProgressIndicator());
-              }
+        body: BlocBuilder<VoltageGraphBloc, VoltageGraphState>(
+          builder: (context, state) {
+            if (state is VoltageGraphLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-              if (state is VoltageGraphError) {
-                return Center(child: Text(state.message, style: const TextStyle(color: Colors.black)));
-              }
+            if (state is VoltageGraphError) {
+              return Center(child: Text(state.message, style: const TextStyle(color: Colors.black)));
+            }
 
-              if (state is VoltageGraphLoaded) {
-                final data = state.data.data;
+            if (state is VoltageGraphLoaded) {
+              final data = state.data.data;
 
-                if (data.isEmpty) return noDataNew;
+              if (data.isEmpty) return noDataNew;
 
-                return ListView(
-                  padding: const EdgeInsets.all(8),
-                  children: [
-                    _graphCard(data),
-                    const SizedBox(height: 12),
-                    _totalPowerCard(data.last.totalPowerOnTime ?? "0:00"),
-                    const SizedBox(height: 12),
-                    ...data.map((e) => _dataCard(e)).toList(),
-                  ],
-                );
-              }
+              return ListView(
+                padding: const EdgeInsets.all(8),
+                children: [
+                  _graphCard(data),
+                  const SizedBox(height: 12),
+                  _totalPowerCard(data.last.totalPowerOnTime ?? "0:00"),
+                  const SizedBox(height: 12),
+                  ...data.map((e) => dataCard(e)),
+                ],
+              );
+            }
 
-              return noDataNew;
-            },
-          ),
+            return noDataNew;
+          },
         ),
       ),
     );
@@ -87,8 +80,6 @@ class _VoltageGraphPageState extends State<VoltageGraphPage> {
     const Color yColor = Color(0xFFDAB222);
     const Color bColor = Color(0xFF3B83C5);
     final maxYValue = _getMaxVoltage(data);
-
-
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -109,7 +100,10 @@ class _VoltageGraphPageState extends State<VoltageGraphPage> {
                   ],
                 ),
                 TextButton.icon(
-                  onPressed: () => setState(() { _minX = 0; _maxX = 10; }),
+                  onPressed: () => setState(() {
+                    _minX = 0;
+                    _maxX = 10;
+                  }),
                   icon: const Icon(Icons.zoom_out_map, size: 16),
                   label: const Text("Zoom Reset", style: TextStyle(fontSize: 12)),
                 )
@@ -132,8 +126,14 @@ class _VoltageGraphPageState extends State<VoltageGraphPage> {
 
                   // --- BOUNDARY CHECKS ---
                   if (_maxX - _minX < 3) _maxX = _minX + 3; // Max zoom in
-                  if (_minX < 0) { _maxX -= _minX; _minX = 0; }
-                  if (_maxX > data.length) { _minX -= (_maxX - data.length); _maxX = data.length.toDouble(); }
+                  if (_minX < 0) {
+                    _maxX -= _minX;
+                    _minX = 0;
+                  }
+                  if (_maxX > data.length) {
+                    _minX -= (_maxX - data.length);
+                    _maxX = data.length.toDouble();
+                  }
                 });
               },
               child: SizedBox(
@@ -147,8 +147,7 @@ class _VoltageGraphPageState extends State<VoltageGraphPage> {
                     lineTouchData: LineTouchData(
                       handleBuiltInTouches: true,
                       touchTooltipData: LineTouchTooltipData(
-                        getTooltipColor: (touchedSpot) => Color(0xFF8AC7FF),
-                        tooltipRoundedRadius: 8,
+                        getTooltipColor: (touchedSpot) => const Color(0xFF8AC7FF).withValues(alpha: 0.8),
                         maxContentWidth: 120,
                         getTooltipItems: (List<LineBarSpot> touchedSpots) {
                           return touchedSpots.map((LineBarSpot touchedSpot) {
@@ -157,7 +156,7 @@ class _VoltageGraphPageState extends State<VoltageGraphPage> {
                             final bool isFirstBar = touchedSpots.indexOf(touchedSpot) == 0;
 
                             return LineTooltipItem(
-                               '${isFirstBar ? 'Time:$time\n' : ''}${touchedSpot.y.toStringAsFixed(1)} V',
+                              '${isFirstBar ? 'Time:$time\n' : ''}${touchedSpot.y.toStringAsFixed(1)} V',
                               TextStyle(
                                 color: touchedSpot.bar.color ?? Colors.black,
                                 fontWeight: FontWeight.bold,
@@ -172,8 +171,8 @@ class _VoltageGraphPageState extends State<VoltageGraphPage> {
                     gridData: FlGridData(
                       show: true,
                       drawVerticalLine: true,
-                      getDrawingHorizontalLine: (_) => FlLine(color: Colors.black12, strokeWidth: 1),
-                      getDrawingVerticalLine: (_) => FlLine(color: Colors.black12, strokeWidth: 1),
+                      getDrawingHorizontalLine: (_) => const FlLine(color: Colors.black12, strokeWidth: 1),
+                      getDrawingVerticalLine: (_) => const FlLine(color: Colors.black12, strokeWidth: 1),
                     ),
                     titlesData: FlTitlesData(
                       topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -201,7 +200,6 @@ class _VoltageGraphPageState extends State<VoltageGraphPage> {
                       _line(data, (d) => double.tryParse(d.b.toString()) ?? 0, bColor),
                     ],
                   ),
-
                 ),
               ),
             ),
@@ -209,9 +207,7 @@ class _VoltageGraphPageState extends State<VoltageGraphPage> {
         ),
       ),
     );
-
   }
-
 
   LineChartBarData _line(List data, double Function(dynamic) getY, Color color) {
     return LineChartBarData(
@@ -237,12 +233,12 @@ class _VoltageGraphPageState extends State<VoltageGraphPage> {
               final result = await pickReportDate(context: context, allowRange: false);
               if (result != null && mounted) {
                 context.read<VoltageGraphBloc>().add(FetchVoltageGraphEvent(
-                  userId: widget.userId,
-                  subuserId: widget.subuserId,
-                  controllerId: widget.controllerId,
-                  fromDate: result.fromDate,
-                  toDate: result.toDate,
-                ));
+                      userId: widget.userId,
+                      subuserId: widget.subuserId,
+                      controllerId: widget.controllerId,
+                      fromDate: result.fromDate,
+                      toDate: result.toDate,
+                    ));
               }
             },
             avatar: const Icon(Icons.calendar_today, size: 16),
@@ -262,110 +258,157 @@ class _VoltageGraphPageState extends State<VoltageGraphPage> {
     );
   }
 
-
-  Widget _dataCard(dynamic e) {
-    return Row(
-      children: [
-        _timeBox(e.time),
-        Expanded(
-          child: Container(
-            margin: const EdgeInsets.symmetric(vertical: 6),
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: const Color(0xFFEFEFEF),
-              borderRadius: const BorderRadius.only(
-                topRight: Radius.circular(16),
-                bottomRight: Radius.circular(16),
+  Widget dataCard(dynamic e) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.2),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          )
+        ],
+      ),
+      child: Row(
+        children: [
+          timeBox(e.time),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                children: [
+                  phaseCard(
+                    color: const Color(0xffE53935),
+                    r: e.r,
+                    ry: e.ry,
+                    c: e.c1,
+                  ),
+                  phaseCard(
+                    color: const Color(0xffD4A017),
+                    r: e.y,
+                    ry: e.ry,
+                    c: e.c1,
+                  ),
+                  phaseCard(
+                    color: const Color(0xff3B82C4),
+                    r: e.b,
+                    ry: e.ry,
+                    c: e.c1,
+                  ),
+                  wellLevelCard(e.wellPercentage, e.wellLevel),
+                ],
               ),
             ),
-            child: Row(
-              children: [
-                const SizedBox(width: 8),
-
-                _phasePill(
-                  title: 'R Phase',
-                  value: '${e.r} V',
-                  color: const Color(0xFFE21E11),
-                ),
-                _phasePill(
-                  title: 'Y Phase',
-                  value: '${e.y} V',
-                  color: const Color(0xFFDAB222),
-                ),
-                _phasePill(
-                  title: 'B Phase',
-                  value: '${e.b} V',
-                  color: const Color(0xFF3B83C5),
-                ),
-                _phasePill(
-                  title: 'Well Level',
-                  value: '${e.wellPercentage}%',
-                  color: const Color(0xFF8AC7FF),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
+          )
+        ],
+      ),
     );
   }
 
-  Widget _timeBox(String time) {
+  Widget phaseCard({
+    required Color color,
+    required dynamic r,
+    required dynamic ry,
+    required dynamic c,
+  }) {
+    return Expanded(
+      child: Container(
+        height: 80,
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text("R $r V", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 12)),
+            Padding(
+              padding: const EdgeInsets.only(left: 10, right: 10, top: 2, bottom: 2),
+              child: Container(
+                color: Colors.white,
+                height: 0.5,
+              ),
+            ),
+            Text("RY $ry V", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 12)),
+            Padding(
+              padding: const EdgeInsets.only(left: 10, right: 10, top: 2, bottom: 2),
+              child: Container(
+                color: Colors.white,
+                height: 0.5,
+              ),
+            ),
+            Text("C1 $c A", style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget wellLevelCard(String percentage, String feet) {
     return Container(
       width: 70,
-      height: 68,
-      alignment: Alignment.center,
+      height: 80,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
-        color: const Color(0xFFDCEEFF),
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(12),
-          bottomLeft: Radius.circular(12),
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xffA8D4FF),
+            Color(0xff4A90E2),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text(
+            "Well Level",
+            style: TextStyle(color: Colors.white, fontSize: 11),
+          ),
+          Text(
+            feet,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            "$percentage%",
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget timeBox(String time) {
+    return Container(
+      width: 70,
+      height: 100,
+      alignment: Alignment.center,
+      decoration: const BoxDecoration(
+        color: Color(0xffBFD1E5),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          bottomLeft: Radius.circular(16),
         ),
       ),
       child: Text(
         time,
         style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: Color(0xFF1A73E8),
-        ),
-      ),
-    );
-  }
-
-  Widget _phasePill({
-    required String title,
-    required String value,
-    required Color color,
-  }) {
-    return Expanded(
-      child: Container(
-        height: 56,
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 11,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ],
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.blue,
         ),
       ),
     );

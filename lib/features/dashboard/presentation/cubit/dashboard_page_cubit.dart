@@ -79,10 +79,10 @@ class DashboardGroupsLoaded extends DashboardState {
 class DashboardError extends DashboardState {
   final String message;
 
-  DashboardError({required this.message});
-
   @override
   List<Object?> get props => [message];
+
+  DashboardError({required this.message});
 }
 
 class DashboardPageCubit extends Cubit<DashboardState> {
@@ -91,9 +91,9 @@ class DashboardPageCubit extends Cubit<DashboardState> {
   final UpdateChangeFromUsecase updateChangeFromUsecase;
   final ControlMotorUsecase controlMotorUsecase;
 
-  /// TIMER VARIABLES
-  Timer? _zoneTimer;
-  int _remainingSeconds = 0;
+  /// TIMER VARIABLES - Now per device
+  final Map<String, Timer> _deviceTimers = {};
+  final Map<String, int> _deviceRemainingSeconds = {};
 
   DashboardPageCubit({
     required this.fetchDashboardGroups,
@@ -107,6 +107,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
   int _timeToSeconds(String time) {
     try {
       final parts = time.split(':');
+      if (parts.length < 3) return 0;
       final h = int.parse(parts[0]);
       final m = int.parse(parts[1]);
       final s = int.parse(parts[2]);
@@ -117,36 +118,78 @@ class DashboardPageCubit extends Cubit<DashboardState> {
   }
 
   String _secondsToTime(int seconds) {
+    if (seconds < 0) seconds = 0;
     final h = (seconds ~/ 3600).toString().padLeft(2, '0');
     final m = ((seconds % 3600) ~/ 60).toString().padLeft(2, '0');
     final s = (seconds % 60).toString().padLeft(2, '0');
     return "$h:$m:$s";
   }
 
-  void _startZoneTimer(String deviceId, LiveMessageEntity liveMessage) {
-    _zoneTimer?.cancel();
-
+  void _manageZoneTimer(String deviceId, LiveMessageEntity liveMessage) {
+    // If motor is OFF, stop any existing timer for this device
     if (liveMessage.motorOnOff == '0') {
-      _remainingSeconds = 0;
+      _deviceTimers[deviceId]?.cancel();
+      _deviceTimers.remove(deviceId);
+      _deviceRemainingSeconds.remove(deviceId);
       return;
     }
 
-    _remainingSeconds = _timeToSeconds(liveMessage.zoneRemainingTime);
+    // If motor is ON
+    int newRemaining = _timeToSeconds(liveMessage.zoneRemainingTime);
+    
+    // Check if we should update/start timer
+    // We update if no timer exists OR if the hardware time drifted by more than 5 seconds
+    int? currentRemaining = _deviceRemainingSeconds[deviceId];
+    bool shouldReset = _deviceTimers[deviceId] == null || 
+                      (currentRemaining != null && (newRemaining - currentRemaining).abs() > 5);
 
-    _zoneTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_remainingSeconds <= 0) {
-        timer.cancel();
-        return;
+    if (shouldReset && newRemaining > 0) {
+      _deviceTimers[deviceId]?.cancel();
+      _deviceRemainingSeconds[deviceId] = newRemaining;
+      
+      _deviceTimers[deviceId] = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (_deviceRemainingSeconds[deviceId] == null || _deviceRemainingSeconds[deviceId]! <= 0) {
+          timer.cancel();
+          _deviceTimers.remove(deviceId);
+          return;
+        }
+
+        _deviceRemainingSeconds[deviceId] = _deviceRemainingSeconds[deviceId]! - 1;
+
+        // Update state with decremented time
+        _updateSingleDeviceState(deviceId, (ctrl) {
+          final model = ctrl as ControllerModel;
+          return model.copyWith(
+            liveMessage: model.liveMessage.copyWith(
+              zoneRemainingTime: _secondsToTime(_deviceRemainingSeconds[deviceId]!),
+            ),
+          );
+        });
+      });
+    }
+  }
+
+  /// Helper to update a single device in the complex groupControllers map
+  void _updateSingleDeviceState(String deviceId, ControllerEntity Function(ControllerEntity) updateFn) {
+    if (state is! DashboardGroupsLoaded) return;
+    final currentState = state as DashboardGroupsLoaded;
+    
+    final updatedGroupControllers = Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
+    bool anyUpdated = false;
+
+    updatedGroupControllers.forEach((groupId, controllers) {
+      final index = controllers.indexWhere((c) => c.deviceId == deviceId);
+      if (index != -1) {
+        final newList = List<ControllerEntity>.from(controllers);
+        newList[index] = updateFn(controllers[index]);
+        updatedGroupControllers[groupId] = newList;
+        anyUpdated = true;
       }
-
-      _remainingSeconds--;
-
-      final updatedLive = liveMessage.copyWith(
-        zoneRemainingTime: _secondsToTime(_remainingSeconds),
-      );
-
-      updateLiveMessage(deviceId, updatedLive);
     });
+
+    if (anyUpdated) {
+      emit(currentState.copyWith(groupControllers: updatedGroupControllers));
+    }
   }
 
   /// -------------------------------------------------
@@ -309,127 +352,49 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       {String? date, String? time, String? fullMsg, String? msgDesc}) {
     if (state is! DashboardGroupsLoaded) return;
 
-    /// START OR STOP TIMER
-    if (liveMessage.motorOnOff == '1' && liveMessage.zoneRemainingTime.isNotEmpty) {
-      _startZoneTimer(deviceId, liveMessage);
-    } else if (liveMessage.motorOnOff == '0') {
-      _zoneTimer?.cancel();
+    // Manage Timer independently from state update to avoid recursion loop
+    _manageZoneTimer(deviceId, liveMessage);
+    
+    // If motor is off, ensure display is 0
+    if (liveMessage.motorOnOff == '0') {
       liveMessage = liveMessage.copyWith(zoneRemainingTime: "00:00:00");
     }
 
-    final currentState = state as DashboardGroupsLoaded;
-    final updatedGroupControllers =
-        Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
-    bool updated = false;
-
-    for (final entry in updatedGroupControllers.entries) {
-      final groupId = entry.key;
-      final controllers = entry.value;
-      final updatedControllersList = <ControllerEntity>[];
-
-      bool groupUpdated = false;
-
-      for (final ctrl in controllers) {
-        if (ctrl.deviceId == deviceId) {
-          final model = ctrl as ControllerModel;
-          final updatedCtrl = model.copyWith(
-              liveMessage: liveMessage,
-              livesyncDate: date,
-              livesyncTime: time,
-              ctrlLatestMsg: fullMsg,
-              msgDesc: msgDesc);
-          updatedControllersList.add(updatedCtrl);
-          groupUpdated = true;
-          updated = true;
-        } else {
-          updatedControllersList.add(ctrl);
-        }
-      }
-
-      if (groupUpdated) {
-        updatedGroupControllers[groupId] = updatedControllersList;
-      }
-    }
-
-    if (updated) {
-      emit(currentState.copyWith(groupControllers: updatedGroupControllers));
-    }
+    _updateSingleDeviceState(deviceId, (ctrl) {
+      final model = ctrl as ControllerModel;
+      return model.copyWith(
+          liveMessage: liveMessage,
+          livesyncDate: date,
+          livesyncTime: time,
+          );
+    });
   }
 
-  void updateControllerMessage(String deviceId,
-      {String? fullMsg, String? msgDesc}) {
-    if (state is! DashboardGroupsLoaded) return;
-
-    final currentState = state as DashboardGroupsLoaded;
-    final updatedGroupControllers =
-        Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
-    bool updated = false;
-
-    for (final entry in updatedGroupControllers.entries) {
-      final groupId = entry.key;
-      final controllers = entry.value;
-      final updatedControllersList = <ControllerEntity>[];
-
-      bool groupUpdated = false;
-
-      for (final ctrl in controllers) {
-        if (ctrl.deviceId == deviceId) {
-          final model = ctrl as ControllerModel;
-          final updatedCtrl =
-              model.copyWith(ctrlLatestMsg: fullMsg, msgDesc: msgDesc);
-          updatedControllersList.add(updatedCtrl);
-          groupUpdated = true;
-          updated = true;
-        } else {
-          updatedControllersList.add(ctrl);
-        }
-      }
-
-      if (groupUpdated) {
-        updatedGroupControllers[groupId] = updatedControllersList;
-      }
-    }
-
-    if (updated) {
-      emit(currentState.copyWith(groupControllers: updatedGroupControllers));
-    }
-  }
 
   void updateServerTime(String deviceId, {String? date, String? time}) {
     if (state is! DashboardGroupsLoaded) return;
-
     final currentState = state as DashboardGroupsLoaded;
-    final updatedGroupControllers =
-        Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
+
+    final newGroupControllers =
+    Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
+
     bool updated = false;
 
-    for (final entry in updatedGroupControllers.entries) {
-      final groupId = entry.key;
-      final controllers = entry.value;
-      final updatedControllersList = <ControllerEntity>[];
-
-      bool groupUpdated = false;
-
-      for (final ctrl in controllers) {
-        if (ctrl.deviceId == deviceId) {
-          final model = ctrl as ControllerModel;
-          final updatedCtrl =
-              model.copyWith(livesyncDate: date, livesyncTime: time);
-          updatedControllersList.add(updatedCtrl);
-          groupUpdated = true;
-          updated = true;
-        } else {
-          updatedControllersList.add(ctrl);
-        }
+    newGroupControllers.forEach((groupId, controllers) {
+      final index = controllers.indexWhere((c) => c.deviceId == deviceId);
+      if (index != -1) {
+        final List<ControllerEntity> updatedList = List.from(controllers);
+        updatedList[index] = updatedList[index].copyWith(
+          livesyncDate: date,
+          livesyncTime: time,
+        );
+        newGroupControllers[groupId] = updatedList;
+        updated = true;
       }
+    });
 
-      if (groupUpdated) {
-        updatedGroupControllers[groupId] = updatedControllersList;
-      }
-    }
-
-    if (updated) {
-      emit(currentState.copyWith(groupControllers: updatedGroupControllers));
+    if (updated && !isClosed) {
+      emit(currentState.copyWith(groupControllers: newGroupControllers));
     }
   }
 
@@ -457,8 +422,10 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       (failure) => emit(currentState.copyWith(
           changeFromStatus: ChangeFromStatus.failure,
           errorMsg: failure.message)),
-      (_) => emit(
-          currentState.copyWith(changeFromStatus: ChangeFromStatus.success)),
+      (_) {
+        sl<MqttManager>().publish(deviceId, PublishMessageHelper.settingsPayload(payload));
+        emit(currentState.copyWith(changeFromStatus: ChangeFromStatus.success));
+      },
     );
   }
 
@@ -474,26 +441,76 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
     emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.loading));
 
-    final result = await controlMotorUsecase(ControlMotorParams(
-      userId: userId,
-      controllerId: controllerId,
-      programId: programId,
-      deviceId: deviceId,
-      payload: payload,
-    ));
+    final cleanPayload = payload.replaceAll(",", "");
 
-    result.fold(
-      (failure) => emit(currentState.copyWith(
-          controlMotorStatus: ControlMotorStatus.failure,
-          errorMsg: failure.message)),
-      (_) => emit(currentState.copyWith(
-          controlMotorStatus: ControlMotorStatus.success)),
-    );
+    if (cleanPayload.toUpperCase().contains("ON")) {
+      // Step 1: Send MTROF to API
+      await controlMotorUsecase(ControlMotorParams(
+        userId: userId,
+        controllerId: controllerId,
+        programId: programId,
+        deviceId: deviceId,
+        payload: "MTROF,",
+      ));
+      
+      // Publish MTROF to MQTT
+      sl<MqttManager>().publish(deviceId, PublishMessageHelper.settingsPayload("MTROF"));
+          
+      // Step 2: Wait for 5 seconds
+      await Future.delayed(const Duration(seconds: 5));
+
+      // Step 3: Send the original command (MTRON) to API
+      final onResult = await controlMotorUsecase(ControlMotorParams(
+        userId: userId,
+        controllerId: controllerId,
+        programId: programId,
+        deviceId: deviceId,
+        payload: payload,
+      ));
+
+      onResult.fold(
+        (failure) => emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.failure, errorMsg: failure.message)),
+        (_) {
+          // Publish original payload (MTRON) to MQTT
+          sl<MqttManager>().publish(deviceId, PublishMessageHelper.settingsPayload(cleanPayload));
+          emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.success));
+        },
+      );
+    } else {
+      // For OFF command (MTROF), send once to API and MQTT
+      final result = await controlMotorUsecase(ControlMotorParams(
+        userId: userId,
+        controllerId: controllerId,
+        programId: programId,
+        deviceId: deviceId,
+        payload: payload,
+      ));
+
+      result.fold(
+        (failure) => emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.failure, errorMsg: failure.message)),
+        (_) {
+          sl<MqttManager>().publish(deviceId, PublishMessageHelper.settingsPayload(cleanPayload));
+          emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.success));
+        },
+      );
+    }
+  }
+
+  void resetControlStatus() {
+    if (state is DashboardGroupsLoaded) {
+      final currentState = state as DashboardGroupsLoaded;
+      emit(currentState.copyWith(
+        controlMotorStatus: ControlMotorStatus.initial,
+        changeFromStatus: ChangeFromStatus.initial,
+      ));
+    }
   }
 
   @override
   Future<void> close() {
-    _zoneTimer?.cancel();
+    for (final t in _deviceTimers.values) {
+      t.cancel();
+    }
     return super.close();
   }
 }

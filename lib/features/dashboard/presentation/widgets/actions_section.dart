@@ -28,7 +28,10 @@ class ActionsSection extends StatelessWidget {
               icon: Icons.settings,
               title: "Pump\nSettings",
               onTap: () {
-                dialogContext.push(PumpSettingsPageRoutes.pumpSettingMenuList, extra: data);
+                // Include modelId in the data map
+                final navigationData = Map<String, dynamic>.from(data);
+                navigationData['modelId'] = model;
+                dialogContext.push(PumpSettingsPageRoutes.pumpSettingMenuList, extra: navigationData);
               },
             ),
           ),
@@ -88,7 +91,9 @@ class ActionsSection extends StatelessWidget {
               icon: Icons.settings,
               title: "Pump\nSettings",
               onTap: () {
-                dialogContext.push(PumpSettingsPageRoutes.pumpSettingMenuList, extra: data);
+                final navigationData = Map<String, dynamic>.from(data);
+                navigationData['modelId'] = model;
+                dialogContext.push(PumpSettingsPageRoutes.pumpSettingMenuList, extra: navigationData);
               },
             ),
           ),
@@ -205,5 +210,3 @@ class MenuButton extends StatelessWidget {
     );
   }
 }
-
-
