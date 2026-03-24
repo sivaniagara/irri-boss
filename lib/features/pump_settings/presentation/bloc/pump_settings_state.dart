@@ -53,11 +53,13 @@ class GetPumpSettingsLoaded extends PumpSettingsState {
   @override List<Object?> get props => [settings, version, lastReceivedViewMessage];
 
   GetPumpSettingsLoaded copyWith({
+    MenuItemEntity? settings,
+    int? version,
     String? lastReceivedViewMessage,
   }) {
     return GetPumpSettingsLoaded(
-      settings: settings,
-      version: version,
+      settings: settings ?? this.settings,
+      version: version ?? this.version,
       lastReceivedViewMessage: lastReceivedViewMessage ?? this.lastReceivedViewMessage,
     );
   }

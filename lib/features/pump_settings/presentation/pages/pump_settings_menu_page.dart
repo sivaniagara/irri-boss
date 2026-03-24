@@ -97,9 +97,9 @@ class PumpSettingsMenuPage extends StatelessWidget {
           ),
         ),
       ),
-      actions: [
+      actionsBuilder: (dialogContext) => [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(dialogContext),
           child: const Text("Cancel"),
         ),
       ],

@@ -156,8 +156,8 @@ class CustomCountryPicker {
                             child: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 4.0),
                               child: ActionButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: Text('Cancel')
+                                onPressed: () => Navigator.pop(dialogContext),
+                                child: const Text('Cancel'),
                               ),
                             ),
                           ),

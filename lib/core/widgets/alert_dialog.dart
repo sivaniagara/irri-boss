@@ -22,15 +22,21 @@ class GlassyAlertDialog extends StatelessWidget {
     required String title,
     Widget? content,
     List<Widget> actions = const [],
+    List<Widget> Function(BuildContext dialogContext)? actionsBuilder,
     bool barrierDismissible = true,
   }) {
+    assert(
+      actionsBuilder == null || actions.isEmpty,
+      'Use either actions or actionsBuilder, not both.',
+    );
+
     return showDialog<T>(
       context: context,
       barrierDismissible: barrierDismissible,
       builder: (BuildContext dialogContext) => GlassyAlertDialog(
         title: title,
         content: content,
-        actions: actions,
+        actions: actionsBuilder?.call(dialogContext) ?? actions,
         barrierDismissible: barrierDismissible,
       ),
     );
