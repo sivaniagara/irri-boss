@@ -10,12 +10,14 @@ import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/leaf_box.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/retry.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/time_picker_service.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/menu_item_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/setting_widget_type.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/cubit/pump_settings_cubit.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/widgets/setting_list_tile.dart';
 
 import '../../../../core/di/injection.dart' as di;
+import '../../../../core/utils/app_constants.dart';
 import '../../../../core/widgets/custom_switch.dart';
 import '../../../edit_program/presentation/widgets/custom_card.dart';
 import '../../../sendrev_msg/utils/senrev_routes.dart';
@@ -269,6 +271,7 @@ class _SettingsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -276,6 +279,11 @@ class _SettingsList extends StatelessWidget {
       itemBuilder: (context, sectionIndex) {
         final section = menu.template.sections[sectionIndex];
         if (section.settings.every((e) => e.hiddenFlag == "0")) return const SizedBox();
+
+        print("section.sectionName : ${section.sectionName}");
+        if(AppConstants.isPumpLive(controllerContext.modelId) && section.sectionName == 'Dry Run Restart Timer'){
+          return SizedBox();
+        }
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           child: Column(
@@ -300,6 +308,10 @@ class _SettingsList extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   itemBuilder: (BuildContext context, int index) {
                     if (section.settings[index].hiddenFlag == "0") return const SizedBox();
+                    print("section.settings[index].title : ${section.settings[index].title}   ${index}   ${section.sectionName}");
+                    if(AppConstants.isPumpLive(controllerContext.modelId) && section.sectionName == 'Cyclic Timer Settings' && [2,3].contains(index)){
+                      return SizedBox();
+                    }
                     return _SettingRow(
                       menuItemEntity: menu,
                       sectionIndex: sectionIndex,
@@ -617,35 +629,36 @@ class _MultiTimeInput extends StatelessWidget {
   Widget build(BuildContext context) {
     final titles = setting.title.split(';').map((e) => e.trim()).toList();
     final values = setting.value.split(';').map((e) => e.trim()).toList();
-
     return Column(
       children: List.generate(
         titles.length,
-        (i) => SettingListTile(
-          title: titles[i],
-          trailing: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            child: Text(
-              i < values.length && values[i].isNotEmpty ? values[i] : "00:00",
-              style: const TextStyle(fontWeight: FontWeight.bold),
+        (i) {
+          return SettingListTile(
+            title: titles[i],
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              child: Text(
+                i < values.length && values[i].isNotEmpty ? values[i] : "00:00",
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
-          ),
-          onTap: () async {
-            final newTime = await TimePickerService.show(
-              context: context,
-              title: titles[i],
-              initialTime: i < values.length ? values[i] : "00:00",
-            );
-            if (newTime != null) {
-              final newValues = List<String>.from(values);
-              while (newValues.length <= i) {
-                newValues.add("");
+            onTap: () async {
+              final newTime = await TimePickerService.show(
+                context: context,
+                title: titles[i],
+                initialTime: i < values.length ? values[i] : "00:00",
+              );
+              if (newTime != null) {
+                final newValues = List<String>.from(values);
+                while (newValues.length <= i) {
+                  newValues.add("");
+                }
+                newValues[i] = newTime;
+                onChanged(newValues.join(';'));
               }
-              newValues[i] = newTime;
-              onChanged(newValues.join(';'));
-            }
-          },
-        ),
+            },
+          );
+        },
       ),
     );
   }
