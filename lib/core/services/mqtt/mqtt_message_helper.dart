@@ -392,7 +392,7 @@ class MqttMessageHelper {
 
     if(type == MqttMessageType.sms) {
       dispatcher.onViewSettings(qrCode, jsonObject);
-      
+
       // Also update Live Sync UI with timestamp from SMS packet if available
       if (cd.isNotEmpty && ct.isNotEmpty) {
         if (kDebugMode) print('SMS Packet Update -> Syncing time from SMS packet');
@@ -431,10 +431,10 @@ class MqttMessageHelper {
         importance: Importance.high, priority: Priority.high, icon: '@mipmap/ic_launcher'
     );
     await notifications.show(
-      0,
-      title,
-      body,
-      const NotificationDetails(android: androidDetails),
+      id: 0,
+      title: title,
+      body: body,
+      notificationDetails: const NotificationDetails(android: androidDetails),
       payload: payload,
     );
   }
