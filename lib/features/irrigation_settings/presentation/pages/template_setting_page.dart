@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/custom_material_button.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/gradiant_background.dart';
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/widgets/setting_row.dart';
 
@@ -9,6 +10,7 @@ import '../../../../core/services/time_picker_service.dart';
 import '../../../../core/widgets/alert_dialog.dart';
 import '../../../../core/widgets/app_alerts.dart';
 import '../../../../core/widgets/tiny_text_form_field.dart';
+import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../domain/entities/common_setting_group_entity.dart';
 import '../../domain/entities/common_setting_item_entity.dart';
 import '../bloc/template_irrigation_settings_bloc.dart';
@@ -16,7 +18,8 @@ import '../enums/update_template_setting_status.dart';
 
 class TemplateSettingPage extends StatelessWidget {
   final String appBarTitle;
-  const TemplateSettingPage({super.key, required this.appBarTitle});
+  final String settingNo;
+  const TemplateSettingPage({super.key, required this.appBarTitle, required this.settingNo});
 
   @override
   Widget build(BuildContext context) {
@@ -318,7 +321,23 @@ class TemplateSettingPage extends StatelessWidget {
                 ),
               );
             }else{
-              return const Placeholder();
+              return Center(
+                child: CustomMaterialButton(
+                    onPressed: (){
+                      final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+                      context.read<TemplateIrrigationSettingsBloc>().add(
+                          FetchTemplateSettingEvent(
+                              userId: controllerContext.userId,
+                              controllerId: controllerContext.controllerId,
+                              subUserId: controllerContext.subUserId,
+                              settingNo: settingNo,
+                              deviceId: controllerContext.deviceId
+                          )
+                      );
+                    },
+                    title: 'Retry'
+                ),
+              );
             }
 
           },

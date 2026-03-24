@@ -431,10 +431,10 @@ class MqttMessageHelper {
         importance: Importance.high, priority: Priority.high, icon: '@mipmap/ic_launcher'
     );
     await notifications.show(
-      id: 0,
-      title: title,
-      body: body,
-      notificationDetails: const NotificationDetails(android: androidDetails),
+      0,
+      title,
+      body,
+      const NotificationDetails(android: androidDetails),
       payload: payload,
     );
   }

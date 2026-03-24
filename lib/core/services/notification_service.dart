@@ -43,7 +43,7 @@ class NotificationService {
     );
 
     await _flutterLocalNotificationsPlugin.initialize(
-      settings: initializationSettings,
+      initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         if (response.payload != null) {
           if (kDebugMode) {
@@ -87,10 +87,10 @@ class NotificationService {
     );
 
     await _flutterLocalNotificationsPlugin.show(
-      id: 0, // Notification ID
-      title: title,
-      body: body,
-      notificationDetails: platformChannelSpecifics,
+      0, // Notification ID
+      title,
+      body,
+      platformChannelSpecifics,
       payload: payload,
     );
   }
