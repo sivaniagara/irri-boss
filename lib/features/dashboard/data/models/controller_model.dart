@@ -141,11 +141,13 @@ class ControllerModel extends ControllerEntity {
     String? motorStatus,
     String? flowRate,
     List<ProgramEntity>? programList,
-     String? livesyncDate,
+    String? livesyncDate,
     String? livesyncTime,
     String? smsSyncTime,
     String? status,
-   }) {
+    String? ctrlLatestMsg,
+    String? msgDesc,
+  }) {
     return ControllerModel(
       userDeviceId: userDeviceId,
       fertilizerMessage: fertilizerMessage,

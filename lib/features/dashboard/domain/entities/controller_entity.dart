@@ -167,6 +167,8 @@ class ControllerEntity extends Equatable {
     String? livesyncTime,
     String? smsSyncTime,
     String? status,
+    String? ctrlLatestMsg,
+    String? msgDesc,
   }) {
     return ControllerEntity(
       userDeviceId: userDeviceId,

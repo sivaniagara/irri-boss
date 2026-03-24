@@ -35,8 +35,20 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     required int menuId,
     required int sectionIndex,
     required int settingIndex,
-  }) {
+    }) {
     return 'psv_${userId}_${subUserId}_${controllerId}_${menuId}_${sectionIndex}_$settingIndex';
+  }
+
+  String _getSubHiddenPrefKey({
+    required int userId,
+    required int subUserId,
+    required int controllerId,
+    required int menuId,
+    required int sectionIndex,
+    required int settingIndex,
+    required int subIndex,
+  }) {
+    return 'pshf_${userId}_${subUserId}_${controllerId}_${menuId}_${sectionIndex}_${settingIndex}_$subIndex';
   }
 
   Future<void> loadSettings({
@@ -256,6 +268,55 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       emit(SettingsFailureState(message: "Failed to send settings to device: ${e.toString()}"));
     } finally {
       emit(GetPumpSettingsLoaded(settings: menuItemEntity));
+    }
+  }
+
+  bool isSubSettingVisible({
+    required int userId,
+    required int subUserId,
+    required int controllerId,
+    required int menuId,
+    required int sectionIndex,
+    required int settingIndex,
+    required int subIndex,
+    required bool defaultVisible,
+  }) {
+    final key = _getSubHiddenPrefKey(
+      userId: userId,
+      subUserId: subUserId,
+      controllerId: controllerId,
+      menuId: menuId,
+      sectionIndex: sectionIndex,
+      settingIndex: settingIndex,
+      subIndex: subIndex,
+    );
+    return sharedPreferences.getBool(key) ?? defaultVisible;
+  }
+
+  Future<void> updateSubSettingVisibility({
+    required int userId,
+    required int subUserId,
+    required int controllerId,
+    required int menuId,
+    required int sectionIndex,
+    required int settingIndex,
+    required int subIndex,
+    required bool isVisible,
+  }) async {
+    final key = _getSubHiddenPrefKey(
+      userId: userId,
+      subUserId: subUserId,
+      controllerId: controllerId,
+      menuId: menuId,
+      sectionIndex: sectionIndex,
+      settingIndex: settingIndex,
+      subIndex: subIndex,
+    );
+    await sharedPreferences.setBool(key, isVisible);
+
+    if (state is GetPumpSettingsLoaded) {
+      final current = state as GetPumpSettingsLoaded;
+      emit(current.copyWith(version: current.version + 1));
     }
   }
 
