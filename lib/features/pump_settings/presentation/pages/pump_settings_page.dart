@@ -16,7 +16,6 @@ import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentatio
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/utils/app_constants.dart';
 import '../../../../core/widgets/custom_switch.dart';
-import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../../edit_program/presentation/widgets/custom_card.dart';
 import '../../../sendrev_msg/utils/senrev_routes.dart';
 import '../../domain/entities/template_json_entity.dart';
@@ -79,20 +78,17 @@ class PumpSettingsPage extends StatelessWidget {
                         ),
                       ),
                     ),
-                    actions: [
+                    actionsBuilder: (dialogContext) => [
                       ActionButton(
                         onPressed: () {
-                          final state = cubit.state;
-                          if (state is GetPumpSettingsLoaded) {
-                            cubit.updateHiddenFlags(
-                              userId: userId,
-                              subUserId: subUserId,
-                              controllerId: controllerId,
-                              menuItemEntity: state.settings,
-                              sentSms: "",
-                            );
-                          }
-                          Navigator.pop(context);
+                          cubit.updateHiddenFlags(
+                            userId: userId,
+                            subUserId: subUserId,
+                            controllerId: controllerId,
+                            menuItemEntity: (cubit.state as GetPumpSettingsLoaded).settings,
+                            sentSms: "",
+                          );
+                          Navigator.pop(dialogContext);
                         },
                         isPrimary: true,
                         child: const Text("OK"),
@@ -352,8 +348,48 @@ class _HideShowSettingsDialog extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
                     ),
                   ),
-                  ...section.settings.map((setting) {
-                    final settingIndex = section.settings.indexOf(setting);
+                  ...section.settings.asMap().entries.map((entry) {
+                    final settingIndex = entry.key;
+                    final setting = entry.value;
+
+                    // Modification: Split labels with ';' into separate checklist items
+                    final labelParts = _splitSettingParts(setting.title);
+                    final isMultiPart = labelParts.length > 1;
+
+                    if (isMultiPart || _supportsTimerMotorVisibility(menu, setting)) {
+                      final hiddenFlags = _timerMotorHiddenFlags(setting);
+                      final count = isMultiPart ? labelParts.length : _timerMotorPartCount(setting);
+
+                      return Column(
+                        children: List.generate(count, (subIndex) {
+                          final label = subIndex < labelParts.length ? labelParts[subIndex] : 'Motor ${subIndex + 1}';
+                          final isVisible = subIndex < hiddenFlags.length
+                              ? _isVisibleHiddenFlag(hiddenFlags[subIndex])
+                              : true;
+
+                          return CheckboxListTile(
+                            title: Text(label, style: const TextStyle(fontSize: 14)),
+                            value: isVisible,
+                            dense: true,
+                            onChanged: (bool? newValue) {
+                              final updatedFlags = List<String>.from(hiddenFlags);
+                              while (updatedFlags.length <= subIndex) {
+                                updatedFlags.add("1");
+                              }
+                              updatedFlags[subIndex] = newValue == true ? "1" : "0";
+                              context.read<PumpSettingsCubit>().updateSettingValue(
+                                    updatedFlags.join(';'),
+                                    sectionIndex,
+                                    settingIndex,
+                                    menu,
+                                    isHiddenFlag: true,
+                                  );
+                            },
+                          );
+                        }),
+                      );
+                    }
+
                     return CheckboxListTile(
                       title: Text(setting.title, style: const TextStyle(fontSize: 14)),
                       value: setting.hiddenFlag == "1",
@@ -397,19 +433,20 @@ class _SettingsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: menu.template.sections.length,
       itemBuilder: (context, sectionIndex) {
         final section = menu.template.sections[sectionIndex];
-        if (section.settings.every((e) => e.hiddenFlag == "0")) return const SizedBox();
-
-        print("section.sectionName : ${section.sectionName}");
-        if(AppConstants.isPumpLive(controllerContext.modelId) && section.sectionName == 'Dry Run Restart Timer'){
-          return SizedBox();
-        }
+        final hasVisibleSetting = section.settings.asMap().entries.any((entry) {
+          return _isSettingVisible(
+            menu: menu,
+            setting: entry.value,
+            modelId: modelId,
+          );
+        });
+        if (!hasVisibleSetting) return const SizedBox();
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           child: Column(
@@ -433,10 +470,13 @@ class _SettingsList extends StatelessWidget {
                   shrinkWrap: true,
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   itemBuilder: (BuildContext context, int index) {
-                    if (section.settings[index].hiddenFlag == "0") return const SizedBox();
-                    print("section.settings[index].title : ${section.settings[index].title}   ${index}   ${section.sectionName}");
-                    if(AppConstants.isPumpLive(controllerContext.modelId) && section.sectionName == 'Cyclic Timer Settings' && [2,3].contains(index)){
-                      return SizedBox();
+                    final setting = section.settings[index];
+                    if (!_isSettingVisible(
+                      menu: menu,
+                      setting: setting,
+                      modelId: modelId,
+                    )) {
+                      return const SizedBox();
                     }
                     return _SettingRow(
                       menuItemEntity: menu,

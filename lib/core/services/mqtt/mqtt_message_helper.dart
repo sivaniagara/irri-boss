@@ -392,7 +392,7 @@ class MqttMessageHelper {
 
     if(type == MqttMessageType.sms) {
       dispatcher.onViewSettings(qrCode, jsonObject);
-      
+
       // Also update Live Sync UI with timestamp from SMS packet if available
       if (cd.isNotEmpty && ct.isNotEmpty) {
         if (kDebugMode) print('SMS Packet Update -> Syncing time from SMS packet');

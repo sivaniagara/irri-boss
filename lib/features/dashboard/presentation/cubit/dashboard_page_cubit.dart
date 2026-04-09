@@ -125,43 +125,92 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     return "$h:$m:$s";
   }
 
+  String? _selectedDeviceId([DashboardGroupsLoaded? currentState]) {
+    final loadedState = currentState ??
+        (state is DashboardGroupsLoaded
+            ? state as DashboardGroupsLoaded
+            : null);
+    if (loadedState == null) return null;
+
+    final groupId = loadedState.selectedGroupId;
+    final controllerIndex = loadedState.selectedControllerIndex;
+    if (groupId == null || controllerIndex == null) return null;
+
+    final controllers =
+        loadedState.groupControllers[groupId] ?? const <ControllerEntity>[];
+    if (controllerIndex < 0 || controllerIndex >= controllers.length) return null;
+
+    return controllers[controllerIndex].deviceId;
+  }
+
+  void _cancelTimerForDevice(String deviceId) {
+    _deviceTimers.remove(deviceId)?.cancel();
+    _deviceRemainingSeconds.remove(deviceId);
+  }
+
+  void _cancelInactiveDeviceTimers(String? activeDeviceId) {
+    final deviceIds = _deviceTimers.keys.toList(growable: false);
+    for (final deviceId in deviceIds) {
+      if (activeDeviceId == null || deviceId != activeDeviceId) {
+        _cancelTimerForDevice(deviceId);
+      }
+    }
+  }
+
   void _manageZoneTimer(String deviceId, LiveMessageEntity liveMessage) {
+    final activeDeviceId = _selectedDeviceId();
+    if (activeDeviceId != null && activeDeviceId != deviceId) {
+      _cancelTimerForDevice(deviceId);
+      return;
+    }
+
+    _cancelInactiveDeviceTimers(deviceId);
+
     // If motor is OFF, stop any existing timer for this device
     if (liveMessage.motorOnOff == '0') {
-      _deviceTimers[deviceId]?.cancel();
-      _deviceTimers.remove(deviceId);
-      _deviceRemainingSeconds.remove(deviceId);
+      _cancelTimerForDevice(deviceId);
       return;
     }
 
     // If motor is ON
     int newRemaining = _timeToSeconds(liveMessage.zoneRemainingTime);
-    
+
     // Check if we should update/start timer
     // We update if no timer exists OR if the hardware time drifted by more than 5 seconds
     int? currentRemaining = _deviceRemainingSeconds[deviceId];
-    bool shouldReset = _deviceTimers[deviceId] == null || 
-                      (currentRemaining != null && (newRemaining - currentRemaining).abs() > 5);
+    bool shouldReset = _deviceTimers[deviceId] == null ||
+        (currentRemaining != null &&
+            (newRemaining - currentRemaining).abs() > 5);
 
     if (shouldReset && newRemaining > 0) {
       _deviceTimers[deviceId]?.cancel();
       _deviceRemainingSeconds[deviceId] = newRemaining;
-      
-      _deviceTimers[deviceId] = Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (_deviceRemainingSeconds[deviceId] == null || _deviceRemainingSeconds[deviceId]! <= 0) {
-          timer.cancel();
-          _deviceTimers.remove(deviceId);
+
+      _deviceTimers[deviceId] =
+          Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (_selectedDeviceId() != deviceId) {
+          _cancelTimerForDevice(deviceId);
           return;
         }
 
-        _deviceRemainingSeconds[deviceId] = _deviceRemainingSeconds[deviceId]! - 1;
+        if (_deviceRemainingSeconds[deviceId] == null ||
+            _deviceRemainingSeconds[deviceId]! <= 0) {
+          timer.cancel();
+          _deviceTimers.remove(deviceId);
+          _deviceRemainingSeconds.remove(deviceId);
+          return;
+        }
+
+        _deviceRemainingSeconds[deviceId] =
+            _deviceRemainingSeconds[deviceId]! - 1;
 
         // Update state with decremented time
         _updateSingleDeviceState(deviceId, (ctrl) {
           final model = ctrl as ControllerModel;
           return model.copyWith(
             liveMessage: model.liveMessage.copyWith(
-              zoneRemainingTime: _secondsToTime(_deviceRemainingSeconds[deviceId]!),
+              zoneRemainingTime:
+                  _secondsToTime(_deviceRemainingSeconds[deviceId]!),
             ),
           );
         });
@@ -170,11 +219,15 @@ class DashboardPageCubit extends Cubit<DashboardState> {
   }
 
   /// Helper to update a single device in the complex groupControllers map
-  void _updateSingleDeviceState(String deviceId, ControllerEntity Function(ControllerEntity) updateFn) {
+  void _updateSingleDeviceState(
+    String deviceId,
+    ControllerEntity Function(ControllerEntity) updateFn,
+  ) {
     if (state is! DashboardGroupsLoaded) return;
     final currentState = state as DashboardGroupsLoaded;
-    
-    final updatedGroupControllers = Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
+
+    final updatedGroupControllers =
+        Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
     bool anyUpdated = false;
 
     updatedGroupControllers.forEach((groupId, controllers) {
@@ -253,14 +306,23 @@ class DashboardPageCubit extends Cubit<DashboardState> {
           updatedControllers[groupId] = controllers;
 
           int? newSelectedIndex = currentState.selectedControllerIndex;
+          String? selectedDeviceId;
 
           if (newSelectedIndex == null && controllers.isNotEmpty) {
             newSelectedIndex = 0;
+            selectedDeviceId = controllers[0].deviceId;
 
-            sl<MqttManager>().subscribe(controllers[0].deviceId);
-            sl<MqttManager>().publish(controllers[0].deviceId,
-                jsonEncode(PublishMessageHelper.requestLive));
+            sl<MqttManager>().subscribe(selectedDeviceId);
+            sl<MqttManager>().publish(
+              selectedDeviceId,
+              jsonEncode(PublishMessageHelper.requestLive),
+            );
+          } else if (newSelectedIndex != null &&
+              newSelectedIndex < controllers.length) {
+            selectedDeviceId = controllers[newSelectedIndex].deviceId;
           }
+
+          _cancelInactiveDeviceTimers(selectedDeviceId);
 
           emit(DashboardGroupsLoaded(
             groups: currentState.groups,
@@ -299,11 +361,17 @@ class DashboardPageCubit extends Cubit<DashboardState> {
             Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
         updatedControllers[groupId] = controllers;
 
+        String? selectedDeviceId;
         if (controllers.isNotEmpty) {
-          sl<MqttManager>().subscribe(controllers[0].deviceId);
-          sl<MqttManager>().publish(controllers[0].deviceId,
-              jsonEncode(PublishMessageHelper.requestLive));
+          selectedDeviceId = controllers[0].deviceId;
+          sl<MqttManager>().subscribe(selectedDeviceId);
+          sl<MqttManager>().publish(
+            selectedDeviceId,
+            jsonEncode(PublishMessageHelper.requestLive),
+          );
         }
+
+        _cancelInactiveDeviceTimers(selectedDeviceId);
 
         emit(DashboardGroupsLoaded(
           groups: currentState.groups,
@@ -326,6 +394,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     if (controllerIndex >= controllers.length) return;
 
     final selectedController = controllers[controllerIndex];
+    _cancelInactiveDeviceTimers(selectedController.deviceId);
 
     sl<MqttManager>().subscribe(selectedController.deviceId);
     sl<MqttManager>().publish(selectedController.deviceId,
@@ -341,6 +410,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
   void resetDashboardSelection() {
     if (state is DashboardGroupsLoaded) {
       final currentState = state as DashboardGroupsLoaded;
+      _cancelInactiveDeviceTimers(null);
       emit(currentState.copyWith(
         selectedGroupId: null,
         selectedControllerIndex: null,
@@ -354,19 +424,29 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
     // Manage Timer independently from state update to avoid recursion loop
     _manageZoneTimer(deviceId, liveMessage);
-    
-    // If motor is off, ensure display is 0
-    if (liveMessage.motorOnOff == '0') {
-      liveMessage = liveMessage.copyWith(zoneRemainingTime: "00:00:00");
-    }
+
+    final formattedMessage = (fullMsg != null && fullMsg.trim().isNotEmpty)
+        ? fullMsg.trim()
+        : liveMessage.fullMessage;
+    final latestMessageDescription =
+        (msgDesc != null && msgDesc.trim().isNotEmpty)
+            ? msgDesc.trim()
+            : liveMessage.msgDesc;
+    final updatedLiveMessage = liveMessage.copyWith(
+      zoneRemainingTime: liveMessage.motorOnOff == '0'
+          ? "00:00:00"
+          : liveMessage.zoneRemainingTime,
+      fullMessage: formattedMessage,
+      msgDesc: latestMessageDescription,
+    );
 
     _updateSingleDeviceState(deviceId, (ctrl) {
       final model = ctrl as ControllerModel;
       return model.copyWith(
-          liveMessage: liveMessage,
-          livesyncDate: date,
-          livesyncTime: time,
-          );
+        liveMessage: updatedLiveMessage,
+        livesyncDate: date,
+        livesyncTime: time,
+      );
     });
   }
 
@@ -376,7 +456,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     final currentState = state as DashboardGroupsLoaded;
 
     final newGroupControllers =
-    Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
+        Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
 
     bool updated = false;
 

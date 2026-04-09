@@ -8,12 +8,11 @@ class TimePickerService {
   static Future<String?> show({
     required BuildContext context,
     required String initialTime,
-    String title = "Select Time"
-  }) async {
-    String? selectedTime = initialTime;
+    String title = "Select Time",
+  }) {
     String? temp = initialTime;
 
-    await GlassyAlertDialog.show(
+    return GlassyAlertDialog.show<String>(
       context: context,
       title: title,
       content: _TimePickerContent(
@@ -23,23 +22,18 @@ class TimePickerService {
           temp = newTime;
         },
       ),
-      actions: [
+      actionsBuilder: (dialogContext) => [
         ActionButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(dialogContext),
           child: const Text("Cancel"),
         ),
         ActionButton(
-          onPressed: () {
-            selectedTime = temp;
-            Navigator.pop(context, temp);
-          },
+          onPressed: () => Navigator.pop(dialogContext, temp),
           isPrimary: true,
           child: const Text("Done"),
         ),
       ],
     );
-
-    return selectedTime;
   }
 }
 
