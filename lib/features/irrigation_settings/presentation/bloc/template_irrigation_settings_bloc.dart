@@ -52,7 +52,7 @@ class TemplateIrrigationSettingsBloc extends Bloc<TemplateIrrigationSettingsEven
       if(state is! TemplateIrrigationSettingsLoaded) return;
       final current = state as TemplateIrrigationSettingsLoaded;
       final currentEntity = current.updatedControllerIrrigationSettingEntity ?? current.controllerIrrigationSettingEntity;
-      
+
       final updatedSettings = currentEntity.settings
           .asMap()
           .entries
@@ -131,6 +131,51 @@ class TemplateIrrigationSettingsBloc extends Bloc<TemplateIrrigationSettingsEven
       ));
     });
 
+    on<UpdateHfValueEvent>((event, emit) {
+      if (state is! TemplateIrrigationSettingsLoaded) return;
+      final currentState = state as TemplateIrrigationSettingsLoaded;
+      final currentEntity = currentState.updatedControllerIrrigationSettingEntity ?? currentState.controllerIrrigationSettingEntity;
+
+      final newSettings = currentEntity.settings.asMap().entries.map((groupEntry) {
+        final groupIndex = groupEntry.key;
+        final group = groupEntry.value;
+
+        if (groupIndex != event.groupIndex) {
+          return group;
+        }
+
+        final newSets = group.sets.asMap().entries.map((setEntry) {
+          final setIndex = setEntry.key;
+          final setItem = setEntry.value;
+
+          if (event.multipleIndex != null) {
+            if (setIndex != event.multipleIndex || setItem is! MultipleSettingItemEntity) {
+              return setItem;
+            }
+            final newSingleItems = setItem.listOfSingleSettingItemEntity.asMap().entries.map((singleEntry) {
+              if (singleEntry.key == event.index) {
+                return singleEntry.value.copyWith(updateHf: event.hfValue);
+              }
+              return singleEntry.value;
+            }).toList();
+            return MultipleSettingItemEntity(listOfSingleSettingItemEntity: newSingleItems);
+          } else {
+            if (setIndex == event.index && setItem is SingleSettingItemEntity) {
+              return setItem.copyWith(updateHf: event.hfValue);
+            }
+            return setItem;
+          }
+        }).toList();
+
+        return group.copyWith(updatedSets: newSets);
+      }).toList();
+
+      emit(currentState.copyWith(
+          updatedControllerIrrigationSettingEntity: currentEntity.copyWith(updatedSettings: newSettings),
+          status: UpdateTemplateSettingStatus.idle
+      ));
+    });
+
     on<UpdateTemplateSettingEvent>((event, emit)async{
       if(state is! TemplateIrrigationSettingsLoaded){
         return;
@@ -138,12 +183,12 @@ class TemplateIrrigationSettingsBloc extends Bloc<TemplateIrrigationSettingsEven
 
       final currentState = state as TemplateIrrigationSettingsLoaded;
       final updatedEntity = currentState.updatedControllerIrrigationSettingEntity ?? currentState.controllerIrrigationSettingEntity;
-      
+
       emit(currentState.copyWith(
           status: UpdateTemplateSettingStatus.loading,
           updatedControllerIrrigationSettingEntity: updatedEntity
       ));
-      
+
       UpdateTemplateIrrigationSettingParams params = UpdateTemplateIrrigationSettingParams(
           userId: currentState.userId,
           controllerId: currentState.controllerId,
@@ -151,7 +196,7 @@ class TemplateIrrigationSettingsBloc extends Bloc<TemplateIrrigationSettingsEven
           settingNo: currentState.settingId,
           controllerIrrigationSettingEntity: updatedEntity,
           groupIndex: event.groupIndex,
-          settingIndex: event.settingIndex, 
+          settingIndex: event.settingIndex,
           deviceId: currentState.deviceId
       );
 

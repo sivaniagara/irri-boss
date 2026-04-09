@@ -24,32 +24,29 @@ class SingleSettingItemEntity extends CommonSettingItemEntity{
     required this.option,
   });
 
-  SingleSettingItemEntity copyWith({String? updateValue}){
+  SingleSettingItemEntity copyWith({String? updateValue, String? updateHf}){
+    print("updateHf : $updateHf");
     return SingleSettingItemEntity(
         sNo: sNo,
         widgetType: widgetType,
         value: updateValue ?? value,
         settingField: settingField,
         titleText: titleText,
-        hf: hf, option: option
+        hf: updateHf ?? hf,
+        option: option
     );
   }
 
 }
 
+
 class MultipleSettingItemEntity extends CommonSettingItemEntity{
   final List<SingleSettingItemEntity> listOfSingleSettingItemEntity;
   MultipleSettingItemEntity({required this.listOfSingleSettingItemEntity});
 
-  // @override
-  // // TODO: implement hf
-  // String get hf => listOfSingleSettingItemEntity.first.hf;
-  //
-  // @override
-  // // TODO: implement settingField
-  // String get settingField => listOfSingleSettingItemEntity.first.settingField;
-  //
-  // @override
-  // // TODO: implement widgetType
-  // int get widgetType => listOfSingleSettingItemEntity.first.widgetType;
+  MultipleSettingItemEntity copyWith({List<SingleSettingItemEntity>? updateListOfSingleSettingItemEntity}){
+    return MultipleSettingItemEntity(
+        listOfSingleSettingItemEntity: updateListOfSingleSettingItemEntity ?? listOfSingleSettingItemEntity
+    );
+  }
 }

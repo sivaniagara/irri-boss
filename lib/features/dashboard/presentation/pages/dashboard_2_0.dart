@@ -27,7 +27,7 @@ class Dashboard20 extends StatefulWidget {
 }
 
 class _Dashboard20State extends State<Dashboard20> {
-  List<int> pumpModel =[4,11, 27];
+  List<int> pumpModel = [4,11, 27];
 
   @override
   Widget build(BuildContext context) {
@@ -70,11 +70,6 @@ class _Dashboard20State extends State<Dashboard20> {
           ControllerEntity controllerEntity = state.groupControllers[groupId]![controllerIndex];
           LiveMessageEntity liveMessageEntity = controllerEntity.liveMessage;
 
-          if (kDebugMode) {
-            print("DASHBOARD_2_0: Rebuilding for ${controllerEntity.deviceName}");
-            print("Sync Time: ${controllerEntity.livesyncTime} Date: ${controllerEntity.livesyncDate}");
-            print("LiveMessage Time: ${liveMessageEntity.ct} Date: ${liveMessageEntity.cd}");
-          }
 
           return RefreshIndicator(
             onRefresh: () async {
@@ -151,7 +146,7 @@ class _Dashboard20State extends State<Dashboard20> {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       width: double.infinity,
-      height: 100,
+      height: 110,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
@@ -212,17 +207,16 @@ class _Dashboard20State extends State<Dashboard20> {
                               ),
                             ],
                           ),
-                          if(controllerEntity.modelId == 27)
-                            Row(
-                              children: [
-                                const Icon(Icons.circle, color: Colors.orange, size: 10),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'SMS Sync : ${controllerEntity.smsSyncTime}',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
+                          Row(
+                            children: [
+                              const Icon(Icons.circle, color: Colors.orange, size: 10),
+                              const SizedBox(width: 4),
+                              Text(
+                                'SMS Sync : ${controllerEntity.smsSyncTime}',
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -251,7 +245,6 @@ class _Dashboard20State extends State<Dashboard20> {
       mountainWidget(controllerEntity, liveMessageEntity),
       voltageAndCurrent(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity),
       doublePumpWidget(controllerEntity: controllerEntity, liveMessageEntity: liveMessageEntity),
-
       dashboardCard(
         child: Column(
           spacing: 20,

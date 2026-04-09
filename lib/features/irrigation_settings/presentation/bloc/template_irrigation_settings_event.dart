@@ -50,3 +50,17 @@ class UpdateMultipleSettingRowEvent extends TemplateIrrigationSettingsEvent{
     required this.value,
   });
 }
+
+class UpdateHfValueEvent extends TemplateIrrigationSettingsEvent {
+  final int groupIndex;
+  final int index;
+  final String hfValue;
+  final int? multipleIndex;
+
+  UpdateHfValueEvent({
+    required this.groupIndex,
+    required this.index,
+    required this.hfValue,
+    this.multipleIndex,
+  });
+}
