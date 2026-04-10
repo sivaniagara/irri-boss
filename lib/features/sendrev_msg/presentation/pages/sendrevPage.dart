@@ -23,7 +23,8 @@ class SendRevPage extends StatefulWidget {
 
 class _SendRevPageState extends State<SendRevPage> {
   bool showColonMessagesOnly = false;
-
+  String selectedFromDate = '';
+  String selectedToDate = '';
   @override
   void initState() {
     super.initState();
@@ -32,6 +33,8 @@ class _SendRevPageState extends State<SendRevPage> {
 
   void _loadInitialMessages() {
     final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    selectedFromDate = today;
+    selectedToDate = today;
     
     final userId = int.tryParse(widget.params["userId"].toString()) ?? 0;
     final subuserId = int.tryParse(widget.params["subuserId"]?.toString() ?? "0") ?? 0;
@@ -42,8 +45,8 @@ class _SendRevPageState extends State<SendRevPage> {
         userId: userId,
         subuserId: subuserId,
         controllerId: controllerId,
-        fromDate: today,
-        toDate: today,
+        fromDate: selectedFromDate,
+        toDate: selectedToDate,
       ),
     );
   }
@@ -81,21 +84,22 @@ class _SendRevPageState extends State<SendRevPage> {
                   final result = await pickReportDate(
                     context: context,
                     allowRange: false,
+                    initialFromDate: selectedFromDate,
+                    initialToDate: selectedToDate,
                   );
-
                   if (result == null) return;
-
                   final userId = int.tryParse(widget.params["userId"].toString()) ?? 0;
                   final subuserId = int.tryParse(widget.params["subuserId"]?.toString() ?? "0") ?? 0;
                   final controllerId = int.tryParse(widget.params["controllerId"].toString()) ?? 0;
-
+                  selectedFromDate = result.fromDate;
+                  selectedToDate = result.toDate;
                   context.read<SendrevBloc>().add(
                     LoadMessagesEvent(
                       userId: userId,
                       subuserId: subuserId,
                       controllerId: controllerId,
-                      fromDate: result.fromDate,
-                      toDate: result.toDate,
+                      fromDate: selectedFromDate,
+                      toDate: selectedToDate,
                     ),
                   );
                 },

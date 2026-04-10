@@ -5,14 +5,19 @@ import 'package:intl/intl.dart';
 Future<ReportDateResult?> pickReportDate({
   required BuildContext context,
   bool allowRange = false,
+  String? initialFromDate, // ✅ ADD
+  String? initialToDate,   // ✅ ADD
 }) async {
   final formatter = DateFormat('yyyy-MM-dd');
 
   if (!allowRange) {
-    // 🔹 Single date
+    final initialDate = initialFromDate != null
+        ? DateTime.parse(initialFromDate)
+        : DateTime.now();
+
     final date = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: initialDate, // ✅ USE STORED DATE
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
     );
@@ -23,15 +28,20 @@ Future<ReportDateResult?> pickReportDate({
     return ReportDateResult(fromDate: formatted, toDate: formatted);
   }
 
-  // 🔹 Range date
+  final initialRange = DateTimeRange(
+    start: initialFromDate != null
+        ? DateTime.parse(initialFromDate)
+        : DateTime.now().subtract(const Duration(days: 1)),
+    end: initialToDate != null
+        ? DateTime.parse(initialToDate)
+        : DateTime.now(),
+  );
+
   final range = await showDateRangePicker(
     context: context,
     firstDate: DateTime(2020),
     lastDate: DateTime.now(),
-    initialDateRange: DateTimeRange(
-      start: DateTime.now().subtract(const Duration(days: 1)),
-      end: DateTime.now(),
-    ),
+    initialDateRange: initialRange,
   );
 
   if (range == null) return null;
