@@ -10,14 +10,14 @@ class ControllerContextLoaded extends ControllerContextState{
   final String deviceId;
   final String userType;
   final String subUserId;
-  final int modelId; // 👈 Added modelId
+  final int modelId;
   ControllerContextLoaded({
     required this.userId,
     required this.controllerId,
     required this.deviceId,
     required this.userType,
     required this.subUserId,
-    required this.modelId, // 👈 Added modelId
+    required this.modelId,
   });
 }
 
@@ -30,7 +30,7 @@ class ControllerContextCubit extends Cubit<ControllerContextState>{
     required String deviceId,
     required String userType,
     required String subUserId,
-    required int modelId, // 👈 Added modelId
+    required int modelId,
   }){
     emit(
         ControllerContextLoaded(
@@ -39,7 +39,7 @@ class ControllerContextCubit extends Cubit<ControllerContextState>{
           deviceId: deviceId,
           userType: userType,
           subUserId: subUserId,
-          modelId: modelId, // 👈 Added modelId
+          modelId: modelId,
         )
     );
     print('ControllerContextLoaded updated....');
@@ -52,21 +52,22 @@ class ControllerContextCubit extends Cubit<ControllerContextState>{
   void updateController({
     required String controllerId,
     required String deviceId,
-    required int modelId, // 👈 Added modelId
+    required int modelId,
   }) {
     final currentState = state;
 
     if (currentState is ControllerContextLoaded) {
-      emit(
+       emit(
         ControllerContextLoaded(
           userId: currentState.userId,
           controllerId: controllerId,
           userType: currentState.userType,
           subUserId: currentState.subUserId,
           deviceId: deviceId,
-          modelId: modelId, // 👈 Added modelId
+          modelId: modelId,
         ),
       );
     }
+
   }
 }

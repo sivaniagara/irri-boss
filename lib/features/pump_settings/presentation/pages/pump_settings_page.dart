@@ -194,7 +194,7 @@ class PumpSettingsPage extends StatelessWidget {
                       subUserId: subUserId,
                       modelId: modelId,
                     ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 100),
                   ],
                 ),
               );

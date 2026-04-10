@@ -333,7 +333,6 @@ class _UserProfileFormBodyState extends State<_UserProfileFormBody> {
                 const SizedBox(height: 16),
                 _buildField(altPhoneCtrl, 'Alternate Phone (Optional)', Icons.phone),
                 const SizedBox(height: 16),
-
                 _buildField(emailCtrl, 'Email (Optional)', Icons.email,
                     keyboardType: TextInputType.emailAddress,
                     validator: (v) {

@@ -10,6 +10,7 @@ import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../dashboard.dart';
 import '../../domain/usecases/control_motor_usecase.dart';
 import '../../domain/usecases/update_change_from_usecase.dart';
+import 'controller_context_cubit.dart';
 
 enum ChangeFromStatus { initial, loading, success, failure }
 
@@ -335,11 +336,11 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     }
   }
 
-  Future<void> selectGroup(
+  Future<(int modelId, int controllerId, String deviceId)> selectGroup(
       int groupId, int userId, GoRouterState routeState) async {
-    if (state is! DashboardGroupsLoaded) return;
 
-    final currentState = state as DashboardGroupsLoaded;
+    if (state is! DashboardGroupsLoaded) return (0, 0, '');
+     final currentState = state as DashboardGroupsLoaded;
 
     final newState = currentState.copyWith(
       selectedGroupId: groupId,
@@ -351,18 +352,27 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
     final result =
         await fetchControllers(UserGroupParams(userId, groupId, routeState));
+    int firstControllerModelId = 0;
+    int firstControllerControllerId = 0;
+    String firstControllerDeviceId = '';
 
-    await result.fold(
+    final response = await result.fold(
       (failure) async {
         emit(DashboardError(message: failure.message));
+         return (0, 0, '');
       },
       (controllers) async {
+
         final updatedControllers =
             Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
         updatedControllers[groupId] = controllers;
 
         String? selectedDeviceId;
         if (controllers.isNotEmpty) {
+          firstControllerModelId = controllers[0].modelId;
+          firstControllerControllerId = controllers[0].userDeviceId;
+          firstControllerDeviceId = controllers[0].deviceId;
+
           selectedDeviceId = controllers[0].deviceId;
           sl<MqttManager>().subscribe(selectedDeviceId);
           sl<MqttManager>().publish(
@@ -379,8 +389,10 @@ class DashboardPageCubit extends Cubit<DashboardState> {
           selectedGroupId: groupId,
           selectedControllerIndex: controllers.isNotEmpty ? 0 : null,
         ));
-      },
+         return (firstControllerModelId, firstControllerControllerId, firstControllerDeviceId);
+       },
     );
+    return response;
   }
 
   Future<void> selectController(int controllerIndex) async {

@@ -38,8 +38,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   /// In a production app, implement actual IP fetching via a service.
   Future<Map<String, String>> _getDeviceInfo() async {
     try {
-      final deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
-      final ipAddress = ''; // TODO: Integrate with a network service to fetch real IP.
+      // final deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
+      final deviceToken = '';
+      final ipAddress = '';
       if (kDebugMode) {
         print('Device token: $deviceToken, IP address: $ipAddress');
       }
@@ -242,13 +243,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'mobileNumber': phone,
         'countryCode': countryCode.substring(1),
       };
-
+print("checkPhoneNumber,$body");
       if (kDebugMode) {
         print('Check phone body: $body');
       }
 
       final response = await _apiClient.post(AuthUrls.verifyUserUrl, body: body);
-
+      print(response);
       if (kDebugMode) {
         print('Check phone response: $response');
       }

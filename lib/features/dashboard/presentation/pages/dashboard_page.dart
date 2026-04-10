@@ -143,8 +143,6 @@ class _DashboardPageState extends State<DashboardPage> {
       child: Builder(
         builder: (context) {
           final cubit = context.read<DashboardPageCubit>();
-
-          // Start the sync timer using the cubit instance from this context
           _startLiveSync(cubit);
 
           _initializeCubit(cubit, context, userId, userType, groupId);
@@ -164,7 +162,8 @@ class _DashboardPageState extends State<DashboardPage> {
       int userId,
       int userType,
       String? groupId,
-      ) {
+      )
+  {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (cubit.state is! DashboardLoading && cubit.state is! DashboardGroupsLoaded) {
         await cubit.getGroups(userId, GoRouterState.of(context), userType);
@@ -312,6 +311,21 @@ class _DashboardPageState extends State<DashboardPage> {
 
     return BlocListener<DashboardPageCubit, DashboardState>(
       listener: (context, state) {
+        if(state is DashboardGroupsLoaded){
+          if(state.selectedGroupId != null){
+            print("state.selectedGroupId => ${state.selectedGroupId}");
+            print("state.selectedControllerIndex => ${state.selectedControllerIndex}");
+            print("state.groupControllers[state.selectedGroupId] => ${state.groupControllers[state.selectedGroupId]}");
+            print("state.groupControllers => ${state.groupControllers.keys}");
+            if(state.groupControllers[state.selectedGroupId] != null && state.groupControllers[state.selectedGroupId]!.isNotEmpty){
+              final selectedController = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!];
+              print("controllerId = > ${selectedController.userDeviceId}");
+              print("deviceId = > ${selectedController.deviceId}");
+              print("modelId = > ${selectedController.modelId}");
+
+            }
+          }
+        }
         if (state is DashboardGroupsLoaded &&
             state.groupControllers.isNotEmpty &&
             context.read<ControllerContextCubit>().state is! ControllerContextLoaded) {
@@ -717,12 +731,18 @@ class _DashboardPageState extends State<DashboardPage> {
               const Icon(Icons.arrow_drop_down, color: AppThemes.primaryColor),
             ],
           ),
-          onSelected: (groupId) {
+          onSelected: (groupId) async{
             print("groupId change ");
             print(groupId);
             print(userId);
-            cubit.selectGroup(groupId, userId, GoRouterState.of(context));
-            context.read<ControllerContextCubit>().toInitial();
+            (int, int, String) result = await cubit.selectGroup(groupId, userId, GoRouterState.of(context));
+            // final selectedGroup = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!];
+            // print("selectedGroup  => ${selectedGroup.userDeviceId}");
+            context.read<ControllerContextCubit>().updateController(
+                modelId: result.$1,
+                controllerId: result.$2.toString(),
+                deviceId: result.$3
+            );
           },
           itemBuilder: (context) => state.groups.map((group) {
             return PopupMenuItem<int>(
