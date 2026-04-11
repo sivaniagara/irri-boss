@@ -9,6 +9,7 @@ class SendrevLoading extends SendrevState {}
 class SendrevLoaded extends SendrevState {
   final List<SendrevDatumEntity> messages;
 
+
   SendrevLoaded(this.messages);
 }
 

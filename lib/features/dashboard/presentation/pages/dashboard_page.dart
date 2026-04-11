@@ -27,18 +27,12 @@ import '../../domain/entities/controller_entity.dart';
 import '../../domain/entities/group_entity.dart';
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 
-enum BottomNavigationOption {
-  home,
-  report,
-  manual,
-  setting,
-  sentAndReceive,
-  faultMsgMsgPage
-}
 
-extension BottomNavivigationOptionExtension on BottomNavigationOption {
-  String title() {
-    switch (this) {
+enum BottomNavigationOption{home, report, manual, setting, sentAndReceive, faultMsgMsgPage}
+
+extension BottomNavivigationOptionExtension on BottomNavigationOption{
+  String title(){
+    switch (this){
       case BottomNavigationOption.home:
         return 'Home';
       case BottomNavigationOption.report:
@@ -120,7 +114,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     final queryParams = GoRouterState.of(context).uri.queryParameters;
     final authState = context.read<AuthBloc>().state;
-
+    
     int userId = 0;
     int userType = 1;
 
@@ -167,23 +161,20 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _initializeCubit(
-    DashboardPageCubit cubit,
-    BuildContext context,
-    int userId,
-    int userType,
-    String? groupId,
-  ) {
+      DashboardPageCubit cubit,
+      BuildContext context,
+      int userId,
+      int userType,
+      String? groupId,
+      )
+  {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (cubit.state is! DashboardLoading &&
-          cubit.state is! DashboardGroupsLoaded) {
+      if (cubit.state is! DashboardLoading && cubit.state is! DashboardGroupsLoaded) {
         await cubit.getGroups(userId, GoRouterState.of(context), userType);
       }
 
-      context
-          .read<DashboardPageCubit>()
-          .stream
-          .where((state) =>
-              state is DashboardGroupsLoaded && (state).groups.isNotEmpty)
+      context.read<DashboardPageCubit>().stream
+          .where((state) => state is DashboardGroupsLoaded && (state).groups.isNotEmpty)
           .take(1)
           .listen((state) {
         final loadedState = state as DashboardGroupsLoaded;
@@ -193,16 +184,15 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _autoSelectGroupIfNeeded(
-    DashboardPageCubit cubit,
-    DashboardGroupsLoaded state,
-    String? groupIdParam,
-    int userId,
-    BuildContext context,
-  ) {
+      DashboardPageCubit cubit,
+      DashboardGroupsLoaded state,
+      String? groupIdParam,
+      int userId,
+      BuildContext context,
+      ) {
     if (state.selectedGroupId == null && state.groups.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final targetGroupId =
-            groupIdParam != null ? int.tryParse(groupIdParam) : null;
+        final targetGroupId = groupIdParam != null ? int.tryParse(groupIdParam) : null;
         final groupIdToSelect = targetGroupId ?? state.groups[0].userGroupId;
         cubit.selectGroup(groupIdToSelect, userId, GoRouterState.of(context));
       });
@@ -210,17 +200,16 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   bool _isFakeGroupMode(DashboardGroupsLoaded state) {
-    return state.groups.length == 1 &&
-        state.groups.first.userGroupId == fakeGroupId;
+    return state.groups.length == 1 && state.groups.first.userGroupId == fakeGroupId;
   }
 
   Widget _buildContent(
-    BuildContext context,
-    DashboardState state,
-    int userId,
-    int userType,
-    DashboardPageCubit cubit,
-  ) {
+      BuildContext context,
+      DashboardState state,
+      int userId,
+      int userType,
+      DashboardPageCubit cubit,
+      ) {
     if (state is DashboardLoading) {
       return GlassyWrapper(
         child: const Scaffold(
@@ -245,9 +234,7 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Image.asset(AppImages.logoSmall),
             ),
           ),
-          drawer: userType == 1
-              ? AppDrawer(userData: {"userId": userId, "userType": userType})
-              : null,
+          drawer: userType == 1 ? AppDrawer(userData: {"userId": userId, "userType": userType}) : null,
           body: Center(
             child: Text(
               'Error: ${state.message}',
@@ -280,9 +267,7 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Image.asset(AppImages.logoSmall),
             ),
           ),
-          drawer: userType == 1
-              ? AppDrawer(userData: {"userId": userId, "userType": userType})
-              : null,
+          drawer: userType == 1 ? AppDrawer(userData: {"userId": userId, "userType": userType}) : null,
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -309,12 +294,11 @@ class _DashboardPageState extends State<DashboardPage> {
       );
     }
 
-    final (selectedGroup, selectedController, controllers) =
-        _getSelectedGroupAndController(loadedState);
+    final (selectedGroup, selectedController, controllers) = _getSelectedGroupAndController(loadedState);
 
     // Identify if the current route is one that should show the shell (Appbar/Nav)
     final String currentPath = GoRouterState.of(context).uri.path;
-
+    
     // Define the 5 main tabs that should show the shell's AppBar
     final bool isDashboard = currentPath == DashBoardRoutes.dashboard;
     final bool isReport = currentPath == DashBoardRoutes.report;
@@ -338,6 +322,21 @@ class _DashboardPageState extends State<DashboardPage> {
 
     return BlocListener<DashboardPageCubit, DashboardState>(
       listener: (context, state) {
+        if(state is DashboardGroupsLoaded){
+          if(state.selectedGroupId != null){
+            print("state.selectedGroupId => ${state.selectedGroupId}");
+            print("state.selectedControllerIndex => ${state.selectedControllerIndex}");
+            print("state.groupControllers[state.selectedGroupId] => ${state.groupControllers[state.selectedGroupId]}");
+            print("state.groupControllers => ${state.groupControllers.keys}");
+            if(state.groupControllers[state.selectedGroupId] != null && state.groupControllers[state.selectedGroupId]!.isNotEmpty){
+              final selectedController = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!];
+              print("controllerId = > ${selectedController.userDeviceId}");
+              print("deviceId = > ${selectedController.deviceId}");
+              print("modelId = > ${selectedController.modelId}");
+
+            }
+          }
+        }
         if (state is DashboardGroupsLoaded &&
             state.groupControllers.isNotEmpty &&
             context.read<ControllerContextCubit>().state
@@ -711,9 +710,7 @@ class _DashboardPageState extends State<DashboardPage> {
           onPressed: null,
           icon: Icon(
             Icons.circle,
-            color: selectedController?.ctrlStatusFlag == '1'
-                ? Colors.green
-                : Colors.red,
+            color: selectedController?.ctrlStatusFlag == '1' ? Colors.green : Colors.red,
           ),
         ),
       ],
@@ -739,7 +736,9 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Row(
           children: [
             _buildGroupSelector(state, selectedGroup, cubit, userId, context),
+
             if (!fakeMode && state.groups.length > 1) const _Divider(),
+
             Expanded(
               child: _buildControllerSelector(
                 selectedController,
@@ -794,12 +793,18 @@ class _DashboardPageState extends State<DashboardPage> {
               const Icon(Icons.arrow_drop_down, color: AppThemes.primaryColor),
             ],
           ),
-          onSelected: (groupId) {
+          onSelected: (groupId) async{
             print("groupId change ");
             print(groupId);
             print(userId);
-            cubit.selectGroup(groupId, userId, GoRouterState.of(context));
-            context.read<ControllerContextCubit>().toInitial();
+            (int, int, String) result = await cubit.selectGroup(groupId, userId, GoRouterState.of(context));
+            // final selectedGroup = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!];
+            // print("selectedGroup  => ${selectedGroup.userDeviceId}");
+            context.read<ControllerContextCubit>().updateController(
+                modelId: result.$1,
+                controllerId: result.$2.toString(),
+                deviceId: result.$3
+            );
           },
           itemBuilder: (context) => state.groups.map((group) {
             return PopupMenuItem<int>(

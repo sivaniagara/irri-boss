@@ -72,12 +72,12 @@ class FlavorConfig {
         );
       case Flavor.irriBossProduction:
         return const FlavorValues(
-          displayName: 'AgriTel',
-          apiBaseUrl: 'https://api.example.com',
-          broker: 'https://api.example.com',
-          userName: 'https://api.example.com',
-          password: 'https://api.example.com',
-          themeKey: 'agritel',
+          displayName: 'Niagara',
+          apiBaseUrl: "http://3.1.62.165:8080/api/v1/",
+          broker: "3.0.229.165",
+          userName: "niagara",
+          password: "niagara@123",
+          themeKey: 'niagara',
           showFlavorBanner: true,
         );
     }

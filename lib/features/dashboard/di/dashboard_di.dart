@@ -10,7 +10,6 @@ import '../../../core/di/injection.dart';
 import '../../../core/services/selected_controller_persistence.dart';
 import '../domain/usecases/control_motor_usecase.dart';
 import '../domain/usecases/update_change_from_usecase.dart';
-import '../presentation/cubit/dashboard_cubit.dart';
 import '../utils/dashboard_dispatcher.dart';
 import '../dashboard.dart';
 
@@ -28,8 +27,7 @@ void initDashboardDependencies() {
   sl.registerLazySingleton(() => UpdateChangeFromUsecase(sl()));
   sl.registerLazySingleton(() => ControlMotorUsecase(sl()));
 
-  sl.registerLazySingleton<DashboardPageCubit>(
-        () => DashboardPageCubit(
+  sl.registerLazySingleton<DashboardPageCubit>(() => DashboardPageCubit(
       fetchDashboardGroups: sl(),
       fetchControllers: sl(),
       updateChangeFromUsecase: sl(),
@@ -44,10 +42,5 @@ void initDashboardDependencies() {
   sl.registerLazySingleton<NodeStatusRepository>(() => NodeStatusRepositoryImpl(nodeStatusDataSource: sl()));
   sl.registerLazySingleton(() => GetNodeStatusUsecase(nodeStatusRepository: sl()));
   sl.registerFactory(() => NodeStatusCubit(getNodeStatusUsecase: sl()));
-  sl.registerFactory(
-        () => DashboardCubit(
-      remote: sl<DashboardRemoteDataSource>(),
-      dispatcher: sl<DashboardMessageDispatcher>(),
-    ),
-  );
+
 }
