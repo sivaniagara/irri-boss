@@ -138,7 +138,8 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
     final controllers =
         loadedState.groupControllers[groupId] ?? const <ControllerEntity>[];
-    if (controllerIndex < 0 || controllerIndex >= controllers.length) return null;
+    if (controllerIndex < 0 || controllerIndex >= controllers.length)
+      return null;
 
     return controllers[controllerIndex].deviceId;
   }
@@ -357,8 +358,8 @@ class DashboardPageCubit extends Cubit<DashboardState> {
         emit(DashboardError(message: failure.message));
       },
       (controllers) async {
-        final updatedControllers =
-            Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
+        final updatedControllers = Map<int, List<ControllerEntity>>.from(
+            currentState.groupControllers);
         updatedControllers[groupId] = controllers;
 
         String? selectedDeviceId;
@@ -450,7 +451,6 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     });
   }
 
-
   void updateServerTime(String deviceId, {String? date, String? time}) {
     if (state is! DashboardGroupsLoaded) return;
     final currentState = state as DashboardGroupsLoaded;
@@ -503,7 +503,8 @@ class DashboardPageCubit extends Cubit<DashboardState> {
           changeFromStatus: ChangeFromStatus.failure,
           errorMsg: failure.message)),
       (_) {
-        sl<MqttManager>().publish(deviceId, PublishMessageHelper.settingsPayload(payload));
+        sl<MqttManager>()
+            .publish(deviceId, PublishMessageHelper.settingsPayload(payload));
         emit(currentState.copyWith(changeFromStatus: ChangeFromStatus.success));
       },
     );
@@ -523,6 +524,17 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
     final cleanPayload = payload.replaceAll(",", "");
 
+    // Get model ID to determine if it's double pump
+    int modelId = 4; // default
+    for (var groupControllers in currentState.groupControllers.values) {
+      for (var controller in groupControllers) {
+        if (controller.deviceId == deviceId) {
+          modelId = controller.modelId;
+          break;
+        }
+      }
+    }
+
     if (cleanPayload.toUpperCase().contains("ON")) {
       // Step 1: Send MTROF to API
       await controlMotorUsecase(ControlMotorParams(
@@ -532,28 +544,34 @@ class DashboardPageCubit extends Cubit<DashboardState> {
         deviceId: deviceId,
         payload: "MTROF,",
       ));
-      
+
       // Publish MTROF to MQTT
-      sl<MqttManager>().publish(deviceId, PublishMessageHelper.settingsPayload("MTROF"));
-          
+      sl<MqttManager>()
+          .publish(deviceId, PublishMessageHelper.settingsPayload("MTROF"));
+
       // Step 2: Wait for 5 seconds
       await Future.delayed(const Duration(seconds: 5));
 
-      // Step 3: Send the original command (MTRON) to API
+      // Step 3: Send the appropriate ON command based on pump type
+      String onCommand = modelId == 27 ? "MOTOR1ON" : "MTRON";
       final onResult = await controlMotorUsecase(ControlMotorParams(
         userId: userId,
         controllerId: controllerId,
         programId: programId,
         deviceId: deviceId,
-        payload: payload,
+        payload: onCommand + ",",
       ));
 
       onResult.fold(
-        (failure) => emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.failure, errorMsg: failure.message)),
+        (failure) => emit(currentState.copyWith(
+            controlMotorStatus: ControlMotorStatus.failure,
+            errorMsg: failure.message)),
         (_) {
-          // Publish original payload (MTRON) to MQTT
-          sl<MqttManager>().publish(deviceId, PublishMessageHelper.settingsPayload(cleanPayload));
-          emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.success));
+          // Publish appropriate ON command to MQTT
+          sl<MqttManager>().publish(
+              deviceId, PublishMessageHelper.settingsPayload(onCommand));
+          emit(currentState.copyWith(
+              controlMotorStatus: ControlMotorStatus.success));
         },
       );
     } else {
@@ -567,10 +585,14 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       ));
 
       result.fold(
-        (failure) => emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.failure, errorMsg: failure.message)),
+        (failure) => emit(currentState.copyWith(
+            controlMotorStatus: ControlMotorStatus.failure,
+            errorMsg: failure.message)),
         (_) {
-          sl<MqttManager>().publish(deviceId, PublishMessageHelper.settingsPayload(cleanPayload));
-          emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.success));
+          sl<MqttManager>().publish(
+              deviceId, PublishMessageHelper.settingsPayload(cleanPayload));
+          emit(currentState.copyWith(
+              controlMotorStatus: ControlMotorStatus.success));
         },
       );
     }

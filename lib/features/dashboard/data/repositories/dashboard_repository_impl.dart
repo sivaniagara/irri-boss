@@ -12,7 +12,8 @@ class DashboardRepositoryImpl implements DashboardRepository {
   DashboardRepositoryImpl({required this.remote});
 
   @override
-  Future<Either<Failure, List<GroupDetailsEntity>>> fetchDashboardGroups(int userId, GoRouterState routeState) async {
+  Future<Either<Failure, List<GroupDetailsEntity>>> fetchDashboardGroups(
+      int userId, GoRouterState routeState) async {
     try {
       final response = await remote.fetchDashboardGroups(userId, routeState);
       return Right(response);
@@ -24,9 +25,11 @@ class DashboardRepositoryImpl implements DashboardRepository {
   }
 
   @override
-  Future<Either<Failure, List<ControllerEntity>>> fetchControllers(int userId, int groupId, GoRouterState routeState) async {
+  Future<Either<Failure, List<ControllerEntity>>> fetchControllers(
+      int userId, int groupId, GoRouterState routeState) async {
     try {
-      final response = await remote.fetchControllers(userId, groupId, routeState);
+      final response =
+          await remote.fetchControllers(userId, groupId, routeState);
       return Right(response);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
@@ -36,7 +39,8 @@ class DashboardRepositoryImpl implements DashboardRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> updateChangeFrom(UpdateChangeFromParam params) async {
+  Future<Either<Failure, Unit>> updateChangeFrom(
+      UpdateChangeFromParam params) async {
     try {
       final response = await remote.changeFrom(
         userId: params.userId,
@@ -45,9 +49,9 @@ class DashboardRepositoryImpl implements DashboardRepository {
         deviceId: params.deviceId,
         payload: params.payload,
       );
-      if(response){
+      if (response) {
         return Right(unit);
-      }else{
+      } else {
         return Left(ServerFailure('Change From Payload not sent'));
       }
     } on ServerException catch (e) {
@@ -60,22 +64,22 @@ class DashboardRepositoryImpl implements DashboardRepository {
   @override
   Future<Either<Failure, Unit>> controlMotor(ControlMotorParams params) async {
     try {
-      final response = await remote.changeFrom(
+      final response = await remote.controlMotor(
         userId: params.userId,
         controllerId: params.controllerId,
         programId: params.programId,
         deviceId: params.deviceId,
         payload: params.payload,
       );
-      if(response){
+      if (response) {
         return Right(unit);
-      }else{
-        return Left(ServerFailure('Change From Payload not sent'));
+      } else {
+        return Left(ServerFailure('Motor command not sent'));
       }
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('Failed to fetch controllers: $e'));
+      return Left(ServerFailure('Failed to send motor command: $e'));
     }
   }
 }

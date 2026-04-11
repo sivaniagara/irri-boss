@@ -59,7 +59,26 @@ class LiveMessageModel extends LiveMessageEntity {
       return _empty(externalLastSync);
     }
 
+    // Check if this looks like stale cached data (all zeros or placeholder values)
     final parts = message.split(',').map((s) => s.trim()).toList();
+    if (parts.length >= 10) {
+      bool looksLikeStaleData = true;
+      // Check if first 10 values are all zeros, empty, or obvious placeholders
+      for (int i = 0; i < 10 && i < parts.length; i++) {
+        final val = parts[i];
+        if (val.isNotEmpty &&
+            val != '0' &&
+            val != '0.0' &&
+            val != 'NA' &&
+            val != '--') {
+          looksLikeStaleData = false;
+          break;
+        }
+      }
+      if (looksLikeStaleData) {
+        return _empty(externalLastSync);
+      }
+    }
 
     String safeString(int index, String defaultValue) {
       if (index >= parts.length) return defaultValue;
@@ -348,33 +367,33 @@ class LiveMessageModel extends LiveMessageEntity {
       valveOnOff: '0',
       liveDisplay1: '',
       liveDisplay2: '',
-      rVoltage: '0',
-      yVoltage: '0',
-      bVoltage: '0',
-      ryVoltage: '0',
-      ybVoltage: '0',
-      brVoltage: '0',
-      rCurrent: '0',
-      yCurrent: '0',
-      bCurrent: '0',
+      rVoltage: '--',
+      yVoltage: '--',
+      bVoltage: '--',
+      ryVoltage: '--',
+      ybVoltage: '--',
+      brVoltage: '--',
+      rCurrent: '--',
+      yCurrent: '--',
+      bCurrent: '--',
       phase: 'NA',
-      signal: '0',
-      batVolt: '0',
+      signal: '--',
+      batVolt: '--',
       modeOfOperation: '',
       programName: '',
       zoneNo: '0',
       valveForZone: '0',
       zoneDuration: '00:00:00',
       zoneRemainingTime: '00:00:00',
-      prsIn: '0.0',
-      prsOut: '0.0',
-      flowRate: '0.0',
-      wellLevel: '0',
-      wellPercent: '0',
+      prsIn: '--',
+      prsOut: '--',
+      flowRate: '--',
+      wellLevel: '--',
+      wellPercent: '--',
       fertStatus: const ['0', '0', '0', '0', '0', '0'],
-      ec: '0',
-      ph: '0',
-      totalMeterFlow: '0',
+      ec: '--',
+      ph: '--',
+      totalMeterFlow: '--',
       runTimeToday: '00:00:00',
       runTimePrevious: '00:00:00',
       flowPrevDay: '0',

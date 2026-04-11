@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection.dart';
@@ -37,25 +36,24 @@ class DashboardCubit extends Cubit<bool> {
         deviceId: deviceId,
         dualPump: dualPump,
         m1on: m1on,
-        m2on: m2on ,
+        m2on: m2on,
         mOff: mOff,
       );
 
       final mqtt = sl.get<MqttService>();
 
       if (isOn && !dualPump) {
-        mqtt.publish(deviceId, jsonEncode({"sentSms": "MTROF"}));
+        mqtt.publish(deviceId, "MTROF");
         await Future.delayed(const Duration(seconds: 5));
-        final onSms =  "MTRON";
-        mqtt.publish(deviceId, jsonEncode({"sentSms": onSms}));
+        final onSms = "MTRON";
+        mqtt.publish(deviceId, onSms);
       } else if (isOn && dualPump) {
-        mqtt.publish(deviceId, jsonEncode({"sentSms": "MTROF"}));
+        mqtt.publish(deviceId, "MTROF");
         await Future.delayed(const Duration(seconds: 5));
         final onSms = m1on ? "MOTOR1ON" : "MOTOR2ON";
-        mqtt.publish(deviceId, jsonEncode({"sentSms": onSms}));
-      }
-      else {
-        mqtt.publish(deviceId, jsonEncode({"sentSms": "MTROF"}));
+        mqtt.publish(deviceId, onSms);
+      } else {
+        mqtt.publish(deviceId, "MTROF");
       }
     } catch (e) {
       debugPrint("Motor switch error: $e");
@@ -63,6 +61,4 @@ class DashboardCubit extends Cubit<bool> {
 
     emit(false);
   }
-
 }
-

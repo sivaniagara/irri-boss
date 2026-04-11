@@ -286,7 +286,6 @@ class AppRouter {
                     );
                   },
               ),
-              ...pumpSettingsRoutes,
               ...PowerGraphRoutes,
               ...FaultMsgPagesRoutes,
             ]
@@ -318,6 +317,7 @@ class AppRouter {
         ),
         ...editProgramGoRoutes,
         ...irrigationSettingGoRoutes,
+        ...pumpSettingsRoutes,
         ...mappingAndUnmappingNodesGoRoutes,
         ...commonIdSettingsGoRoutes,
         GoRoute(

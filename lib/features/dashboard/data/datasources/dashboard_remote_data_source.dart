@@ -16,9 +16,20 @@ import '../../domain/dashboard_domain.dart';
 import '../../data/dashboard_data.dart';
 
 abstract class DashboardRemoteDataSource {
-  Future<List<GroupDetailsEntity>> fetchDashboardGroups(int userId, GoRouterState routeState);
-  Future<List<ControllerEntity>> fetchControllers(int userId, int groupId, GoRouterState routeState);
-  Future<void> motorOnOff({required int userId, required int controllerId, required String deviceId, required int subUserId, required String status, required bool dualPump,required bool m1on,required bool m2on,required bool mOff,
+  Future<List<GroupDetailsEntity>> fetchDashboardGroups(
+      int userId, GoRouterState routeState);
+  Future<List<ControllerEntity>> fetchControllers(
+      int userId, int groupId, GoRouterState routeState);
+  Future<void> motorOnOff({
+    required int userId,
+    required int controllerId,
+    required String deviceId,
+    required int subUserId,
+    required String status,
+    required bool dualPump,
+    required bool m1on,
+    required bool m2on,
+    required bool mOff,
   });
   Future<bool> changeFrom({
     required String userId,
@@ -26,6 +37,12 @@ abstract class DashboardRemoteDataSource {
     required String programId,
     required String deviceId,
     required String payload,
+  });
+  Future<void> logHistory({
+    required String userId,
+    required int subuserId,
+    required String controllerId,
+    required String sentSms,
   });
   Future<bool> controlMotor({
     required String userId,
@@ -44,9 +61,11 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
   });
 
   @override
-  Future<List<GroupDetailsEntity>> fetchDashboardGroups(int userId, GoRouterState routeState) async {
+  Future<List<GroupDetailsEntity>> fetchDashboardGroups(
+      int userId, GoRouterState routeState) async {
     try {
-      final endpoint = buildUrl(DashboardUrls.dashboardForGroupUrl, {'userId': userId});
+      final endpoint =
+          buildUrl(DashboardUrls.dashboardForGroupUrl, {'userId': userId});
       final response = await apiClient.get(endpoint);
       return handleListResponse<GroupDetails>(
         response,
@@ -61,19 +80,31 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
   }
 
   @override
-  Future<List<ControllerEntity>> fetchControllers(int userId, int groupId, GoRouterState routeState) async {
+  Future<List<ControllerEntity>> fetchControllers(
+      int userId, int groupId, GoRouterState routeState) async {
     try {
-      final extra = routeState.extra != null ? routeState.extra as Map<String, dynamic> : {};
-      final queryParams = routeState.uri.queryParameters as Map<String, dynamic>;
-      String endpoint = buildUrl(DashboardUrls.dashboardUrl, {'userId': userId, 'groupId': groupId});
-      if(extra.containsKey('name') && extra['name'] != DashBoardRoutes.dashboard) {
-        if(extra['name'] == DealerRoutes.sharedDevice) {
-          endpoint = buildUrl(DealerUrls.getCustomerSharedDevice, {'userId': queryParams['userId'], 'dealerId': queryParams['dealerId']});
+      final extra = routeState.extra != null
+          ? routeState.extra as Map<String, dynamic>
+          : {};
+      final queryParams =
+          routeState.uri.queryParameters as Map<String, dynamic>;
+      String endpoint = buildUrl(
+          DashboardUrls.dashboardUrl, {'userId': userId, 'groupId': groupId});
+      if (extra.containsKey('name') &&
+          extra['name'] != DashBoardRoutes.dashboard) {
+        if (extra['name'] == DealerRoutes.sharedDevice) {
+          endpoint = buildUrl(DealerUrls.getCustomerSharedDevice, {
+            'userId': queryParams['userId'],
+            'dealerId': queryParams['dealerId']
+          });
         }
-        endpoint = buildUrl(DealerUrls.getDealerCustomerDeviceDetails, {'userId': queryParams['userId'], 'dealerId': queryParams['dealerId']});
+        endpoint = buildUrl(DealerUrls.getDealerCustomerDeviceDetails, {
+          'userId': queryParams['userId'],
+          'dealerId': queryParams['dealerId']
+        });
       }
       final response = await apiClient.get(endpoint);
-      for(var i in response['data']){
+      for (var i in response['data']) {
         print("controller response => $i");
       }
       return handleListResponse<ControllerModel>(
@@ -104,7 +135,11 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
   }) async {
     print("motor on off call");
     final motorSms = status == "1" ? "MOTORON" : "MTROF";
-    final motor2Sms = status == "1" ?  m1on ? "MOTOR1ON"  : "MOTOR2ON" : "MTROF";
+    final motor2Sms = status == "1"
+        ? m1on
+            ? "MOTOR1ON"
+            : "MOTOR2ON"
+        : "MTROF";
     final sendsmsName = dualPump ? motor2Sms : motorSms;
 
     final payload = {
@@ -121,74 +156,103 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
     final response = await apiClient.put(endpoint, body: payload);
 
     if (response['code'] != 200) {
-      showToast(response['message'],backgroundColor: Colors.red,textColor: Colors.white);
+      showToast(response['message'],
+          backgroundColor: Colors.red, textColor: Colors.white);
       throw ServerException(message: "Motor switch failed");
     }
-    showToast(response['message'],backgroundColor: Colors.green,textColor: Colors.white);
+    showToast(response['message'],
+        backgroundColor: Colors.green, textColor: Colors.white);
 
+    // Log motor command to history for Send & Receive page
+    await logHistory(
+      userId: userId.toString(),
+      subuserId: subUserId,
+      controllerId: controllerId.toString(),
+      sentSms: sendsmsName,
+    );
   }
 
   @override
-  Future<bool> changeFrom({
-    required String userId,
-    required String controllerId,
-    required String programId,
-    required String deviceId,
-    required String payload
-  }) async{
-    try{
-      String endPoint = buildUrl(
-        DashboardUrls.sentAndReceive,
-        {
-          'userId': userId,
-          'controllerId': controllerId,
-          'programId': programId,
-        }
-      );
+  Future<bool> changeFrom(
+      {required String userId,
+      required String controllerId,
+      required String programId,
+      required String deviceId,
+      required String payload}) async {
+    try {
+      String endPoint = buildUrl(DashboardUrls.sentAndReceive, {
+        'userId': userId,
+        'controllerId': controllerId,
+        'programId': programId,
+      });
 
-      final response = await apiClient.post(
-          endPoint,
-          body: {
-            "sentAndReceived": [
-              PublishMessageHelper.settingsPayload(payload)
-          ]}
-      );
+      final response = await apiClient.post(endPoint, body: {
+        "sentAndReceived": [PublishMessageHelper.settingsPayload(payload)]
+      });
       await Future.delayed(Duration(seconds: 3));
       return true;
-    }catch (e){
+    } catch (e) {
       rethrow;
     }
   }
 
   @override
-  Future<bool> controlMotor({
-    required String userId,
-    required String controllerId,
-    required String programId,
-    required String deviceId,
-    required String payload
-  }) async{
-    try{
-      String endPoint = buildUrl(
-          DashboardUrls.sentAndReceive,
-          {
-            'userId': userId,
-            'controllerId': controllerId,
-            'programId': programId,
-          }
-      );
+  Future<bool> controlMotor(
+      {required String userId,
+      required String controllerId,
+      required String programId,
+      required String deviceId,
+      required String payload}) async {
+    try {
+      String endPoint = buildUrl(DashboardUrls.sentAndReceive, {
+        'userId': userId,
+        'controllerId': controllerId,
+        'programId': programId,
+      });
 
-      final response = await apiClient.post(
-          endPoint,
-          body: {
-            "sentAndReceived": [
-              PublishMessageHelper.settingsPayload(payload)
-            ]}
-      );
+      final response = await apiClient.post(endPoint, body: {
+        "sentAndReceived": [PublishMessageHelper.settingsPayload(payload)]
+      });
       await Future.delayed(Duration(seconds: 3));
       return true;
-    }catch (e){
+    } catch (e) {
       rethrow;
+    }
+  }
+
+  @override
+  Future<void> logHistory({
+    required String userId,
+    required int subuserId,
+    required String controllerId,
+    required String sentSms,
+  }) async {
+    try {
+      final historyEndpoint = DashboardUrls.sentAndReceive
+          .replaceAll(
+            ':userId',
+            userId,
+          )
+          .replaceAll(
+            ':controllerId',
+            controllerId,
+          )
+          .replaceAll(
+            ':programId',
+            '1', // Default program ID for motor commands
+          );
+
+      await apiClient.post(
+        historyEndpoint,
+        body: {
+          "sentAndReceived": [
+            {"sentSms": sentSms}
+          ]
+        },
+      );
+    } catch (e) {
+      // Log history failure shouldn't affect the main operation
+      print("Failed to log motor command to history: $e");
     }
   }
 }

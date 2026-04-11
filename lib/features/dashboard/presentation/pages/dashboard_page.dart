@@ -27,12 +27,18 @@ import '../../domain/entities/controller_entity.dart';
 import '../../domain/entities/group_entity.dart';
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 
+enum BottomNavigationOption {
+  home,
+  report,
+  manual,
+  setting,
+  sentAndReceive,
+  faultMsgMsgPage
+}
 
-enum BottomNavigationOption{home, report, manual, setting, sentAndReceive, faultMsgMsgPage}
-
-extension BottomNavivigationOptionExtension on BottomNavigationOption{
-  String title(){
-    switch (this){
+extension BottomNavivigationOptionExtension on BottomNavigationOption {
+  String title() {
+    switch (this) {
       case BottomNavigationOption.home:
         return 'Home';
       case BottomNavigationOption.report:
@@ -73,7 +79,8 @@ const int fakeGroupId = 0;
 
 class _DashboardPageState extends State<DashboardPage> {
   BottomNavigationOption selectedBottomNavigation = BottomNavigationOption.home;
-  final NotchBottomBarController _controller = NotchBottomBarController(index: 0);
+  final NotchBottomBarController _controller =
+      NotchBottomBarController(index: 0);
   Timer? _liveTimer;
 
   @override
@@ -113,7 +120,7 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     final queryParams = GoRouterState.of(context).uri.queryParameters;
     final authState = context.read<AuthBloc>().state;
-    
+
     int userId = 0;
     int userType = 1;
 
@@ -132,7 +139,8 @@ class _DashboardPageState extends State<DashboardPage> {
     final groupId = queryParams['groupId'];
 
     if (userId <= 0) {
-      return const Center(child: Text('Invalid user session. Please log in again.'));
+      return const Center(
+          child: Text('Invalid user session. Please log in again.'));
     }
 
     return MultiBlocProvider(
@@ -159,19 +167,23 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _initializeCubit(
-      DashboardPageCubit cubit,
-      BuildContext context,
-      int userId,
-      int userType,
-      String? groupId,
-      ) {
+    DashboardPageCubit cubit,
+    BuildContext context,
+    int userId,
+    int userType,
+    String? groupId,
+  ) {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (cubit.state is! DashboardLoading && cubit.state is! DashboardGroupsLoaded) {
+      if (cubit.state is! DashboardLoading &&
+          cubit.state is! DashboardGroupsLoaded) {
         await cubit.getGroups(userId, GoRouterState.of(context), userType);
       }
 
-      context.read<DashboardPageCubit>().stream
-          .where((state) => state is DashboardGroupsLoaded && (state).groups.isNotEmpty)
+      context
+          .read<DashboardPageCubit>()
+          .stream
+          .where((state) =>
+              state is DashboardGroupsLoaded && (state).groups.isNotEmpty)
           .take(1)
           .listen((state) {
         final loadedState = state as DashboardGroupsLoaded;
@@ -181,15 +193,16 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _autoSelectGroupIfNeeded(
-      DashboardPageCubit cubit,
-      DashboardGroupsLoaded state,
-      String? groupIdParam,
-      int userId,
-      BuildContext context,
-      ) {
+    DashboardPageCubit cubit,
+    DashboardGroupsLoaded state,
+    String? groupIdParam,
+    int userId,
+    BuildContext context,
+  ) {
     if (state.selectedGroupId == null && state.groups.isNotEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final targetGroupId = groupIdParam != null ? int.tryParse(groupIdParam) : null;
+        final targetGroupId =
+            groupIdParam != null ? int.tryParse(groupIdParam) : null;
         final groupIdToSelect = targetGroupId ?? state.groups[0].userGroupId;
         cubit.selectGroup(groupIdToSelect, userId, GoRouterState.of(context));
       });
@@ -197,16 +210,17 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   bool _isFakeGroupMode(DashboardGroupsLoaded state) {
-    return state.groups.length == 1 && state.groups.first.userGroupId == fakeGroupId;
+    return state.groups.length == 1 &&
+        state.groups.first.userGroupId == fakeGroupId;
   }
 
   Widget _buildContent(
-      BuildContext context,
-      DashboardState state,
-      int userId,
-      int userType,
-      DashboardPageCubit cubit,
-      ) {
+    BuildContext context,
+    DashboardState state,
+    int userId,
+    int userType,
+    DashboardPageCubit cubit,
+  ) {
     if (state is DashboardLoading) {
       return GlassyWrapper(
         child: const Scaffold(
@@ -231,7 +245,9 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Image.asset(AppImages.logoSmall),
             ),
           ),
-          drawer: userType == 1 ? AppDrawer(userData: {"userId": userId, "userType": userType}) : null,
+          drawer: userType == 1
+              ? AppDrawer(userData: {"userId": userId, "userType": userType})
+              : null,
           body: Center(
             child: Text(
               'Error: ${state.message}',
@@ -264,7 +280,9 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Image.asset(AppImages.logoSmall),
             ),
           ),
-          drawer: userType == 1 ? AppDrawer(userData: {"userId": userId, "userType": userType}) : null,
+          drawer: userType == 1
+              ? AppDrawer(userData: {"userId": userId, "userType": userType})
+              : null,
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -291,51 +309,64 @@ class _DashboardPageState extends State<DashboardPage> {
       );
     }
 
-    final (selectedGroup, selectedController, controllers) = _getSelectedGroupAndController(loadedState);
+    final (selectedGroup, selectedController, controllers) =
+        _getSelectedGroupAndController(loadedState);
 
     // Identify if the current route is one that should show the shell (Appbar/Nav)
     final String currentPath = GoRouterState.of(context).uri.path;
-    
+
     // Define the 5 main tabs that should show the shell's AppBar
     final bool isDashboard = currentPath == DashBoardRoutes.dashboard;
     final bool isReport = currentPath == DashBoardRoutes.report;
     final bool isStandalone = currentPath == DashBoardRoutes.standalone;
     final bool isSettings = currentPath == DashBoardRoutes.settings;
     final bool isSentAndReceive = currentPath == DashBoardRoutes.sentAndReceive;
-    
+
     // Specific tabs for Standalone Pump models that should also show their "title" AppBar but NOT the dashboard's special AppBar
     final bool isFaultMsg = currentPath == FaultMsgPageRoutes.FaultMsgMsgPage;
-    final bool isPowerGraph = currentPath == PowerGraphPageRoutes.PowerGraphPage;
+    final bool isPowerGraph =
+        currentPath == PowerGraphPageRoutes.PowerGraphPage;
 
     // Determine if we are on a main tab
-    final bool isMainTab = isDashboard || isReport || isStandalone || isSettings || isSentAndReceive || isFaultMsg || isPowerGraph;
+    final bool isMainTab = isDashboard ||
+        isReport ||
+        isStandalone ||
+        isSettings ||
+        isSentAndReceive ||
+        isFaultMsg ||
+        isPowerGraph;
 
     return BlocListener<DashboardPageCubit, DashboardState>(
       listener: (context, state) {
         if (state is DashboardGroupsLoaded &&
             state.groupControllers.isNotEmpty &&
-            context.read<ControllerContextCubit>().state is! ControllerContextLoaded) {
+            context.read<ControllerContextCubit>().state
+                is! ControllerContextLoaded) {
           final firstController = state.groupControllers.values.first.first;
           final authState = context.read<AuthBloc>().state as Authenticated;
 
           context.read<ControllerContextCubit>().setContext(
-            userId: authState.user.userDetails.id.toString(),
-            controllerId: firstController.userDeviceId.toString(),
-            userType: authState.user.userDetails.userType.toString(),
-            subUserId: '0', 
-            deviceId: firstController.deviceId,
-            modelId: firstController.modelId,
-          );
+                userId: authState.user.userDetails.id.toString(),
+                controllerId: firstController.userDeviceId.toString(),
+                userType: authState.user.userDetails.userType.toString(),
+                subUserId: '0',
+                deviceId: firstController.deviceId,
+                modelId: firstController.modelId,
+              );
         }
       },
       child: Scaffold(
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: _buildBottomNavigationBar(userId, userType, selectedController?.modelId ?? 4),
-        // Logic: ONLY show the shell's AppBar if we are on a main tab. 
+        floatingActionButton: isMainTab
+            ? _buildBottomNavigationBar(
+                userId, userType, selectedController?.modelId ?? 4)
+            : null,
+        // Logic: ONLY show the shell's AppBar if we are on a main tab.
         // Sub-pages (like PumpSettingsMenu, SumpSettings) should have NO AppBar from this shell.
-        appBar: !isMainTab 
-            ? null 
-            : (selectedBottomNavigation == BottomNavigationOption.home && isDashboard) 
+        appBar: !isMainTab
+            ? null
+            : (selectedBottomNavigation == BottomNavigationOption.home &&
+                    isDashboard)
                 ? _buildAppBar(
                     selectedGroup,
                     selectedController,
@@ -345,22 +376,28 @@ class _DashboardPageState extends State<DashboardPage> {
                     context,
                     userId,
                     userType,
-                  ) 
-                : (selectedBottomNavigation == BottomNavigationOption.sentAndReceive && isSentAndReceive)
+                  )
+                : (selectedBottomNavigation ==
+                            BottomNavigationOption.sentAndReceive &&
+                        isSentAndReceive)
                     ? null // Sent and Receive has its own or we hide it
                     : CustomAppBar(
                         title: selectedBottomNavigation.title(),
                       ),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        drawer: userType == 1 ? AppDrawer(userData: widget.userData,) : null,
+        drawer: userType == 1
+            ? AppDrawer(
+                userData: widget.userData,
+              )
+            : null,
         body: selectedController == null
             ? const Center(child: CircularProgressIndicator())
             : widget.child,
       ),
     );
   }
-  
-  Widget getBottomNavigationForDrip(int userId, int userType){
+
+  Widget getBottomNavigationForDrip(int userId, int userType) {
     return AnimatedNotchBottomBar(
       notchBottomBarController: _controller,
       color: Colors.white,
@@ -376,49 +413,65 @@ class _DashboardPageState extends State<DashboardPage> {
       itemLabelStyle: const TextStyle(fontSize: 10, color: Colors.black),
       bottomBarItems: [
         BottomBarItem(
-          inActiveItem: Image.asset(AppImages.inActiveHomeIcon,),
+          inActiveItem: Image.asset(
+            AppImages.inActiveHomeIcon,
+          ),
           activeItem: Image.asset(AppImages.activeHomeIcon),
           itemLabel: 'Home',
         ),
         BottomBarItem(
-          inActiveItem: Image.asset(AppImages.inActiveReportIcon,),
+          inActiveItem: Image.asset(
+            AppImages.inActiveReportIcon,
+          ),
           activeItem: Image.asset(AppImages.activeReportIcon),
           itemLabel: 'Report',
         ),
         BottomBarItem(
-          inActiveItem: Image.asset(AppImages.inActiveManualIcon,),
+          inActiveItem: Image.asset(
+            AppImages.inActiveManualIcon,
+          ),
           activeItem: Image.asset(AppImages.activeManualIcon),
           itemLabel: 'Manual',
         ),
         BottomBarItem(
-          inActiveItem: Image.asset(AppImages.inActiveSettingIcon,),
+          inActiveItem: Image.asset(
+            AppImages.inActiveSettingIcon,
+          ),
           activeItem: Image.asset(AppImages.activeSettingIcon),
           itemLabel: 'Settings',
         ),
         BottomBarItem(
-          inActiveItem: Image.asset(AppImages.inActiveSentIcon,),
+          inActiveItem: Image.asset(
+            AppImages.inActiveSentIcon,
+          ),
           activeItem: Image.asset(AppImages.activeSentIcon),
           itemLabel: 'Message',
         ),
       ],
       onTap: (index) {
-        if(index == 0){
+        if (index == 0) {
           selectedBottomNavigation = BottomNavigationOption.home;
-          context.pushReplacement("${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType");
-        }else if(index == 1){
+          context.pushReplacement(
+              "${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType");
+        } else if (index == 1) {
           selectedBottomNavigation = BottomNavigationOption.report;
-          final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
-          print("controllerContext.userId:${controllerContext.userId},controllerContext.controllerId:${controllerContext.controllerId},");
-          context.pushReplacement("${DashBoardRoutes.report}?userId=$userId&userType=$userType",  extra: {
-            "userId": controllerContext.userId,
-            "controllerId": controllerContext.controllerId,
-            "userType": controllerContext.userType,
-            "subUserId": controllerContext.subUserId,
-            "deviceId": controllerContext.deviceId,
-          });
-        }else if(index == 2){
+          final controllerContext = context.read<ControllerContextCubit>().state
+              as ControllerContextLoaded;
+          print(
+              "controllerContext.userId:${controllerContext.userId},controllerContext.controllerId:${controllerContext.controllerId},");
+          context.pushReplacement(
+              "${DashBoardRoutes.report}?userId=$userId&userType=$userType",
+              extra: {
+                "userId": controllerContext.userId,
+                "controllerId": controllerContext.controllerId,
+                "userType": controllerContext.userType,
+                "subUserId": controllerContext.subUserId,
+                "deviceId": controllerContext.deviceId,
+              });
+        } else if (index == 2) {
           selectedBottomNavigation = BottomNavigationOption.manual;
-          final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+          final controllerContext = context.read<ControllerContextCubit>().state
+              as ControllerContextLoaded;
           context.pushReplacement(
               "${DashBoardRoutes.standalone}?userId=$userId&userType=$userType",
               extra: {
@@ -427,21 +480,23 @@ class _DashboardPageState extends State<DashboardPage> {
                 "userType": controllerContext.userType,
                 "subUserId": controllerContext.subUserId,
                 "deviceId": controllerContext.deviceId,
-              }
-          );
-        }else if(index == 3){
+              });
+        } else if (index == 3) {
           selectedBottomNavigation = BottomNavigationOption.setting;
-          context.pushReplacement("${DashBoardRoutes.settings}?userId=$userId&userType=$userType");
-        }else if(index == 4){
+          context.pushReplacement(
+              "${DashBoardRoutes.settings}?userId=$userId&userType=$userType");
+        } else if (index == 4) {
           selectedBottomNavigation = BottomNavigationOption.sentAndReceive;
-          context.pushReplacement("${DashBoardRoutes.sentAndReceive}?userId=$userId&userType=$userType");
+          context.pushReplacement(
+              "${DashBoardRoutes.sentAndReceive}?userId=$userId&userType=$userType");
         }
         setState(() {});
       },
       kIconSize: 24.0,
     );
   }
-  Widget getBottomNavigationForPump(int userId, int userType){
+
+  Widget getBottomNavigationForPump(int userId, int userType) {
     return AnimatedNotchBottomBar(
       notchBottomBarController: _controller,
       color: Colors.white,
@@ -457,50 +512,66 @@ class _DashboardPageState extends State<DashboardPage> {
       itemLabelStyle: const TextStyle(fontSize: 10, color: Colors.black),
       bottomBarItems: [
         BottomBarItem(
-          inActiveItem: Image.asset(AppImages.inActiveHomeIcon,),
+          inActiveItem: Image.asset(
+            AppImages.inActiveHomeIcon,
+          ),
           activeItem: Image.asset(AppImages.activeHomeIcon),
           itemLabel: 'Home',
         ),
         BottomBarItem(
-          inActiveItem: Image.asset(AppImages.inActiveReportIcon,),
+          inActiveItem: Image.asset(
+            AppImages.inActiveReportIcon,
+          ),
           activeItem: Image.asset(AppImages.activeReportIcon),
           itemLabel: 'Power',
         ),
         BottomBarItem(
-          inActiveItem: Image.asset(AppImages.inActiveManualIcon,),
+          inActiveItem: Image.asset(
+            AppImages.inActiveManualIcon,
+          ),
           activeItem: Image.asset(AppImages.activeManualIcon),
           itemLabel: 'Fault Msg',
         ),
         BottomBarItem(
-          inActiveItem: Image.asset(AppImages.inActiveSettingIcon,),
+          inActiveItem: Image.asset(
+            AppImages.inActiveSettingIcon,
+          ),
           activeItem: Image.asset(AppImages.activeSettingIcon),
           itemLabel: 'Settings',
         ),
         BottomBarItem(
-          inActiveItem: Image.asset(AppImages.inActiveSentIcon,),
+          inActiveItem: Image.asset(
+            AppImages.inActiveSentIcon,
+          ),
           activeItem: Image.asset(AppImages.activeSentIcon),
           itemLabel: 'Message',
         ),
       ],
       onTap: (index) {
-        if(index == 0){
+        if (index == 0) {
           selectedBottomNavigation = BottomNavigationOption.home;
-          context.pushReplacement("${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType");
-        }else if(index == 1){
+          context.pushReplacement(
+              "${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType");
+        } else if (index == 1) {
           selectedBottomNavigation = BottomNavigationOption.report;
-          final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
-          print("controllerContext.userId:${controllerContext.userId},controllerContext.controllerId:${controllerContext.controllerId},");
-          context.pushReplacement("${PowerGraphPageRoutes.PowerGraphPage}?userId=$userId&userType=$userType",  extra: {
-            "userId": controllerContext.userId,
-            "controllerId": controllerContext.controllerId,
-            "userType": controllerContext.userType,
-            "subUserId": controllerContext.subUserId,
-            "deviceId": controllerContext.deviceId,
-            "modelId": controllerContext.modelId,
-          });
-        }else if(index == 2){
+          final controllerContext = context.read<ControllerContextCubit>().state
+              as ControllerContextLoaded;
+          print(
+              "controllerContext.userId:${controllerContext.userId},controllerContext.controllerId:${controllerContext.controllerId},");
+          context.pushReplacement(
+              "${PowerGraphPageRoutes.PowerGraphPage}?userId=$userId&userType=$userType",
+              extra: {
+                "userId": controllerContext.userId,
+                "controllerId": controllerContext.controllerId,
+                "userType": controllerContext.userType,
+                "subUserId": controllerContext.subUserId,
+                "deviceId": controllerContext.deviceId,
+                "modelId": controllerContext.modelId,
+              });
+        } else if (index == 2) {
           selectedBottomNavigation = BottomNavigationOption.faultMsgMsgPage;
-          final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
+          final controllerContext = context.read<ControllerContextCubit>().state
+              as ControllerContextLoaded;
           context.pushReplacement(
               "${FaultMsgPageRoutes.FaultMsgMsgPage}?userId=$userId&userType=$userType",
               extra: {
@@ -509,14 +580,15 @@ class _DashboardPageState extends State<DashboardPage> {
                 "userType": controllerContext.userType,
                 "subUserId": controllerContext.subUserId,
                 "deviceId": controllerContext.deviceId,
-              }
-          );
-        }else if(index == 3){
+              });
+        } else if (index == 3) {
           selectedBottomNavigation = BottomNavigationOption.setting;
-          context.pushReplacement("${DashBoardRoutes.settings}?userId=$userId&userType=$userType");
-        }else if(index == 4){
+          context.pushReplacement(
+              "${DashBoardRoutes.settings}?userId=$userId&userType=$userType");
+        } else if (index == 4) {
           selectedBottomNavigation = BottomNavigationOption.sentAndReceive;
-          context.pushReplacement("${DashBoardRoutes.sentAndReceive}?userId=$userId&userType=$userType");
+          context.pushReplacement(
+              "${DashBoardRoutes.sentAndReceive}?userId=$userId&userType=$userType");
         }
         setState(() {});
       },
@@ -527,18 +599,15 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildBottomNavigationBar(int userId, int userType, int modelId) {
     if (AppConstants.isIrrigationLive(modelId)) {
       return getBottomNavigationForDrip(userId, userType);
-    }
-    else {
+    } else {
       return getBottomNavigationForPump(userId, userType);
     }
-
-
   }
 
   (GroupDetailsEntity, ControllerEntity?, List<ControllerEntity>)
-  _getSelectedGroupAndController(DashboardGroupsLoaded state) {
+      _getSelectedGroupAndController(DashboardGroupsLoaded state) {
     final selectedGroup = state.groups.firstWhere(
-          (group) => group.userGroupId == state.selectedGroupId,
+      (group) => group.userGroupId == state.selectedGroupId,
       orElse: () => state.groups[0],
     );
 
@@ -546,36 +615,45 @@ class _DashboardPageState extends State<DashboardPage> {
     final effectiveIndex = controllers.isNotEmpty
         ? (state.selectedControllerIndex ?? 0).clamp(0, controllers.length - 1)
         : -1;
-    final selectedController = controllers.isNotEmpty ? controllers[effectiveIndex] : null;
+    final selectedController =
+        controllers.isNotEmpty ? controllers[effectiveIndex] : null;
 
     return (selectedGroup, selectedController, controllers);
   }
 
   PreferredSizeWidget? _buildProperAppBar(
-      String location,
-      GroupDetailsEntity selectedGroup,
-      ControllerEntity? selectedController,
-      List<ControllerEntity> controllers,
-      DashboardGroupsLoaded state,
-      DashboardPageCubit cubit,
-      BuildContext context,
-      int userId,
-      int userType,
-      ) {
+    String location,
+    GroupDetailsEntity selectedGroup,
+    ControllerEntity? selectedController,
+    List<ControllerEntity> controllers,
+    DashboardGroupsLoaded state,
+    DashboardPageCubit cubit,
+    BuildContext context,
+    int userId,
+    int userType,
+  ) {
     if (location == DashBoardRoutes.dashboard) {
-      return _buildAppBar(selectedGroup, selectedController, controllers, state, cubit, context, userId, userType);
+      return _buildAppBar(selectedGroup, selectedController, controllers, state,
+          cubit, context, userId, userType);
     }
 
     String? title;
-    if (location == DashBoardRoutes.report) title = "Report";
-    else if (location == DashBoardRoutes.standalone) title = "Manual";
-    else if (location == DashBoardRoutes.settings) title = "Setting";
-    else if (location == DashBoardRoutes.sentAndReceive) title = "Sent And Receive";
-    else if (location == FaultMsgPageRoutes.FaultMsgMsgPage) title = "Fault MSG";
+    if (location == DashBoardRoutes.report)
+      title = "Report";
+    else if (location == DashBoardRoutes.standalone)
+      title = "Manual";
+    else if (location == DashBoardRoutes.settings)
+      title = "Setting";
+    else if (location == DashBoardRoutes.sentAndReceive)
+      title = "Sent And Receive";
+    else if (location == FaultMsgPageRoutes.FaultMsgMsgPage)
+      title = "Fault MSG";
 
     if (title != null) {
       return AppBar(
-        title: Text(title, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text(title,
+            style: const TextStyle(
+                color: Colors.black, fontWeight: FontWeight.bold)),
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -593,15 +671,15 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   PreferredSizeWidget _buildAppBar(
-      GroupDetailsEntity selectedGroup,
-      ControllerEntity? selectedController,
-      List<ControllerEntity> controllers,
-      DashboardGroupsLoaded state,
-      DashboardPageCubit cubit,
-      BuildContext context,
-      int userId,
-      int userType,
-      ) {
+    GroupDetailsEntity selectedGroup,
+    ControllerEntity? selectedController,
+    List<ControllerEntity> controllers,
+    DashboardGroupsLoaded state,
+    DashboardPageCubit cubit,
+    BuildContext context,
+    int userId,
+    int userType,
+  ) {
     return AppBar(
       title: Container(
         width: 100,
@@ -611,9 +689,7 @@ class _DashboardPageState extends State<DashboardPage> {
           borderRadius: BorderRadius.circular(6),
         ),
         alignment: Alignment.center,
-        child: Image.asset(
-            AppImages.logoSmall
-        ),
+        child: Image.asset(AppImages.logoSmall),
       ),
       bottom: _buildAppBarBottom(
         selectedGroup,
@@ -635,7 +711,9 @@ class _DashboardPageState extends State<DashboardPage> {
           onPressed: null,
           icon: Icon(
             Icons.circle,
-            color: selectedController?.ctrlStatusFlag == '1' ? Colors.green : Colors.red,
+            color: selectedController?.ctrlStatusFlag == '1'
+                ? Colors.green
+                : Colors.red,
           ),
         ),
       ],
@@ -643,26 +721,25 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   PreferredSize _buildAppBarBottom(
-      GroupDetailsEntity selectedGroup,
-      ControllerEntity? selectedController,
-      List<ControllerEntity> controllers,
-      DashboardGroupsLoaded state,
-      DashboardPageCubit cubit,
-      BuildContext context,
-      int userId,
-      ) {
+    GroupDetailsEntity selectedGroup,
+    ControllerEntity? selectedController,
+    List<ControllerEntity> controllers,
+    DashboardGroupsLoaded state,
+    DashboardPageCubit cubit,
+    BuildContext context,
+    int userId,
+  ) {
     final bool fakeMode = _isFakeGroupMode(state);
 
     return PreferredSize(
       preferredSize: const Size.fromHeight(48),
       child: Container(
-        color: Theme.of(context).appBarTheme.backgroundColor ?? Theme.of(context).primaryColor,
+        color: Theme.of(context).appBarTheme.backgroundColor ??
+            Theme.of(context).primaryColor,
         child: Row(
           children: [
             _buildGroupSelector(state, selectedGroup, cubit, userId, context),
-
             if (!fakeMode && state.groups.length > 1) const _Divider(),
-
             Expanded(
               child: _buildControllerSelector(
                 selectedController,
@@ -678,12 +755,12 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildGroupSelector(
-      DashboardGroupsLoaded state,
-      GroupDetailsEntity selectedGroup,
-      DashboardPageCubit cubit,
-      int userId,
-      BuildContext context,
-      ) {
+    DashboardGroupsLoaded state,
+    GroupDetailsEntity selectedGroup,
+    DashboardPageCubit cubit,
+    int userId,
+    BuildContext context,
+  ) {
     if (_isFakeGroupMode(state)) {
       return Expanded(
         child: Padding(
@@ -750,11 +827,11 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildControllerSelector(
-      ControllerEntity? selectedController,
-      List<ControllerEntity> controllers,
-      DashboardPageCubit cubit,
-      BuildContext context,
-      ) {
+    ControllerEntity? selectedController,
+    List<ControllerEntity> controllers,
+    DashboardPageCubit cubit,
+    BuildContext context,
+  ) {
     if (controllers.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -782,10 +859,10 @@ class _DashboardPageState extends State<DashboardPage> {
           print(controllers[index].deviceId);
           cubit.selectController(index);
           context.read<ControllerContextCubit>().updateController(
-            controllerId: controllers[index].userDeviceId.toString(),
-            deviceId: controllers[index].deviceId,
-            modelId: controllers[index].modelId,
-          );
+                controllerId: controllers[index].userDeviceId.toString(),
+                deviceId: controllers[index].deviceId,
+                modelId: controllers[index].modelId,
+              );
         },
         itemBuilder: (context) => controllers.asMap().entries.map((entry) {
           return PopupMenuItem<int>(

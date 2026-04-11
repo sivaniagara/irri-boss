@@ -52,7 +52,6 @@ class PumpSettingsPage extends StatelessWidget {
           menuId: menuId,
         ),
       child: Scaffold(
-
         appBar: AppBar(
           title: Text(menuName ?? 'Pump Settings'),
           centerTitle: true,
@@ -85,7 +84,8 @@ class PumpSettingsPage extends StatelessWidget {
                             userId: userId,
                             subUserId: subUserId,
                             controllerId: controllerId,
-                            menuItemEntity: (cubit.state as GetPumpSettingsLoaded).settings,
+                            menuItemEntity:
+                            (cubit.state as GetPumpSettingsLoaded).settings,
                             sentSms: "",
                           );
                           Navigator.pop(dialogContext);
@@ -103,7 +103,11 @@ class PumpSettingsPage extends StatelessWidget {
               onPressed: () {
                 context.push(
                   SendRevPageRoutes.sendRevMsgPage,
-                  extra: {'userId': userId, 'controllerId': controllerId, 'subuserId': subUserId},
+                  extra: {
+                    'userId': userId,
+                    'controllerId': controllerId,
+                    'subuserId': subUserId
+                  },
                 );
               },
               icon: const Icon(Icons.history_edu_outlined),
@@ -112,7 +116,7 @@ class PumpSettingsPage extends StatelessWidget {
         ),
         body: BlocListener<PumpSettingsCubit, PumpSettingsState>(
           listenWhen: (previous, current) =>
-              current is SettingsSendStartedState ||
+          current is SettingsSendStartedState ||
               current is SettingsSendSuccessState ||
               current is SettingsFailureState,
           listener: (context, state) {
@@ -132,7 +136,7 @@ class PumpSettingsPage extends StatelessWidget {
           },
           child: BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
             buildWhen: (previous, current) =>
-                current is GetPumpSettingsInitial ||
+            current is GetPumpSettingsInitial ||
                 current is GetPumpSettingsError ||
                 current is GetPumpSettingsLoaded,
             builder: (context, state) {
@@ -143,7 +147,8 @@ class PumpSettingsPage extends StatelessWidget {
                 return Center(
                   child: Retry(
                     message: state.message,
-                    onPressed: () => context.read<PumpSettingsCubit>().loadSettings(
+                    onPressed: () =>
+                        context.read<PumpSettingsCubit>().loadSettings(
                           userId: userId,
                           subUserId: subUserId,
                           controllerId: controllerId,
@@ -155,10 +160,12 @@ class PumpSettingsPage extends StatelessWidget {
               final loadedState = state as GetPumpSettingsLoaded;
               return SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.only(bottom: 80),
                 child: Column(
                   children: [
                     if ([509, 511].contains(menuId))
-                      BlocBuilder<PumpSettingsViewResponseCubit, PumpSettingViewState>(
+                      BlocBuilder<PumpSettingsViewResponseCubit,
+                          PumpSettingViewState>(
                         builder: (context, state) {
                           if (state is PumpSettingsViewReceived) {
                             return Container(
@@ -167,16 +174,20 @@ class PumpSettingsPage extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: Colors.blue.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                                border: Border.all(
+                                    color: Colors.blue.withOpacity(0.3)),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.info_outline, color: Colors.blue),
+                                  const Icon(Icons.info_outline,
+                                      color: Colors.blue),
                                   const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
                                       state.message,
-                                      style: const TextStyle(fontSize: 13, color: Colors.blueAccent),
+                                      style: const TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.blueAccent),
                                     ),
                                   ),
                                 ],
@@ -247,13 +258,15 @@ String _timerMotorLabel(SettingsEntity setting, int subIndex) {
   return 'Motor ${subIndex + 1}';
 }
 
-bool _supportsTimerMotorVisibility(MenuItemEntity menu, SettingsEntity setting) {
+bool _supportsTimerMotorVisibility(
+    MenuItemEntity menu, SettingsEntity setting) {
   // Broaden this to support any multi-part setting in the Timer Settings menu (505)
   if (menu.menu.menuSettingId != 505) return false;
 
   final combinedText = '${setting.title} ${setting.smsFormat}'.toLowerCase();
   // Ensure it's a motor/pump related setting and has multiple parts
-  return (combinedText.contains('motor') || combinedText.contains('pump')) && _timerMotorPartCount(setting) > 1;
+  return (combinedText.contains('motor') || combinedText.contains('pump')) &&
+      _timerMotorPartCount(setting) > 1;
 }
 
 List<int> _availableTimerMotorSubIndexes({
@@ -279,7 +292,8 @@ List<int> _visibleTimerMotorSubIndexes({
   );
 
   final visible = available.where((subIndex) {
-    return subIndex < hiddenFlags.length && _isVisibleHiddenFlag(hiddenFlags[subIndex]);
+    return subIndex < hiddenFlags.length &&
+        _isVisibleHiddenFlag(hiddenFlags[subIndex]);
   }).toList(growable: false);
 
   if (AppConstants.isDoublePumpLive(modelId)) {
@@ -336,16 +350,19 @@ class _HideShowSettingsDialog extends StatelessWidget {
         return SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: List.generate(menu.template.sections.length, (sectionIndex) {
+            children:
+            List.generate(menu.template.sections.length, (sectionIndex) {
               final section = menu.template.sections[sectionIndex];
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 8.0, horizontal: 4.0),
                     child: Text(
                       section.sectionName,
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.blueGrey),
                     ),
                   ),
                   ...section.settings.asMap().entries.map((entry) {
@@ -356,34 +373,44 @@ class _HideShowSettingsDialog extends StatelessWidget {
                     final labelParts = _splitSettingParts(setting.title);
                     final isMultiPart = labelParts.length > 1;
 
-                    if (isMultiPart || _supportsTimerMotorVisibility(menu, setting)) {
+                    if (isMultiPart ||
+                        _supportsTimerMotorVisibility(menu, setting)) {
                       final hiddenFlags = _timerMotorHiddenFlags(setting);
-                      final count = isMultiPart ? labelParts.length : _timerMotorPartCount(setting);
+                      final count = isMultiPart
+                          ? labelParts.length
+                          : _timerMotorPartCount(setting);
 
                       return Column(
                         children: List.generate(count, (subIndex) {
-                          final label = subIndex < labelParts.length ? labelParts[subIndex] : 'Motor ${subIndex + 1}';
+                          final label = subIndex < labelParts.length
+                              ? labelParts[subIndex]
+                              : 'Motor ${subIndex + 1}';
                           final isVisible = subIndex < hiddenFlags.length
                               ? _isVisibleHiddenFlag(hiddenFlags[subIndex])
                               : true;
 
                           return CheckboxListTile(
-                            title: Text(label, style: const TextStyle(fontSize: 14)),
+                            title: Text(label,
+                                style: const TextStyle(fontSize: 14)),
                             value: isVisible,
                             dense: true,
                             onChanged: (bool? newValue) {
-                              final updatedFlags = List<String>.from(hiddenFlags);
+                              final updatedFlags =
+                              List<String>.from(hiddenFlags);
                               while (updatedFlags.length <= subIndex) {
                                 updatedFlags.add("1");
                               }
-                              updatedFlags[subIndex] = newValue == true ? "1" : "0";
-                              context.read<PumpSettingsCubit>().updateSettingValue(
-                                    updatedFlags.join(';'),
-                                    sectionIndex,
-                                    settingIndex,
-                                    menu,
-                                    isHiddenFlag: true,
-                                  );
+                              updatedFlags[subIndex] =
+                              newValue == true ? "1" : "0";
+                              context
+                                  .read<PumpSettingsCubit>()
+                                  .updateSettingValue(
+                                updatedFlags.join(';'),
+                                sectionIndex,
+                                settingIndex,
+                                menu,
+                                isHiddenFlag: true,
+                              );
                             },
                           );
                         }),
@@ -391,21 +418,23 @@ class _HideShowSettingsDialog extends StatelessWidget {
                     }
 
                     return CheckboxListTile(
-                      title: Text(setting.title, style: const TextStyle(fontSize: 14)),
+                      title: Text(setting.title,
+                          style: const TextStyle(fontSize: 14)),
                       value: setting.hiddenFlag == "1",
                       dense: true,
                       onChanged: (bool? newValue) {
                         context.read<PumpSettingsCubit>().updateSettingValue(
-                              newValue == true ? "1" : "0",
-                              sectionIndex,
-                              settingIndex,
-                              menu,
-                              isHiddenFlag: true,
-                            );
+                          newValue == true ? "1" : "0",
+                          sectionIndex,
+                          settingIndex,
+                          menu,
+                          isHiddenFlag: true,
+                        );
                       },
                     );
                   }),
-                  if (sectionIndex < menu.template.sections.length - 1) const Divider(),
+                  if (sectionIndex < menu.template.sections.length - 1)
+                    const Divider(),
                 ],
               );
             }),
@@ -498,7 +527,8 @@ class _SettingsList extends StatelessWidget {
                     )) {
                       return const SizedBox();
                     }
-                    if (setting.widgetType == SettingWidgetType.multiText) return const SizedBox.shrink();
+                    if (setting.widgetType == SettingWidgetType.multiText)
+                      return const SizedBox.shrink();
                     return const Divider(thickness: 0.6);
                   },
                   itemCount: section.settings.length,
@@ -539,12 +569,16 @@ class _SettingRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<PumpSettingsCubit>();
-    final formKey = _formKeys.putIfAbsent(_formKeyId, () => GlobalKey<FormState>());
-    final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
+    final formKey =
+    _formKeys.putIfAbsent(_formKeyId, () => GlobalKey<FormState>());
+    final setting =
+    menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
 
     final bool isSending = context.select((PumpSettingsCubit c) {
       final s = c.state;
-      return s is SettingSendingState && s.sectionIndex == sectionIndex && s.settingIndex == settingIndex;
+      return s is SettingSendingState &&
+          s.sectionIndex == sectionIndex &&
+          s.settingIndex == settingIndex;
     });
 
     return Form(
@@ -581,96 +615,112 @@ class _SettingRow extends StatelessWidget {
   Widget _buildInput(BuildContext context) {
     final section = menuItemEntity.template.sections[sectionIndex];
     final setting = section.settings[settingIndex];
-    final path = '${menuItemEntity.menu.menuSettingId}_${section.typeId}_${setting.serialNumber}';
-    final splitMotorVisibility = _supportsTimerMotorVisibility(menuItemEntity, setting);
+    final path =
+        '${menuItemEntity.menu.menuSettingId}_${section.typeId}_${setting.serialNumber}';
+    final splitMotorVisibility =
+    _supportsTimerMotorVisibility(menuItemEntity, setting);
     final visibleMotorIndexes = splitMotorVisibility
         ? _visibleTimerMotorSubIndexes(
-            menu: menuItemEntity,
-            setting: setting,
-            modelId: modelId,
-          )
+      menu: menuItemEntity,
+      setting: setting,
+      modelId: modelId,
+    )
         : const <int>[];
 
     return switch (setting.widgetType) {
-      SettingWidgetType.phone => _PhoneInput(setting: setting, onChanged: _onChanged(context)),
+      SettingWidgetType.phone =>
+          _PhoneInput(setting: setting, onChanged: _onChanged(context)),
       SettingWidgetType.multiTime => _MultiTimeInput(
-          setting: setting,
-          onChanged: _onChanged(context),
-          visibleIndexes: splitMotorVisibility ? visibleMotorIndexes : null,
-        ),
+        setting: setting,
+        onChanged: _onChanged(context),
+        visibleIndexes: splitMotorVisibility ? visibleMotorIndexes : null,
+      ),
       SettingWidgetType.fullText => _TextInput(
-          setting: setting,
-          onChanged: _onChanged(context),
-          label: setting.title,
-          menuId: menuItemEntity.menu.menuSettingId,
-          imagePath: ([508].contains(menuItemEntity.menu.menuSettingId) && ![1, 2].contains(section.typeId))
-              ? PumpSettingsImages.getCommunicationConfigIcons(path)
-              : null,
-        ),
-      SettingWidgetType.multiText => (["VOLTCAL", "VOLTAGCAL", "CURRCAL", "CURCAL", "CURRENTCAL"]
-              .contains(setting.smsFormat.trim().toUpperCase()))
-          ? _CalibrationInput(setting: setting, onChanged: _onChanged(context))
+        setting: setting,
+        onChanged: _onChanged(context),
+        label: setting.title,
+        menuId: menuItemEntity.menu.menuSettingId,
+        imagePath: ([508].contains(menuItemEntity.menu.menuSettingId) &&
+            ![1, 2].contains(section.typeId))
+            ? PumpSettingsImages.getCommunicationConfigIcons(path)
+            : null,
+      ),
+      SettingWidgetType.multiText => ([
+        "VOLTCAL",
+        "VOLTAGCAL",
+        "CURRCAL",
+        "CURCAL",
+        "CURRENTCAL"
+      ].contains(setting.smsFormat.trim().toUpperCase()))
+          ? _CalibrationInput(
+          setting: setting, onChanged: _onChanged(context))
           : _MultiTextInput(
-              setting: setting,
-              onChanged: _onChanged(context),
-              visibleIndexes: splitMotorVisibility ? visibleMotorIndexes : null,
-            ),
+        setting: setting,
+        onChanged: _onChanged(context),
+        visibleIndexes:
+        splitMotorVisibility ? visibleMotorIndexes : null,
+      ),
       _ => SettingListTile(
-          title: setting.title,
-          leadingIcon: [509].contains(menuItemEntity.menu.menuSettingId) ? PumpSettingsImages.getStatusCheckIcons(path) : null,
-          trailing: _buildTrailing(context),
-          onTap: () => _handleTap(context),
-        ),
+        title: setting.title,
+        leadingIcon: [509].contains(menuItemEntity.menu.menuSettingId)
+            ? PumpSettingsImages.getStatusCheckIcons(path)
+            : null,
+        trailing: _buildTrailing(context),
+        onTap: () => _handleTap(context),
+      ),
     };
   }
 
   Widget _buildTrailing(BuildContext context) {
-    final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
+    final setting =
+    menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
     return switch (setting.widgetType) {
       SettingWidgetType.nothing => const SizedBox.shrink(),
       SettingWidgetType.text => SizedBox(
-          width: 80,
-          child: _TextInput(
-            setting: setting,
-            onChanged: _onChanged(context),
-            menuId: menuItemEntity.menu.menuSettingId,
-          ),
+        width: 80,
+        child: _TextInput(
+          setting: setting,
+          onChanged: _onChanged(context),
+          menuId: menuItemEntity.menu.menuSettingId,
         ),
+      ),
       SettingWidgetType.toggle => CustomSwitch(
-          value: setting.value == "ON",
-          onChanged: (_) => _onChanged(context)(setting.value == "ON" ? "OF" : "ON"),
-        ),
+        value: setting.value == "ON",
+        onChanged: (_) =>
+            _onChanged(context)(setting.value == "ON" ? "OF" : "ON"),
+      ),
       SettingWidgetType.time => Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          child: Text(
-            setting.value.isEmpty ? "00:00" : setting.value,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-      _ => Text(
-          setting.value,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: Text(
+          setting.value.isEmpty ? "00:00" : setting.value,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
+      ),
+      _ => Text(
+        setting.value,
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
     };
   }
 
   void Function(String) _onChanged(BuildContext context) {
     return (String newValue) {
       context.read<PumpSettingsCubit>().updateSettingValue(
-            newValue,
-            sectionIndex,
-            settingIndex,
-            menuItemEntity,
-            userId: userId,
-            subUserId: subUserId,
-            controllerId: controllerId,
-          );
+        newValue,
+        sectionIndex,
+        settingIndex,
+        menuItemEntity,
+        userId: userId,
+        subUserId: subUserId,
+        controllerId: controllerId,
+      );
     };
   }
 
   void _handleTap(BuildContext context) async {
     String? newValue;
-    final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
+    final setting =
+    menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
 
     switch (setting.widgetType) {
       case SettingWidgetType.toggle:
@@ -707,16 +757,16 @@ class _SendButton extends StatelessWidget {
       padding: EdgeInsets.zero,
       icon: isSending
           ? const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
+        padding: EdgeInsets.all(8.0),
+        child: CircularProgressIndicator(strokeWidth: 2),
+      )
           : Padding(
-              padding: const EdgeInsets.all(10),
-              child: Image.asset(
-                'assets/images/icons/send_icon.png',
-                width: 25,
-              ),
-            ),
+        padding: const EdgeInsets.all(10),
+        child: Image.asset(
+          'assets/images/icons/send_icon.png',
+          width: 25,
+        ),
+      ),
       onPressed: isSending ? null : onPressed,
     );
   }
@@ -738,7 +788,8 @@ class _PhoneInput extends StatelessWidget {
         decoration: InputDecoration(
           labelText: setting.title,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
         onChanged: (phone) => onChanged(phone.completeNumber),
       ),
@@ -772,18 +823,23 @@ class _TextInput extends StatelessWidget {
         LeafBox(
           height: isTextOnly ? 35 : 30,
           padding: EdgeInsets.zero,
-          margin: isTextOnly ? const EdgeInsets.symmetric(horizontal: 5, vertical: 5) : EdgeInsets.zero,
+          margin: isTextOnly
+              ? const EdgeInsets.symmetric(horizontal: 5, vertical: 5)
+              : EdgeInsets.zero,
           child: TextFormField(
             initialValue: setting.value,
-            keyboardType: !isTextOnly ? const TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
+            keyboardType: !isTextOnly
+                ? const TextInputType.numberWithOptions(decimal: true)
+                : TextInputType.text,
             textAlign: isTextOnly ? TextAlign.start : TextAlign.center,
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
             inputFormatters: !isTextOnly
                 ? [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,9}')),
-                    LengthLimitingTextInputFormatter(5),
-                  ]
+              FilteringTextInputFormatter.allow(
+                  RegExp(r'^\d*\.?\d{0,9}')),
+              LengthLimitingTextInputFormatter(5),
+            ]
                 : null,
             validator: (value) {
               if (value == null || value.trim().isEmpty) return 'Required';
@@ -794,12 +850,13 @@ class _TextInput extends StatelessWidget {
               labelStyle: const TextStyle(fontSize: 12, color: Colors.grey),
               border: InputBorder.none,
               isDense: true,
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              contentPadding:
+              const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               prefixIcon: imagePath != null
                   ? Padding(
-                      padding: const EdgeInsets.all(10),
-                      child: Image.asset(imagePath!, width: 20),
-                    )
+                padding: const EdgeInsets.all(10),
+                child: Image.asset(imagePath!, width: 20),
+              )
                   : null,
             ),
             onChanged: onChanged,
@@ -825,14 +882,17 @@ class _MultiTimeInput extends StatelessWidget {
   Widget build(BuildContext context) {
     final titles = _splitSettingParts(setting.title);
     final values = _splitSettingParts(setting.value);
-    final indexes = visibleIndexes ?? List<int>.generate(titles.length, (i) => i);
+    final indexes =
+        visibleIndexes ?? List<int>.generate(titles.length, (i) => i);
 
     return Column(
       children: List.generate(
         indexes.length,
-        (visibleIndex) {
+            (visibleIndex) {
           final i = indexes[visibleIndex];
-          final title = i < titles.length && titles[i].isNotEmpty ? titles[i] : 'Motor ${i + 1}';
+          final title = i < titles.length && titles[i].isNotEmpty
+              ? titles[i]
+              : 'Motor ${i + 1}';
           return SettingListTile(
             title: title,
             trailing: Container(
@@ -899,19 +959,22 @@ class _CalibrationInput extends StatelessWidget {
           child: Row(
             children: titles
                 .map((t) => Expanded(
-                      child: Text(
-                        t,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold),
-                      ),
-                    ))
+              child: Text(
+                t,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.bold),
+              ),
+            ))
                 .toList(),
           ),
         ),
         Row(
           children: List.generate(
             3,
-            (i) => Expanded(
+                (i) => Expanded(
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 child: LeafBox(
@@ -919,17 +982,26 @@ class _CalibrationInput extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   child: TextFormField(
                     initialValue: i < values.length ? values[i] : "0",
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
                     inputFormatters: isVoltageWhole
                         ? [FilteringTextInputFormatter.digitsOnly]
-                        : [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+                        : [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
+                    ],
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 13),
                     decoration: InputDecoration(
                       hintText: isVoltageCal
                           ? "0.0000"
-                          : (isCurrentCal ? "0.00000" : (isVoltageWhole ? "000" : (isCurrentSecondRow ? "0.00" : "0.0000"))),
-                      hintStyle: const TextStyle(fontSize: 10, color: Colors.grey),
+                          : (isCurrentCal
+                          ? "0.00000"
+                          : (isVoltageWhole
+                          ? "000"
+                          : (isCurrentSecondRow ? "0.00" : "0.0000"))),
+                      hintStyle:
+                      const TextStyle(fontSize: 10, color: Colors.grey),
                       border: InputBorder.none,
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(vertical: 8),
@@ -966,7 +1038,8 @@ class _MultiTextInput extends StatelessWidget {
   Widget build(BuildContext context) {
     final titles = _splitSettingParts(setting.title);
     final values = _splitSettingParts(setting.value);
-    final itemCount = titles.length > values.length ? titles.length : values.length;
+    final itemCount =
+    titles.length > values.length ? titles.length : values.length;
     final indexes = visibleIndexes ?? List<int>.generate(itemCount, (i) => i);
 
     return Column(
@@ -978,19 +1051,24 @@ class _MultiTextInput extends StatelessWidget {
             child: Row(
               children: indexes
                   .map((i) => Expanded(
-                        child: Text(
-                          i < titles.length && titles[i].isNotEmpty ? titles[i] : 'Motor ${i + 1}',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold),
-                        ),
-                      ))
+                child: Text(
+                  i < titles.length && titles[i].isNotEmpty
+                      ? titles[i]
+                      : 'Motor ${i + 1}',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.bold),
+                ),
+              ))
                   .toList(),
             ),
           ),
         Row(
           children: List.generate(
             indexes.length,
-            (visibleIndex) {
+                (visibleIndex) {
               final i = indexes[visibleIndex];
               final initialValue = i < values.length ? values[i] : '';
               return Expanded(
@@ -1001,9 +1079,11 @@ class _MultiTextInput extends StatelessWidget {
                     padding: EdgeInsets.zero,
                     child: TextFormField(
                       initialValue: initialValue,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType:
+                      const TextInputType.numberWithOptions(decimal: true),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 13),
                       decoration: const InputDecoration(
                         border: InputBorder.none,
                         isDense: true,
