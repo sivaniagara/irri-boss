@@ -102,8 +102,7 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
     required bool mOff,
     required bool dualPump,
   }) async {
-    print("motor on off call");
-    final motorSms = status == "1" ? "MOTORON" : "MTROF";
+     final motorSms = status == "1" ? "MOTORON" : "MTROF";
     final motor2Sms = status == "1" ?  m1on ? "MOTOR1ON"  : "MOTOR2ON" : "MTROF";
     final sendsmsName = dualPump ? motor2Sms : motorSms;
 
@@ -111,16 +110,13 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
       "status": status,
       "sentSms": sendsmsName,
     };
-    print("payload:$payload");
-
     final endpoint = DashboardUrls.motorOnOffUrl
         .replaceAll(':userId', userId.toString())
         .replaceAll(':subuserId', subUserId.toString())
         .replaceAll(':controllerId', controllerId.toString());
 
     final response = await apiClient.put(endpoint, body: payload);
-
-    if (response['code'] != 200) {
+     if (response['code'] != 200) {
       showToast(response['message'],backgroundColor: Colors.red,textColor: Colors.white);
       throw ServerException(message: "Motor switch failed");
     }
@@ -153,6 +149,7 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
               PublishMessageHelper.settingsPayload(payload)
           ]}
       );
+      print("call response $response");
       await Future.delayed(Duration(seconds: 3));
       return true;
     }catch (e){

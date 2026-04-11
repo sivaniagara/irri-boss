@@ -528,7 +528,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     required String deviceId,
     required String payload,
   }) async {
-    if (state is! DashboardGroupsLoaded) return;
+     if (state is! DashboardGroupsLoaded) return;
     final currentState = state as DashboardGroupsLoaded;
 
     emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.loading));
@@ -559,11 +559,12 @@ class DashboardPageCubit extends Cubit<DashboardState> {
         deviceId: deviceId,
         payload: payload,
       ));
-
+print("onResult:$onResult");
       onResult.fold(
         (failure) => emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.failure, errorMsg: failure.message)),
         (_) {
           // Publish original payload (MTRON) to MQTT
+          print('success');
           sl<MqttManager>().publish(deviceId, PublishMessageHelper.settingsPayload(cleanPayload));
           emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.success));
         },

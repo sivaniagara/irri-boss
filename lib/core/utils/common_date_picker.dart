@@ -5,8 +5,8 @@ import 'package:intl/intl.dart';
 Future<ReportDateResult?> pickReportDate({
   required BuildContext context,
   bool allowRange = false,
-  String? initialFromDate, // ✅ ADD
-  String? initialToDate,   // ✅ ADD
+  String? initialFromDate,
+  String? initialToDate,
 }) async {
   final formatter = DateFormat('yyyy-MM-dd');
 
@@ -17,7 +17,7 @@ Future<ReportDateResult?> pickReportDate({
 
     final date = await showDatePicker(
       context: context,
-      initialDate: initialDate, // ✅ USE STORED DATE
+      initialDate: initialDate,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
     );

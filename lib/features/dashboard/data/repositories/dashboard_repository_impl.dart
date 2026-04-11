@@ -59,7 +59,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
 
   @override
   Future<Either<Failure, Unit>> controlMotor(ControlMotorParams params) async {
-    try {
+     try {
       final response = await remote.changeFrom(
         userId: params.userId,
         controllerId: params.controllerId,

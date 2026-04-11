@@ -433,6 +433,7 @@ class _Dashboard20State extends State<Dashboard20> {
                             backgroundColor: WidgetStatePropertyAll(Colors.red)
                           ),
                             onPressed: (){
+                            print("call motor off");
                               final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
                               String payload = 'MTROF,';
                               context.read<DashboardPageCubit>().controlMotorStatus(
@@ -450,6 +451,7 @@ class _Dashboard20State extends State<Dashboard20> {
                                 backgroundColor: WidgetStatePropertyAll(Colors.green)
                             ),
                             onPressed: (){
+                              print("call motor on");
                               final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
                               String payload = 'MTRON,';
                               context.read<DashboardPageCubit>().controlMotorStatus(
@@ -860,6 +862,9 @@ class _Dashboard20State extends State<Dashboard20> {
   }
 
   Widget switches({required LiveMessageEntity liveMessageEntity, required int motorNo}) {
+    print("Call switches");
+    print("deviceid:${liveMessageEntity}");
+    print("Call switches");
     return Row(
       children: [
         Column(
