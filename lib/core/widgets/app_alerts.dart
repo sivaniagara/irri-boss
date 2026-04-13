@@ -21,7 +21,7 @@ void showErrorAlert({required BuildContext context, required String message}){
           ),
           actions: [
             CustomMaterialButton(
-                onPressed: ()=> context.pop(),
+                onPressed: ()=> Navigator.pop(context),
                 title: 'Ok'
             )
           ],
@@ -50,7 +50,7 @@ void showSuccessAlert({required BuildContext context, required String message, v
           actionsAlignment: MainAxisAlignment.center,
           actions: [
             CustomMaterialButton(
-                onPressed: onPressed ?? ()=> context.pop(),
+                onPressed: onPressed ?? ()=> Navigator.pop(context),
                 title: 'Ok'
             )
           ],

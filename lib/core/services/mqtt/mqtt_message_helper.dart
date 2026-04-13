@@ -317,8 +317,16 @@ class MqttMessageHelper {
     }
 
     final String msg = (jsonObject['cM'] ?? '').toString();
-    final String cd = (jsonObject['cD'] ?? '').toString();
-    final String ct = (jsonObject['cT'] ?? '').toString();
+    final now = DateTime.now();
+    final String defaultCd = "${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}";
+    final String defaultCt = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
+
+    final String cd = (jsonObject['cD']?.toString() ?? '').isNotEmpty 
+        ? jsonObject['cD'].toString() 
+        : defaultCd;
+    final String ct = (jsonObject['cT']?.toString() ?? '').isNotEmpty 
+        ? jsonObject['cT'].toString() 
+        : defaultCt;
     String cl = (jsonObject['cL'] ?? '').toString();
 
     if (kDebugMode) {
