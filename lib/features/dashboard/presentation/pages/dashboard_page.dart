@@ -14,6 +14,7 @@ import 'package:niagara_smart_drip_irrigation/features/fault_msg/utils/faultmsg_
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/di/injection.dart' as di;
+import '../../../../core/services/mqtt/mqtt_service.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/theme/app_themes.dart';
 import '../../../../core/utils/app_constants.dart';
@@ -708,9 +709,19 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
         IconButton(
           onPressed: null,
-          icon: Icon(
-            Icons.circle,
-            color: selectedController?.ctrlStatusFlag == '1' ? Colors.green : Colors.red,
+          icon: StreamBuilder<bool>(
+            stream: di.sl.get<MqttService>().connectionStream,
+
+            initialData: di.sl.get<MqttService>().isConnected,
+
+            builder: (context, snapshot) {
+              final connected = snapshot.data ?? di.sl.get<MqttService>().isConnected;
+
+              return Icon(
+                Icons.circle,
+                color: connected ? Colors.green : Colors.red,
+              );
+            },
           ),
         ),
       ],
