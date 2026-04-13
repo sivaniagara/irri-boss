@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/services/mqtt/app_message_dispatcher.dart';
-import '../../../../core/widgets/glassy_wrapper.dart';
 import '../../utils/pump_settings_dispatcher.dart';
 import '../cubit/view_pump_settings_cubit.dart';
 import '../widgets/setting_list_tile.dart';
@@ -87,15 +86,17 @@ class _ViewPumpSettingsView extends StatelessWidget {
                 children: [
                   Icon(Icons.error_outline, size: 64, color: Colors.red),
                   SizedBox(height: 16),
-                  Text("Controller is not responding", style: const TextStyle(color: Colors.red)),
+                  Text("Controller is not responding",
+                      style: const TextStyle(color: Colors.red)),
                   SizedBox(height: 24),
                   ElevatedButton(
-                    onPressed: () => context.read<ViewPumpSettingsCubit>().requestSettings(
-                      deviceId,
-                      userId,
-                      controllerId,
-                      subuserId,
-                    ),
+                    onPressed: () =>
+                        context.read<ViewPumpSettingsCubit>().requestSettings(
+                          deviceId,
+                          userId,
+                          controllerId,
+                          subuserId,
+                        ),
                     child: const Text("Retry"),
                   ),
                 ],
@@ -103,13 +104,10 @@ class _ViewPumpSettingsView extends StatelessWidget {
             );
           }
 
-          if (state.settingLabels == null || state.settingLabels!.isEmpty) {
-            return const Center(child: Text("No templates available"));
-          }
-
           final excludedIds = {502, 509, 510, 511, 513, 514, 515};
           final filteredLabels = state.settingLabels!
-              .where((template) => !excludedIds.contains(template['menuSettingId']))
+              .where((template) =>
+          !excludedIds.contains(template['menuSettingId']))
               .toList();
 
           if (filteredLabels.isEmpty) {
@@ -120,7 +118,8 @@ class _ViewPumpSettingsView extends StatelessWidget {
 
           final List<int> templateSettingCounts = [];
           for (final template in filteredLabels) {
-            final int menuId = int.tryParse(template['menuSettingId'].toString()) ?? 0;
+            final int menuId =
+                int.tryParse(template['menuSettingId'].toString()) ?? 0;
             Map<String, dynamic> config;
 
             if (menuId == 508) {
@@ -158,7 +157,8 @@ class _ViewPumpSettingsView extends StatelessWidget {
               };
             } else {
               try {
-                config = jsonDecode(template['sendData']) as Map<String, dynamic>;
+                config =
+                jsonDecode(template['sendData']) as Map<String, dynamic>;
               } catch (e) {
                 templateSettingCounts.add(0);
                 continue;
@@ -174,11 +174,14 @@ class _ViewPumpSettingsView extends StatelessWidget {
 
                 bool skip = false;
                 if (menuId == 505) {
-                  final int? tid = int.tryParse(section['TID']?.toString() ?? '');
+                  final int? tid =
+                  int.tryParse(section['TID']?.toString() ?? '');
                   final int? sn = int.tryParse(set['SN']?.toString() ?? '');
 
-                  if (tid == 1 && sn != null && [3, 4].contains(sn)) skip = true;
-                  if (tid == 2 && sn != null && [1, 2].contains(sn)) skip = true;
+                  if (tid == 1 && sn != null && [3, 4].contains(sn))
+                    skip = true;
+                  if (tid == 2 && sn != null && [1, 2].contains(sn))
+                    skip = true;
                 }
 
                 if (!skip) visibleCount++;
@@ -207,7 +210,8 @@ class _ViewPumpSettingsView extends StatelessWidget {
 
               final selectedTemplate = filteredLabels[selectedIndex];
               final int currentMenuSettingId =
-                  int.tryParse(selectedTemplate['menuSettingId'].toString()) ?? 0;
+                  int.tryParse(selectedTemplate['menuSettingId'].toString()) ??
+                      0;
 
               late Map<String, dynamic> templateConfig;
 
@@ -246,9 +250,11 @@ class _ViewPumpSettingsView extends StatelessWidget {
                 };
               } else {
                 try {
-                  templateConfig = jsonDecode(selectedTemplate['sendData']) as Map<String, dynamic>;
+                  templateConfig = jsonDecode(selectedTemplate['sendData'])
+                  as Map<String, dynamic>;
                 } catch (e) {
-                  return const Center(child: Text("Invalid template configuration"));
+                  return const Center(
+                      child: Text("Invalid template configuration"));
                 }
               }
 
@@ -307,7 +313,9 @@ class _ViewPumpSettingsView extends StatelessWidget {
                         ? const Center(child: Text("No settings to display"))
                         : RefreshIndicator(
                       onRefresh: () async {
-                        context.read<ViewPumpSettingsCubit>().requestSettings(
+                        context
+                            .read<ViewPumpSettingsCubit>()
+                            .requestSettings(
                           deviceId,
                           userId,
                           controllerId,
@@ -315,38 +323,50 @@ class _ViewPumpSettingsView extends StatelessWidget {
                         );
                       },
                       child: ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.symmetric(horizontal: 16)
+                            .copyWith(bottom: 80),
                         itemCount: visibleSettings.length,
                         itemBuilder: (context, index) {
                           final visibleSetting = visibleSettings[index];
-                          final setting = visibleSetting['setting'] as Map<String, dynamic>;
-                          final int valueIndex = visibleSetting['valueIndex'] as int;
-                          final String sectionTitle = visibleSetting['sectionTitle'];
+                          final setting = visibleSetting['setting']
+                          as Map<String, dynamic>;
+                          final int valueIndex =
+                          visibleSetting['valueIndex'] as int;
+                          final String sectionTitle =
+                          visibleSetting['sectionTitle'];
 
                           final String value = templateValues[valueIndex];
 
-                          if (index == 0 || visibleSettings[index - 1]['sectionTitle'] != sectionTitle) {
+                          if (index == 0 ||
+                              visibleSettings[index - 1]
+                              ['sectionTitle'] !=
+                                  sectionTitle) {
                             return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              crossAxisAlignment:
+                              CrossAxisAlignment.start,
                               children: [
                                 Padding(
-                                  padding:
-                                  const EdgeInsets.fromLTRB(0, 16, 0, 8),
+                                  padding: const EdgeInsets.fromLTRB(
+                                      0, 16, 0, 8),
                                   child: Text(
                                     sectionTitle,
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(
                                         fontSize: 14,
                                         color: Color(0xff303030),
-                                        fontWeight: FontWeight.w400
-                                    ),
+                                        fontWeight: FontWeight.w400),
                                   ),
                                 ),
-                                _buildDedicativeWidget(context, setting, value),
+                                _buildDedicativeWidget(
+                                    context, setting, value),
                               ],
                             );
+                          } else {
+                            return _buildDedicativeWidget(
+                                context, setting, value);
                           }
-
-                          return _buildDedicativeWidget(context, setting, value);
                         },
                       ),
                     ),
@@ -360,14 +380,15 @@ class _ViewPumpSettingsView extends StatelessWidget {
     );
   }
 
-  Widget _buildDedicativeWidget(BuildContext context, Map<String, dynamic> data, String value) {
-    Widget trailing = Text(value, style: Theme.of(context).textTheme.bodyMedium,);
-    switch(data['WT']) {
+  Widget _buildDedicativeWidget(
+      BuildContext context, Map<String, dynamic> data, String value) {
+    Widget trailing = Text(
+      value,
+      style: Theme.of(context).textTheme.bodyMedium,
+    );
+    switch (data['WT']) {
       case 2:
-        trailing = Switch(
-            value: value.toString() == '1',
-            onChanged: null
-        );
+        trailing = Switch(value: value.toString() == '1', onChanged: null);
     }
 
     if (data['TT'].contains(';')) {
@@ -392,9 +413,7 @@ class _ViewPumpSettingsView extends StatelessWidget {
                     ? ttItems[i].trim()
                     : '', // Safe access with fallback
                 trailing: Text(
-                  i < valueItems.length
-                      ? valueItems[i].trim()
-                      : '',
+                  i < valueItems.length ? valueItems[i].trim() : '',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
               ),

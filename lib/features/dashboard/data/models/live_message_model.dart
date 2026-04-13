@@ -51,12 +51,34 @@ class LiveMessageModel extends LiveMessageEntity {
     super.msgDesc = '',
   });
 
-  factory LiveMessageModel.fromLiveMessage(String? message, {String? typeCode, String? externalLastSync}) {
-    if (message == null || message.trim().isEmpty || message.trim().toUpperCase() == "NA") {
+  factory LiveMessageModel.fromLiveMessage(String? message,
+      {String? typeCode, String? externalLastSync}) {
+    if (message == null ||
+        message.trim().isEmpty ||
+        message.trim().toUpperCase() == "NA") {
       return _empty(externalLastSync);
     }
 
+    // Check if this looks like stale cached data (all zeros or placeholder values)
     final parts = message.split(',').map((s) => s.trim()).toList();
+    if (parts.length >= 10) {
+      bool looksLikeStaleData = true;
+      // Check if first 10 values are all zeros, empty, or obvious placeholders
+      for (int i = 0; i < 10 && i < parts.length; i++) {
+        final val = parts[i];
+        if (val.isNotEmpty &&
+            val != '0' &&
+            val != '0.0' &&
+            val != 'NA' &&
+            val != '--') {
+          looksLikeStaleData = false;
+          break;
+        }
+      }
+      if (looksLikeStaleData) {
+        return _empty(externalLastSync);
+      }
+    }
 
     String safeString(int index, String defaultValue) {
       if (index >= parts.length) return defaultValue;
@@ -64,16 +86,20 @@ class LiveMessageModel extends LiveMessageEntity {
       return val.isEmpty ? defaultValue : val;
     }
 
-    List<String> safeList(int index, List<String> defaultValue, {String separator = ':'}) {
+    List<String> safeList(int index, List<String> defaultValue,
+        {String separator = ':'}) {
       if (index >= parts.length) return defaultValue;
       final str = parts[index];
       if (str.isEmpty || str.toUpperCase() == 'NA') return defaultValue;
       return str.split(separator).map((s) => s.trim()).toList();
     }
 
+    bool looksLikeMode(String value) => value.toUpperCase().contains('MODE');
+
     String cd = '00/00/00';
     String ct = '00:00:00';
-    if (externalLastSync != null && (externalLastSync.contains('\n') || externalLastSync.contains(' '))) {
+    if (externalLastSync != null &&
+        (externalLastSync.contains('\n') || externalLastSync.contains(' '))) {
       final tsParts = externalLastSync.split(RegExp(r'[\n ]'));
       if (tsParts.length >= 2) {
         ct = tsParts[0];
@@ -130,64 +156,82 @@ class LiveMessageModel extends LiveMessageEntity {
 
     if (isPumpLive) {
       motorOnOff = safeString(0, '0');
-      rVoltage = safeString(1, '0');
-      yVoltage = safeString(2, '0');
-      bVoltage = safeString(3, '0');
-      ryVoltage = safeString(4, '0');
-      ybVoltage = safeString(5, '0');
-      brVoltage = safeString(6, '0');
-      rCurrent = safeString(7, '0.0');
-      yCurrent = safeString(8, '0.0');
-      bCurrent = safeString(9, '0.0');
+
+      // LD04 comes in two known shapes:
+      // - Single pump: [motorOnOff, rV, yV, bV, ryV, ybV, brV, rI, yI, bI, mode, ...]
+      // - Double pump: [motor1OnOff, motor2OnOff, rV, yV, bV, ryV, ybV, brV, rI, yI, bI, mode, ...]
+      //
+      // If we parse a double-pump packet as single-pump, `brVoltage` (often ~400+) is misread as `rCurrent`,
+      // leading to bogus ~415A values in the UI.
+      //
+      // Double-pump detection: position 1 should be motor status (0/1) AND position 10 is not a mode but position 11 is
+      bool looksLikeMotorStatus(String value) => value == '0' || value == '1';
+      final int ld04Offset = (looksLikeMotorStatus(safeString(1, '')) &&
+              !looksLikeMode(safeString(10, '')) &&
+              looksLikeMode(safeString(11, '')))
+          ? 1
+          : 0;
+
+      rVoltage = safeString(1 + ld04Offset, '0');
+      yVoltage = safeString(2 + ld04Offset, '0');
+      bVoltage = safeString(3 + ld04Offset, '0');
+      ryVoltage = safeString(4 + ld04Offset, '0');
+      ybVoltage = safeString(5 + ld04Offset, '0');
+      brVoltage = safeString(6 + ld04Offset, '0');
+      rCurrent = safeString(7 + ld04Offset, '0.0');
+      yCurrent = safeString(8 + ld04Offset, '0.0');
+      bCurrent = safeString(9 + ld04Offset, '0.0');
       phase = "3 PHASE";
-      modeOfOperation = safeString(10, '');
-      programName = safeString(11, '');
-      zoneNo = safeString(12, '0');
-      valveForZone = safeString(15, '');
-      zoneDuration = safeString(13, '00:00:00');
-      zoneRemainingTime = safeString(14, '00:00:00');
-      prsIn = safeString(19, '0.0');
-      prsOut = safeString(20, '0.0');
-      flowRate = safeString(21, '0.0');
+      modeOfOperation = safeString(10 + ld04Offset, '');
+      programName = safeString(11 + ld04Offset, '');
+      zoneNo = safeString(12 + ld04Offset, '0');
+      valveForZone = safeString(15 + ld04Offset, '');
+      zoneDuration = safeString(13 + ld04Offset, '00:00:00');
+      zoneRemainingTime = safeString(14 + ld04Offset, '00:00:00');
+      prsIn = safeString(19 + ld04Offset, '0.0');
+      prsOut = safeString(20 + ld04Offset, '0.0');
+      flowRate = safeString(21 + ld04Offset, '0.0');
 
       // Well data at 38
-      String rawWell = safeString(38, '0');
+      String rawWell = safeString(38 + ld04Offset, '0');
       if (rawWell.contains('F-')) {
         final wellParts = rawWell.split('F-');
         wellLevel = wellParts[0];
         wellPercent = wellParts.length > 1 ? wellParts[1] : '0';
       } else {
         wellPercent = rawWell;
-        wellLevel = safeString(39, '0');
+        wellLevel = safeString(39 + ld04Offset, '0');
       }
 
-      fertStatus = safeList(24, ['0', '0', '0', '0', '0', '0'], separator: ':');
+      fertStatus = safeList(24 + ld04Offset, ['0', '0', '0', '0', '0', '0'],
+          separator: ':');
 
-      // EC and PH 
-      String rawEcPh = safeString(23, '0:0');
+      // EC and PH
+      String rawEcPh = safeString(23 + ld04Offset, '0:0');
       if (rawEcPh.contains(':')) {
         final ecPhParts = rawEcPh.split(':');
         ec = ecPhParts[0];
         ph = ecPhParts.length > 1 ? ecPhParts[1] : '0';
       } else {
         ec = rawEcPh;
-        ph = safeString(25, '0');
+        ph = safeString(25 + ld04Offset, '0');
       }
-      totalMeterFlow = safeString(26, '0');
+      totalMeterFlow = safeString(26 + ld04Offset, '0');
 
-      runTimeToday = safeString(27, '00:00:00');
-      runTimePrevious = safeString(28, '00:00:00');
-      flowToday = safeString(29, '0');
-      flowPrevDay = safeString(30, '0');
-      moisture1 = safeString(31, '0');
-      moisture2 = safeString(32, '0');
-      energy = safeString(33, '0');
-      powerFactor = safeString(34, '0');
-      fertValues = safeList(36, ['0', '0', '0', '0', '0', '0'], separator: ';');
-      versionModule = safeString(40, '');
-      versionBoard = safeString(44, '');
-      signal = safeString(46, '0');
-      batVolt = safeString(47, '0');
+      runTimeToday = safeString(27 + ld04Offset, '00:00:00');
+      runTimePrevious = safeString(28 + ld04Offset, '00:00:00');
+      flowToday = safeString(29 + ld04Offset, '0');
+      flowPrevDay = safeString(30 + ld04Offset, '0');
+      moisture1 = safeString(31 + ld04Offset, '0');
+      moisture2 = safeString(32 + ld04Offset, '0');
+      energy = safeString(33 + ld04Offset, '0');
+      powerFactor = safeString(34 + ld04Offset, '0');
+      fertValues = safeList(36 + ld04Offset, ['0', '0', '0', '0', '0', '0'],
+          separator: ';');
+      versionModule = safeString(40 + ld04Offset, '');
+      versionBoard = safeString(44 + ld04Offset, '');
+      signal = safeString(46 + ld04Offset, '0');
+      batVolt = safeString(47 + ld04Offset, '0');
     } else {
       // Standard LD01 / LD06
       motorOnOff = safeString(0, '0');
@@ -323,33 +367,33 @@ class LiveMessageModel extends LiveMessageEntity {
       valveOnOff: '0',
       liveDisplay1: '',
       liveDisplay2: '',
-      rVoltage: '0',
-      yVoltage: '0',
-      bVoltage: '0',
-      ryVoltage: '0',
-      ybVoltage: '0',
-      brVoltage: '0',
-      rCurrent: '0',
-      yCurrent: '0',
-      bCurrent: '0',
+      rVoltage: '--',
+      yVoltage: '--',
+      bVoltage: '--',
+      ryVoltage: '--',
+      ybVoltage: '--',
+      brVoltage: '--',
+      rCurrent: '--',
+      yCurrent: '--',
+      bCurrent: '--',
       phase: 'NA',
-      signal: '0',
-      batVolt: '0',
+      signal: '--',
+      batVolt: '--',
       modeOfOperation: '',
       programName: '',
       zoneNo: '0',
       valveForZone: '0',
       zoneDuration: '00:00:00',
       zoneRemainingTime: '00:00:00',
-      prsIn: '0.0',
-      prsOut: '0.0',
-      flowRate: '0.0',
-      wellLevel: '0',
-      wellPercent: '0',
+      prsIn: '--',
+      prsOut: '--',
+      flowRate: '--',
+      wellLevel: '--',
+      wellPercent: '--',
       fertStatus: const ['0', '0', '0', '0', '0', '0'],
-      ec: '0',
-      ph: '0',
-      totalMeterFlow: '0',
+      ec: '--',
+      ph: '--',
+      totalMeterFlow: '--',
       runTimeToday: '00:00:00',
       runTimePrevious: '00:00:00',
       flowPrevDay: '0',

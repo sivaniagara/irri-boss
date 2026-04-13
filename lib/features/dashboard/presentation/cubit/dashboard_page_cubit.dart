@@ -528,12 +528,23 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     required String deviceId,
     required String payload,
   }) async {
-     if (state is! DashboardGroupsLoaded) return;
+    if (state is! DashboardGroupsLoaded) return;
     final currentState = state as DashboardGroupsLoaded;
 
     emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.loading));
 
     final cleanPayload = payload.replaceAll(",", "");
+
+    // Get model ID to determine if it's double pump
+    int modelId = 4; // default
+    for (var groupControllers in currentState.groupControllers.values) {
+      for (var controller in groupControllers) {
+        if (controller.deviceId == deviceId) {
+          modelId = controller.modelId;
+          break;
+        }
+      }
+    }
 
     if (cleanPayload.toUpperCase().contains("ON")) {
       // Step 1: Send MTROF to API
@@ -551,22 +562,26 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       // Step 2: Wait for 5 seconds
       await Future.delayed(const Duration(seconds: 5));
 
-      // Step 3: Send the original command (MTRON) to API
+      // Step 3: Send the appropriate ON command based on pump type
+      String onCommand = modelId == 27 ? "MOTOR1ON" : "MTRON";
       final onResult = await controlMotorUsecase(ControlMotorParams(
         userId: userId,
         controllerId: controllerId,
         programId: programId,
         deviceId: deviceId,
-        payload: payload,
+        payload: onCommand + ",",
       ));
-print("onResult:$onResult");
+
       onResult.fold(
-        (failure) => emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.failure, errorMsg: failure.message)),
+        (failure) => emit(currentState.copyWith(
+            controlMotorStatus: ControlMotorStatus.failure,
+            errorMsg: failure.message)),
         (_) {
-          // Publish original payload (MTRON) to MQTT
-          print('success');
-          sl<MqttManager>().publish(deviceId, PublishMessageHelper.settingsPayload(cleanPayload));
-          emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.success));
+          // Publish appropriate ON command to MQTT
+          sl<MqttManager>().publish(
+              deviceId, PublishMessageHelper.settingsPayload(onCommand));
+          emit(currentState.copyWith(
+              controlMotorStatus: ControlMotorStatus.success));
         },
       );
     } else {

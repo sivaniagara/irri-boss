@@ -46,6 +46,19 @@ class _SettingTimePickerState extends State<SettingTimePicker> {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildHeader("HH"),
+            const SizedBox(width: 75),
+            _buildHeader("MM"),
+            if (widget.showSeconds) ...[
+              const SizedBox(width: 75),
+              _buildHeader("SS"),
+            ],
+          ],
+        ),
         const SizedBox(height: 8),
         Expanded(
           child: TimePickerSpinner(
@@ -59,7 +72,6 @@ class _SettingTimePickerState extends State<SettingTimePicker> {
             highlightedTextStyle: const TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.bold,
-              // color: Colors.white,
             ),
             onTimeChange: (newTime) {
               setState(() => currentTime = newTime);
@@ -69,6 +81,18 @@ class _SettingTimePickerState extends State<SettingTimePicker> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildHeader(String label) {
+    return Text(
+      label,
+      style: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: Colors.blueGrey.withOpacity(0.8),
+        letterSpacing: 1.2,
+      ),
     );
   }
 }

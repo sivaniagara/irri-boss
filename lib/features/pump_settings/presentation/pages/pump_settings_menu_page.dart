@@ -62,7 +62,8 @@ class PumpSettingsMenuPage extends StatelessWidget {
           actions: [
             Builder(
               builder: (ctx) => IconButton(
-                icon: const Icon(Icons.settings_suggest_outlined, color: Colors.black),
+                icon: const Icon(Icons.settings_suggest_outlined,
+                    color: Colors.black),
                 onPressed: () => _showHideMenuDialog(ctx),
               ),
             ),
@@ -174,7 +175,7 @@ class _MenuListView extends StatelessWidget {
     final groupNames = grouped.keys.toList();
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.only(top: 10, bottom: 80),
       itemCount: groupNames.length,
       itemBuilder: (context, i) {
         final groupName = groupNames[i];
@@ -210,7 +211,11 @@ class _MenuListView extends StatelessWidget {
                 shrinkWrap: true,
                 padding: EdgeInsets.zero,
                 itemCount: groupItems.length,
-                separatorBuilder: (context, index) => const Divider(thickness: 0.6, height: 1, indent: 45,),
+                separatorBuilder: (context, index) => const Divider(
+                  thickness: 0.6,
+                  height: 1,
+                  indent: 45,
+                ),
                 itemBuilder: (context, itemIndex) {
                   return _MenuItemTile(
                     item: groupItems[itemIndex],
@@ -232,7 +237,8 @@ class _MenuListView extends StatelessWidget {
 
   Widget _buildSpecialTwoPhaseTile(BuildContext context) {
     return BlocSelector<PumpSettingsCubit, PumpSettingsState, MenuItemEntity?>(
-      selector: (state) => state is GetPumpSettingsLoaded ? state.settings : null,
+      selector: (state) =>
+      state is GetPumpSettingsLoaded ? state.settings : null,
       builder: (context, item) {
         if (item == null) return const SizedBox.shrink();
 
@@ -240,7 +246,8 @@ class _MenuListView extends StatelessWidget {
         if (setting.hiddenFlag == "0") return const SizedBox.shrink();
 
         final isOn = setting.value == "ON";
-        final isSending = context.watch<PumpSettingsCubit>().state is SettingSendingState;
+        final isSending =
+        context.watch<PumpSettingsCubit>().state is SettingSendingState;
 
         return CustomCard(
           horizontalPadding: 16,
@@ -269,14 +276,14 @@ class _MenuListView extends StatelessWidget {
                 constraints: const BoxConstraints(),
                 icon: isSending
                     ? const SizedBox(
-                        width: 22,
-                        height: 22,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
                     : Image.asset(
-                        'assets/images/icons/send_icon.png',
-                        width: 22,
-                      ),
+                  'assets/images/icons/send_icon.png',
+                  width: 22,
+                ),
                 onPressed: isSending
                     ? null
                     : () => _sendTwoPhaseSettings(context, item),
@@ -295,11 +302,16 @@ class _MenuListView extends StatelessWidget {
 
   void _sendTwoPhaseSettings(BuildContext context, MenuItemEntity item) {
     final cubit = context.read<PumpSettingsCubit>();
-    cubit.sendCurrentSetting(0, 0, deviceId, userId, subUserId, controllerId, item);
+    cubit.sendCurrentSetting(
+        0, 0, deviceId, userId, subUserId, controllerId, item);
     context.read<PumpSettingsViewResponseCubit>().clear();
   }
 
-  static Widget _navigationRow(BuildContext context, {required String title, Widget? trailing, VoidCallback? onTap, String? image}) {
+  static Widget _navigationRow(BuildContext context,
+      {required String title,
+        Widget? trailing,
+        VoidCallback? onTap,
+        String? image}) {
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -371,9 +383,14 @@ class _MenuItemTile extends StatelessWidget {
 
         context.push(
           route,
-          extra: item.menu.menuSettingId == 514 || item.menu.menuSettingId == 515
+          extra:
+          item.menu.menuSettingId == 514 || item.menu.menuSettingId == 515
               ? extra
-              : {...extra, 'menuId': item.menu.menuSettingId, 'menuName': item.menu.menuItem},
+              : {
+            ...extra,
+            'menuId': item.menu.menuSettingId,
+            'menuName': item.menu.menuItem
+          },
         );
       },
     );
@@ -414,7 +431,10 @@ class _HideShowSettingsDialog extends StatelessWidget {
         final setting = state.settings.template.sections[0].settings[0];
 
         return CheckboxListTile(
-          title: Text(setting.title, style: const TextStyle(fontSize: 14),),
+          title: Text(
+            setting.title,
+            style: const TextStyle(fontSize: 14),
+          ),
           value: setting.hiddenFlag == "1",
           dense: true,
           contentPadding: EdgeInsets.zero,

@@ -35,7 +35,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     required int menuId,
     required int sectionIndex,
     required int settingIndex,
-    }) {
+  }) {
     return 'psv_${userId}_${subUserId}_${controllerId}_${menuId}_${sectionIndex}_$settingIndex';
   }
 
@@ -67,57 +67,38 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     ));
 
     result.fold(
-          (failure) => emit(GetPumpSettingsError(message: failure.message)),
-          (menuItem) {
-            final updatedSections = menuItem.template.sections.asMap().entries.map((sectionEntry) {
-              final sectionIndex = sectionEntry.key;
-              final section = sectionEntry.value;
+      (failure) => emit(GetPumpSettingsError(message: failure.message)),
+      (menuItem) {
+        final updatedSections = menuItem.template.sections.map((section) {
+          final updatedSettings = section.settings.map((setting) {
+            // Don't load cached values - wait for live data from device
+            return setting;
+          }).toList();
 
-              final updatedSettings = section.settings.asMap().entries.map((settingEntry) {
-                final settingIndex = settingEntry.key;
-                final setting = settingEntry.value;
+          return section.copyWith(settings: updatedSettings);
+        }).toList();
 
-                final key = _getPrefKey(
-                  userId: userId,
-                  subUserId: subUserId,
-                  controllerId: controllerId,
-                  menuId: menuId,
-                  sectionIndex: sectionIndex,
-                  settingIndex: settingIndex,
-                );
-                final savedValue = sharedPreferences.getString(key);
+        final updatedMenuItem = menuItem.copyWith(
+          template: menuItem.template.copyWith(sections: updatedSections),
+        );
 
-                if (savedValue != null && savedValue.isNotEmpty) {
-                  return setting.copyWith(value: savedValue);
-                }
-                return setting;
-              }).toList();
-
-              return section.copyWith(settings: updatedSettings);
-            }).toList();
-
-            final updatedMenuItem = menuItem.copyWith(
-              template: menuItem.template.copyWith(sections: updatedSections),
-            );
-
-            emit(GetPumpSettingsLoaded(settings: updatedMenuItem));
-          },
+        emit(GetPumpSettingsLoaded(settings: updatedMenuItem));
+      },
     );
   }
 
   void updateSettingValue(
-      String newValue,
-      int sectionIndex,
-      int settingIndex,
-      MenuItemEntity menuItemEntity,
-      {
-        bool isHiddenFlag = false,
-        int? userId,
-        int? subUserId,
-        int? controllerId,
-      }
-      ) {
-    final newSections = List<SettingSectionEntity>.from(menuItemEntity.template.sections);
+    String newValue,
+    int sectionIndex,
+    int settingIndex,
+    MenuItemEntity menuItemEntity, {
+    bool isHiddenFlag = false,
+    int? userId,
+    int? subUserId,
+    int? controllerId,
+  }) {
+    final newSections =
+        List<SettingSectionEntity>.from(menuItemEntity.template.sections);
     final targetSection = newSections[sectionIndex];
     final newSettings = List<SettingsEntity>.from(targetSection.settings);
 
@@ -128,8 +109,9 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
 
       if (setting.widgetType == SettingWidgetType.text) {
         final trimmed = newValue.trim();
-        if(setting.title == 'Dry Run Occurance Count') {
-          final val = newValue.contains('.') ? newValue.split('.')[0] : newValue;
+        if (setting.title == 'Dry Run Occurance Count') {
+          final val =
+              newValue.contains('.') ? newValue.split('.')[0] : newValue;
           final number = int.tryParse(val);
           if (number != null) {
             processedValue = number.toString().padLeft(2, '0');
@@ -147,7 +129,8 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
             final decimalPart = parts.length > 1 ? parts[1] : '0';
 
             final intClean = integerStr.replaceAll(RegExp(r'^0+'), '');
-            final intValue = intClean.isEmpty ? 0 : int.tryParse(intClean) ?? -1;
+            final intValue =
+                intClean.isEmpty ? 0 : int.tryParse(intClean) ?? -1;
 
             String paddedInteger;
             if (intValue >= 0 && intValue < 100) {
@@ -187,7 +170,8 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
         sharedPreferences.setString(key, processedValue);
       }
     } else {
-      newSettings[settingIndex] = newSettings[settingIndex].copyWith(hiddenFlag: newValue);
+      newSettings[settingIndex] =
+          newSettings[settingIndex].copyWith(hiddenFlag: newValue);
     }
 
     newSections[sectionIndex] = targetSection.copyWith(settings: newSettings);
@@ -198,17 +182,18 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
   }
 
   void sendCurrentSetting(
-      int sectionIndex,
-      int settingIndex,
-      String deviceId,
-      int userId,
-      int subUserId,
-      int controllerId,
-      MenuItemEntity menuItemEntity,
-      ) async {
+    int sectionIndex,
+    int settingIndex,
+    String deviceId,
+    int userId,
+    int subUserId,
+    int controllerId,
+    MenuItemEntity menuItemEntity,
+  ) async {
     emit(SettingSendingState(sectionIndex, settingIndex));
 
-    final setting = menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
+    final setting =
+        menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
     String payload = SmsPayloadBuilder.build(setting, deviceId);
 
     if (menuItemEntity.menu.menuSettingId == 508 &&
@@ -218,8 +203,9 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     }
 
     try {
-      final publishMessage = jsonEncode(PublishMessageHelper.settingsPayload(payload));
-      if(payload.isNotEmpty) {
+      final publishMessage =
+          jsonEncode(PublishMessageHelper.settingsPayload(payload));
+      if (payload.isNotEmpty) {
         di.sl.get<MqttManager>().publish(deviceId, publishMessage);
       }
       final result = await sendPumpSettingsUsecase(SendPumpSettingsParams(
@@ -232,23 +218,25 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       ));
 
       result.fold(
-            (failure) => emit(SettingsFailureState(message: "${setting.title} sending ${failure.message}")),
-            (message) => emit(SettingsSendSuccessState(message: "${setting.title} sent $message")),
+        (failure) => emit(SettingsFailureState(
+            message: "${setting.title} sending ${failure.message}")),
+        (message) => emit(SettingsSendSuccessState(
+            message: "${setting.title} sent $message")),
       );
     } catch (e) {
-      emit(SettingsFailureState(message: "Failed to send setting: ${e.toString()}"));
+      emit(SettingsFailureState(
+          message: "Failed to send setting: ${e.toString()}"));
     } finally {
       emit(GetPumpSettingsLoaded(settings: menuItemEntity));
     }
   }
 
-  Future<void> updateHiddenFlags({
-    required int userId,
-    required int subUserId,
-    required int controllerId,
-    required MenuItemEntity menuItemEntity,
-    required String sentSms
-  }) async {
+  Future<void> updateHiddenFlags(
+      {required int userId,
+      required int subUserId,
+      required int controllerId,
+      required MenuItemEntity menuItemEntity,
+      required String sentSms}) async {
     emit(SettingsSendStartedState());
     try {
       final result = await sendPumpSettingsUsecase(SendPumpSettingsParams(
@@ -257,15 +245,15 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
           controllerId: controllerId,
           menuId: menuItemEntity.menu.menuSettingId,
           menuItemEntity: menuItemEntity,
-          sentSms: sentSms
-      ));
+          sentSms: sentSms));
 
       result.fold(
-            (failure) => emit(SettingsFailureState(message: failure.message)),
-            (message) => emit(SettingsSendSuccessState(message: message)),
+        (failure) => emit(SettingsFailureState(message: failure.message)),
+        (message) => emit(SettingsSendSuccessState(message: message)),
       );
     } catch (e) {
-      emit(SettingsFailureState(message: "Failed to send settings to device: ${e.toString()}"));
+      emit(SettingsFailureState(
+          message: "Failed to send settings to device: ${e.toString()}"));
     } finally {
       emit(GetPumpSettingsLoaded(settings: menuItemEntity));
     }

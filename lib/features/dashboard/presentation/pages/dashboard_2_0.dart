@@ -100,13 +100,13 @@ class _Dashboard20State extends State<Dashboard20> {
           if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.loading){
             showGradientLoadingDialog(context);
           }else if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.success){
-            context.pop();
+            Navigator.pop(context);
             showSuccessAlert(
                 context: context,
                 message: 'Change From command Success'
             );
           }else if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.failure){
-            context.pop();
+            Navigator.pop(context);
             showErrorAlert(
                 context: context,
                 message: state.errorMsg
@@ -114,24 +114,25 @@ class _Dashboard20State extends State<Dashboard20> {
           }else if(state is DashboardGroupsLoaded && state.controlMotorStatus == ControlMotorStatus.loading){
             showGradientLoadingDialog(context);
           }else if(state is DashboardGroupsLoaded && state.controlMotorStatus == ControlMotorStatus.success){
-            context.pop();
+            Navigator.pop(context);
             showSuccessAlert(
                 context: context,
                 message: 'Motor command Send Success'
             );
           }else if(state is DashboardGroupsLoaded && state.controlMotorStatus == ControlMotorStatus.failure){
-            context.pop();
+            Navigator.pop(context);
             showErrorAlert(
                 context: context,
                 message: state.errorMsg
             );
           }
         },
-        listenWhen: (previous, current){
-          if(previous is DashboardGroupsLoaded && previous.controlMotorStatus == ControlMotorStatus.loading){
-            if(current is DashboardGroupsLoaded && current.controlMotorStatus == ControlMotorStatus.loading){
-              return false;
-            }
+        listenWhen: (previous, current) {
+          if (previous is DashboardGroupsLoaded && current is DashboardGroupsLoaded) {
+            // Only re-listen if status has changed
+            bool statusChanged = previous.controlMotorStatus != current.controlMotorStatus ||
+                previous.changeFromStatus != current.changeFromStatus;
+            return statusChanged;
           }
           return true;
         }
@@ -212,7 +213,7 @@ class _Dashboard20State extends State<Dashboard20> {
                               const Icon(Icons.circle, color: Colors.orange, size: 10),
                               const SizedBox(width: 4),
                               Text(
-                                'SMS Sync : ${controllerEntity.smsSyncTime}',
+                                'SMS Sync : ${_formatTime12H(controllerEntity.smsSyncTime)}',
                                 style: Theme.of(context).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
                               ),
                             ],
@@ -748,6 +749,34 @@ class _Dashboard20State extends State<Dashboard20> {
       }
     }
    return zoneNumbers;
+  }
+
+  String _formatTime12H(String? time) {
+    if (time == null || time.isEmpty || time == '--' || time == '00:00:00') {
+      return time ?? '--';
+    }
+    try {
+      // Split if it's "Date Time" or just "Time"
+      List<String> parts = time.trim().split(' ');
+      String timePart = parts.length > 1 ? parts[1] : parts[0];
+      String datePart = parts.length > 1 ? parts[0] : "";
+
+      // Handle HH:mm:ss or HH:mm
+      final timeSegments = timePart.split(':');
+      if (timeSegments.length < 2) return time;
+
+      int hour = int.parse(timeSegments[0]);
+      int minute = int.parse(timeSegments[1]);
+      String period = hour >= 12 ? 'PM' : 'AM';
+      int h12 = hour % 12;
+      if (h12 == 0) h12 = 12;
+
+      String formattedTime =
+          "${h12.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')} $period";
+      return datePart.isNotEmpty ? "$datePart $formattedTime" : formattedTime;
+    } catch (e) {
+      return time;
+    }
   }
 
   String getDate({required LiveMessageEntity liveData}){

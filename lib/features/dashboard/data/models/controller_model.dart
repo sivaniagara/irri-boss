@@ -17,10 +17,13 @@ class ProgramModel extends ProgramEntity {
       programId: json['programId'] as int? ?? 0,
       programName: json['programName'] as String? ?? '',
       programNameDefault: json['programNameDefault'] as String? ?? '',
-      listOfZone: json['zones'].map<ZoneEntity>((e) => ZoneEntity(zoneNumber: e['zoneNumber'])).toList(),
+      listOfZone: json['zones']
+          .map<ZoneEntity>((e) => ZoneEntity(zoneNumber: e['zoneNumber']))
+          .toList(),
     );
   }
 }
+
 class ControllerModel extends ControllerEntity {
   const ControllerModel({
     required super.userDeviceId,
@@ -69,7 +72,9 @@ class ControllerModel extends ControllerEntity {
 
   factory ControllerModel.fromJson(Map<String, dynamic> json) {
     final List<ProgramEntity> programs = json['programList'] is List
-        ? (json['programList'] as List).map((e) => ProgramModel.fromJson(e)).toList()
+        ? (json['programList'] as List)
+            .map((e) => ProgramModel.fromJson(e))
+            .toList()
         : const [];
 
     final rawDate = json['livesyncDate']?.toString() ?? '';
@@ -79,8 +84,11 @@ class ControllerModel extends ControllerEntity {
     final String latestMsg = json['ctrlLatestMsg']?.toString() ?? '';
     final String parsedSmsSync = getSmsSync(latestMsg);
 
+    final int modelId = json['modelId'] ?? 0;
+    final bool isDoublePump = modelId == 27;
     final LiveMessageEntity liveMessage = LiveMessageModel.fromLiveMessage(
       json['liveMessage']?.toString() ?? '',
+      typeCode: isDoublePump ? 'LD04' : null,
       externalLastSync: formattedDateTime,
     );
 
