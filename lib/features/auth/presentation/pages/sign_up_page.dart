@@ -55,6 +55,38 @@ class _UserProfileFormBodyState extends State<_UserProfileFormBody> {
   late ValueNotifier<String?> selectedCountry;
   late ValueNotifier<String?> selectedState;
 
+  final List<String> indiaStates = [
+    'Andhra Pradesh',
+    'Arunachal Pradesh',
+    'Assam',
+    'Bihar',
+    'Chhattisgarh',
+    'Goa',
+    'Gujarat',
+    'Haryana',
+    'Himachal Pradesh',
+    'Jharkhand',
+    'Karnataka',
+    'Kerala',
+    'Madhya Pradesh',
+    'Maharashtra',
+    'Manipur',
+    'Meghalaya',
+    'Mizoram',
+    'Nagaland',
+    'Odisha',
+    'Punjab',
+    'Rajasthan',
+    'Sikkim',
+    'Tamil Nadu',
+    'Telangana',
+    'Tripura',
+    'Uttar Pradesh',
+    'Uttarakhand',
+    'West Bengal',
+    'Other',
+  ];
+
   @override
   void initState() {
     super.initState();
@@ -79,15 +111,17 @@ class _UserProfileFormBodyState extends State<_UserProfileFormBody> {
     selectedUserType = ValueNotifier<String?>(
       ['Customer', 'Dealer', 'Admin'].contains(getUserTypeLabel(widget.initialData?.userType))
           ? getUserTypeLabel(widget.initialData?.userType)
-          : null,
+          : 'Dealer',
     );
 
     selectedCountry = ValueNotifier<String?>(
-      ['India', 'USA', 'UK'].contains(widget.initialData?.country) ? widget.initialData!.country : 'India',
+      ['India', 'USA', 'UK','Others'].contains(widget.initialData?.country) ? widget.initialData!.country : 'India',
     );
 
     selectedState = ValueNotifier<String?>(
-      ['State 1', 'State 2', 'State 3'].contains(widget.initialData?.state) ? widget.initialData!.state : null,
+      indiaStates.contains(widget.initialData?.state)
+          ? widget.initialData!.state
+          : null,
     );
   }
 
@@ -163,7 +197,7 @@ class _UserProfileFormBodyState extends State<_UserProfileFormBody> {
       ));
     } else {
       context.read<AuthBloc>().add(SignUpEvent(
-        mobile: mobileToSend,
+        mobile: mobileToSend.toString(),
         name: nameCtrl.text.trim(),
         userType: userTypeInt,
         addressOne: address1Ctrl.text.trim(),
@@ -202,8 +236,14 @@ class _UserProfileFormBodyState extends State<_UserProfileFormBody> {
     return mobile.replaceAll(RegExp(r'\D'), '');
   }
 
+  bool get isCustomer => selectedUserType.value == 'Customer';
+  bool get isDealer => selectedUserType.value == 'Dealer';
+  bool get isAdmin => selectedUserType.value == 'Admin';
+
+
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.isEdit ? 'Edit Profile' : 'Sign Up'),
@@ -253,6 +293,7 @@ class _UserProfileFormBodyState extends State<_UserProfileFormBody> {
                     validator: (v) => v!.trim().isEmpty ? 'Name is required' : null),
                 const SizedBox(height: 16),
 
+
                 ValueListenableBuilder<String?>(
                   valueListenable: selectedUserType,
                   builder: (_, value, __) {
@@ -265,11 +306,17 @@ class _UserProfileFormBodyState extends State<_UserProfileFormBody> {
                         DropdownMenuItem(value: 'Dealer', child: Text('Dealer')),
                         DropdownMenuItem(value: 'Admin', child: Text('Admin')),
                       ],
-                      onChanged: (v) => selectedUserType.value = v,
+                      onChanged: (v) {
+                        setState(() {
+                          selectedUserType.value = v;
+                        });
+
+                      },
                     );
                   },
                 ),
                 const SizedBox(height: 24),
+              if (!isCustomer) ...[
 
                 const Text(
                   'Address',
@@ -299,6 +346,7 @@ class _UserProfileFormBodyState extends State<_UserProfileFormBody> {
                               DropdownMenuItem(value: 'India', child: Text('India')),
                               DropdownMenuItem(value: 'USA', child: Text('USA')),
                               DropdownMenuItem(value: 'UK', child: Text('UK')),
+                              DropdownMenuItem(value: 'Others', child: Text('Others')),
                             ],
                             onChanged: (v) => selectedCountry.value = v,
                           );
@@ -311,13 +359,16 @@ class _UserProfileFormBodyState extends State<_UserProfileFormBody> {
                         valueListenable: selectedState,
                         builder: (_, value, __) {
                           return DropdownButtonFormField<String>(
+                            isExpanded: true,
                             value: value,
                             decoration: _inputDecoration('State', Icons.map),
-                            items: const [
-                              DropdownMenuItem(value: 'State 1', child: Text('State 1')),
-                              DropdownMenuItem(value: 'State 2', child: Text('State 2')),
-                              DropdownMenuItem(value: 'State 3', child: Text('State 3')),
-                            ],
+
+                              items: indiaStates
+                              .map((state) => DropdownMenuItem(
+                            value: state,
+                            child: Text(state, overflow: TextOverflow.ellipsis,),
+                          ))
+                              .toList(),
                             onChanged: (v) => selectedState.value = v,
                           );
                         },
@@ -341,9 +392,9 @@ class _UserProfileFormBodyState extends State<_UserProfileFormBody> {
                       }
                       return null;
                     }),
+                ],
                 const SizedBox(height: 16),
-
-                if (!widget.isEdit)
+                 if (!widget.isEdit)
                   TextFormField(
                     controller: passwordCtrl,
                     obscureText: true,
@@ -369,8 +420,9 @@ class _UserProfileFormBodyState extends State<_UserProfileFormBody> {
                   ),
                 ),
                 const SizedBox(height: 20),
-              ],
-            ),
+
+    ],
+             ),
           ),
         ),
       ),

@@ -31,7 +31,7 @@ class VerifyOtpParams extends Equatable {
 class SignUpParams extends Equatable {
   final String mobile;
   final String name;
-  final int? userType; // e.g., from dropdown 'option'
+  final int? userType;
   final String? addressOne;
   final String? addressTwo;
   final String? town;

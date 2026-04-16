@@ -283,7 +283,7 @@ print("checkPhoneNumber,$body");
         'city': params.city ?? '',
         'postalCode': params.postalCode ?? '',
         'altPhoneNum': [
-          {'mobileNumber': params.altPhone}
+          {'mobileNumber': params.altPhone!.isEmpty ? '1234567890' : params.altPhone  ?? ' '}
         ],
         'email': params.email ?? '',
         'password': md5.convert(utf8.encode(params.password ?? '')).toString(),
