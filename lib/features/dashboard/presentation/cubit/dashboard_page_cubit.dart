@@ -293,6 +293,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
   Future<void> fetchControllersForGroup(
       int userId, int groupId, GoRouterState routeState) async {
+    print("fetchControllersForGroup");
     if (state is DashboardGroupsLoaded) {
       final currentState = state as DashboardGroupsLoaded;
       final result =
@@ -338,6 +339,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
   Future<(int modelId, int controllerId, String deviceId)> selectGroup(
       int groupId, int userId, GoRouterState routeState) async {
+    print("selectGroup");
 
     if (state is! DashboardGroupsLoaded) return (0, 0, '');
      final currentState = state as DashboardGroupsLoaded;
@@ -396,6 +398,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
   }
 
   Future<void> selectController(int controllerIndex) async {
+    print('selectController');
     if (state is! DashboardGroupsLoaded) return;
 
     final currentState = state as DashboardGroupsLoaded;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:niagara_smart_drip_irrigation/features/program_settings/presentation/bloc/program_bloc.dart';
+import 'core/utils/network_helper.dart';
 import 'features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'features/mapping_and_unmapping_nodes/presentation/bloc/mapping_and_unmapping_nodes_bloc.dart';
 import 'features/progam_zone_set/presentation/cubit/program_tab_cubit.dart';
@@ -46,6 +47,7 @@ Future<void> appMain() async {
   authBloc.add(CheckCachedUserEvent());
 
   appRouter = AppRouter(authBloc: authBloc);
+  NetworkService().initialise();
 
   runApp(
       MultiBlocProvider(
@@ -70,30 +72,78 @@ class RootApp extends StatelessWidget {
 
   RootApp({super.key, required this.authBloc});
 
+  // @override
+  // Widget build(BuildContext dialogContext) {
+  //   return MultiProvider(
+  //     providers: [
+  //       ChangeNotifierProvider.value(value: _themeProvider),
+  //       BlocProvider<AuthBloc>.value(value: authBloc),
+  //      /* BlocProvider<MqttBloc>(
+  //         lazy: false,
+  //         create: (context) {
+  //           final bloc = di.sl<MqttBloc>();
+  //           return bloc;
+  //         },
+  //       ),*/
+  //     ],
+  //     child: Consumer<ThemeProvider>(
+  //       builder: (context, themeProvider, _) {
+  //         return MaterialApp.router(
+  //           debugShowCheckedModeBanner: false,
+  //           theme: themeProvider.theme,
+  //           themeMode: ThemeMode.light,
+  //           routerConfig: appRouter.router,
+  //         );
+  //       },
+  //     ),
+  //   );
+  // }
+
   @override
   Widget build(BuildContext dialogContext) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: _themeProvider),
         BlocProvider<AuthBloc>.value(value: authBloc),
-       /* BlocProvider<MqttBloc>(
-          lazy: false,
-          create: (context) {
-            final bloc = di.sl<MqttBloc>();
-            return bloc;
-          },
-        ),*/
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {
-          return MaterialApp.router(
-            debugShowCheckedModeBanner: false,
-            theme: themeProvider.theme,
-            themeMode: ThemeMode.light,
-            routerConfig: appRouter.router,
+          return StreamBuilder<bool>(
+            stream: NetworkService().networkStream,
+            builder: (context, snapshot) {
+              final isOnline = snapshot.data ?? true;
+
+              return MaterialApp.router(
+                debugShowCheckedModeBanner: false,
+                theme: themeProvider.theme,
+                themeMode: ThemeMode.light,
+                routerConfig: appRouter.router,
+
+                // ✅ GLOBAL OVERLAY HERE
+                builder: (context, child) {
+                  return Stack(
+                    children: [
+                      child!,
+
+                      if (!isOnline)
+                        Container(
+                          color: Colors.black54,
+                          child: Center(
+                            child: AlertDialog(
+                              title: Text("No Internet"),
+                              content: Text("Please check your connection"),
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              );
+            },
           );
         },
       ),
     );
   }
+
 }

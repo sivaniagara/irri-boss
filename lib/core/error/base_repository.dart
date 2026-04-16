@@ -35,4 +35,4 @@ abstract class BaseRepository {
   Future<Either<Failure, dynamic>> safeCallDynamic(Future<dynamic> Function() dataSourceCall, {String? context}) async {
     return await safeCall(dataSourceCall, context: context);
   }
-}
+} 

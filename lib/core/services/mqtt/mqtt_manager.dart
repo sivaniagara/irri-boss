@@ -49,6 +49,7 @@ class MqttManager {
   }
 
   void subscribe(String deviceId, {bool force = false}) {
+    print("call subscribe");
 
     if (_currentDeviceId == deviceId && !force) return;
 
@@ -61,6 +62,10 @@ class MqttManager {
   }
 
   void publish(String deviceId, dynamic payload) {
+    _currentDeviceId != deviceId;
+    {
+      subscribe(deviceId, force: true);
+    }
     if(payload is String){
       mqttService.publish(deviceId, payload);
     }else{
