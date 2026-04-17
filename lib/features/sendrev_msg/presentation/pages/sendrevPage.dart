@@ -173,11 +173,7 @@ class _SendRevPageState extends State<SendRevPage> {
             return Center(
               child: Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Text(
-                  state.message,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.redAccent),
-                ),
+                child:  TextButton(onPressed: _loadInitialMessages, child: Text('Retry'))
               ),
             );
           }
