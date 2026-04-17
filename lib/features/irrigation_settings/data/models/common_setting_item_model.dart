@@ -111,7 +111,7 @@ class MultipleSettingItemModel extends MultipleSettingItemEntity{
   });
 
   factory MultipleSettingItemModel.fromJson({required Map<String, dynamic> json}){
-    print("MultipleSettingItemModel.fromJson called");;
+    print("MultipleSettingItemModel.fromJson called");
     List<Map<String, dynamic>> data = List.generate(json['VAL'].split(';').length, (index){
       print("multi json : $json");
       return {

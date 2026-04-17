@@ -13,11 +13,8 @@ import 'package:niagara_smart_drip_irrigation/features/reports/moisture_reports/
 import 'package:niagara_smart_drip_irrigation/features/selling_device/utils/selling_device_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/service_request/utils/service_request_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/settings/presentation/pages/settings_page.dart';
-import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/bloc/standalone_bloc.dart';
-import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/bloc/standalone_event.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/pages/standalone_page.dart';
-import 'package:niagara_smart_drip_irrigation/features/standalone_settings/utils/standalone_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/valve_flow_settings/utils/valve_flow_routes.dart';
 import 'core/di/injection.dart';
 import 'features/common_id_settings/utils/common_id_settings_routes.dart';
@@ -25,7 +22,6 @@ import 'features/controller_details/domain/usecase/controller_details_params.dar
 import 'features/controller_details/presentation/bloc/controller_details_bloc.dart';
 import 'features/controller_details/presentation/bloc/controller_details_bloc_event.dart';
 import 'features/controller_details/presentation/pages/controller_details_page.dart';
-import 'features/controller_settings/utils/controller_settings_routes.dart';
 import 'features/dashboard/domain/entities/controller_entity.dart';
 import 'features/dashboard/domain/entities/livemessage_entity.dart';
 import 'features/dashboard/presentation/cubit/controller_context_cubit.dart';
@@ -56,7 +52,6 @@ import 'features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
 import 'features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
 import 'features/sendrev_msg/presentation/pages/sendrevPage.dart';
 import 'features/sendrev_msg/utils/senrev_routes.dart';
-import 'features/program_settings/utils/program_settings_routes.dart';
 
 
 import 'features/auth/utils/auth_routes.dart';

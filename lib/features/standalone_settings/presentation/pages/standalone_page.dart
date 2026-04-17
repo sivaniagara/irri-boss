@@ -3,8 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/app_alerts.dart';
 
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/bloc/standalone_bloc.dart';
-import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/bloc/standalone_state.dart';
-import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/bloc/standalone_event.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/widgets/standalone_header.dart';
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/widgets/zone_item.dart';
 
@@ -142,7 +140,7 @@ class _StandalonePageState extends State<StandalonePage> {
                   return Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary));
                 } else if (state is StandaloneLoaded || state is StandaloneSuccess) {
                   final standaloneData = (state is StandaloneLoaded)
-                      ? (state as StandaloneLoaded).data
+                      ? (state).data
                       : (state as StandaloneSuccess).data;
 
                   return _selectedIndex == 0

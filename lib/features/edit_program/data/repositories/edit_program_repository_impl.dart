@@ -153,7 +153,7 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
         return zoneLength;
       }
         EditProgramModel editProgramModel = EditProgramModel.fromEntity(params.editProgramEntity);
-      print("takingActiveZoneByZoneSet : ${takingActiveZoneByZoneSet}");
+      print("takingActiveZoneByZoneSet : $takingActiveZoneByZoneSet");
       print(start(params.zoneSetNo));
       print(end(params.zoneSetNo, params.editProgramEntity.zones.length));
         List<ZoneSettingModel> zoneSet = takingActiveZoneByZoneSet.sublist(

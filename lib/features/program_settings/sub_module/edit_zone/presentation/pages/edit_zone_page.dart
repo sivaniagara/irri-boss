@@ -8,8 +8,6 @@ import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_modu
 import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/edit_zone/presentation/widgets/selectable_valve_list.dart';
 import 'package:niagara_smart_drip_irrigation/features/program_settings/presentation/bloc/program_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/program_settings/presentation/widgets/list_tile_card.dart';
-import 'package:niagara_smart_drip_irrigation/features/controller_settings/utils/controller_settings_routes.dart';
-import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_routes.dart';
 
 import '../../../../../../core/widgets/app_alerts.dart';
 import '../../../../../../core/widgets/custom_outlined_button.dart';

@@ -28,7 +28,7 @@ class ControllerResponseModel {
 }
 
 class ControllerDetails extends ControllerDetailsEntities {
-  ControllerDetails({
+  const ControllerDetails({
     required super.wpsIp,
     required super.wpsPort,
     required super.wapIp,

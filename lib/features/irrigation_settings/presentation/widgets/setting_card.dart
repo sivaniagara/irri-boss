@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/domain/entities/setting_item_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/utils/irrigation_settings_routes.dart';
 
-import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
-import '../../../water_fertilizer_settings/presentation/bloc/water_fertilizer_setting_bloc.dart';
 import '../../../water_fertilizer_settings/utils/water_fertilizer_settings_routes.dart';
 import '../enums/irrigation_settings_enum.dart';
 

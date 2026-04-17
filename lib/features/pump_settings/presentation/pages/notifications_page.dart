@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/action_button.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
-import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/data/models/notifications_model.dart';
 
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/bloc/notifications_state.dart';

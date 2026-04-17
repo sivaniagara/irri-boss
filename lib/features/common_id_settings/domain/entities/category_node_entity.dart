@@ -1,6 +1,5 @@
 import 'package:niagara_smart_drip_irrigation/features/common_id_settings/domain/entities/serial_no_entity.dart';
 
-import '../../data/models/serial_no_model.dart';
 
 class CategoryNodeEntity {
   final int? nodeId;

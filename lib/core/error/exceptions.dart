@@ -89,7 +89,7 @@ class NoDataException implements Exception {
   final String message;
    NoDataException({required this.message});
   @override
-  String toString() => "$message";
+  String toString() => message;
 }
 
 

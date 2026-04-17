@@ -638,9 +638,9 @@ class _DashboardPageState extends State<DashboardPage> {
     }
 
     String? title;
-    if (location == DashBoardRoutes.report)
+    if (location == DashBoardRoutes.report) {
       title = "Report";
-    else if (location == DashBoardRoutes.standalone)
+    } else if (location == DashBoardRoutes.standalone)
       title = "Manual";
     else if (location == DashBoardRoutes.settings)
       title = "Setting";

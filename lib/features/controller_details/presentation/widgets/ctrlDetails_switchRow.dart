@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_themes.dart';
 
 class ControllerSwitchRow extends StatelessWidget {
   final String title;

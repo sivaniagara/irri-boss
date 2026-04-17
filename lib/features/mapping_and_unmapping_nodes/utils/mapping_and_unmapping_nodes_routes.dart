@@ -1,5 +1,4 @@
 import '../../../core/di/injection.dart' as di;
-import '../../controller_settings/utils/controller_settings_routes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

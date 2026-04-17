@@ -6,7 +6,6 @@ import '../../domain/entities/zone_nodes_entity.dart';
 import '../../domain/usecases/submit_while_edit_zone_configuration.dart';
 import '../../domain/usecases/submit_zone_configuration_usecase.dart';
 import '../enums/edit_zone_enums.dart';
-import '../pages/edit_zone_page.dart';
 
 part 'edit_zone_event.dart';
 part 'edit_zone_state.dart';

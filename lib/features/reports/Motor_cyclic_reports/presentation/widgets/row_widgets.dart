@@ -1,8 +1,6 @@
 // ===================== WIDGETS =====================
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/domain/entities/motor_cyclic_entities.dart';
 
 Widget infoRow(String title, String value,IconData vIcon) {
   return Padding(

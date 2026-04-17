@@ -178,10 +178,12 @@ class _ViewPumpSettingsView extends StatelessWidget {
                   int.tryParse(section['TID']?.toString() ?? '');
                   final int? sn = int.tryParse(set['SN']?.toString() ?? '');
 
-                  if (tid == 1 && sn != null && [3, 4].contains(sn))
+                  if (tid == 1 && sn != null && [3, 4].contains(sn)) {
                     skip = true;
-                  if (tid == 2 && sn != null && [1, 2].contains(sn))
+                  }
+                  if (tid == 2 && sn != null && [1, 2].contains(sn)) {
                     skip = true;
+                  }
                 }
 
                 if (!skip) visibleCount++;

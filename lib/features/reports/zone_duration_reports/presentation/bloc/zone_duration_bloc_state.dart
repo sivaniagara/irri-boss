@@ -42,7 +42,7 @@ class ZoneDurationLoaded extends ZoneDurationState {
   final String toDate;
 
 
-  ZoneDurationLoaded({
+  const ZoneDurationLoaded({
     required this.data,
     required this.fromDate,
     required this.toDate,

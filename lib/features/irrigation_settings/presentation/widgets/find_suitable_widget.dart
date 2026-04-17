@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:niagara_smart_drip_irrigation/core/services/time_picker_service.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_switch.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/leaf_box.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/tiny_text_form_field.dart';
 
 import '../../domain/entities/common_setting_item_entity.dart';
-import '../bloc/template_irrigation_settings_bloc.dart';
 
 class FindSuitableWidget extends StatelessWidget {
   final SingleSettingItemEntity singleSettingItemEntity;

@@ -56,7 +56,7 @@ class ZoneStatusCardStandAlone extends StatelessWidget {
               ),
             ),
             child: Text(
-              "${zone.duration}",
+              zone.duration,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Colors.white,

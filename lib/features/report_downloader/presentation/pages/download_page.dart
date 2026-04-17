@@ -3,8 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/no_data.dart';
 
-import '../../../../core/flavor/flavor_config.dart';
-import '../../../../core/services/api_client.dart';
 import '../bloc/report_bloc.dart';
 
 class ReportDownloadPage extends StatelessWidget {

@@ -47,7 +47,7 @@ class WaterFertilizerSettingBloc extends Bloc<WaterFertilizerSettingEvent, Water
     });
 
     on<FetchZoneSetSettingEvent>((event, emit)async{
-      print('state => ${state}');
+      print('state => $state');
       print("FetchZoneSetSettingEvent called....");
       emit(WaterFertilizerSettingLoading());
       FetchZoneSetSettingParams fetchZoneSetSettingParams = FetchZoneSetSettingParams(

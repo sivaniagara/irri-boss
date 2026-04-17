@@ -1,7 +1,6 @@
 
 import '../../../../../../core/services/api_client.dart';
 import '../../../../../../core/utils/api_urls.dart';
-import '../../domain/entities/zone_nodes_entity.dart';
 import '../../../../utils/program_settings_urls.dart';
 
 abstract class ZoneConfigurationRemoteSource{
@@ -39,7 +38,7 @@ class ZoneConfigurationRemoteSourceImpl extends ZoneConfigurationRemoteSource{
     required Map<String, String> urlData,
   }) async{
     try{
-      print("body => ${body} == urlData => ${urlData}");
+      print("body => $body == urlData => $urlData");
       String endpoint = buildUrl(ProgramSettingsUrls.submitZone, urlData);
       final response = await apiClient.post(endpoint, body: body);
       return response;
@@ -55,7 +54,7 @@ class ZoneConfigurationRemoteSourceImpl extends ZoneConfigurationRemoteSource{
     required Map<String, String> urlData,
   }) async{
     try{
-      print("body => ${body} == urlData => ${urlData}");
+      print("body => $body == urlData => $urlData");
       String endpoint = buildUrl(ProgramSettingsUrls.submitZone, urlData);
       final response = await apiClient.put(endpoint, body: body);
       return response;

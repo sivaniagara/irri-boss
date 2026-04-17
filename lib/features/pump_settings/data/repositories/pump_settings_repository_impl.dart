@@ -25,7 +25,7 @@ class PumpSettingsRepositoryImpl implements PumpSettingsRepository {
     try {
       final menuItems = await pumpSettingsDataSources.getPumpSettings(userId, subUserId, controllerId, menuId);
       return Right(menuItems);
-    } catch (e, s) {
+    } catch (e) {
       return Left(ServerFailure('Pump settings Fetching Failure: $e'));
     }
   }

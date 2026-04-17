@@ -9,7 +9,6 @@ import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/de
 
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/services/api_client.dart';
-import '../../../../core/services/mqtt/mqtt_manager.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/utils/api_response_handler.dart';
 import '../../domain/dashboard_domain.dart';

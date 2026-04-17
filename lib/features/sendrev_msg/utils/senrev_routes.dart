@@ -1,13 +1,11 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
-import 'package:logger/logger.dart';
 import '../../../core/di/injection.dart' as di;
 
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/di/injection.dart';  // your getIt instance
+// your getIt instance
 import '../presentation/bloc/sendrev_bloc.dart';
 import '../presentation/bloc/sendrev_bloc_event.dart';
 import '../presentation/pages/sendrevPage.dart';

@@ -8,7 +8,8 @@ class faultmsgRepositoryImpl implements faultmsgRepository {
 
   faultmsgRepositoryImpl({required this.dataSource});
 
-   Future<faultmsgEntity> getMessages({
+   @override
+  Future<faultmsgEntity> getMessages({
     required int userId,
     required int subuserId,
     required int controllerId,

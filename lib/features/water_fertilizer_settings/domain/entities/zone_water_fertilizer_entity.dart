@@ -61,7 +61,7 @@ class ZoneWaterFertilizerEntity{
     String? updatedPostTime,
     String? updatedPostLiters,
   }){
-    print('updatedCh1Liters : ${updatedCh1Liters}');
+    print('updatedCh1Liters : $updatedCh1Liters');
     return ZoneWaterFertilizerEntity(
         zoneNumber: zoneNumber,
         time: updatedTime ?? time,

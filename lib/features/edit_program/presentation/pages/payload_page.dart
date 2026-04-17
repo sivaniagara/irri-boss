@@ -3,9 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_material_button.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_outlined_button.dart';
-import 'package:niagara_smart_drip_irrigation/features/edit_program/presentation/widgets/custom_card.dart';
 
-import '../../domain/entities/zone_setting_entity.dart';
 import '../bloc/edit_program_bloc.dart';
 
 enum PayloadModeEnum {idle, loading, success, failure}
@@ -73,7 +71,7 @@ class _PayloadPageState extends State<PayloadPage> {
                               final zone = state.editProgramEntity.zones[index];
                               if(!zone.active) {
                                 return Container();
-                              };
+                              }
                               return CheckboxListTile(
                                 enabled: enableEdit,
                                   controlAffinity: ListTileControlAffinity.leading,
@@ -93,7 +91,7 @@ class _PayloadPageState extends State<PayloadPage> {
                               final zone = state.editProgramEntity.zones[index];
                               if(!zone.active) {
                                 return Container();
-                              };
+                              }
                               return CheckboxListTile(
                                 enabled: enableEdit,
                                 controlAffinity: ListTileControlAffinity.leading,

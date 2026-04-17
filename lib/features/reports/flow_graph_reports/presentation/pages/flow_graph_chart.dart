@@ -46,7 +46,7 @@ class FlowBarChart extends StatelessWidget {
                     return const SizedBox();
                   }
                   final date = data[index].date;
-                  final day = date != null && date.contains('/')
+                  final day = date.contains('/')
                       ? date.split('/').first
                       : '';
 

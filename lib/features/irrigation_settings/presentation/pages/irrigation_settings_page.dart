@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
-import 'package:niagara_smart_drip_irrigation/core/widgets/custom_list_tile.dart';
-import 'package:niagara_smart_drip_irrigation/core/widgets/gradiant_background.dart';
 import 'package:niagara_smart_drip_irrigation/features/alarm_settings/utils/alarm_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/presentation/widgets/custom_card.dart';
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
 import 'package:niagara_smart_drip_irrigation/features/valve_flow_settings/utils/valve_flow_routes.dart';
 
 import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
-import '../../../dashboard/utils/dashboard_routes.dart';
-import '../../../water_fertilizer_settings/utils/water_fertilizer_settings_routes.dart';
 import '../../domain/entities/setting_item_entity.dart';
 import '../../utils/irrigation_settings_routes.dart';
-import '../widgets/setting_card.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class IrrigationSettingsPage extends StatelessWidget {

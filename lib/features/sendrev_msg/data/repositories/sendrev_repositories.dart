@@ -8,7 +8,8 @@ class SendrevRepositoryImpl implements SendrevRepository {
 
   SendrevRepositoryImpl({required this.dataSource});
 
-   Future<SendrevEntity> getMessages({
+   @override
+  Future<SendrevEntity> getMessages({
     required int userId,
     required int subuserId,
     required int controllerId,

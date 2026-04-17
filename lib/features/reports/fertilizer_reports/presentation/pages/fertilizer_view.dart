@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/no_data.dart';
 
-import '../../../zone_duration_reports/presentation/widgets/summary_card.dart';
 import '../../domain/entities/fertilizer_entities.dart';
 import '../widgets/fertilizer_card.dart';
 import '../widgets/summary_card.dart';

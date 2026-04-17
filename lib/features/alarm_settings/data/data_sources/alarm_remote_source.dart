@@ -1,4 +1,3 @@
-import 'dart:convert';
 import '../../../../core/di/injection.dart';
 import '../../../../core/services/api_client.dart';
 import '../../../../core/services/mqtt/mqtt_manager.dart';

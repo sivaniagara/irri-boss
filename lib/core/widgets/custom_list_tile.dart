@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:niagara_smart_drip_irrigation/core/utils/app_images.dart';
 
 class CustomListTile extends StatelessWidget {
   void Function()? onTap;

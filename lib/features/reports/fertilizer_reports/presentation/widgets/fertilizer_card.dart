@@ -39,7 +39,7 @@ class FertilizerCard extends StatelessWidget {
 
           // 🔹 ZONE NUMBER
           Text(
-            '${zone.duration}',
+            zone.duration,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               color: Colors.black,
@@ -78,7 +78,7 @@ class FertilizerCard extends StatelessWidget {
               ),
             ),
             child: Text(
-              "${zone.zoneNumber}",
+              zone.zoneNumber,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Colors.black,

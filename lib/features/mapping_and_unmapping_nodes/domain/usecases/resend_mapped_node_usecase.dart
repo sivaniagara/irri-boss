@@ -4,7 +4,6 @@ import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
-import '../../../edit_program/domain/entities/mapped_node_entity.dart';
 import '../entities/mapped_node_entity.dart';
 import '../repositories/mapping_and_unmapping_nodes_repository.dart';
 

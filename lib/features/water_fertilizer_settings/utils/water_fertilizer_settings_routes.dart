@@ -5,7 +5,6 @@ import 'package:niagara_smart_drip_irrigation/features/water_fertilizer_settings
 import '../../../core/di/injection.dart' as di;
 import '../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../progam_zone_set/presentation/cubit/program_tab_cubit.dart';
-import '../../progam_zone_set/presentation/pages/program_app_bar.dart';
 import '../../progam_zone_set/utils/program_tab_routes.dart';
 import '../presentation/bloc/water_fertilizer_setting_bloc.dart';
 

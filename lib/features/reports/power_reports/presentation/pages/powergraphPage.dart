@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:niagara_smart_drip_irrigation/core/utils/api_urls.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/no_data.dart';
-import '../../../../../../core/theme/app_gradients.dart';
 import '../../../../../core/utils/common_date_picker.dart';
 import '../../../../../core/widgets/glassy_wrapper.dart';
 import '../../../../report_downloader/utils/report_downloaderRoute.dart';
-import '../../utils/Power_routes.dart';
 import '../bloc/date_tab_cubit.dart';
 import '../bloc/power_bloc.dart';
 import '../bloc/power_bloc_event.dart';
 import '../bloc/power_bloc_state.dart';
 import '../widgets/barpie_chart.dart';
 import '../widgets/power_details_card.dart';
-import '../widgets/powergraph_date_tabs.dart';
 
 class PowerGraphPage extends StatelessWidget {
   final int userId;

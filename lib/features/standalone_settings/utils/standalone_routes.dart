@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/di/injection.dart' as di;
 import '../../dashboard/utils/dashboard_routes.dart';
 import '../presentation/bloc/standalone_bloc.dart';
-import '../presentation/bloc/standalone_event.dart';
 import '../presentation/pages/standalone_page.dart';
 
 abstract class StandaloneRoutes {

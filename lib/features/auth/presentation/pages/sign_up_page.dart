@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 
-import '../../../../core/widgets/glassy_wrapper.dart';
 import '../../domain/entities/user_entity.dart';
-import '../../domain/usecases/login_usecase.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 
@@ -298,7 +296,7 @@ class _UserProfileFormBodyState extends State<_UserProfileFormBody> {
                   valueListenable: selectedUserType,
                   builder: (_, value, __) {
                     return DropdownButtonFormField<String>(
-                      value: value,
+                      initialValue: value,
                       decoration: _inputDecoration('User Type *', Icons.person_outline),
                       validator: (_) => value == null ? 'Please select user type' : null,
                       items: const [
@@ -340,7 +338,7 @@ class _UserProfileFormBodyState extends State<_UserProfileFormBody> {
                         valueListenable: selectedCountry,
                         builder: (_, value, __) {
                           return DropdownButtonFormField<String>(
-                            value: value,
+                            initialValue: value,
                             decoration: _inputDecoration('Country', Icons.public),
                             items: const [
                               DropdownMenuItem(value: 'India', child: Text('India')),
@@ -360,7 +358,7 @@ class _UserProfileFormBodyState extends State<_UserProfileFormBody> {
                         builder: (_, value, __) {
                           return DropdownButtonFormField<String>(
                             isExpanded: true,
-                            value: value,
+                            initialValue: value,
                             decoration: _inputDecoration('State', Icons.map),
 
                               items: indiaStates

@@ -18,7 +18,7 @@ class PressureSection extends StatelessWidget {
   Widget build(BuildContext dialogContext) {
     return  Column(
       children: [
-        Text("$fertlizer",style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
+        Text(fertlizer,style: const TextStyle(fontWeight: FontWeight.bold,color: Colors.white)),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [

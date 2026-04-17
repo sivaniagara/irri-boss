@@ -5,11 +5,10 @@ import 'package:niagara_smart_drip_irrigation/features/fault_msg/presentation/wi
 import '../../../../core/widgets/glassy_wrapper.dart';
 import '../../data/models/faultmsg_model.dart';
 import '../bloc/faultmsg_bloc.dart';
-import '../bloc/faultmsg_bloc_event.dart';
 import '../bloc/faultmsg_bloc_state.dart';
 
 class faultmsgPage extends StatelessWidget {
-  const faultmsgPage();
+  const faultmsgPage({super.key});
 
   @override
   Widget build(BuildContext context) {

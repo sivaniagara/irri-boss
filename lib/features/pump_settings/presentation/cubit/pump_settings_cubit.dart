@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_manager.dart';
-import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_service.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/menu_item_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/setting_widget_type.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/template_json_entity.dart';
@@ -10,8 +9,6 @@ import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/usec
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/di/injection.dart' as di;
-import '../../../../core/di/injection.dart';
-import '../../../../core/services/mqtt/mqtt_message_helper.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../domain/usecsases/get_menu_items.dart';
 import '../../domain/usecsases/sms_payload_builder.dart';

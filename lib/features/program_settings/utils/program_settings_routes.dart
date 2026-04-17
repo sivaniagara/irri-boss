@@ -1,9 +1,6 @@
-import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presentation/bloc/common_id_settings_event.dart';
-import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presentation/pages/common_id_setting_page.dart';
 
 import '../../../core/di/injection.dart' as di;
 import '../../controller_settings/utils/controller_settings_routes.dart';
-import '../../common_id_settings/presentation/bloc/common_id_settings_bloc.dart';
 import '../sub_module/edit_zone/presentation/bloc/edit_zone_bloc.dart';
 import '../sub_module/edit_zone/presentation/pages/edit_zone_page.dart';
 import '../../dashboard/presentation/cubit/controller_context_cubit.dart';
@@ -24,7 +21,7 @@ final programSettingsGoRoutes = [
         final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
         final progId = state.pathParameters['programId']!;
         final zoneSerialNo = state.pathParameters['zoneSerialNo'];
-        print("zoneSerialNo => ${zoneSerialNo}");
+        print("zoneSerialNo => $zoneSerialNo");
 
         late EditZoneEvent editZoneEvent;
         if(zoneSerialNo == ':zoneSerialNo'){

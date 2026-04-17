@@ -1,7 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../core/theme/app_themes.dart';
 import '../../domain/entities/motor_cyclic_entities.dart';
 import '../../utils/motor_cyclic_program_calculator.dart';
 import '../widgets/row_widgets.dart';

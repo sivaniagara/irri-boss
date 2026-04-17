@@ -527,8 +527,9 @@ class _SettingsList extends StatelessWidget {
                     )) {
                       return const SizedBox();
                     }
-                    if (setting.widgetType == SettingWidgetType.multiText)
+                    if (setting.widgetType == SettingWidgetType.multiText) {
                       return const SizedBox.shrink();
+                    }
                     return const Divider(thickness: 0.6);
                   },
                   itemCount: section.settings.length,
@@ -551,7 +552,6 @@ class _SettingRow extends StatelessWidget {
   final String deviceId;
 
   const _SettingRow({
-    super.key,
     required this.menuItemEntity,
     required this.sectionIndex,
     required this.settingIndex,

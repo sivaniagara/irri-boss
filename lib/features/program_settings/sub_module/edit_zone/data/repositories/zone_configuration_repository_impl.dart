@@ -4,7 +4,6 @@ import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
 import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/edit_zone/domain/repositories/zone_configuration_repository.dart';
 import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/edit_zone/domain/usecases/get_zone_configuration_usecase.dart';
 import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/edit_zone/domain/usecases/submit_zone_configuration_usecase.dart';
-import '../../../../../../core/error/success.dart';
 import '../../domain/entities/zone_nodes_entity.dart';
 import '../../domain/usecases/edit_zone_configuration_usecase.dart';
 import '../../domain/usecases/submit_while_edit_zone_configuration.dart';

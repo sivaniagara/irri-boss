@@ -35,7 +35,7 @@ class MotorCyclicZoneStatusView extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(12),
               child: DropdownButtonFormField<int>(
-                value: selectedProgramIndex,
+                initialValue: selectedProgramIndex,
                 decoration: const InputDecoration(
                   prefixIcon: Icon(Icons.settings),
                   border: OutlineInputBorder(),

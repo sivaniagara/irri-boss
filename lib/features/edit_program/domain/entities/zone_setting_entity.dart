@@ -103,7 +103,7 @@ class ZoneSettingEntity{
     String? updatedPostLiters,
     bool? isActive,
   }){
-    print('updatedCh1Liters : ${updatedCh1Liters}');
+    print('updatedCh1Liters : $updatedCh1Liters');
     return ZoneSettingEntity(
         valves: updatedValves ?? valves,
         moistureSensors: updatedMoistureSensors ?? moistureSensors,

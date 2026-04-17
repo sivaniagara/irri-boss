@@ -8,7 +8,6 @@ import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nod
 import '../../../program_settings/utils/program_settings_routes.dart';
 import '../../utils/controller_settings_routes.dart';
 import '../cubit/controller_tab_cubit.dart';
-import '../../../program_settings/presentation/widgets/zone_list.dart';
 import '../enums/controller_tab.dart';
 
 

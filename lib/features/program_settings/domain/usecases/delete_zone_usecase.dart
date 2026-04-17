@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
-import 'package:niagara_smart_drip_irrigation/core/error/success.dart';
 import 'package:niagara_smart_drip_irrigation/core/usecases/usecase.dart';
 
 import '../repositories/program_repository.dart';

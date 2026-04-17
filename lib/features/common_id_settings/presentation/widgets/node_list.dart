@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presentation/bloc/common_id_settings_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presentation/bloc/common_id_settings_state.dart';
 
-import '../../../../core/widgets/alert_dialog.dart';
 import '../../../../core/widgets/custom_material_button.dart';
 import '../../../../core/widgets/custom_outlined_button.dart';
 import '../../domain/entities/category_node_entity.dart';

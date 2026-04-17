@@ -11,7 +11,6 @@ import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presen
 
 import '../../../../core/widgets/alert_dialog.dart';
 import '../../../../core/widgets/app_alerts.dart';
-import '../../../../core/widgets/gradiant_background.dart';
 import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../bloc/common_id_settings_event.dart';
 import '../enums/reset_common_id_enum.dart';

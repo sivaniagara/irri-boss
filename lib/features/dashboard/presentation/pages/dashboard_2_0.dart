@@ -910,7 +910,7 @@ class _Dashboard20State extends State<Dashboard20> {
 
   Widget switches({required LiveMessageEntity liveMessageEntity, required int motorNo}) {
     print("Call switches");
-    print("deviceid:${liveMessageEntity}");
+    print("deviceid:$liveMessageEntity");
     print("Call switches");
     return Row(
       children: [

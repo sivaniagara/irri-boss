@@ -354,7 +354,7 @@ class _ControllerDetailsPageState extends State<ControllerDetailsPage> {
       child: SwitchListTile(
         value: value,
         onChanged: onChanged,
-        activeColor: AppThemes.primaryColor,
+        activeThumbColor: AppThemes.primaryColor,
         title: Text(
           title,
           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),

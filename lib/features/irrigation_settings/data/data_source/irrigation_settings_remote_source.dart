@@ -42,10 +42,10 @@ class IrrigationSettingsRemoteSourceImpl extends IrrigationSettingsRemoteSource{
     required Map<String, dynamic> body
   }) async{
     try{
-      print("urlData : ${urlData}");
+      print("urlData : $urlData");
       String endPoint = buildUrl(IrrigationSettingsUrls.updateTemplateSetting, urlData);
       final response = await apiClient.post(endPoint, body: body);
-      print("deviceId :: ${deviceId}");
+      print("deviceId :: $deviceId");
       mqttManager.publish(deviceId, PublishMessageHelper.settingsPayload(body['sentSms']));
       print('updateTemplateSetting response  => $response');
       return response;

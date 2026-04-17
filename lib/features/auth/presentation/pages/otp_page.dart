@@ -5,11 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import 'package:pinput/pinput.dart';
-import '../../../../core/utils/app_images.dart';
-import '../../../../core/utils/route_constants.dart';
 import '../../../auth/auth.dart';
 import '../../../dashboard/utils/dashboard_routes.dart';
-import '../widgets/custom_button.dart';
 
 class OtpVerificationPage extends StatefulWidget {
   final String verificationId;
@@ -61,7 +58,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Container(
+      body: SizedBox(
         height: MediaQuery.of(context).size.height,
         child: SafeArea(
           child: Padding(

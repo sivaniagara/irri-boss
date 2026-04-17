@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import '../../../../../../core/error/failures.dart';
-import '../../../../../../core/error/success.dart';
 import '../entities/zone_nodes_entity.dart';
 import '../usecases/edit_zone_configuration_usecase.dart';
 import '../usecases/get_zone_configuration_usecase.dart';

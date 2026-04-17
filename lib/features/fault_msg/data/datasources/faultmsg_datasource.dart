@@ -1,8 +1,5 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/services/api_client.dart';
-import '../../../../core/utils/api_urls.dart';
 import '../../utils/faultmsg_routes.dart';
 import '../models/faultmsg_model.dart';
 
@@ -28,14 +25,6 @@ class faultmsgRemoteDataSourceImpl extends faultmsgRemoteDataSource {
    }) async {
     try {
       /// Validate required params
-      if (userId == null) {
-        throw ServerException(
-          statusCode: 400,
-          message: "Invalid parameters! One or more values missing.",
-        );
-      }
-
-      /// Build endpoint URL
       String endpoint = FaultMsgPageUrls.getFaultMsgMsgUrl
           .replaceAll(':userId', '$userId')
           .replaceAll(':subuserId', '$subuserId')

@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 
 import '../../domain/entities/motor_cyclic_entities.dart';
-import 'motor_cyclic_mode.dart';
 
 
 abstract class MotorCyclicState extends Equatable {
@@ -34,7 +33,7 @@ class MotorCyclicLoaded extends MotorCyclicState {
   final String toDate;
 
 
-  MotorCyclicLoaded({
+  const MotorCyclicLoaded({
     required this.data,
     required this.fromDate,
     required this.toDate,

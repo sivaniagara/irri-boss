@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
 import '../../../../../core/theme/app_themes.dart';
 import '../../../../../core/utils/app_images.dart';
 import '../../../../../core/utils/common_date_picker.dart';
@@ -330,7 +329,7 @@ class _FlowGraphPageState extends State<FlowGraphPage> {
                 _tableCell(e.date ?? '-', isBold: true, color: const Color(0xFF00796B)),
                 _tableCell(e.totalRunTime ?? '00:00:00'),
                 _tableCell("${e.totalFlow ?? '0'} L"),
-                _tableCell(e.totalPowerOnTime?.split(':').first ?? '0'),
+                _tableCell(e.totalPowerOnTime.split(':').first ?? '0'),
               ],
             )),
           ],

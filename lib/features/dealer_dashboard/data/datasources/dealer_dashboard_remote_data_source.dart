@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:niagara_smart_drip_irrigation/core/services/api_client.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/domain/entities/dealer_customer_entity.dart';

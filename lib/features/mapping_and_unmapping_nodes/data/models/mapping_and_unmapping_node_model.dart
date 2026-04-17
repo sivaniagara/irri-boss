@@ -1,7 +1,6 @@
 import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/data/models/unmapped_category_model.dart';
 import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/domain/entities/mapping_and_unmapping_node_entity.dart';
 
-import '../../../common_id_settings/data/models/category_model.dart';
 import 'mapped_node_model.dart';
 
 class MappingAndUnmappingNodeModel extends MappingAndUnmappingNodeEntity{

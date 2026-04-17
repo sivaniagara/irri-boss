@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/entities/selected_node_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/usecases/delete_zone_usecase.dart';
 
-import '../../../program_settings/sub_module/edit_zone/domain/entities/node_entity.dart';
 import '../../domain/entities/edit_program_entity.dart';
 import '../../domain/entities/zone_setting_entity.dart';
 import '../../domain/usecases/get_program_usecase.dart';

@@ -1,4 +1,3 @@
-import 'package:niagara_smart_drip_irrigation/features/pump_settings/data/models/settings_menu_model.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/template_json_entity.dart';
 
 import '../../domain/entities/setting_widget_type.dart';

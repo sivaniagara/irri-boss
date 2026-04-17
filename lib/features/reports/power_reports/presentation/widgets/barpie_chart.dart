@@ -40,7 +40,7 @@ class _BarPieCardState extends State<BarPieCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "${widget.data.date ?? ""}",
+                      widget.data.date ?? "",
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Colors.black,

@@ -4,11 +4,13 @@ class StandaloneEntity {
   final String dripSettingValue;
   final String programName;
 
+
   StandaloneEntity({
     required this.zones,
     required this.settingValue,
     required this.dripSettingValue,
-    this.programName = "(P1) Drip",
+    required this.programName ,
+
   });
 }
 

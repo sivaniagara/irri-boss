@@ -1,5 +1,4 @@
 import 'package:dartz/dartz.dart';
-import 'package:niagara_smart_drip_irrigation/core/error/success.dart';
 import 'package:niagara_smart_drip_irrigation/features/program_settings/domain/usecases/delete_zone_usecase.dart';
 
 import '../../../../core/error/failures.dart';

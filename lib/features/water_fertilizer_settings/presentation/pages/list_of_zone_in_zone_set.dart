@@ -150,7 +150,7 @@ class _ListOfZoneInZoneSetState extends State<ListOfZoneInZoneSet> {
                                               color: Theme.of(context).primaryColor
                                           ),
                                           child: Center(
-                                            child: Text('CH ${channel}', style: TextStyle(color: Colors.white),),
+                                            child: Text('CH $channel', style: TextStyle(color: Colors.white),),
                                           ),
                                         ),
                                       )

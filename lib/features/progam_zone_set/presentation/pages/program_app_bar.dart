@@ -6,7 +6,6 @@ import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/utils/irrigation_settings_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/progam_zone_set/presentation/enums/program_tab_enum.dart';
 import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
-import '../../../program_settings/utils/program_settings_routes.dart';
 import '../../../water_fertilizer_settings/presentation/bloc/water_fertilizer_setting_bloc.dart';
 import '../../../water_fertilizer_settings/utils/water_fertilizer_settings_routes.dart';
 import '../cubit/program_tab_cubit.dart';

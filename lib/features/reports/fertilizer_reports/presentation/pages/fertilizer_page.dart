@@ -1,9 +1,7 @@
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:niagara_smart_drip_irrigation/features/reports/fertilizer_reports/utils/fertilizer_routes.dart';
 import '../../../../../core/utils/common_date_picker.dart';
 import '../../../../../core/widgets/glassy_wrapper.dart';
 import '../../../../../core/widgets/no_data.dart';

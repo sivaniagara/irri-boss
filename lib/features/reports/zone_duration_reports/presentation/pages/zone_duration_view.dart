@@ -147,7 +147,7 @@ class ZoneDurationPageReport extends StatelessWidget {
         /// 🔹 ZONE CARDS
         ...data.data.map((zone) {
           return zoneCardDuration(zone);
-        }).toList(),
+        }),
       ],
     );
   }

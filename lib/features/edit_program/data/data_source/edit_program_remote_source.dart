@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import '../../../../core/services/api_client.dart';
 import '../../../../core/services/mqtt/mqtt_manager.dart';
@@ -37,7 +36,7 @@ class EditProgramRemoteSourceImpl extends EditProgramRemoteSource{
   @override
   Future<Map<String, dynamic>> getProgram({required Map<String, String> urlData})async {
     try{
-      print('getPrograms => ${urlData}');
+      print('getPrograms => $urlData');
       String endPoint = buildUrl(EditProgramUrls.getProgram, urlData);
       final response = await apiClient.get(endPoint);
       print('getPrograms => $response');
@@ -62,7 +61,7 @@ class EditProgramRemoteSourceImpl extends EditProgramRemoteSource{
   @override
   Future<Map<String, dynamic>> saveProgram({required Map<String, String> urlData, required Map<String, dynamic> bodyData})async {
     try{
-      print('saveProgram => ${urlData}');
+      print('saveProgram => $urlData');
       String endPoint = buildUrl(EditProgramUrls.getProgram, urlData);
       final response = await apiClient.post(
           endPoint,

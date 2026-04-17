@@ -2,7 +2,6 @@ import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
-import '../../domain/entities/settings_menu_entity.dart';
 import '../../domain/repositories/pump_settings_repository.dart';
 import '../entities/menu_item_entity.dart';
 

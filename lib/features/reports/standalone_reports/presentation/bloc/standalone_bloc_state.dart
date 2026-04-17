@@ -44,7 +44,7 @@ class StandaloneLoaded extends StandaloneState {
   final String toDate;
 
 
-  StandaloneLoaded({
+  const StandaloneLoaded({
     required this.data,
     required this.fromDate,
     required this.toDate,

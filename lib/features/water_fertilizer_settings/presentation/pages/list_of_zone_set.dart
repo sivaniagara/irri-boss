@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_list_tile.dart';
 import 'package:niagara_smart_drip_irrigation/features/progam_zone_set/presentation/cubit/program_tab_cubit.dart';
 import 'package:niagara_smart_drip_irrigation/features/progam_zone_set/presentation/enums/program_tab_enum.dart';
-import 'package:niagara_smart_drip_irrigation/features/water_fertilizer_settings/presentation/pages/list_of_zone_in_zone_set.dart';
 
 import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../../dashboard/utils/dashboard_routes.dart';
@@ -39,7 +38,7 @@ class _ListOfZoneSetState extends State<ListOfZoneSet> {
   Widget build(BuildContext context) {
     return BlocBuilder<WaterFertilizerSettingBloc, WaterFertilizerSettingState>(
         builder: (context,state){
-          print("state =ListOfZoneSet= ${state}");
+          print("state =ListOfZoneSet= $state");
           if (state is WaterFertilizerSettingLoading) {
             return const Center(child: CircularProgressIndicator());
           }else if(state is WaterFertilizerSettingLoaded){

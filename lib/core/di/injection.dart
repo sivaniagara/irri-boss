@@ -18,7 +18,6 @@ import '../../features/controller_details/data/repositories/controller_details_r
 import '../../features/controller_details/domain/repositories/controller_details_repo.dart';
 import '../../features/controller_details/domain/usecase/controller_details_usercase.dart';
 import '../../features/controller_details/presentation/bloc/controller_details_bloc.dart';
-import '../../features/controller_details/presentation/bloc/controller_details_state.dart';
 import '../../features/dashboard/utils/dashboard_dispatcher.dart';
 import '../../features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../features/edit_program/di/edit_program_di.dart';
@@ -29,7 +28,6 @@ import '../../features/reports/green_house_reports/di/green_house_di.dart';
 
 import '../../features/serial_set/di/serial_set_di.dart';
 import '../services/mqtt/app_message_dispatcher.dart';
-import '../services/mqtt/mqtt_message_helper.dart';
 import '../../features/mapping_and_unmapping_nodes/di/mapping_and_unmapping_node_di.dart';
 import '../../features/progam_zone_set/presentation/cubit/program_tab_cubit.dart';
 import '../../features/program_settings/di/program_settings_di.dart';

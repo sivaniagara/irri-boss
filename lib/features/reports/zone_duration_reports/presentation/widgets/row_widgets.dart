@@ -1,6 +1,5 @@
 // ===================== WIDGETS =====================
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 Widget infoRow(String title, String value,IconData vIcon) {

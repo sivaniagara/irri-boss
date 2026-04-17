@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../utils/pump_settings_images.dart';
 
 class SettingListTile extends StatelessWidget {
   final String title;

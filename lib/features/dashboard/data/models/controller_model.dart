@@ -12,7 +12,7 @@ class ProgramModel extends ProgramEntity {
   });
 
   factory ProgramModel.fromJson(Map<String, dynamic> json) {
-    print("json ====> ${json}");
+    print("json ====> $json");
     return ProgramModel(
       programId: json['programId'] as int? ?? 0,
       programName: json['programName'] as String? ?? '',

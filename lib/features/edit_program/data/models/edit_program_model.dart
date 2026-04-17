@@ -1,9 +1,7 @@
 import 'package:niagara_smart_drip_irrigation/features/edit_program/data/models/zone_setting_model.dart';
-import 'package:niagara_smart_drip_irrigation/features/edit_program/data/models/mapped_node_model.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/entities/edit_program_entity.dart';
 
 import '../../../../core/services/mqtt/publish_messages.dart';
-import '../../domain/entities/zone_setting_entity.dart';
 import 'node_model.dart';
 
 class EditProgramModel extends EditProgramEntity {

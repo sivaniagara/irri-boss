@@ -2,7 +2,6 @@ import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presen
 import 'package:niagara_smart_drip_irrigation/features/common_id_settings/presentation/pages/common_id_setting_page.dart';
 
 import '../../../core/di/injection.dart' as di;
-import '../../controller_settings/utils/controller_settings_routes.dart';
 import '../../common_id_settings/presentation/bloc/common_id_settings_bloc.dart';
 import '../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'package:go_router/go_router.dart';

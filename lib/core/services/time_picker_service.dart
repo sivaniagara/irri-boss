@@ -43,7 +43,7 @@ class _TimePickerContent extends StatelessWidget {
   final bool showSeconds;
   final ValueChanged<String> onTimeChanged;
 
-  _TimePickerContent({
+  const _TimePickerContent({
     required this.initialTime,
     required this.showSeconds,
     required this.onTimeChanged,

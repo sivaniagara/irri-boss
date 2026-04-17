@@ -3,7 +3,6 @@ import 'dart:convert';
 import '../../../../../core/error/exceptions.dart';
 import '../../../../../core/services/api_client.dart';
 import '../../../../../core/utils/api_urls.dart';
-import '../../domain/entities/controller_details_entities.dart';
 import '../../domain/usecase/controller_details_params.dart';
 import '../../domain/usecase/update_controllerDetails_params.dart';
 import '../models/controller_details_model.dart';
@@ -23,13 +22,6 @@ class ControllerRemoteDataSourceImpl extends ControllerRemoteDataSource {
   Future<ControllerResponseModel> getControllerDetails(
       GetControllerDetailsParams params) async {
     try {
-      if (params.userId == null || params.controllerId == null) {
-        throw ServerException(
-          statusCode: 400,
-          message: "Invalid parameters! userId/controllerId missing.",
-        );
-      }
-
       final endpoint = ApiUrls.getViewControllerCustomerDetails
           .replaceAll(':userId', params.userId.toString())
           .replaceAll(':userDeviceId', params.controllerId.toString());

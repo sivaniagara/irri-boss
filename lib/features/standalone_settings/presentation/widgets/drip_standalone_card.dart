@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/standalone_bloc.dart';
-import '../bloc/standalone_event.dart';
 
 class SendButton extends StatelessWidget {
   final String userId;

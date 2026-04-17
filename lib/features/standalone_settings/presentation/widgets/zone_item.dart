@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_switch.dart';
 import '../../domain/entities/standalone_entity.dart';
 import '../bloc/standalone_bloc.dart';
-import '../bloc/standalone_event.dart';
 
 class ZoneItem extends StatelessWidget {
   final int index;

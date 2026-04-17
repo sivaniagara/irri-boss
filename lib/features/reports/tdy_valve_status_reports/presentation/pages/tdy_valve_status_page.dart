@@ -1,15 +1,11 @@
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/tdy_valve_status_reports/presentation/pages/tdy_valve_status_graph.dart';
 
 import '../../../../../core/utils/common_date_picker.dart';
 import '../../../../../core/widgets/glassy_wrapper.dart';
 import '../../../../../core/widgets/no_data.dart';
-import '../../../../report_downloader/utils/report_downloaderRoute.dart';
-import '../../utils/tdy_valve_status_routes.dart';
 import '../bloc/tdy_valve_mode.dart';
  import '../bloc/tdy_valve_status_bloc.dart';
 import '../bloc/tdy_valve_status_bloc_event.dart';
@@ -146,7 +142,7 @@ class TdyValveStatusPage extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: DropdownButtonFormField<int>(
-        value: context.watch<TdyValveStatusCubit>().state.selectedProgramIndex,
+        initialValue: context.watch<TdyValveStatusCubit>().state.selectedProgramIndex,
         decoration: const InputDecoration(
           labelText: "Select Program",
           border: OutlineInputBorder(),

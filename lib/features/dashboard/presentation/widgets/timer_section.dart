@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/material.dart' as AppThems;
-import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
 
 import '../../../../core/theme/app_themes.dart';
 
@@ -19,11 +17,11 @@ class TimerSection extends StatelessWidget {
     return Row(
       children:  [
         Expanded(
-          child: TimerCard(title: "Run Time", time: (setTime == null || setTime.isEmpty || setTime == "NA") ? "00:00:00" : setTime,),
+          child: TimerCard(title: "Run Time", time: (setTime.isEmpty || setTime == "NA") ? "00:00:00" : setTime,),
         ),
         SizedBox(width: 10), // spacing between cards
         Expanded(
-          child: TimerCard(title: "Remaining Time",time: (remainingTime == null || remainingTime.isEmpty || remainingTime == "NA") ? "00:00:00" : remainingTime,),
+          child: TimerCard(title: "Remaining Time",time: (remainingTime.isEmpty || remainingTime == "NA") ? "00:00:00" : remainingTime,),
         ),
       ],
     );
@@ -34,7 +32,7 @@ class TimerCard extends StatelessWidget {
   final String title;
   final String time;
 
-  const TimerCard({required this.title, required this.time});
+  const TimerCard({super.key, required this.title, required this.time});
 
   @override
   Widget build(BuildContext dialogContext) {

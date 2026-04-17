@@ -1,4 +1,3 @@
-import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/domain/entities/motor_cyclic_entities.dart';
 
 import '../../domain/entities/standalone_entities.dart';
 import '../../domain/repositories/standalone_repo.dart';

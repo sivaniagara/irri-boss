@@ -10,7 +10,6 @@ import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../dashboard.dart';
 import '../../domain/usecases/control_motor_usecase.dart';
 import '../../domain/usecases/update_change_from_usecase.dart';
-import 'controller_context_cubit.dart';
 
 enum ChangeFromStatus { initial, loading, success, failure }
 
@@ -572,7 +571,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
         controllerId: controllerId,
         programId: programId,
         deviceId: deviceId,
-        payload: onCommand + ",",
+        payload: "$onCommand,",
       ));
 
       onResult.fold(

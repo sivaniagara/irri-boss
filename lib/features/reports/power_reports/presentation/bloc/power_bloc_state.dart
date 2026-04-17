@@ -40,7 +40,7 @@ class PowerGraphLoaded extends PowerGraphState {
   final String fromDate;
   final String toDate;
 
-  PowerGraphLoaded({
+  const PowerGraphLoaded({
     required this.data,
     required this.fromDate,
     required this.toDate,

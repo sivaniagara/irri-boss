@@ -43,7 +43,7 @@ class FertilizerLoaded extends FertilizerState {
   final String toDate;
 
 
-  FertilizerLoaded({
+  const FertilizerLoaded({
     required this.data,
     required this.fromDate,
     required this.toDate,

@@ -7,7 +7,6 @@ import 'package:niagara_smart_drip_irrigation/core/widgets/custom_outlined_butto
 import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/edit_zone/presentation/bloc/edit_zone_bloc.dart';
 import '../../domain/entities/node_entity.dart';
 import '../enums/edit_zone_enums.dart';
-import '../pages/edit_zone_page.dart';
 
 class SelectableNodeList extends StatefulWidget {
   final NodeEntityMode nodeEntityMode;

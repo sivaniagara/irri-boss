@@ -4,19 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_material_button.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_outlined_button.dart';
-import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/edit_zone/presentation/bloc/edit_zone_bloc.dart';
-import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/edit_zone/presentation/pages/edit_zone_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/program_settings/presentation/bloc/program_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/controller_context_cubit.dart';
-import 'package:niagara_smart_drip_irrigation/features/controller_settings/utils/controller_settings_routes.dart';
-import 'package:niagara_smart_drip_irrigation/features/dashboard/dashboard.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_routes.dart';
 // Assuming your ZoneEntity is defined in a file like this. Adjust the import path if needed.
 import '../../../../core/widgets/alert_dialog.dart';
 import '../../../../core/widgets/app_alerts.dart';
-import '../../domain/entities/program_and_zone_entity.dart';
-import '../../domain/entities/zone_entity.dart';
-import '../../../../core/di/injection.dart' as di;
 import '../../utils/program_settings_routes.dart';
 import '../pages/controller_program.dart';
 

@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../domain/entities/fertilizer_entities.dart';
 
@@ -37,12 +36,12 @@ Widget FertilizerSummaryCard(FertilizerEntity data) {
           _summaryRow(
             Icons.device_hub,
             "Controller Duration",
-            "${data.ctrlDuration}",
+            data.ctrlDuration,
           ),
           _summaryRow(
             Icons.device_hub,
             "Controller1 Duration",
-            "${data.ctrlDuration1}",
+            data.ctrlDuration1,
           ),
         ],
       ),
