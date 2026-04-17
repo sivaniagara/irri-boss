@@ -99,46 +99,29 @@ class _Dashboard20State extends State<Dashboard20> {
         listener: (context, state){
           if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.loading){
             showGradientLoadingDialog(context);
-          } else if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.success){
+          }else if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.success){
             print("pop of");
-
-            // Check if we can pop before trying
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);  // This pops the loading dialog
-            }
-
-            // Use go_router's pop for the route navigation if needed
-            // Only pop the route if you want to go back
-            if (context.canPop()) {
-              context.pop();  // This would pop the current screen
-            }
-
+            context.pop();
             showSuccessAlert(
                 context: context,
                 message: 'Change From command Success'
             );
-          } else if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.failure){
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);  // Pop loading dialog
-            }
+          }else if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.failure){
+            context.pop();
             showErrorAlert(
                 context: context,
                 message: state.errorMsg
             );
-          } else if(state is DashboardGroupsLoaded && state.controlMotorStatus == ControlMotorStatus.loading){
+          }else if(state is DashboardGroupsLoaded && state.controlMotorStatus == ControlMotorStatus.loading){
             showGradientLoadingDialog(context);
-          } else if(state is DashboardGroupsLoaded && state.controlMotorStatus == ControlMotorStatus.success){
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);  // Pop loading dialog
-            }
+          }else if(state is DashboardGroupsLoaded && state.controlMotorStatus == ControlMotorStatus.success){
+            context.pop();
             showSuccessAlert(
                 context: context,
                 message: 'Motor command Send Success'
             );
-          } else if(state is DashboardGroupsLoaded && state.controlMotorStatus == ControlMotorStatus.failure){
-            if (Navigator.canPop(context)) {
-              Navigator.pop(context);  // Pop loading dialog
-            }
+          }else if(state is DashboardGroupsLoaded && state.controlMotorStatus == ControlMotorStatus.failure){
+            context.pop();
             showErrorAlert(
                 context: context,
                 message: state.errorMsg
