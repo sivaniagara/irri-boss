@@ -21,13 +21,15 @@ class CtrlLivePage extends StatefulWidget {
   final String? deviceId;
   final String? lastSync;
 
-  const CtrlLivePage({super.key, this.selectedController, this.deviceId, this.lastSync});
+  const CtrlLivePage(
+      {super.key, this.selectedController, this.deviceId, this.lastSync});
 
   @override
   State<CtrlLivePage> createState() => _CtrlLivePageState();
 }
 
-class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderStateMixin {
+class _CtrlLivePageState extends State<CtrlLivePage>
+    with SingleTickerProviderStateMixin {
   late AnimationController _refreshController;
   Timer? _liveTimer;
 
@@ -58,7 +60,8 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
   }
 
   double _safeParse(String? value) {
-    if (value == null || value.isEmpty || value.toUpperCase() == "NA") return 0.0;
+    if (value == null || value.isEmpty || value.toUpperCase() == "NA")
+      return 0.0;
     String cleanValue = value.replaceAll(RegExp(r'[^0-9.]'), '').trim();
     return double.tryParse(cleanValue) ?? 0.0;
   }
@@ -67,7 +70,8 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
     if (widget.deviceId != null) {
       if (!_refreshController.isAnimating) _refreshController.repeat();
       final mqttManager = di.sl.get<MqttManager>();
-      mqttManager.publish(widget.deviceId!, jsonEncode(PublishMessageHelper.requestLive));
+      mqttManager.publish(
+          widget.deviceId!, jsonEncode(PublishMessageHelper.requestLive));
 
       await Future.delayed(const Duration(seconds: 2));
       if (mounted) _refreshController.stop();
@@ -79,7 +83,10 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
       if (dateStr.isEmpty || dateStr == "--") return "--";
       final parts = dateStr.split('/');
       if (parts.length < 3) return dateStr;
-      return DateFormat("d/MMM/yyyy").format(DateTime(int.parse(parts[2]), int.parse(parts[1]), int.parse(parts[0]))).toUpperCase();
+      return DateFormat("dd/MM/yyyy")
+          .format(DateTime(
+              int.parse(parts[2]), int.parse(parts[1]), int.parse(parts[0])))
+          .toUpperCase();
     } catch (e) {
       return dateStr;
     }
@@ -105,7 +112,9 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
 
         if (liveMessage == null) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator(color: AppThemes.primaryColor)),
+            body: Center(
+                child:
+                    CircularProgressIndicator(color: AppThemes.primaryColor)),
           );
         }
 
@@ -120,7 +129,8 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
           ),
           body: NotificationListener<ScrollNotification>(
             onNotification: (notification) {
-              if (notification is ScrollUpdateNotification && notification.metrics.pixels < -80) {
+              if (notification is ScrollUpdateNotification &&
+                  notification.metrics.pixels < -80) {
                 _refreshData();
               }
               return false;
@@ -129,48 +139,63 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
               color: AppThemes.primaryColor,
               onRefresh: _refreshData,
               child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+                physics: const BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics()),
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildMountainHeader(liveMessage),
                     const SizedBox(height: 10),
-
                     _buildDashboardCard(
                       child: _buildMotorValveControl(liveMessage),
                     ),
                     const SizedBox(height: 10),
-
                     _buildDashboardCard(
                       child: _buildPowerMonitoring(liveMessage),
                     ),
                     const SizedBox(height: 10),
-
-                    const _SectionHeader(title: "IRRIGATION PROGRESS", icon: Icons.timer_outlined),
+                    const _SectionHeader(
+                        title: "IRRIGATION PROGRESS",
+                        icon: Icons.timer_outlined),
                     _buildDashboardCard(
                       child: Row(
                         children: [
-                          _buildProgressItem("SET TIME", liveMessage.zoneDuration, const Color(0xff2E712A), const Color(0xff689F39)),
+                          _buildProgressItem(
+                              "SET TIME",
+                              liveMessage.zoneDuration,
+                              const Color(0xff2E712A),
+                              const Color(0xff689F39)),
                           const SizedBox(width: 10),
-                          _buildProgressItem("TIME LEFT", liveMessage.zoneRemainingTime, const Color(0xff347CA6), const Color(0xff52AED7)),
+                          _buildProgressItem(
+                              "TIME LEFT",
+                              liveMessage.zoneRemainingTime,
+                              const Color(0xff347CA6),
+                              const Color(0xff52AED7)),
                         ],
                       ),
                     ),
                     const SizedBox(height: 10),
-
-                    const _SectionHeader(title: "SYSTEM PARAMETERS", icon: Icons.settings_suggest_outlined),
+                    const _SectionHeader(
+                        title: "SYSTEM PARAMETERS",
+                        icon: Icons.settings_suggest_outlined),
                     _buildDashboardCard(
                       child: Column(
                         children: [
                           _buildDataGridRow([
                             {"label": "PHASE", "value": liveMessage.phase},
-                            {"label": "PROGRAM", "value": liveMessage.programName},
+                            {
+                              "label": "PROGRAM",
+                              "value": liveMessage.programName
+                            },
                           ]),
                           const Divider(height: 32, color: Colors.black12),
                           _buildDataGridRow([
                             {"label": "ZONE", "value": liveMessage.zoneNo},
-                            {"label": "VALVE ID", "value": liveMessage.valveForZone},
+                            {
+                              "label": "VALVE ID",
+                              "value": liveMessage.valveForZone
+                            },
                           ]),
                           const SizedBox(height: 24),
                           PressureGaugeSection(
@@ -187,13 +212,18 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
                       ),
                     ),
                     const SizedBox(height: 10),
-
-                    const _SectionHeader(title: "FERTILIZATION STATUS", icon: Icons.science_outlined),
+                    const _SectionHeader(
+                        title: "FERTILIZATION STATUS",
+                        icon: Icons.science_outlined),
                     _buildDashboardCard(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Active Injection Points:", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
+                          const Text("Active Injection Points:",
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey)),
                           const SizedBox(height: 12),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -206,40 +236,64 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
                           const SizedBox(height: 24),
                           Row(
                             children: [
-                              Expanded(child: _buildSmallDetailItem("EC LEVEL", liveMessage.ec)),
+                              Expanded(
+                                  child: _buildSmallDetailItem(
+                                      "EC LEVEL", liveMessage.ec)),
                               const SizedBox(width: 12),
-                              Expanded(child: _buildSmallDetailItem("PH LEVEL", liveMessage.ph)),
+                              Expanded(
+                                  child: _buildSmallDetailItem(
+                                      "PH LEVEL", liveMessage.ph)),
                             ],
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 10),
-
-                    const _SectionHeader(title: "FERTILIZER QUANTITIES", icon: Icons.opacity_rounded),
+                    const _SectionHeader(
+                        title: "FERTILIZER QUANTITIES",
+                        icon: Icons.opacity_rounded),
                     _buildDashboardCard(
                       child: Column(
                         children: [
                           _buildDataGridRow([
-                            {"label": "FERT-1", "value": _fertVal(liveMessage, 0)},
-                            {"label": "FERT-2", "value": _fertVal(liveMessage, 1)},
+                            {
+                              "label": "FERT-1",
+                              "value": _fertVal(liveMessage, 0)
+                            },
+                            {
+                              "label": "FERT-2",
+                              "value": _fertVal(liveMessage, 1)
+                            },
                           ]),
                           const Divider(height: 24, color: Colors.black12),
                           _buildDataGridRow([
-                            {"label": "FERT-3", "value": _fertVal(liveMessage, 2)},
-                            {"label": "FERT-4", "value": _fertVal(liveMessage, 3)},
+                            {
+                              "label": "FERT-3",
+                              "value": _fertVal(liveMessage, 2)
+                            },
+                            {
+                              "label": "FERT-4",
+                              "value": _fertVal(liveMessage, 3)
+                            },
                           ]),
                           const Divider(height: 24, color: Colors.black12),
                           _buildDataGridRow([
-                            {"label": "FERT-5", "value": _fertVal(liveMessage, 4)},
-                            {"label": "FERT-6", "value": _fertVal(liveMessage, 5)},
+                            {
+                              "label": "FERT-5",
+                              "value": _fertVal(liveMessage, 4)
+                            },
+                            {
+                              "label": "FERT-6",
+                              "value": _fertVal(liveMessage, 5)
+                            },
                           ]),
                         ],
                       ),
                     ),
                     const SizedBox(height: 10),
-
-                    const _SectionHeader(title: "DAILY PERFORMANCE", icon: Icons.analytics_outlined),
+                    const _SectionHeader(
+                        title: "DAILY PERFORMANCE",
+                        icon: Icons.analytics_outlined),
                     _buildDashboardCard(
                       child: PreviousDaySection(
                         runTimeToday: liveMessage.runTimeToday,
@@ -271,7 +325,12 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4))
+        ],
       ),
       child: Stack(
         children: [
@@ -291,18 +350,26 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.signal_cellular_alt, color: Colors.green, size: 18),
+                    const Icon(Icons.signal_cellular_alt,
+                        color: Colors.green, size: 18),
                     const SizedBox(width: 4),
                     Text(
                       '${live.signal}%',
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 13),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          fontSize: 13),
                     ),
                     const SizedBox(width: 16),
-                    const Icon(Icons.battery_6_bar_rounded, color: Colors.green, size: 18),
+                    const Icon(Icons.battery_6_bar_rounded,
+                        color: Colors.green, size: 18),
                     const SizedBox(width: 4),
                     Text(
                       'Battery ${live.batVolt}% | ${getDate(dateStr: live.cd)}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 13),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          fontSize: 13),
                     ),
                   ],
                 ),
@@ -312,7 +379,10 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
                     const SizedBox(width: 8),
                     Text(
                       'Sync At: ${live.cd}, ${live.ct}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.black87),
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: Colors.black87),
                     ),
                     const Spacer(),
                     AnimatedBuilder(
@@ -321,10 +391,13 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
                         onTap: _refreshData,
                         child: Container(
                           padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(color: AppThemes.primaryColor.withOpacity(0.1), shape: BoxShape.circle),
+                          decoration: BoxDecoration(
+                              color: AppThemes.primaryColor.withOpacity(0.1),
+                              shape: BoxShape.circle),
                           child: RotationTransition(
                             turns: _refreshController,
-                            child: const Icon(Icons.sync_rounded, color: AppThemes.primaryColor, size: 20),
+                            child: const Icon(Icons.sync_rounded,
+                                color: AppThemes.primaryColor, size: 20),
                           ),
                         ),
                       ),
@@ -342,45 +415,97 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
 
   Widget _buildMotorValveControl(LiveMessageEntity live) {
     final bool isOn = live.motorOnOff == "1";
+    final bool isValveRunning = live.valveOnOff == "1" && isOn;
     return Row(
       children: [
-        _buildControlCircle("MOTOR", isOn ? 'assets/images/common/ui_motor.gif' : 'assets/images/common/live_motor_off.png', isOn),
+        _buildEnhancedMotorWidget(
+            isOn
+                ? 'assets/images/common/ui_motor.gif'
+                : 'assets/images/common/live_motor_off.png',
+            isOn),
         const SizedBox(width: 16),
         Expanded(
           child: Column(
             children: [
               Text(
-                live.modeOfOperation.isNotEmpty ? live.modeOfOperation.toUpperCase() : "MANUAL MODE",
+                live.modeOfOperation.isNotEmpty
+                    ? live.modeOfOperation.toUpperCase()
+                    : "MANUAL MODE",
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Colors.black87),
+                style: const TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 15,
+                    color: Colors.black87),
               ),
               const SizedBox(height: 4),
-              const Text("CURRENT MODE", style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+              const Text("CURRENT MODE",
+                  style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.bold)),
             ],
           ),
         ),
         const SizedBox(width: 16),
-        _buildControlCircle("VALVE", isOn ? (live.valveOnOff == "1" ? 'assets/images/common/valve_open.gif' : 'assets/images/common/valve_stop.png') : 'assets/images/common/valve_stop.png', live.valveOnOff == "1" && isOn),
+        _buildEnhancedValveWidget(
+            isOn
+                ? (isValveRunning
+                    ? 'assets/images/common/valve_open.gif'
+                    : 'assets/images/common/valve_stop.png')
+                : 'assets/images/common/valve_stop.png',
+            isValveRunning),
       ],
     );
   }
 
-  Widget _buildControlCircle(String label, String asset, bool isOn) {
+  Widget _buildEnhancedValveWidget(String asset, bool isRunning) {
     return Column(
       children: [
-        Container(
-          width: 70, height: 70,
-          decoration: BoxDecoration(
-            color: isOn ? Colors.green.shade50 : Colors.red.shade50,
-            shape: BoxShape.circle,
-            border: Border.all(color: isOn ? Colors.green.shade200 : Colors.red.shade200, width: 2),
-          ),
-          child: Center(
-            child: Image.asset(asset, width: 40, height: 40, errorBuilder: (c,e,s) => Icon(Icons.settings_input_component, color: isOn ? Colors.green : Colors.red)),
+        Image.asset(
+          asset,
+          width: isRunning ? 80 : 55,
+          height: isRunning ? 80 : 55,
+          errorBuilder: (c, e, s) => Icon(
+            Icons.water_drop,
+            color: isRunning ? Colors.blue : Colors.grey,
+            size: isRunning ? 70 : 50,
           ),
         ),
-        const SizedBox(height: 8),
-        Text(label, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black87)),
+        const SizedBox(height: 6),
+        Text(
+          "VALVE",
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: isRunning ? Colors.blue.shade700 : Colors.black87,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEnhancedMotorWidget(String asset, bool isRunning) {
+    return Column(
+      children: [
+        Image.asset(
+          asset,
+          width: isRunning ? 80 : 55,
+          height: isRunning ? 80 : 55,
+          errorBuilder: (c, e, s) => Icon(
+            Icons.electrical_services,
+            color: isRunning ? Colors.green : Colors.grey,
+            size: isRunning ? 70 : 50,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          "MOTOR",
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: isRunning ? Colors.green.shade700 : Colors.black87,
+          ),
+        ),
       ],
     );
   }
@@ -406,29 +531,55 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
               ),
             ),
             const SizedBox(width: 10),
-            const Text('Power Status', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+            const Text('Power Status',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87)),
           ],
         ),
         const SizedBox(height: 20),
-        const Text("PHASE TO NEUTRAL (V)", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+        const Text("PHASE TO NEUTRAL (V)",
+            style: TextStyle(
+                fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildRYBWidget(backgroundColor: const Color(0xffE21E11), value: live.rVoltage, phase: 'R Phase'),
-            _buildRYBWidget(backgroundColor: const Color(0xffFEC106), value: live.yVoltage, phase: 'Y Phase'),
-            _buildRYBWidget(backgroundColor: const Color(0xff6C8DB7), value: live.bVoltage, phase: 'B Phase'),
+            _buildRYBWidget(
+                backgroundColor: const Color(0xffE21E11),
+                value: live.rVoltage,
+                phase: 'R Phase'),
+            _buildRYBWidget(
+                backgroundColor: const Color(0xffFEC106),
+                value: live.yVoltage,
+                phase: 'Y Phase'),
+            _buildRYBWidget(
+                backgroundColor: const Color(0xff6C8DB7),
+                value: live.bVoltage,
+                phase: 'B Phase'),
           ],
         ),
         const SizedBox(height: 20),
-        const Text("PHASE TO PHASE (V)", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
+        const Text("PHASE TO PHASE (V)",
+            style: TextStyle(
+                fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
         const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _buildRYBWidget(backgroundColor: const Color(0xffE21E11).withOpacity(0.8), value: live.ryVoltage, phase: 'RY Phase'),
-            _buildRYBWidget(backgroundColor: const Color(0xffFEC106).withOpacity(0.8), value: live.ybVoltage, phase: 'YB Phase'),
-            _buildRYBWidget(backgroundColor: const Color(0xff6C8DB7).withOpacity(0.8), value: live.brVoltage, phase: 'BR Phase'),
+            _buildRYBWidget(
+                backgroundColor: const Color(0xffE21E11).withOpacity(0.8),
+                value: live.ryVoltage,
+                phase: 'RY Phase'),
+            _buildRYBWidget(
+                backgroundColor: const Color(0xffFEC106).withOpacity(0.8),
+                value: live.ybVoltage,
+                phase: 'YB Phase'),
+            _buildRYBWidget(
+                backgroundColor: const Color(0xff6C8DB7).withOpacity(0.8),
+                value: live.brVoltage,
+                phase: 'BR Phase'),
           ],
         ),
         const SizedBox(height: 24),
@@ -437,15 +588,21 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8),
-              color: const Color(0xffE1EEEE)
-          ),
+              color: const Color(0xffE1EEEE)),
           child: Column(
             children: [
-              const Text("LINE CURRENTS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black54)),
+              const Text("LINE CURRENTS",
+                  style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black54)),
               const SizedBox(height: 8),
               Text(
                 'C1: ${live.rCurrent}A | C2: ${live.yCurrent}A | C3: ${live.bCurrent}A',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87),
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: Colors.black87),
               ),
             ],
           ),
@@ -454,7 +611,10 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildRYBWidget({required Color backgroundColor, required String value, required String phase}) {
+  Widget _buildRYBWidget(
+      {required Color backgroundColor,
+      required String value,
+      required String phase}) {
     return Expanded(
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -468,15 +628,26 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
-            ]
-        ),
+            ]),
         child: Column(
           children: [
-            Text(phase, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 11),),
+            Text(
+              phase,
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  fontSize: 11),
+            ),
             const SizedBox(height: 4),
             Container(width: 30, height: 0.5, color: Colors.white70),
             const SizedBox(height: 4),
-            Text('$value V', style: const TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold),),
+            Text(
+              '$value V',
+              style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
+            ),
           ],
         ),
       ),
@@ -487,41 +658,64 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
     return Column(
       children: [
         Container(
-          width: 45, height: 45,
+          width: 45,
+          height: 45,
           decoration: BoxDecoration(
             color: isOn ? Colors.green : Colors.red,
             shape: BoxShape.circle,
-            boxShadow: [BoxShadow(color: (isOn ? Colors.green : Colors.red).withOpacity(0.3), blurRadius: 4, offset: const Offset(0, 2))],
+            boxShadow: [
+              BoxShadow(
+                  color: (isOn ? Colors.green : Colors.red).withOpacity(0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2))
+            ],
           ),
           child: Center(
-            child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+            child: Text(label,
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13)),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildProgressItem(String title, String value, Color titleColor, Color backgroundColor) {
+  Widget _buildProgressItem(
+      String title, String value, Color titleColor, Color backgroundColor) {
     return Expanded(
       child: Container(
         height: 85,
-        decoration: BoxDecoration(color: backgroundColor, borderRadius: BorderRadius.circular(9)),
+        decoration: BoxDecoration(
+            color: backgroundColor, borderRadius: BorderRadius.circular(9)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 80, height: 35,
+              width: 80,
+              height: 35,
               decoration: BoxDecoration(
-                borderRadius: const BorderRadius.only(bottomRight: Radius.circular(12), topLeft: Radius.circular(12)),
+                borderRadius: const BorderRadius.only(
+                    bottomRight: Radius.circular(12),
+                    topLeft: Radius.circular(12)),
                 color: titleColor,
               ),
               child: Center(
-                child: Text(title, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                child: Text(title,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold)),
               ),
             ),
             Expanded(
               child: Center(
-                child: Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                child: Text(value,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18)),
               ),
             )
           ],
@@ -532,16 +726,26 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
 
   Widget _buildDataGridRow(List<Map<String, String>> items) {
     return Row(
-      children: items.map((item) => Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(item["label"]!, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
-            const SizedBox(height: 6),
-            Text(item["value"]!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
-          ],
-        ),
-      )).toList(),
+      children: items
+          .map((item) => Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item["label"]!,
+                        style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey)),
+                    const SizedBox(height: 6),
+                    Text(item["value"]!,
+                        style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87)),
+                  ],
+                ),
+              ))
+          .toList(),
     );
   }
 
@@ -551,13 +755,20 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
       decoration: BoxDecoration(
           color: AppThemes.scaffoldBackGround,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey.shade300)
-      ),
+          border: Border.all(color: Colors.grey.shade300)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)),
-          Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppThemes.primaryColor)),
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey)),
+          Text(value,
+              style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: AppThemes.primaryColor)),
         ],
       ),
     );
@@ -571,7 +782,12 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4))
+        ],
       ),
       child: child,
     );
@@ -583,7 +799,8 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
       decoration: BoxDecoration(
         color: isOn ? Colors.green.shade50 : Colors.red.shade50,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isOn ? Colors.green.shade200 : Colors.red.shade200),
+        border: Border.all(
+            color: isOn ? Colors.green.shade200 : Colors.red.shade200),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -592,7 +809,10 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
           const SizedBox(width: 8),
           Text(
             isOn ? "RUNNING" : "STOPPED",
-            style: TextStyle(color: isOn ? Colors.green.shade900 : Colors.red.shade900, fontSize: 10, fontWeight: FontWeight.bold),
+            style: TextStyle(
+                color: isOn ? Colors.green.shade900 : Colors.red.shade900,
+                fontSize: 10,
+                fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -606,22 +826,31 @@ class _CtrlLivePageState extends State<CtrlLivePage> with SingleTickerProviderSt
         decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.grey.shade200)
-        ),
+            border: Border.all(color: Colors.grey.shade200)),
         child: Column(
           children: [
-            const Text("FIRMWARE VERSION", style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Colors.grey, letterSpacing: 1)),
+            const Text("FIRMWARE VERSION",
+                style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.grey,
+                    letterSpacing: 1)),
             const SizedBox(height: 6),
             Text("${live.versionBoard} | ${live.versionModule}",
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: AppThemes.primaryColor)),
+                style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: AppThemes.primaryColor)),
           ],
         ),
       ),
     );
   }
 
-  String _fert(LiveMessageEntity controller, int i) => (controller.fertStatus.length > i) ? controller.fertStatus[i] : "0";
-  String _fertVal(LiveMessageEntity controller, int i) => (controller.fertValues.length > i) ? controller.fertValues[i] : "0";
+  String _fert(LiveMessageEntity controller, int i) =>
+      (controller.fertStatus.length > i) ? controller.fertStatus[i] : "0";
+  String _fertVal(LiveMessageEntity controller, int i) =>
+      (controller.fertValues.length > i) ? controller.fertValues[i] : "0";
 }
 
 class _SectionHeader extends StatelessWidget {
@@ -637,7 +866,12 @@ class _SectionHeader extends StatelessWidget {
         children: [
           Icon(icon, size: 18, color: AppThemes.primaryColor),
           const SizedBox(width: 10),
-          Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.black54, letterSpacing: 0.8)),
+          Text(title,
+              style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black54,
+                  letterSpacing: 0.8)),
           const SizedBox(width: 8),
           const Expanded(child: Divider()),
         ],
