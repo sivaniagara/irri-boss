@@ -327,7 +327,7 @@ class _CtrlLivePageState extends State<CtrlLivePage>
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4))
         ],
@@ -392,7 +392,7 @@ class _CtrlLivePageState extends State<CtrlLivePage>
                         child: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                              color: AppThemes.primaryColor.withOpacity(0.1),
+                              color: AppThemes.primaryColor.withValues( alpha: 0.1),
                               shape: BoxShape.circle),
                           child: RotationTransition(
                             turns: _refreshController,
@@ -421,7 +421,7 @@ class _CtrlLivePageState extends State<CtrlLivePage>
         _buildEnhancedMotorWidget(
             isOn
                 ? 'assets/images/common/ui_motor.gif'
-                : 'assets/images/common/live_motor_off.png',
+                : 'assets/images/common/motor_r.png',
             isOn),
         const SizedBox(width: 16),
         Expanded(
@@ -450,9 +450,9 @@ class _CtrlLivePageState extends State<CtrlLivePage>
         _buildEnhancedValveWidget(
             isOn
                 ? (isValveRunning
-                    ? 'assets/images/common/valve_open.gif'
-                    : 'assets/images/common/valve_stop.png')
-                : 'assets/images/common/valve_stop.png',
+                    ? 'assets/images/common/valve_running.gif'
+                    : 'assets/images/common/valve_off.png')
+                : 'assets/images/common/valve_off.png',
             isValveRunning),
       ],
     );
@@ -569,15 +569,15 @@ class _CtrlLivePageState extends State<CtrlLivePage>
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             _buildRYBWidget(
-                backgroundColor: const Color(0xffE21E11).withOpacity(0.8),
+                backgroundColor: const Color(0xffE21E11).withValues( alpha: 0.8),
                 value: live.ryVoltage,
                 phase: 'RY Phase'),
             _buildRYBWidget(
-                backgroundColor: const Color(0xffFEC106).withOpacity(0.8),
+                backgroundColor: const Color(0xffFEC106).withValues( alpha: 0.8),
                 value: live.ybVoltage,
                 phase: 'YB Phase'),
             _buildRYBWidget(
-                backgroundColor: const Color(0xff6C8DB7).withOpacity(0.8),
+                backgroundColor: const Color(0xff6C8DB7).withValues( alpha: 0.8),
                 value: live.brVoltage,
                 phase: 'BR Phase'),
           ],
@@ -624,7 +624,7 @@ class _CtrlLivePageState extends State<CtrlLivePage>
             color: backgroundColor,
             boxShadow: [
               BoxShadow(
-                color: backgroundColor.withOpacity(0.2),
+                color: backgroundColor.withValues(alpha: 0.2),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
               ),
@@ -665,7 +665,7 @@ class _CtrlLivePageState extends State<CtrlLivePage>
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                  color: (isOn ? Colors.green : Colors.red).withOpacity(0.3),
+                  color: (isOn ? Colors.green : Colors.red).withValues(alpha: 0.3),
                   blurRadius: 4,
                   offset: const Offset(0, 2))
             ],
@@ -784,7 +784,7 @@ class _CtrlLivePageState extends State<CtrlLivePage>
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4))
         ],

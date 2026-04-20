@@ -30,7 +30,7 @@ Widget zoneCardDuration(ZoneDurationDatumEntity zone) {
                 ),
               ),
               Text(
-                "ZONE ${zone.zone}",
+                "BLOCK ${zone.zone}",
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,

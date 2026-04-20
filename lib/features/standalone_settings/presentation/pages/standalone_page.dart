@@ -296,7 +296,7 @@ class _StandalonePageState extends State<StandalonePage> {
         _buildCard(
           context,
           child: StandaloneHeader(
-            title: "DRIP STANDALONE",
+            title: "VALVE ONLY MODE",
             isOn: standaloneData.dripSettingValue == "1",
             onChanged: (v) {
               context.read<StandaloneBloc>().add(ToggleDripStandalone(

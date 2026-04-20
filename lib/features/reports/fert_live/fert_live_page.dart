@@ -234,7 +234,7 @@ class _FertilizerLiveScreenState extends State<FertilizerLivePage> {
           Text(
             "${fertilizerState!.modeType.toUpperCase()} | PROGRAM $cleanProgram",
             style: const TextStyle(
-              color: Colors.black87,
+              color: Colors.black,
               fontWeight: FontWeight.w900,
               fontSize: 15,
             ),
@@ -243,7 +243,7 @@ class _FertilizerLiveScreenState extends State<FertilizerLivePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _valveStatus("PRE-WATER", fertilizerState!.preWater),
+              _valveStatus("PRE-WATER", fertilizerState!.preWater ),
               _motorStatusBox(),
               _valveStatus("POST-WATER", fertilizerState!.postWater),
             ],
@@ -293,11 +293,11 @@ class _FertilizerLiveScreenState extends State<FertilizerLivePage> {
       children: [
         Text(
           label,
-          style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.grey),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
         ),
         const SizedBox(height: 8),
         Image.asset(
-          isRunning ? 'assets/images/common/valve_open.gif' : 'assets/images/common/valve_stop.png',
+          isRunning ? 'assets/images/common/valve_running.gif' : 'assets/images/common/valve_off.png',
           width: 40,
           height: 40,
         ),

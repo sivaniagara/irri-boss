@@ -116,6 +116,7 @@ flutter:
     - assets/images/communication_config_icons/
     - assets/ic_launcher.png
     - assets/images/report_menu/
+    - assets/images/common/valve_running.gif
 
 
 flutter_launcher_icons:

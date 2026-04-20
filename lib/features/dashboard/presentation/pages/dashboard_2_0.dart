@@ -413,7 +413,7 @@ class _Dashboard20State extends State<Dashboard20> {
                 Column(
                   children: [
                     Image.asset(
-                      'assets/images/common/motor_${liveMessageEntity.motorOnOff == '1' ? 'g' : 'r'}.png',
+                      liveMessageEntity.motorOnOff == '1' ? 'assets/images/common/motor_running.gif' : 'assets/images/common/motor_r.png',
                       width: 60,
                     ),
                     Text(
@@ -468,7 +468,7 @@ class _Dashboard20State extends State<Dashboard20> {
                         ),
                       ],
                     ),
-                    Text(liveMessageEntity.modeOfOperation, style: Theme.of(context).textTheme.bodySmall)
+                    Text('${liveMessageEntity.modeOfOperation} | Block ${liveMessageEntity.zoneNo}', style: Theme.of(context).textTheme.bodySmall)
                   ],
                 ),
                 const Spacer(),
@@ -516,16 +516,17 @@ class _Dashboard20State extends State<Dashboard20> {
               children: [
                 scheduleTimeCard(
                   title: 'Set Time',
-                  value: liveMessageEntity.zoneDuration,
+                  value: controllerEntity.liveMessage.motorOnOff == "1"  ? liveMessageEntity.zoneDuration : "00:00:00",
                   titleColor: const Color(0xff2E712A),
                   backgroundColor: const Color(0xff689F39),
                 ),
                 scheduleTimeCard(
                   title: 'Time Left',
-                  value: liveMessageEntity.zoneRemainingTime,
+                  value:controllerEntity.liveMessage.motorOnOff == "1"  ? liveMessageEntity.zoneRemainingTime :"00:00:00",
                   titleColor: const Color(0xff347CA6),
                   backgroundColor: const Color(0xff52AED7),
                 ),
+
                 GestureDetector(
                   onTap: () {
                     final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
@@ -540,9 +541,15 @@ class _Dashboard20State extends State<Dashboard20> {
                         }
                     );
                   },
-                  child: Image.asset(
-                    'assets/images/common/valve_with_flow.png',
+
+                  child: controllerEntity.liveMessage.motorOnOff == "1"  ? Image.asset(
+                    'assets/images/common/valve_running.gif',
                     width: 70,
+                    fit: BoxFit.contain,
+                  ) : Image.asset(
+                    'assets/images/common/valve_off.png',
+                    width: 70,
+                    fit: BoxFit.contain,
                   ),
                 )
               ],
@@ -667,41 +674,42 @@ class _Dashboard20State extends State<Dashboard20> {
           ],
         ),
       ),
-      dashboardCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 20,
-          children: [
-            iconWithHeader(
-              title: 'Water Level',
-              iconBackgroundColor: const Color(0xffB4E7FF),
-              iconColor: Theme.of(context).colorScheme.primary,
-              icon: Icon(Icons.cloudy_snowing, color: Theme.of(context).colorScheme.primary),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Image.asset(
-                  'assets/images/common/water_level.png',
-                  width: 80,
-                ),
-                moonCard(
-                  moonColor: const Color(0xffD4EAFF),
-                  skyColor: const Color(0xffE6F7FF),
-                  title: 'Max Level',
-                  value: '${SafeParser.parseDouble(liveMessageEntity.wellLevel).toStringAsFixed(1)} Feet',
-                ),
-                moonCard(
-                  moonColor: const Color(0xffD4EAFF),
-                  skyColor: const Color(0xffE6F7FF),
-                  title: 'Current Level',
-                  value: '${SafeParser.parseDouble(liveMessageEntity.wellPercent).toStringAsFixed(0)}%',
-                ),
-              ],
-            )
-          ],
+      if (liveMessageEntity.wellPercent != "00" && liveMessageEntity.wellPercent != "0")
+        dashboardCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: 20,
+            children: [
+              iconWithHeader(
+                title: 'Water Level',
+                iconBackgroundColor: const Color(0xffB4E7FF),
+                iconColor: Theme.of(context).colorScheme.primary,
+                icon: Icon(Icons.cloudy_snowing, color: Theme.of(context).colorScheme.primary),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Image.asset(
+                    'assets/images/common/water_level.png',
+                    width: 80,
+                  ),
+                  moonCard(
+                    moonColor: const Color(0xffD4EAFF),
+                    skyColor: const Color(0xffE6F7FF),
+                    title: 'Max Level',
+                    value: '${SafeParser.parseDouble(liveMessageEntity.wellLevel).toStringAsFixed(1)} Feet',
+                  ),
+                  moonCard(
+                    moonColor: const Color(0xffD4EAFF),
+                    skyColor: const Color(0xffE6F7FF),
+                    title: 'Current Level',
+                    value: '${SafeParser.parseDouble(liveMessageEntity.wellPercent).toStringAsFixed(0)}%',
+                  ),
+                ],
+              )
+            ],
+          ),
         ),
-      ),
       dashboardCard(
         child: Column(
           spacing: 20,

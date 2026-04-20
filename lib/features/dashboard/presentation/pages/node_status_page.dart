@@ -127,14 +127,14 @@ class _NodeStatusPageState extends State<NodeStatusPage> {
                     if (isError) {
                       backgroundColor = Colors.red;
                       textColor = Colors.white;
-                      assetPath = 'assets/images/common/valve_no_communication.png';
+                      assetPath = 'assets/images/common/valve_flag.png';
                     } else if (isValveRunning) {
                       backgroundColor = Colors.green;
                       textColor = Colors.white;
-                      assetPath = 'assets/images/common/valve_open.gif';
+                      assetPath = 'assets/images/common/valve_running.gif';
                     } else {
                       backgroundColor = Colors.white;
-                      assetPath = 'assets/images/common/valve_stop.png';
+                      assetPath = 'assets/images/common/valve_off.png';
                     }
                   } else if (cat.contains('moisture')) {
                     assetPath = 'assets/images/icons/moisture_sensor_icon.png';
@@ -145,7 +145,7 @@ class _NodeStatusPageState extends State<NodeStatusPage> {
                   } else if (cat.contains('flow')) {
                     assetPath = 'assets/images/icons/flow_meter_icon.png';
                   } else {
-                    assetPath = 'assets/images/common/valve_stop.png';
+                    assetPath = 'assets/images/common/valve_off.png';
                   }
 
                   return Container(
@@ -168,11 +168,17 @@ class _NodeStatusPageState extends State<NodeStatusPage> {
                         ),
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.all(8.0),
+                            padding: const EdgeInsets.all(6.0),
                             child: Image.asset(
                               assetPath,
+                              width: 65,
+                              height: 65,
                               fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) => Icon(Icons.settings_input_component, color: textColor.withOpacity(0.5)),
+                              errorBuilder: (context, error, stackTrace) => Icon(
+                                Icons.settings_input_component,
+                                size: 40,
+                                color: textColor.withOpacity(0.5),
+                              ),
                             ),
                           ),
                         ),

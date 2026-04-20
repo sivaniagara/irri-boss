@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glassy_wrapper.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:lottie/lottie.dart';
+
 import '../../../../../core/utils/common_date_picker.dart';
 import '../bloc/green_house_bloc.dart';
 import '../bloc/green_house_bloc_event.dart';
@@ -63,7 +65,7 @@ class _GreenHousePageState extends State<GreenHousePage> {
           centerTitle: true,
           title: const Text(
             "Green House Report",
-            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize : 20 ,color: Colors.black, fontWeight: FontWeight.bold),
           ),
           leading: const BackButton(color: Colors.black),
           actions: [
@@ -72,11 +74,11 @@ class _GreenHousePageState extends State<GreenHousePage> {
               onPressed: () async {
                 final result = await pickReportDate(
                   context: context,
-                  allowRange: true, // Greenhouse reports often need range
+                  allowRange: true,
                 );
-      
+
                 if (result == null) return;
-      
+
                 context.read<GreenHouseBloc>().add(
                   FetchGreenHouseReportEvent(
                     userId: widget.userId,
@@ -90,65 +92,17 @@ class _GreenHousePageState extends State<GreenHousePage> {
             ),
           ],
         ),
-        body: BlocConsumer<GreenHouseBloc, GreenHouseState>(
-          listener: (context, state) {
-            if (state is GreenHouseLoaded) {
-              // Replace http with https if needed, but current bloc uses http
-              _webViewController.loadRequest(Uri.parse(state.url));
-            }
-          },
-          builder: (context, state) {
-            return Stack(
-              children: [
-                Column(
-                  children: [
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: WebViewWidget(controller: _webViewController),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ),
-                if (state is GreenHouseLoading)
-                  const Center(child: CircularProgressIndicator(color: Color(0xFF00796B))),
-                if (state is GreenHouseError)
-                  Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.error_outline, color: Colors.red, size: 60),
-                          const SizedBox(height: 16),
-                          Text(
-                            state.message,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(color: Colors.black54, fontSize: 16),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-              ],
-            );
-          },
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Lottie.asset(
+                'assets/lottie/No_data_current.json',
+                width: 220,
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
         ),
       ),
     );
