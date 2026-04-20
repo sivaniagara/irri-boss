@@ -146,11 +146,11 @@ class MoistureValveCard extends StatelessWidget {
 
   String _getValveImageAsset() {
     if (entity.feedback == "1") {
-      return 'assets/images/common/valve_open.gif';
+      return 'assets/images/common/valve_running.gif';
     } else if (entity.feedback == "0") {
-      return 'assets/images/common/valve_stop.png';
+      return 'assets/images/common/valve_off.png';
     } else {
-      return 'assets/images/common/valve_flag_icon.png';
+      return 'assets/images/common/valve_flag.png';
     }
   }
 

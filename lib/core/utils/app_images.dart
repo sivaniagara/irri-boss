@@ -6,7 +6,6 @@ class AppImages {
   static const String irriBoss = '$commonPath/irri_boss.png';
   static const String iconPath = 'assets/images/icons';
   static const String mountain = '$commonPath/mountain.png';
-  static const String motorG = '$commonPath/motor_g.png';
   static const String activefaultmsgicon = '$iconPath/active_faultmsg_icon.png';
   static const String inActivefaultmsgicon = '$iconPath/inactive_faultmsg_icon.png';
   static const String activeHomeIcon = '$iconPath/active_home_icon.png';

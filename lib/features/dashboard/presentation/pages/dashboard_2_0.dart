@@ -841,7 +841,7 @@ class _Dashboard20State extends State<Dashboard20> {
                           spacing: 15,
                           children: [
                             Image.asset(
-                              'assets/images/common/motor_${liveMessageEntity.motorOnOff == '1' ? 'g' : 'r'}.png',
+                              liveMessageEntity.motorOnOff == '1' ? 'assets/images/common/motor_running.gif' : 'assets/images/common/motor_r.png',
                               width: 80,
                             ),
                             switches(liveMessageEntity: liveMessageEntity, motorNo: 1)
@@ -851,7 +851,7 @@ class _Dashboard20State extends State<Dashboard20> {
                           spacing: 15,
                           children: [
                             Image.asset(
-                              'assets/images/common/motor_${liveMessageEntity.valveOnOff == '1' ? 'g' : 'r'}.png',
+                              liveMessageEntity.motorOnOff == '1' ? 'assets/images/common/motor_running.gif' : 'assets/images/common/motor_r.png',
                               width: 80,
                             ),
                             switches(liveMessageEntity: liveMessageEntity, motorNo: 2)
@@ -861,7 +861,7 @@ class _Dashboard20State extends State<Dashboard20> {
                     else
                       ...[
                         Image.asset(
-                          'assets/images/common/motor_${liveMessageEntity.motorOnOff == '1' ? 'g' : 'r'}.png',
+                          liveMessageEntity.motorOnOff == '1' ? 'assets/images/common/motor_running.gif' : 'assets/images/common/motor_r.png',
                           width: 80,
                             ),
                         switches(

@@ -268,7 +268,7 @@ class _FertilizerLiveScreenState extends State<FertilizerLivePage> {
           ),
           child: Center(
             child: Image.asset(
-              motorOn ? 'assets/images/common/ui_motor.gif' : 'assets/images/common/live_motor_off.png',
+              motorOn ? 'assets/images/common/motor_running.gif' : 'assets/images/common/motor_r.png',
               width: 40,
               height: 40,
             ),
