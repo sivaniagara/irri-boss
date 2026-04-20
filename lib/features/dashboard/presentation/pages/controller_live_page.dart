@@ -420,7 +420,7 @@ class _CtrlLivePageState extends State<CtrlLivePage>
       children: [
         _buildEnhancedMotorWidget(
             isOn
-                ? 'assets/images/common/ui_motor.gif'
+                ? 'assets/images/common/motor_running.gif'
                 : 'assets/images/common/motor_r.png',
             isOn),
         const SizedBox(width: 16),
