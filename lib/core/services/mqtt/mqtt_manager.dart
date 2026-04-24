@@ -62,10 +62,8 @@ class MqttManager {
   }
 
   void publish(String deviceId, dynamic payload) {
-    _currentDeviceId != deviceId;
-    {
-      subscribe(deviceId, force: true);
-    }
+    // Keep the current subscription stable; only switch when device changes.
+    subscribe(deviceId);
     if(payload is String){
       mqttService.publish(deviceId, payload);
     }else{

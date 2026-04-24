@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:mqtt_client/mqtt_client.dart';
-import 'package:mqtt_client/mqtt_server_client.dart' if (dart.library.html) 'package:mqtt_client/mqtt_browser_client.dart';
-
+import 'package:mqtt_client/mqtt_server_client.dart'
+    if (dart.library.html) 'package:mqtt_client/mqtt_browser_client.dart';
 
 class MqttService {
   final String broker;
@@ -17,9 +17,11 @@ class MqttService {
   late MqttServerClient _client;
 
   bool _connected = false;
+  Completer<void>? _connectingCompleter;
+  final Set<String> _pendingSubscriptions = <String>{};
 
   final StreamController<bool> _connectionController =
-  StreamController<bool>.broadcast();
+      StreamController<bool>.broadcast();
 
   Stream<bool> get connectionStream => _connectionController.stream;
   bool get isConnected => _connected;
@@ -32,12 +34,17 @@ class MqttService {
     required this.password,
   });
 
-
   Future<void> connect() async {
     if (_connected) return;
+    if (_connectingCompleter != null) {
+      await _connectingCompleter!.future;
+      return;
+    }
+
+    _connectingCompleter = Completer<void>();
 
     if (kDebugMode) {
-      print('🔵 MQTT CONNECTING → $broker:$port ($clientIdentifier)');
+      print('MQTT CONNECTING -> $broker:$port ($clientIdentifier)');
     }
 
     _client = MqttServerClient(broker, clientIdentifier)
@@ -60,22 +67,27 @@ class MqttService {
 
     try {
       await _client.connect();
+      _connectingCompleter?.complete();
     } catch (e, stackTrace) {
       if (kDebugMode) {
-        print('❌ MQTT CONNECT FAILED: $e');
+        print('MQTT CONNECT FAILED: $e');
         print(stackTrace);
       }
       _client.disconnect();
+      _connectingCompleter?.completeError(e);
       rethrow;
+    } finally {
+      _connectingCompleter = null;
     }
   }
 
   void _onConnected() {
     _connected = true;
     _connectionController.add(true);
+    _flushPendingSubscriptions();
 
     if (kDebugMode) {
-      print('✅ MQTT CONNECTED');
+      print('MQTT CONNECTED');
     }
   }
 
@@ -84,7 +96,7 @@ class MqttService {
     _connectionController.add(false);
 
     if (kDebugMode) {
-      print('🔴 MQTT DISCONNECTED');
+      print('MQTT DISCONNECTED');
     }
   }
 
@@ -92,24 +104,51 @@ class MqttService {
     _connected = false;
     _connectionController.add(false);
     if (kDebugMode) {
-      print('🔄 MQTT AUTO RECONNECTING...');
+      print('MQTT AUTO RECONNECTING...');
     }
   }
 
   void _onAutoReconnected() {
     _connected = true;
     _connectionController.add(true);
+    _flushPendingSubscriptions();
     if (kDebugMode) {
-      print('✅ MQTT AUTO RECONNECTED');
+      print('MQTT AUTO RECONNECTED');
     }
   }
 
+  Future<void> _ensureConnected() async {
+    if (_connected &&
+        _client.connectionStatus?.state == MqttConnectionState.connected) {
+      return;
+    }
+    try {
+      await connect();
+    } catch (_) {
+      // Keep callers non-throwing to preserve current behavior.
+    }
+  }
 
-  void subscribe(String deviceId,
-      {MqttQos qos = MqttQos.atMostOnce}) {
-    if (!_connected || _client.connectionStatus?.state != MqttConnectionState.connected) {
+  void _flushPendingSubscriptions() {
+    if (!_connected ||
+        _client.connectionStatus?.state != MqttConnectionState.connected) {
+      return;
+    }
+
+    for (final deviceId in _pendingSubscriptions.toList(growable: false)) {
+      final topic = '$_subscribeTopic/$deviceId';
+      _client.subscribe(topic, MqttQos.atMostOnce);
+    }
+    _pendingSubscriptions.clear();
+  }
+
+  void subscribe(String deviceId, {MqttQos qos = MqttQos.atMostOnce}) {
+    if (!_connected ||
+        _client.connectionStatus?.state != MqttConnectionState.connected) {
+      _pendingSubscriptions.add(deviceId);
+      unawaited(_ensureConnected());
       if (kDebugMode) {
-        print('⚠️ Subscribe failed – MQTT not connected');
+        print('Subscribe queued until MQTT connected');
       }
       return;
     }
@@ -118,56 +157,84 @@ class MqttService {
     _client.subscribe(topic, qos);
 
     if (kDebugMode) {
-      print('📥 SUBSCRIBED → $topic');
+      print('SUBSCRIBED -> $topic');
     }
   }
 
   void unsubscribe(String deviceId) {
-    if (!_connected || _client.connectionStatus?.state != MqttConnectionState.connected) return;
+    _pendingSubscriptions.remove(deviceId);
+    if (!_connected ||
+        _client.connectionStatus?.state != MqttConnectionState.connected) {
+      return;
+    }
 
     final topic = '$_subscribeTopic/$deviceId';
     _client.unsubscribe(topic);
 
     if (kDebugMode) {
-      print('📤 UNSUBSCRIBED → $topic');
+      print('UNSUBSCRIBED -> $topic');
     }
   }
 
-
   void publish(
-      String deviceId,
-      String message, {
-        MqttQos qos = MqttQos.atMostOnce,
-      }) {
-    // Check both internal flag and actual client state to prevent "Current state is connecting" exception
-    if (!_connected || _client.connectionStatus?.state != MqttConnectionState.connected) {
+    String deviceId,
+    String message, {
+    MqttQos qos = MqttQos.atMostOnce,
+  }) {
+    if (!_connected ||
+        _client.connectionStatus?.state != MqttConnectionState.connected) {
+      unawaited(_publishWhenConnected(deviceId, message, qos: qos));
       if (kDebugMode) {
-        print('⚠️ Publish skipped: MQTT state is ${_client.connectionStatus?.state}');
+        print(
+            'Publish queued: MQTT state is ${_client.connectionStatus?.state}');
       }
       return;
     }
 
     final topic = '$_publishTopic/$deviceId';
 
-    final builder = MqttClientPayloadBuilder()
-      ..addString(message);
+    final builder = MqttClientPayloadBuilder()..addString(message);
 
     try {
       _client.publishMessage(topic, qos, builder.payload!);
       if (kDebugMode) {
-        print('📤 PUBLISHED → $topic | $message');
+        print('PUBLISHED -> $topic | $message');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Publish failed: $e');
+        print('Publish failed: $e');
       }
     }
   }
 
+  Future<void> _publishWhenConnected(
+    String deviceId,
+    String message, {
+    MqttQos qos = MqttQos.atMostOnce,
+  }) async {
+    await _ensureConnected();
+    if (!_connected ||
+        _client.connectionStatus?.state != MqttConnectionState.connected) {
+      return;
+    }
+
+    final topic = '$_publishTopic/$deviceId';
+    final builder = MqttClientPayloadBuilder()..addString(message);
+
+    try {
+      _client.publishMessage(topic, qos, builder.payload!);
+      if (kDebugMode) {
+        print('PUBLISHED (delayed) -> $topic | $message');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Delayed publish failed: $e');
+      }
+    }
+  }
 
   Stream<List<MqttReceivedMessage<MqttMessage>>> get updates =>
       _client.updates ?? Stream.empty();
-
 
   void dispose() {
     _connectionController.close();
