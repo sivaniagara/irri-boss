@@ -580,8 +580,8 @@ class _Dashboard20State extends State<Dashboard20> {
                     icon: const Icon(Icons.visibility_sharp, color: Colors.black,)
                 ),
                 const Spacer(),
-                PopupMenuButton(
-                  onSelected: (value){
+                PopupMenuButton<String>(
+                  onSelected: (value) {
                     final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
                     String payload = 'CHANGEFROM$value';
                     context.read<DashboardPageCubit>().updateChangeFrom(
@@ -591,13 +591,16 @@ class _Dashboard20State extends State<Dashboard20> {
                         deviceId: controllerContext.deviceId,
                         payload: payload
                     );
-
                   },
-                  itemBuilder: (context){
+                  // ✅ Add this — makes the popup scrollable after 3 items
+                  constraints: const BoxConstraints(
+                    maxHeight: 200,
+                  ),
+                  itemBuilder: (context) {
                     return getZoneNumberOfActiveProgram(
                         controllerEntity: controllerEntity,
                         liveMessageEntity: liveMessageEntity
-                    ).map((e){
+                    ).map((e) {
                       return PopupMenuItem<String>(
                         value: e,
                         child: Text('Block $e'),
@@ -801,7 +804,7 @@ class _Dashboard20State extends State<Dashboard20> {
   }
 
   Widget doublePumpWidget({required ControllerEntity controllerEntity, required LiveMessageEntity liveMessageEntity}){
-    final bool isMotorOn = liveMessageEntity.motorOnOff == '1' || (controllerEntity.modelId == 27 && liveMessageEntity.valveOnOff == '1');
+    final bool isMotorOn = liveMessageEntity.motor2OnOff == '1' || (controllerEntity.modelId == 27 && liveMessageEntity.valveOnOff == '1');
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -851,7 +854,7 @@ class _Dashboard20State extends State<Dashboard20> {
                           spacing: 15,
                           children: [
                             Image.asset(
-                              liveMessageEntity.motorOnOff == '1' ? 'assets/images/common/motor_running.gif' : 'assets/images/common/motor_r.png',
+                              liveMessageEntity.motor2OnOff == '1' ? 'assets/images/common/motor_running.gif' : 'assets/images/common/motor_r.png',
                               width: 80,
                             ),
                             switches(liveMessageEntity: liveMessageEntity, motorNo: 2)
@@ -910,7 +913,7 @@ class _Dashboard20State extends State<Dashboard20> {
             IconButton(
               onPressed: (){
                 final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
-                String payload = 'MTRON,';
+                String payload = motorNo == 2 ? 'MOTOR2ON,' : 'MOTOR1ON,';
                 context.read<DashboardPageCubit>().controlMotorStatus(
                     userId: controllerContext.userId,
                     controllerId: controllerContext.controllerId,

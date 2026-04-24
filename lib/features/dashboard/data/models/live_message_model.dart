@@ -5,6 +5,7 @@ class LiveMessageModel extends LiveMessageEntity {
     required super.cd,
     required super.ct,
     required super.motorOnOff,
+    required super.motor2OnOff,
     required super.valveOnOff,
     required super.liveDisplay1,
     required super.liveDisplay2,
@@ -109,6 +110,7 @@ class LiveMessageModel extends LiveMessageEntity {
 
     // Default Values
     String motorOnOff = '0';
+    String motor2OnOff = '0';
     String valveOnOff = '0';
     String liveDisplay1 = '';
     String liveDisplay2 = '';
@@ -171,6 +173,13 @@ class LiveMessageModel extends LiveMessageEntity {
               looksLikeMode(safeString(11, '')))
           ? 1
           : 0;
+
+      // For double pump (modelId 27), parse motor 2 status from position 1
+      if (ld04Offset == 1) {
+        motor2OnOff = safeString(1, '0');
+      } else {
+        motor2OnOff = '0'; // Default for single pump
+      }
 
       rVoltage = safeString(1 + ld04Offset, '0');
       yVoltage = safeString(2 + ld04Offset, '0');
@@ -304,6 +313,7 @@ class LiveMessageModel extends LiveMessageEntity {
       cd: cd,
       ct: ct,
       motorOnOff: motorOnOff,
+      motor2OnOff: motor2OnOff,
       valveOnOff: valveOnOff,
       liveDisplay1: liveDisplay1,
       liveDisplay2: liveDisplay2,
@@ -364,6 +374,7 @@ class LiveMessageModel extends LiveMessageEntity {
       cd: cd,
       ct: ct,
       motorOnOff: '0',
+      motor2OnOff: '0',
       valveOnOff: '0',
       liveDisplay1: '',
       liveDisplay2: '',
@@ -416,6 +427,7 @@ class LiveMessageModel extends LiveMessageEntity {
     String? cd,
     String? ct,
     String? motorOnOff,
+    String? motor2OnOff,
     String? valveOnOff,
     String? liveDisplay1,
     String? liveDisplay2,
@@ -465,6 +477,7 @@ class LiveMessageModel extends LiveMessageEntity {
       cd: cd ?? this.cd,
       ct: ct ?? this.ct,
       motorOnOff: motorOnOff ?? this.motorOnOff,
+      motor2OnOff: motor2OnOff ?? this.motor2OnOff,
       valveOnOff: valveOnOff ?? this.valveOnOff,
       liveDisplay1: liveDisplay1 ?? this.liveDisplay1,
       liveDisplay2: liveDisplay2 ?? this.liveDisplay2,

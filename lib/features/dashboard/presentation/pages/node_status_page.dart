@@ -129,7 +129,7 @@ class _NodeStatusPageState extends State<NodeStatusPage> {
                       textColor = Colors.white;
                       assetPath = 'assets/images/common/valve_flag.png';
                     } else if (isValveRunning) {
-                      backgroundColor = Colors.green;
+                      backgroundColor = Colors.lightGreenAccent;
                       textColor = Colors.white;
                       assetPath = 'assets/images/common/valve_running.gif';
                     } else {

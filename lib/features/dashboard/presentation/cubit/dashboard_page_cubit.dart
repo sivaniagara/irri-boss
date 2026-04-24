@@ -565,7 +565,14 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       await Future.delayed(const Duration(seconds: 5));
 
       // Step 3: Send the appropriate ON command based on pump type
-      String onCommand = modelId == 27 ? "MOTOR1ON" : "MTRON";
+      // For double pump (modelId 27), use the payload directly (MOTOR1ON or MOTOR2ON)
+      // For single pump, use MTRON
+      String onCommand;
+      if (modelId == 27) {
+        onCommand = cleanPayload.toUpperCase().replaceAll(",", "");
+      } else {
+        onCommand = "MTRON";
+      }
       final onResult = await controlMotorUsecase(ControlMotorParams(
         userId: userId,
         controllerId: controllerId,

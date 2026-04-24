@@ -14,7 +14,6 @@ class faultmsgPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return GlassyWrapper(
       child: Scaffold(
-        appBar: AppBar(title: const Text("FAULT MESSAGE")),
         body: BlocBuilder<faultmsgBloc, faultmsgState>(
           builder: (context, state) {
              if (state is faultmsgLoading) {

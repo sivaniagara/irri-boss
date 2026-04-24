@@ -27,7 +27,7 @@ class faultmsgRemoteDataSourceImpl extends faultmsgRemoteDataSource {
       /// Validate required params
       String endpoint = FaultMsgPageUrls.getFaultMsgMsgUrl
           .replaceAll(':userId', '$userId')
-          .replaceAll(':subuserId', '$subuserId')
+          .replaceAll(':subUserId', '$subuserId')
           .replaceAll(':controllerId', '$controllerId');
 
        /// Make API call

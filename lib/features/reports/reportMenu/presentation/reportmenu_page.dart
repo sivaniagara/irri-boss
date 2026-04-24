@@ -116,7 +116,7 @@ class ReportMenuPage extends StatelessWidget {
          _card([
            _menuItem(
              icon: 'assets/images/report_menu/zone_duration.png',
-             title: 'Zone Duration',
+             title: 'Block Duration',
              onTap: () => context.push(
                ZoneDurationPageRoutes.ZoneDurationpage,
                extra: params,
@@ -128,7 +128,7 @@ class ReportMenuPage extends StatelessWidget {
            ),
            _menuItem(
              icon: 'assets/images/report_menu/today_zone.png',
-             title: 'Today Zone',
+             title: 'Today Block',
              onTap: () => context.push(
                TdyValveStatusPageRoutes.TdyValveStatuspage,
                extra: params,
@@ -140,7 +140,7 @@ class ReportMenuPage extends StatelessWidget {
            ),
            _menuItem(
              icon: 'assets/images/report_menu/zone_cyclic.png',
-             title: 'Zone Cyclic',
+             title: 'Block Cyclic',
              onTap: () => context.push(
                ZoneCyclicPageRoutes.ZoneCyclicpage,
                extra: params,
