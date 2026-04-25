@@ -35,7 +35,7 @@ class ZoneCyclicPage extends StatelessWidget {
       child: Scaffold(
         backgroundColor: const Color(0xFFE8F1F2),
         appBar: AppBar(
-          title: const Text("Zone Cyclic Status"),
+          title: const Text("BLOCK CYCLIC STATUS"),
           actions: [
             /// 🔹 Toggle View
             BlocBuilder<ZoneCyclicBloc, ZoneCyclicState>(

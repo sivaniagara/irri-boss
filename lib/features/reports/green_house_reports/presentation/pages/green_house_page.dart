@@ -64,7 +64,7 @@ class _GreenHousePageState extends State<GreenHousePage> {
           elevation: 0,
           centerTitle: true,
           title: const Text(
-            "Green House Report",
+            "GREEN HOUSE REPORTS",
             style: TextStyle(fontSize : 20 ,color: Colors.black, fontWeight: FontWeight.bold),
           ),
           leading: const BackButton(color: Colors.black),

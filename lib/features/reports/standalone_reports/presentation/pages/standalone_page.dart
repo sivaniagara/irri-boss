@@ -34,7 +34,7 @@ class StandaloneReportPage extends StatelessWidget {
     return GlassyWrapper(
       child: Scaffold(
         appBar: AppBar(
-          title: Text("StandAlone Reports"),
+          title: Text("STANDALONE REPORTS"),
            actions: [
 
             IconButton(

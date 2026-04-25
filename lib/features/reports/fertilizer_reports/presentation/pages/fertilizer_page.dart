@@ -34,7 +34,7 @@ class FertilizerPage extends StatelessWidget {
     return GlassyWrapper(
       child: Scaffold(
         appBar: AppBar(
-          title: Text("Fertilizer Reports"),
+          title: Text("FERTILIZER REPORTS"),
           actions: [
 
             IconButton(

@@ -34,7 +34,7 @@ class TdyValveStatusPage extends StatelessWidget {
     return GlassyWrapper(
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Today Valve Status"),
+          title: const Text("TODAY VALVE STATUS"),
           actions: [
       
             /// 🔹 Toggle View (Cubit → View State)

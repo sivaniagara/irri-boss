@@ -43,7 +43,7 @@ class _FlowGraphPageState extends State<FlowGraphPage> {
       child: Scaffold(
         backgroundColor: AppThemes.scaffoldBackGround,
         appBar: AppBar(
-          title: const Text("Flow Report Data"),
+          title: const Text("FLOW REPORT DATA"),
           actions: [
             BlocBuilder<FlowGraphBloc, FlowGraphState>(
               builder: (context, state) {

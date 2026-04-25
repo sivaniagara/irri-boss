@@ -35,7 +35,7 @@ class ZoneDurationPage extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
            // 🔹 TITLE CHANGE
-          title: Text("ZONE DURATION REPORT"),
+          title: Text("BLOCK DURATION REPORT"),
             actions: [
             // 🔹 GRID / LIST TOGGLE
              IconButton(

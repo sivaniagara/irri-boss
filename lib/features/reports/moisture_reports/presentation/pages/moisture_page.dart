@@ -28,7 +28,7 @@ class MoistureReportPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppThemes.scaffoldBackGround,
       appBar: const CustomAppBar(
-        title: "Moisture Reports",
+        title: "MOISTURE REPORTS",
       ),
 
       floatingActionButton: FloatingActionButton(
