@@ -58,8 +58,8 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
             (groups) => groups.cast<MenuItemEntity>(),
       );
     } catch (e, s) {
-      print(e);
-      print(s);
+      log('getSettingsMenuList error :: $e');
+      log('getSettingsMenuList stacktrace :: $s');
       rethrow;
     }
   }
