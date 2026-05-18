@@ -10,13 +10,13 @@ abstract class Success extends Equatable {
 }
 
 class ZoneCreatedSuccess extends Success{
-  const ZoneCreatedSuccess([super.message = 'Zone created SuccessFully.']);
+  const ZoneCreatedSuccess([super.message = 'Block created SuccessFully.']);
 }
 
 class ZoneNotCreatedSuccess extends Success{
-  const ZoneNotCreatedSuccess([super.message = 'Zone created failed.']);
+  const ZoneNotCreatedSuccess([super.message = 'Block created failed.']);
 }
 
 class ZoneDeleteSuccess extends Success{
-  const ZoneDeleteSuccess([super.message = 'Zone deleted successfully.']);
+  const ZoneDeleteSuccess([super.message = 'Block deleted successfully.']);
 }
