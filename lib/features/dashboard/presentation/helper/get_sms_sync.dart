@@ -69,7 +69,7 @@ class FaultSms {
         return "MOTOR OFF BECAUSE OF CYCLIC TRIP";
 
       case "028":
-        return "MOTOR OFF BECAUSE OF ZONE CYCLLE COMPLETED";
+        return "MOTOR OFF BECAUSE OF ZONE CYCLIC COMPLETED";
 
       case "029":
         return "MOTOR OFF BECAUSE OF GRTC PROGRAM TIME REACHED";

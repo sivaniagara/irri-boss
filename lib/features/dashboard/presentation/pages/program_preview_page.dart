@@ -472,7 +472,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
             child: LeafBox(
               height: 45,
               margin: EdgeInsets.zero,
-              child: Center(child: Text("ZONE DETAILS", style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor, fontSize: 16))),
+              child: Center(child: Text("BLOCK TAILS", style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor, fontSize: 16))),
             ),
           ),
           ...zoneList.map((z) {
