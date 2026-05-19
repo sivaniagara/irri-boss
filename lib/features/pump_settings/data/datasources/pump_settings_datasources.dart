@@ -24,6 +24,7 @@ abstract class PumpSettingsDataSources {
   Future<String> subscribeNotifications(int userId, int subuserId, int controllerId, Map<String, dynamic> body);
   Future<String> sendPumpSettings(int userId, int subUserId, int controllerId, MenuItemEntity menuItem, String sentSms);
   Future<String> updateMenuStatus(int userId, int subUserId, int controllerId, SettingsMenuEntity menu);
+  Future<String> verifyMenuPassword(String password, int modelId);
 }
 
 class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
@@ -188,6 +189,27 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
     } catch (e, s) {
       log('sendPumpSettings error :: $e');
       log('sendPumpSettings stacktrace :: $s');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String> verifyMenuPassword(String password, int modelId) async {
+    try {
+      final response = await apiClient.post(
+        PumpSettingsUrls.verifyPassword,
+        body: {
+          "password": password,
+          "modelId": modelId,
+        },
+      );
+      final Map<String, dynamic> data = response;
+      if (data['code'] == 200) {
+        return data['message'] ?? "Permission Granted";
+      } else {
+        throw ServerException(message: data['message'] ?? "Permission Denied");
+      }
+    } catch (e) {
       rethrow;
     }
   }

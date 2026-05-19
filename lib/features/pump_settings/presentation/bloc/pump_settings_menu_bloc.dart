@@ -4,13 +4,17 @@ import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/usec
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/bloc/pump_settings_event.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentation/bloc/pump_settings_state.dart';
 
+import '../../domain/usecsases/verify_menu_password_usecase.dart';
+
 class PumpSettingsMenuBloc extends Bloc<PumpSettingsEvent, PumpSettingsState> {
   final GetPumpSettingsMenuUsecase getSettingsMenuUsecase;
   final UpdateMenuStatusUsecase updateMenuStatusUsecase;
+  final VerifyMenuPasswordUsecase verifyMenuPasswordUsecase;
 
   PumpSettingsMenuBloc({
     required this.getSettingsMenuUsecase,
-    required this.updateMenuStatusUsecase
+    required this.updateMenuStatusUsecase,
+    required this.verifyMenuPasswordUsecase,
   }) : super(GetPumpSettingsMenuInitial()) {
 
     on<GetPumpSettingsMenuEvent>((event, emit) async{
@@ -31,17 +35,6 @@ class PumpSettingsMenuBloc extends Bloc<PumpSettingsEvent, PumpSettingsState> {
     });
 
     on<UpdateHiddenFlagsEvent>((event, emit) async{
-      /*if (state is GetPumpSettingsMenuLoaded) {
-        final currentList = (state as GetPumpSettingsMenuLoaded).settingMenuList;
-        final updatedList = currentList.map((item) {
-          return item.menuSettingId == event.settingsMenuEntity.menuSettingId
-              ? event.settingsMenuEntity
-              : item;
-        }).toList();
-
-        emit(GetPumpSettingsMenuLoaded(settingMenuList: updatedList));
-      }*/
-
       final result = await updateMenuStatusUsecase(
           UpdateMenuStatusParams(
               userId: event.userId,
@@ -54,11 +47,24 @@ class PumpSettingsMenuBloc extends Bloc<PumpSettingsEvent, PumpSettingsState> {
       result.fold(
               (failure) {
                 emit(UpdateMenuStatusFailure(message: failure.message));
-               /* if (state is GetPumpSettingsMenuLoaded) {
-                  emit(state as GetPumpSettingsMenuLoaded);
-                }*/
               },
               (message) => emit(UpdateMenuStatusSuccess(message: message))
+      );
+    });
+
+    on<VerifyMenuPasswordEvent>((event, emit) async {
+      emit(VerifyingPasswordState());
+
+      final result = await verifyMenuPasswordUsecase(
+        VerifyMenuPasswordParams(
+          password: event.password,
+          modelId: event.modelId,
+        ),
+      );
+
+      result.fold(
+        (failure) => emit(PasswordVerificationFailure(message: failure.message)),
+        (message) => emit(PasswordVerificationSuccess(message: message)),
       );
     });
   }
