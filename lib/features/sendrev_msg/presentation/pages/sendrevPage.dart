@@ -156,18 +156,9 @@ class _SendRevPageState extends State<SendRevPage> {
                 return ChatBubble(
                   msg: SendrevDatum(
                     date: m.date,
-                    msgType: m.msgType.replaceAll(
-                      RegExp(r'zone', caseSensitive: false),
-                      'BLOCK',
-                    ),
-                    ctrlMsg: m.ctrlMsg.replaceAll(
-                      RegExp(r'zone', caseSensitive: false),
-                      'BLOCK',
-                    ),
-                    ctrlDesc: m.ctrlDesc.replaceAll(
-                      RegExp(r'zone', caseSensitive: false),
-                      'BLOCK',
-                    ),
+                    msgType: m.msgType,
+                    ctrlMsg: m.ctrlMsg,
+                    ctrlDesc: m.ctrlDesc,
                     status: m.status,
                     msgCode: "",
                     time: m.time,

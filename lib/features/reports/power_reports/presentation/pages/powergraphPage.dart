@@ -18,7 +18,7 @@ class PowerGraphPage extends StatelessWidget {
   final int controllerId;
   final String fromDate;
   final String toDate;
-  final int modelId; // 👈 Changed from hardcoded to final parameter
+  final int modelId;
 
   const PowerGraphPage({
     super.key,
@@ -27,7 +27,7 @@ class PowerGraphPage extends StatelessWidget {
     required this.controllerId,
     required this.fromDate,
     required this.toDate,
-    required this.modelId, // 👈 Added to constructor
+    required this.modelId,
   });
 
   final DateTabType selectedTab = DateTabType.days;
@@ -47,7 +47,7 @@ class PowerGraphPage extends StatelessWidget {
                   onPressed: () async {
                     final result = await pickReportDate(
                       context: context,
-                      allowRange: true, // 👈 SAME DATE
+                      allowRange: true,
                     );
 
                     if (result == null) return;

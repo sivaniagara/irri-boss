@@ -128,10 +128,7 @@ class IrrigationSettingsPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          sectionTitle.replaceAll(
-            RegExp(r'zone', caseSensitive: true),
-            'Block',
-          ),
+          sectionTitle,
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
             color: Colors.black,
             fontWeight: FontWeight.w400,
