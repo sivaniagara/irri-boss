@@ -23,6 +23,7 @@ class TemplateSettingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("appBarTitle:$appBarTitle");
     return Scaffold(
       appBar: CustomAppBar(
         title: appBarTitle,

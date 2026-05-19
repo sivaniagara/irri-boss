@@ -35,7 +35,10 @@ final irrigationSettingGoRoutes = [
         GoRoute(
             path: IrrigationSettingsRoutes.templateSetting,
             builder: (context, state) {
-              var settingName = state.pathParameters['settingName']!;
+              var settingName = state.pathParameters['settingName']!.replaceAll(
+                RegExp(r'zone', caseSensitive: true),
+                'Block',
+              );
               var settingNo = state.pathParameters['settingNo']!;
               final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
 
@@ -65,7 +68,10 @@ final irrigationSettingGoRoutes = [
                       ),
                     )
                   ],
-                  child: TemplateSettingPage(appBarTitle: settingName, settingNo: settingNo,)
+                  child: TemplateSettingPage(appBarTitle: settingName.replaceAll(
+                    RegExp(r'zone', caseSensitive: true),
+                    'Block',
+                  ), settingNo: settingNo,)
               );
             },
         ),

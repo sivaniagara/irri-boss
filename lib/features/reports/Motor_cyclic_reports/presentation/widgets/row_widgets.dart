@@ -57,7 +57,7 @@ Widget zoneCard(int index, dynamic zone) {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  "Zone ${index.toString().padLeft(3, '0')}",
+                  "Block ${index.toString().padLeft(3, '0')}",
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

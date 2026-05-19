@@ -112,7 +112,7 @@ class ReportMenuPage extends StatelessWidget {
            ),
          ]),
 
-         _sectionTitle('Zone Performance Reports'),
+         _sectionTitle('Block Performance Reports'),
          _card([
            _menuItem(
              icon: 'assets/images/report_menu/zone_duration.png',

@@ -128,7 +128,10 @@ class IrrigationSettingsPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          sectionTitle,
+          sectionTitle.replaceAll(
+            RegExp(r'zone', caseSensitive: true),
+            'Block',
+          ),
           style: Theme.of(context).textTheme.labelSmall?.copyWith(
             color: Colors.black,
             fontWeight: FontWeight.w400,
@@ -165,8 +168,7 @@ class IrrigationSettingsPage extends StatelessWidget {
                     });
                   }else if(items[itemIndex].irrigationSettingsEnum != IrrigationSettingsEnum.irrigationFertigation){
                     context.push('${IrrigationSettingsRoutes.irrigationSettings}${IrrigationSettingsRoutes.templateSetting
-                        .replaceAll(':settingName', items[itemIndex].name)
-                        .replaceAll(':settingNo', items[itemIndex].irrigationSettingsEnum.settingId.toString())
+                        .replaceAll(':settingName', items[itemIndex].name).replaceAll(':settingNo', items[itemIndex].irrigationSettingsEnum.settingId.toString())
                     }');
                   }
                 },

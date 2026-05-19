@@ -75,7 +75,7 @@ class ZoneDurationPage extends StatelessWidget {
                 context.push(
                   ReportDownloadPageRoutes.ReportDownloadPage,
                   extra: {
-                    "title": "ZONE DURATION REPORT",
+                    "title": "BLOCK DURATION REPORT",
                     "data": excelData,
                   },
                 );

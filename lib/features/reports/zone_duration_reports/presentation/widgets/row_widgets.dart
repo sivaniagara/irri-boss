@@ -44,7 +44,7 @@ Widget zoneCard(int index, dynamic zone) {
           padding: const EdgeInsets.all(8),
           color: Colors.grey.shade300,
           child: Text(
-            "ZONE ${index.toString().padLeft(3, '0')}",
+            "BLOCK ${index.toString().padLeft(3, '0')}",
             style: const TextStyle(
               color: Colors.blue,
               fontWeight: FontWeight.bold,
