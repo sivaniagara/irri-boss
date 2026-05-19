@@ -69,4 +69,14 @@ class PumpSettingsRepositoryImpl implements PumpSettingsRepository {
       return Left(ServerFailure('Notifications Fetching Failure: $e'));
     }
   }
+
+  @override
+  Future<Either<Failure, String>> verifyMenuPassword(String password, int modelId) async {
+    try {
+      final response = await pumpSettingsDataSources.verifyMenuPassword(password, modelId);
+      return Right(response);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
+    }
+  }
 }

@@ -192,7 +192,9 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     final setting =
         menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
     String payload = SmsPayloadBuilder.build(setting, deviceId);
-
+    if(menuItemEntity.menu.menuSettingId == 531 && sectionIndex == 0 && settingIndex == 1){
+      payload = '${setting.value}${setting.smsFormat}';
+    }
     if (menuItemEntity.menu.menuSettingId == 508 &&
         menuItemEntity.template.sections[sectionIndex].typeId == 1 &&
         setting.serialNumber <= 4) {

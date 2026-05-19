@@ -366,31 +366,97 @@ class _MenuItemTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _MenuListView._navigationRow(
-      context,
-      image: PumpSettingsImages.getMenuIcons(item.menu.menuSettingId),
-      title: item.menu.menuItem,
-      onTap: () {
-        final extra = {
-          'userId': userId,
-          'subUserId': subUserId,
-          'controllerId': controllerId,
-          'deviceId': deviceId,
-          'modelId': modelId,
-        };
+    return BlocListener<PumpSettingsMenuBloc, PumpSettingsState>(
+      listenWhen: (previous, current) =>
+      item.menu.menuSettingId == 531 &&
+          (current is PasswordVerificationSuccess ||
+              current is PasswordVerificationFailure ||
+              current is VerifyingPasswordState),
+      listener: (context, state) {
+        if (state is VerifyingPasswordState) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => const Center(child: CircularProgressIndicator()),
+          );
+        } else if (state is PasswordVerificationSuccess) {
+          Navigator.pop(context); // Pop loading
+          _navigateToSettings(context);
+        } else if (state is PasswordVerificationFailure) {
+          Navigator.pop(context); // Pop loading
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
+      },
+      child: _MenuListView._navigationRow(
+        context,
+        image: PumpSettingsImages.getMenuIcons(item.menu.menuSettingId),
+        title: item.menu.menuItem,
+        onTap: () {
+          if (item.menu.menuSettingId == 531) {
+            _showPasswordDialog(context);
+          } else {
+            _navigateToSettings(context);
+          }
+        },
+      ),
+    );
+  }
 
-        final route = _getRouteForMenuId(item.menu.menuSettingId);
+  void _navigateToSettings(BuildContext context) {
+    final extra = {
+      'userId': userId,
+      'subUserId': subUserId,
+      'controllerId': controllerId,
+      'deviceId': deviceId,
+      'modelId': modelId,
+    };
 
-        context.push(
-          route,
-          extra:
-          item.menu.menuSettingId == 514 || item.menu.menuSettingId == 515
-              ? extra
-              : {
-            ...extra,
-            'menuId': item.menu.menuSettingId,
-            'menuName': item.menu.menuItem
-          },
+    final route = _getRouteForMenuId(item.menu.menuSettingId);
+
+    context.push(
+      route,
+      extra: item.menu.menuSettingId == 514 || item.menu.menuSettingId == 515
+          ? extra
+          : {
+        ...extra,
+        'menuId': item.menu.menuSettingId,
+        'menuName': item.menu.menuItem
+      },
+    );
+  }
+
+  void _showPasswordDialog(BuildContext context) {
+    final TextEditingController passwordController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text("Enter Password"),
+          content: TextField(
+            controller: passwordController,
+            obscureText: true,
+            decoration: const InputDecoration(hintText: "Password"),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () {
+                context.read<PumpSettingsMenuBloc>().add(
+                  VerifyMenuPasswordEvent(
+                    password: passwordController.text,
+                    modelId: modelId,
+                  ),
+                );
+                Navigator.pop(dialogContext);
+              },
+              child: const Text("Submit"),
+            ),
+          ],
         );
       },
     );

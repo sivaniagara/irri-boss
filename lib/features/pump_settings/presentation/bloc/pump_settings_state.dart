@@ -102,3 +102,21 @@ class SettingsFailureState extends PumpSettingsState {
   @override
   List<Object> get props => [message];
 }
+
+class VerifyingPasswordState extends PumpSettingsState {}
+
+class PasswordVerificationSuccess extends PumpSettingsState {
+  final String message;
+  const PasswordVerificationSuccess({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+class PasswordVerificationFailure extends PumpSettingsState {
+  final String message;
+  const PasswordVerificationFailure({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}

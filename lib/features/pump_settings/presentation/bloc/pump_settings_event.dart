@@ -56,3 +56,13 @@ class UpdateHiddenFlagsEvent extends PumpSettingsEvent {
   @override
   List<Object?> get props => [userId, controllerId, subUserId, settingsMenuEntity];
 }
+
+class VerifyMenuPasswordEvent extends PumpSettingsEvent {
+  final String password;
+  final int modelId;
+
+  VerifyMenuPasswordEvent({required this.password, required this.modelId});
+
+  @override
+  List<Object?> get props => [password, modelId];
+}

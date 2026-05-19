@@ -11,4 +11,5 @@ abstract class PumpSettingsRepository {
   Future<Either<Failure, String>> subscribeNotifications(int userId, int subUserId, int controllerId, Map<String, dynamic> body);
   Future<Either<Failure, String>> sendPumpSettings(int userId, int subUserId, int controllerId, MenuItemEntity menuItem, String sentSms);
   Future<Either<Failure, String>> updateMenuStatus(int userId, int subUserId, int controllerId, SettingsMenuEntity menuList);
+  Future<Either<Failure, String>> verifyMenuPassword(String password, int modelId);
 }
