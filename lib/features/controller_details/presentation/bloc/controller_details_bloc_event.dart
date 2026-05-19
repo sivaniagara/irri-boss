@@ -21,7 +21,7 @@ class GetControllerDetailsEvent extends ControllerDetailsEvent {
 }
 class ToggleSwitchEvent extends ControllerDetailsEvent {
   // final int controllerId;
-  final String switchName;  // Example: "motor", "pump", "valve"
+  final String switchName;
   final bool isOn;
 
   ToggleSwitchEvent({

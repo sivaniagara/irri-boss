@@ -90,7 +90,6 @@ class MqttService {
       print('MQTT CONNECTED');
     }
   }
-
   void _onDisconnected() {
     _connected = false;
     _connectionController.add(false);
