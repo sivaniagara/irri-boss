@@ -157,7 +157,7 @@ void showLoadingDialog(BuildContext context) {
               ),
               const SizedBox(height: 20),
               Text(
-                'Submitting Zone...',
+                'Submitting Block...',
                 style: Theme.of(context)
                     .textTheme
                     .titleMedium

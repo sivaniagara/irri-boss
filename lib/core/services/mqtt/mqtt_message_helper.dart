@@ -110,7 +110,7 @@ class FaultSms {
         return "MOTOR OFF BECAUSE OF CYCLIC TRIP";
 
       case "028":
-        return "MOTOR OFF BECAUSE OF ZONE CYCLLE COMPLETED";
+        return "MOTOR OFF BECAUSE OF BLOCK CYCLLE COMPLETED";
 
       case "029":
         return "MOTOR OFF BECAUSE OF GRTC PROGRAM TIME REACHED";
@@ -155,7 +155,7 @@ class FaultSms {
 
       case "044":
       case "045":
-        return "ZONE OPEN";
+        return "BLOCK OPEN";
 
       case "046":
         return "FERTILIZER PUMP";
@@ -206,7 +206,7 @@ class FaultSms {
 
       case "063":
       case "064":
-        return "STANDALONE ZONE :";
+        return "STANDALONE BLOCK :";
 
       case "065":
         return "MOTOR OFF BECAUSE OF STARTER TRIP MOTOR STARTED WITH 3 PHASE";
@@ -253,7 +253,7 @@ class FaultSms {
         return "MOTOR OFF BECAUSE OF HIGH VOLTAGE";
 
       case "114":
-        return "ZONE SKIPPED BECAUSE OF NO FEEDBACK";
+        return "BLOCK SKIPPED BECAUSE OF NO FEEDBACK";
 
       case "116":
       case "117":
@@ -264,10 +264,10 @@ class FaultSms {
         return "MOTOR OFF BECAUSE OF HIPRESSURE";
 
       case "139":
-        return "ZONE NOT OPEN PROPERLY";
+        return "BLOCK NOT OPEN PROPERLY";
 
       case "140":
-        return "ZONE NOT CLOSED PROPERLY";
+        return "BLOCK NOT CLOSED PROPERLY";
 
       default:
         return "SETTINGS MSG";
