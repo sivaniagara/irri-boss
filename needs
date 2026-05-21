@@ -1,7 +1,7 @@
      static let baseurl = "http://3.1.62.165:8080"
     static let reporturl = "http://3.1.62.165:8086"
-    static var mqttpublishtopic = String(format:"get-tweet-response/%@",BASEURL.mqttposturlstr)
-    static var mqttpsubscribetopic = String(format:"tweet/%@",BASEURL.mqttposturlstr)
+    static var mqttpublishtopic = String(format:"irribossMobileAppToFirmware/%@",BASEURL.mqttposturlstr)
+    static var mqttpsubscribetopic = String(format:"firmwareToIrribossApp/%@",BASEURL.mqttposturlstr)
 
 
 
@@ -14,14 +14,14 @@
     static let PlaceholderTextFont = UIFont(name: "Roboto-Regular", size: 19.0)!
 
 
-static let headerbgcolor = UIColor(red: 0, green: 51/255.0, blue: 102/255.0, alpha: 1.0)
-static let tabcolor = UIColor(red: 15/255, green: 91/255.0, blue: 143/255.0, alpha: 1.0)
-static let bgcolor = UIColor(red: 15/255, green: 138/255.0, blue: 209/255.0, alpha: 1.0)
-static let brgdcolor =   UIColor(patternImage: UIImage(named: "deviceBg.png")!)
-static let tblitemcolor =   UIColor(patternImage: UIImage(named: "display.png")!)
-static let tblheadercolor = UIColor(red: 0/255, green: 112/255.0, blue: 172/255.0, alpha: 1.0)
-UIColor(red: 233/255, green: 237/255, blue: 241/255, alpha: 1)
+    static let headerbgcolor = UIColor(red: 0, green: 51/255.0, blue: 102/255.0, alpha: 1.0)
+    static let tabcolor = UIColor(red: 15/255, green: 91/255.0, blue: 143/255.0, alpha: 1.0)
+    static let bgcolor = UIColor(red: 15/255, green: 138/255.0, blue: 209/255.0, alpha: 1.0)
+    static let brgdcolor =   UIColor(patternImage: UIImage(named: "deviceBg.png")!)
+    static let tblitemcolor =   UIColor(patternImage: UIImage(named: "display.png")!)
+    static let tblheadercolor = UIColor(red: 0/255, green: 112/255.0, blue: 172/255.0, alpha: 1.0)
+    UIColor(red: 233/255, green: 237/255, blue: 241/255, alpha: 1)
 
 
-       let colorTop = UIColor(red: 192.0 / 255.0, green: 38.0 / 255.0, blue: 42.0 / 255.0, alpha: 1.0).cgColor
-        let colorBottom = UIColor(red: 35.0 / 255.0, green: 2.0 / 255.0, blue: 2.0 / 255.0, alpha: 1.0).cgColor
+    let colorTop = UIColor(red: 192.0 / 255.0, green: 38.0 / 255.0, blue: 42.0 / 255.0, alpha: 1.0).cgColor
+    let colorBottom = UIColor(red: 35.0 / 255.0, green: 2.0 / 255.0, blue: 2.0 / 255.0, alpha: 1.0).cgColor

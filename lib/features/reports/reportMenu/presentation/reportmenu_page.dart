@@ -112,7 +112,7 @@ class ReportMenuPage extends StatelessWidget {
            ),
          ]),
 
-         _sectionTitle('Zone Performance Reports'),
+         _sectionTitle('Block Performance Reports'),
          _card([
            _menuItem(
              icon: 'assets/images/report_menu/zone_duration.png',
@@ -223,33 +223,42 @@ class ReportMenuPage extends StatelessWidget {
                GreenHouseReportPageRoutes.greenHouseReportPage,
                extra: params,
              ),
+             enabled: false
            ),
          ]),
        ],
      );
    }
 
+
+
    Widget _menuItem({
      required String icon,
      required String title,
      required VoidCallback onTap,
+     bool enabled = true,
    }) {
      return ListTile(
+       enabled: enabled,
        leading: Image.asset(
          icon,
          width: 20,
          height: 20,
-         color: AppThemes.primaryColor,
+         color: enabled ? AppThemes.primaryColor : Colors.grey,
        ),
        title: Text(
          title,
-         style: const TextStyle(
+         style: TextStyle(
            fontSize: 14,
            fontWeight: FontWeight.w500,
+           color: enabled ? Colors.black : Colors.grey,
          ),
        ),
-       trailing: const Icon(Icons.chevron_right),
-       onTap: onTap,
+       trailing: Icon(
+         Icons.chevron_right,
+         color: enabled ? Colors.black : Colors.grey,
+       ),
+       onTap: enabled ? onTap : null,
      );
    }
 

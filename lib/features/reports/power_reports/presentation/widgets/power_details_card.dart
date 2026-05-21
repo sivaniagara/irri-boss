@@ -45,6 +45,7 @@ class PowerDetailsCard extends StatelessWidget {
             ],
           ),
         ),
+        SizedBox(height: 40,)
       ],
     );
   }

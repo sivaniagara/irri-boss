@@ -11,8 +11,8 @@ class MqttService {
   final String userName;
   final String password;
 
-  static const String _subscribeTopic = "tweet";
-  static const String _publishTopic = "get-tweet-response";
+  static const String _subscribeTopic = "firmwareToIrribossApp";
+  static const String _publishTopic = "irribossAppToFirmware";
 
   late MqttServerClient _client;
 

@@ -111,25 +111,7 @@ class AppDrawer extends StatelessWidget {
                     Navigator.pop(context);
                   },
                 ),
-                const Divider(indent: 10, endIndent: 10),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.settings_remote,
-                  title: 'Standalone Settings',
-                  onTap: () {
-                    context.push(
-                      StandaloneRoutes.standalone,
-                      extra: {
-                        'userId': userData['userId'],
-                        'controllerId': userData['controllerId'],
-                        'userType': userData['userType'],
-                        'subUserId': userData['subUserId'] ?? '0',
-                        'deviceId': userData['deviceId'] ?? '',
-                      },
-                    );
-                    Navigator.pop(context);
-                  },
-                ),
+
                 const Divider(indent: 10, endIndent: 10),
                 _buildDrawerItem(
                   context,

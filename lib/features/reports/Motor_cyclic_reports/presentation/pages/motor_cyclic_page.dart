@@ -41,7 +41,7 @@ class MotorCyclicPage extends StatelessWidget {
             builder: (_, viewState) {
               return Text(
                 viewState.viewMode == MotorCyclicViewMode.zoneStatus
-                    ? "ZONE STATUS"
+                    ? "BLOCK STATUS"
                     : "MOTOR CYCLIC REPORT",
               );
             },

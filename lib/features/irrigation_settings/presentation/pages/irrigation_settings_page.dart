@@ -165,8 +165,7 @@ class IrrigationSettingsPage extends StatelessWidget {
                     });
                   }else if(items[itemIndex].irrigationSettingsEnum != IrrigationSettingsEnum.irrigationFertigation){
                     context.push('${IrrigationSettingsRoutes.irrigationSettings}${IrrigationSettingsRoutes.templateSetting
-                        .replaceAll(':settingName', items[itemIndex].name)
-                        .replaceAll(':settingNo', items[itemIndex].irrigationSettingsEnum.settingId.toString())
+                        .replaceAll(':settingName', items[itemIndex].name).replaceAll(':settingNo', items[itemIndex].irrigationSettingsEnum.settingId.toString())
                     }');
                   }
                 },
