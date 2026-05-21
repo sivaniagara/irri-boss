@@ -103,10 +103,10 @@ class ZoneConfigurationModel extends ZoneConfigurationEntity{
     String rtcAndDaysPayload = '00,00,00,00,0,0,0,0,0,0,0';
     return {
       "moistureSensor" : selectedMoisture.map((e) => {"nodeId" : e.nodeId}).toList(),
-      "sensorSms" : "IDZLMSETP$programId$moistureSerialNoInZone,$levelSerialNoInZone",
+      "sensorSms" : "SLZLMSETP$programId$moistureSerialNoInZone,$levelSerialNoInZone",
       "zoneNumber" : zoneNumber.split('ZONE')[1],
       "valves" : selectedValves.map((e) => {"nodeId" : e.nodeId}).toList(),
-      "valveSms": "IDZONESELP$programId$valveSerialNoInZone${whileEdit ? rtcAndDaysPayload : ''}",
+      "valveSms": "SLZONESELP$programId$valveSerialNoInZone${whileEdit ? rtcAndDaysPayload : ''}",
       "levelSensor": selectedLevel.map((e) => {"nodeId" : e.nodeId}).toList(),
     };
   }

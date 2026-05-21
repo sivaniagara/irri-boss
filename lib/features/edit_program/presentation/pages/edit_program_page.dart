@@ -320,7 +320,7 @@ class _EditProgramPageState extends State<EditProgramPage> {
                                     controllerId: controllerContext.controllerId,
                                     programId: '0',
                                     deviceId: controllerContext.deviceId,
-                                    payload: 'VZONETIMERSETP${state.editProgramEntity.programId}01,'
+                                    payload: 'VBLOCKTIMERSETP${state.editProgramEntity.programId}01,'
                                 )
                             );
                           },
