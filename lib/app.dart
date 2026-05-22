@@ -120,7 +120,7 @@ class RootApp extends StatelessWidget {
                 themeMode: ThemeMode.light,
                 routerConfig: appRouter.router,
 
-                // âœ… GLOBAL OVERLAY HERE
+                // ✅ GLOBAL OVERLAY HERE
                 builder: (context, child) {
                   return Stack(
                     children: [
