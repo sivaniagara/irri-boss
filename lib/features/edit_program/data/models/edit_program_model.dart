@@ -67,7 +67,7 @@ class EditProgramModel extends EditProgramEntity {
   }
 
   // ---------------- COMMAND TEMPLATES ----------------
-  static const _zoneTimeSetCommand = 'ZONETIMERSETP:programId:zoneSetId';
+  static const _zoneTimeSetCommand = 'BLOCKTIMERSETP:programId:zoneSetId';
   static const _zoneFlowSetCommand = 'FLOWSETP:programId:zoneSetId';
   static const _fertTimeSetCommand = 'FERTTIMERSETP:programIdF:channelNo:zoneSetId';
   static const _fertFlowSetCommand = 'FLOWFERTSETP:programIdF:channelNo:zoneSetId';

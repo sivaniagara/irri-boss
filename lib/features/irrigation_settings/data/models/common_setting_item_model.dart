@@ -47,7 +47,7 @@ class SingleSettingItemModel extends SingleSettingItemEntity{
     }else if(widgetType == 10){
       if(['LOWPRESS', 'HIGHPRESS'].contains(settingField)){
         return '$settingField${formatTo000_0(double.parse(value.isEmpty ? '0' : value))}';
-      }else if(['IDCALSET001,', 'IDCALSET002,' ,'IDCALSET003,', 'IDCALSET004,', 'IDCALSET005,'].contains(settingField)){
+      }else if(['SLCALSET001,', 'SLCALSET002,' ,'SLCALSET003,', 'SLCALSET004,', 'SLCALSET005,'].contains(settingField)){
         return '$settingField${formatTo0_000(double.parse(value.isEmpty ? '0' : value))}';
       }
       return '$settingField${formatTo0000_0(double.parse(value.isEmpty ? '0' : value))}';

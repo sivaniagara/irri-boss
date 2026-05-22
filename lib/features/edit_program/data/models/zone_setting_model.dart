@@ -169,8 +169,8 @@ class ZoneSettingModel extends ZoneSettingEntity {
       ...getBalanceEmptyNode(fixedNodeLength - selectedLevel.length)
     ].join(',');
     return [
-      PublishMessageHelper.settingsPayload("IDZONESELP$programId$zoneNumber,$valveSerialNoInZone"),
-      PublishMessageHelper.settingsPayload("IDZLMSETP$programId$moistureSerialNoInZone,$levelSerialNoInZone"),
+      PublishMessageHelper.settingsPayload("SLBLOCKSELP$programId$zoneNumber,$valveSerialNoInZone"),
+      PublishMessageHelper.settingsPayload("SLZLMSETP$programId$moistureSerialNoInZone,$levelSerialNoInZone"),
     ];
   }
 }

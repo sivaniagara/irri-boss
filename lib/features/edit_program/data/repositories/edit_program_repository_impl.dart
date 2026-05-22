@@ -104,8 +104,8 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
           urlData: {'userId' : params.userId, 'controllerId' : params.controllerId},
           bodyData: {},
           listOfPayload: [
-            PublishMessageHelper.settingsPayload('VIDZONESELP${params.programId}${params.zoneNo.padLeft(3, '0')}'),
-            PublishMessageHelper.settingsPayload('VIDZLMSETP${params.programId}${params.zoneNo.padLeft(3, '0')}'),
+            PublishMessageHelper.settingsPayload('VSLBLOCKSELP${params.programId}${params.zoneNo.padLeft(3, '0')}'),
+            PublishMessageHelper.settingsPayload('VSLZLMSETP${params.programId}${params.zoneNo.padLeft(3, '0')}'),
           ],
           deviceId: params.deviceId
       );
