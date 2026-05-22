@@ -59,24 +59,25 @@ class FlavorConfig {
   }
 
   static FlavorValues _defaultValuesFor(Flavor flavor) {
+    //MQTT_URL_ARCHIVE="mqtt://20.193.232.190"
     switch (flavor) {
       case Flavor.irriBossDevelopment:
         return const FlavorValues(
           displayName: 'Niagara',
-          apiBaseUrl: "http://3.1.62.165:8080/api/v1/",
-          broker: "3.0.229.165",
-          userName: "niagara",
-          password: "niagara@123",
+          apiBaseUrl: "http://20.193.232.190:8090/api/v1/",
+          broker: "20.193.232.190",
+          userName: "mqttuser",
+          password: "Mqtt@456",
           themeKey: 'niagara',
           showFlavorBanner: true,
         );
       case Flavor.irriBossProduction:
         return const FlavorValues(
           displayName: 'Niagara',
-          apiBaseUrl: "http://3.1.62.165:8080/api/v1/",
-          broker: "3.0.229.165",
-          userName: "niagara",
-          password: "niagara@123",
+          apiBaseUrl: "http://20.193.232.190:8090/api/v1/",
+          broker: "20.193.232.190",
+          userName: "mqttuser",
+          password: "Mqtt@456",
           themeKey: 'niagara',
           showFlavorBanner: true,
         );
