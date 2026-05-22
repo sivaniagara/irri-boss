@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_routes.dart';
@@ -9,10 +9,11 @@ import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import '../cubit/login_ui_cubit.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class LoginPageListener {
   static void handleAuthState(BuildContext context, AuthState state) {
     final cubit = context.read<LoginPageCubit>();
-    print("authState :: $state");
+    logD("authState :: $state");
     if (state is PhoneNumberChecked) {
       if (state.exists) {
         final useOtp = cubit.state.useOtpLogin;

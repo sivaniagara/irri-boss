@@ -1,10 +1,11 @@
-import 'package:niagara_smart_drip_irrigation/features/reports/zone_duration_reports/data/models/zone_duration_model.dart';
+﻿import 'package:niagara_smart_drip_irrigation/features/reports/zone_duration_reports/data/models/zone_duration_model.dart';
 
 
 import '../../../../../../core/error/exceptions.dart';
 import '../../../../../../core/services/api_client.dart';
 import '../../utils/zone_duration_routes.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 abstract class ZoneDurationRemoteDataSource {
   Future<ZoneDurationModel> ZoneDurationData({
     required int userId,
@@ -47,7 +48,7 @@ class ZoneDurationRemoteDataSourceImpl extends ZoneDurationRemoteDataSource {
 
       /// Make API call
       final response = await apiClient.get(endpoint);
-       print("endpoint--->$endpoint");
+       logD("endpoint--->$endpoint");
 
       if (response == null) {
         throw ServerException(statusCode: 500, message: "Empty server response");

@@ -1,7 +1,8 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+﻿import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../sub_users_barrel.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class SubUsersBloc extends Bloc<SubUsersEvent, SubUsersState> {
   final GetSubUsersUsecase getSubUsersUsecase;
   final GetSubUserDetailsUsecase getSubUserDetailsUsecase;
@@ -129,7 +130,7 @@ class SubUsersBloc extends Bloc<SubUsersEvent, SubUsersState> {
           ),
         ),
             (subUserModel) {
-          print("subUserModel :: $subUserModel");
+          logD("subUserModel :: $subUserModel");
           if (subUserModel is! Map<String, dynamic>) {
             emit(GetSubUserByPhoneError(
               message: 'Invalid subUserModel format',

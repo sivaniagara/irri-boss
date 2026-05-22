@@ -1,5 +1,6 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+﻿import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 abstract class ControllerContextState{}
 
 class ControllerContextInitial extends ControllerContextState{}
@@ -42,7 +43,7 @@ class ControllerContextCubit extends Cubit<ControllerContextState>{
           modelId: modelId,
         )
     );
-    print('ControllerContextLoaded updated....');
+    logD('ControllerContextLoaded updated....');
   }
 
   void toInitial(){

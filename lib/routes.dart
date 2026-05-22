@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -63,6 +63,7 @@ import 'features/serial_set/utils/serial_set_routes.dart';
 import 'features/side_drawer/side_drawer_routes.dart';
 import 'features/get_moisture/utils/get_moisture_status_routes.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream stream) {
     notifyListeners();
@@ -288,7 +289,7 @@ class AppRouter {
         GoRoute(
           path: DashBoardRoutes.programCommonSettings,
           builder: (context, state) {
-            print("state.pathParameters => ${state.pathParameters}");
+            logD("state.pathParameters => ${state.pathParameters}");
             var settingName = state.pathParameters['settingName']!;
             var settingNo = state.pathParameters['settingNo']!;
             final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
@@ -319,7 +320,7 @@ class AppRouter {
             name: 'ctrlLivePage',
             path: DashBoardRoutes.ctrlLivePage,
             builder: (context, state) {
-              print('Building ctrlLivePage, AuthBloc state: ${sl.get<AuthBloc>().state}');
+              logD('Building ctrlLivePage, AuthBloc state: ${sl.get<AuthBloc>().state}');
               
               LiveMessageEntity? liveMessage;
               String? deviceId;

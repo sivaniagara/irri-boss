@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_manager.dart';
@@ -14,6 +14,7 @@ import '../../domain/usecsases/get_menu_items.dart';
 import '../../domain/usecsases/sms_payload_builder.dart';
 import '../bloc/pump_settings_state.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class PumpSettingsCubit extends Cubit<PumpSettingsState> {
   final GetPumpSettingsUsecase getPumpSettingsUsecase;
   final SendPumpSettingsUsecase sendPumpSettingsUsecase;
@@ -313,12 +314,12 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     final timestamp = DateTime.now().toString().substring(0, 19);
     final displayText = '[$timestamp] Device response:\n$prettyString';
 
-    print("state :: $state");
+    logD("state :: $state");
     if (state is GetPumpSettingsLoaded) {
       final current = state as GetPumpSettingsLoaded;
       emit(current.copyWith(lastReceivedViewMessage: displayText));
     }
 
-    print("Device view settings received:\n$prettyString");
+    logD("Device view settings received:\n$prettyString");
   }
 }

@@ -1,4 +1,4 @@
-import 'package:dartz/dartz.dart';
+﻿import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
 import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/data/models/mapped_node_model.dart';
@@ -14,6 +14,7 @@ import '../../domain/usecases/unmapped_node_to_mapped_node_usecase.dart';
 import '../../domain/usecases/view_node_details_mqtt_usecase.dart';
 import '../data_source/mapping_and_unmapping_nodes_remote_source.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRepository{
   final MappingAndUnmappingNodesRemoteSource mappingAndUnmappingNodesRemoteSource;
   MappingAndUnmappingNodesRepositoryImpl({required this.mappingAndUnmappingNodesRemoteSource});
@@ -26,9 +27,9 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
       return Right(mappingAndUnmappingNodeModel);
     }catch(e, stackTrace){
       if (kDebugMode) {
-        print(stackTrace);
+        logD(stackTrace);
       }
-      print(e);
+      logD(e);
       return Left(ServerFailure('Fetch Mapping and Unmapping Node failed :: ${e.toString()}'));
     }
   }
@@ -54,8 +55,8 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
       }
     }catch(e, stackTrace){
       if (kDebugMode) {
-        print(stackTrace);
-        print(e);
+        logD(stackTrace);
+        logD(e);
       }
       return Left(ServerFailure('Delete Mapped Node Failed :: ${e.toString()}'));
     }
@@ -68,7 +69,7 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
       List<UnmappedCategoryNodeModel> unmappedCategoryNodeModel = params.listOfUnmappedCategoryNodeEntity.map(((e){
         return UnmappedCategoryNodeModel.fromEntity(e);
       })).toList();
-      print("listOfMappedSerialNo :: $listOfMappedSerialNo");
+      logD("listOfMappedSerialNo :: $listOfMappedSerialNo");
       final response = await mappingAndUnmappingNodesRemoteSource
           .unmappedToMapped(
           urlData: {
@@ -88,7 +89,7 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
                   break;
                 }
               }
-              print(serialNo.toString().padLeft(3, '0'));
+              logD(serialNo.toString().padLeft(3, '0'));
               return unmappedCategoryNodeModel[index].formPayload(
                   params.categoryId,
                   serialNo.toString().padLeft(3, '0')
@@ -103,8 +104,8 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
       }
     }catch(e, stackTrace){
       if (kDebugMode) {
-        print(stackTrace);
-        print(e);
+        logD(stackTrace);
+        logD(e);
       }
       return Left(ServerFailure('Delete Mapped Node Failed :: ${e.toString()}'));
     }

@@ -1,10 +1,11 @@
-import 'package:dartz/dartz.dart';
+﻿import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 import '../../../../../../core/error/failures.dart';
 import '../../../../../../core/usecases/usecase.dart';
 import '../entities/zone_nodes_entity.dart';
 import '../repositories/zone_configuration_repository.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class GetZoneConfigurationParams {
   final String userId;
   final String controllerId;
@@ -22,7 +23,7 @@ class GetZoneConfigurationUseCase
   Future<Either<Failure, ZoneConfigurationEntity>> call(
       GetZoneConfigurationParams params) {
     if(kDebugMode){
-      print('GetZoneConfigurationUseCase --> ** initialize  **');
+      logD('GetZoneConfigurationUseCase --> ** initialize  **');
     }
     return repository.getZoneConfiguration(params);
   }

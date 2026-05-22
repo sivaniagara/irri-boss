@@ -1,7 +1,8 @@
-
+﻿
 
 import '../../../../../../core/error/exceptions.dart';
 import '../../../../../../core/services/api_client.dart';
+import '../../../../../core/utils/log.dart';
 import '../../utils/tdy_valve_status_routes.dart';
 import '../models/tdy_valve_status_model.dart';
 
@@ -49,7 +50,7 @@ class TdyValveStatusRemoteDataSourceImpl extends TdyValveStatusRemoteDataSource 
       /// Make API call
       final response = await apiClient.get(endpoint);
       // final response = await apiClient.get("user/2489/subuser/0/controller/3827/zone/graph?&fromDate=2026-02-09&programName=p2");
-       print("endpoint--->$endpoint");
+       logD("endpoint--->$endpoint");
        if (response == null) {
         throw ServerException(statusCode: 500, message: "Empty server response");
       }

@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+﻿import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -19,6 +19,7 @@ import '../cubit/dashboard_page_cubit.dart';
 import '../widgets/static_progress_circle_with_image.dart';
 import 'package:intl/intl.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class Dashboard20 extends StatefulWidget {
   const Dashboard20({super.key});
 
@@ -100,7 +101,7 @@ class _Dashboard20State extends State<Dashboard20> {
           if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.loading){
             showGradientLoadingDialog(context);
           }else if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.success){
-            print("pop of");
+            logD("pop of");
             context.pop();
             showSuccessAlert(
                 context: context,
@@ -435,7 +436,7 @@ class _Dashboard20State extends State<Dashboard20> {
                             backgroundColor: WidgetStatePropertyAll(Colors.red)
                           ),
                             onPressed: (){
-                            print("call motor off");
+                            logD("call motor off");
                               final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
                               String payload = 'MTROF,';
                               context.read<DashboardPageCubit>().controlMotorStatus(
@@ -453,7 +454,7 @@ class _Dashboard20State extends State<Dashboard20> {
                                 backgroundColor: WidgetStatePropertyAll(Colors.green)
                             ),
                             onPressed: (){
-                              print("call motor on");
+                              logD("call motor on");
                               final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
                               String payload = 'MTRON,';
                               context.read<DashboardPageCubit>().controlMotorStatus(
@@ -592,7 +593,7 @@ class _Dashboard20State extends State<Dashboard20> {
                         payload: payload
                     );
                   },
-                  // ✅ Add this — makes the popup scrollable after 3 items
+                  // âœ… Add this â€” makes the popup scrollable after 3 items
                   constraints: const BoxConstraints(
                     maxHeight: 200,
                   ),
@@ -797,7 +798,7 @@ class _Dashboard20State extends State<Dashboard20> {
       return DateFormat("d/MMM/yyyy").format(DateTime(int.parse(liveData.cd.split('/')[2]), int.parse(liveData.cd.split('/')[1]), int.parse(liveData.cd.split('/')[0]))).toUpperCase();
     }catch(e){
       if (kDebugMode) {
-        print(e.toString());
+        logD(e.toString());
       }
       return '---';
     }
@@ -903,9 +904,9 @@ class _Dashboard20State extends State<Dashboard20> {
   }
 
   Widget switches({required LiveMessageEntity liveMessageEntity, required int motorNo}) {
-    print("Call switches");
-    print("deviceid:$liveMessageEntity");
-    print("Call switches");
+    logD("Call switches");
+    logD("deviceid:$liveMessageEntity");
+    logD("Call switches");
     return Row(
       children: [
         Column(

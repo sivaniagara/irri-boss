@@ -1,9 +1,10 @@
-import '../../../../core/error/exceptions.dart';
+﻿import '../../../../core/error/exceptions.dart';
 import '../../../../core/services/api_client.dart';
 import '../../utils/faultmsg_routes.dart';
 import '../models/faultmsg_model.dart';
 
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 abstract class faultmsgRemoteDataSource {
   Future<FaultMsgModel> getFaultMessages({
     required int userId,
@@ -46,7 +47,7 @@ class faultmsgRemoteDataSourceImpl extends faultmsgRemoteDataSource {
         message: response["message"] ?? "Unknown error in faultmsg API",
       );
     } catch (e) {
-      print("❌ getSendReceiveMessages ERROR: ${e.toString()}");
+      logD("âŒ getSendReceiveMessages ERROR: ${e.toString()}");
       throw ServerException(statusCode: 500, message: e.toString());
     }
   }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/action_button.dart';
@@ -10,6 +10,7 @@ import 'package:niagara_smart_drip_irrigation/features/pump_settings/presentatio
 
 import '../../../../core/di/injection.dart' as di;
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class NotificationsPage extends StatelessWidget {
   final int userId;
   final int controllerId;
@@ -60,7 +61,7 @@ class NotificationsPage extends StatelessWidget {
                 }
               },
               builder: (context, state) {
-                print("state :: $state");
+                logD("state :: $state");
                 if (state is GetNotificationsInitial) {
                   return const Center(child: CircularProgressIndicator());
                 }

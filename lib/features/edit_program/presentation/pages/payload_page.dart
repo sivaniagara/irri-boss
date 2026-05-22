@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_material_button.dart';
@@ -6,6 +6,7 @@ import 'package:niagara_smart_drip_irrigation/core/widgets/custom_outlined_butto
 
 import '../bloc/edit_program_bloc.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 enum PayloadModeEnum {idle, loading, success, failure}
 
 class PayloadPage extends StatefulWidget {
@@ -151,13 +152,13 @@ class _PayloadPageState extends State<PayloadPage> {
                                       zoneIndex: zonePayload,
                                     );
                                     setState(() {
-                                      zoneSelection[zonePayload]['mode'] = result; // ← now result is the real enum value
+                                      zoneSelection[zonePayload]['mode'] = result; // â† now result is the real enum value
                                     });
                                   } catch (e) {
                                     setState(() {
                                       zoneSelection[zonePayload]['mode'] = PayloadModeEnum.failure;
                                     });
-                                    print("Zone $zonePayload failed: $e");
+                                    logD("Zone $zonePayload failed: $e");
                                   }
                                 }
 
@@ -174,13 +175,13 @@ class _PayloadPageState extends State<PayloadPage> {
                                       zoneIndex: zonePayload + 1,
                                     );
                                     setState(() {
-                                      zoneViewCommandSelection[zonePayload]['mode'] = result; // ← now result is the real enum value
+                                      zoneViewCommandSelection[zonePayload]['mode'] = result; // â† now result is the real enum value
                                     });
                                   } catch (e) {
                                     setState(() {
                                       zoneViewCommandSelection[zonePayload]['mode'] = PayloadModeEnum.failure;
                                     });
-                                    print("zoneViewCommandSelection $zonePayload failed: $e");
+                                    logD("zoneViewCommandSelection $zonePayload failed: $e");
                                   }
                                 }
 
@@ -199,13 +200,13 @@ class _PayloadPageState extends State<PayloadPage> {
                                     method: widget.method,
                                   );
                                   setState(() {
-                                    zoneSetSelection[zoneSetPayload]['mode'] = result; // ← now result is the real enum value
+                                    zoneSetSelection[zoneSetPayload]['mode'] = result; // â† now result is the real enum value
                                   });
                                 } catch (e) {
                                   setState(() {
                                     zoneSetSelection[zoneSetPayload]['mode'] = PayloadModeEnum.failure;
                                   });
-                                  print("Zone $zoneSetPayload failed: $e");
+                                  logD("Zone $zoneSetPayload failed: $e");
                                 }
                               }
                             },

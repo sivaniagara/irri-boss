@@ -1,9 +1,11 @@
+﻿import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/error/failures.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../auth.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final LoginWithPassword loginWithPassword;
   final SendOtp sendOtp;
@@ -43,8 +45,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           },
         );
       } catch(e, s) {
-        print("Error :: $e");
-        print("Stack trace :: $s");
+        if(kDebugMode){
+          logD("Error :: $e");
+          logD("Stack trace :: $s");
+        }
+
       }
     });
 
@@ -53,7 +58,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final result = await sendOtp(PhoneParams(event.phone, event.countryCode));
       result.fold(
             (failure) {
-          print('SendOtpEvent failed: $failure');
+          debugPrint('SendOtpEvent failed: $failure');
           emit(failure is AuthFailure
               ? AuthError(message: failure.message, code: failure.code)
               : AuthError(message: failure.message));
@@ -82,7 +87,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     // Similar changes for VerifyOtpEvent:
     on<VerifyOtpEvent>((event, emit) async {
-      // print('Processing VerifyOtpEvent: verificationId=${event.params.verificationId}, otp=${event.params.otp}');
+      // logD('Processing VerifyOtpEvent: verificationId=${event.params.verificationId}, otp=${event.params.otp}');
       emit(AuthLoading());
       final result = await verifyOtp(
           VerifyOtpParams(
@@ -93,7 +98,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       result.fold(
         (failure) {
-          print('VerifyOtpEvent failed: $failure');
+          logD('VerifyOtpEvent failed: $failure');
           emit(failure is AuthFailure
               ? AuthError(message: failure.message, code: failure.code)
               : AuthError(message: failure.message));
@@ -151,12 +156,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
 
     on<CheckPhoneNumberEvent>((event, emit) async {
-      // print('Processing CheckPhoneNumberEvent: phone=${event.params.phone}');
+      // logD('Processing CheckPhoneNumberEvent: phone=${event.params.phone}');
       emit(AuthLoading());
       final result = await checkPhoneNumber(PhoneParams(event.phone, event.countryCode));
       result.fold(
         (failure) {
-          print('CheckPhoneNumberEvent failed: $failure');
+          logD('CheckPhoneNumberEvent failed: $failure');
           emit(failure is AuthFailure
               ? AuthError(message: failure.message, code: failure.code)
               : AuthError(message: failure.message));

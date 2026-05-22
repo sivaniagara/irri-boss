@@ -1,10 +1,11 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/repositories/alarm_repository.dart';
 import 'alarm_event.dart';
 import 'alarm_state.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class AlarmBloc extends Bloc<AlarmEvent, AlarmState> {
   final AlarmRepository repository;
 
@@ -65,7 +66,7 @@ class AlarmBloc extends Bloc<AlarmEvent, AlarmState> {
       final payload = "$command,${data.minutes.padLeft(2, '0')}:${data.seconds.padLeft(2, '0')},${data.alarmActive},${data.irrigationStop},${data.dosingStop},${data.threshold},${data.reset},${data.hour.padLeft(2, '0')}";
 
       if (kDebugMode) {
-        print("ALARM MQTT: Topic: ${currentState.deviceId}, Cmd: $payload");
+        logD("ALARM MQTT: Topic: ${currentState.deviceId}, Cmd: $payload");
       }
 
       final result = await repository.saveAlarmSettings(

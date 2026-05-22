@@ -1,9 +1,10 @@
-
+﻿
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/tdy_valve_status_reports/presentation/pages/tdy_valve_status_graph.dart';
 
 import '../../../../../core/utils/common_date_picker.dart';
+import '../../../../../core/utils/log.dart';
 import '../../../../../core/widgets/glassy_wrapper.dart';
 import '../../../../../core/widgets/no_data.dart';
 import '../bloc/tdy_valve_mode.dart';
@@ -37,7 +38,7 @@ class TdyValveStatusPage extends StatelessWidget {
           title: const Text("TODAY VALVE STATUS"),
           actions: [
       
-            /// 🔹 Toggle View (Cubit → View State)
+            /// ðŸ”¹ Toggle View (Cubit â†’ View State)
             BlocBuilder<TdyValveStatusCubit, TdyValveViewState>(
               builder: (context, viewState) {
                 return IconButton(
@@ -65,7 +66,7 @@ class TdyValveStatusPage extends StatelessWidget {
               },
             ),
       
-            /// 🔹 Date Picker
+            /// ðŸ”¹ Date Picker
             IconButton(
               icon: const Icon(Icons.calendar_today),
               onPressed: () async {
@@ -95,10 +96,10 @@ class TdyValveStatusPage extends StatelessWidget {
           ],
         ),
       
-        /// 🔹 BODY → Bloc State (API)
+        /// ðŸ”¹ BODY â†’ Bloc State (API)
         body: BlocBuilder<TdyValveStatusBloc, TdyValveStatusState>(
           builder: (context, state) {
-            print("state:$state");
+            logD("state:$state");
             if (state is TdyValveStatusLoading) {
               return const Center(child: CircularProgressIndicator());
             }
@@ -137,7 +138,7 @@ class TdyValveStatusPage extends StatelessWidget {
   }
 
 
-  // 🔹 PROGRAM DROPDOWN
+  // ðŸ”¹ PROGRAM DROPDOWN
   Widget _programDropdown(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -176,7 +177,7 @@ class TdyValveStatusPage extends StatelessWidget {
     );
   }
 
-  // 🔹 ZONE CARD
+  // ðŸ”¹ ZONE CARD
   Widget _zoneCard(dynamic item) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),

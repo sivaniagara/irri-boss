@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class SettingListTile extends StatelessWidget {
   final String title;
   final String? subtitle;
@@ -60,7 +61,7 @@ class SettingListTile extends StatelessWidget {
               : null);
     }
 
-    // print("leadingIcon :: $leadingIcon");
+    // logD("leadingIcon :: $leadingIcon");
     return ListTile(
       leading: leadingIcon !=null ? Image.asset(leadingIcon!, width: 22, height: 22,) : null,
       title: Text(

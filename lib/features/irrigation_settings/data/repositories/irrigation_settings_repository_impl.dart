@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 
 import 'package:dartz/dartz.dart';
 
@@ -12,6 +12,7 @@ import '../../domain/repositories/irrigation_settings_repository.dart';
 import '../../domain/usecases/get_template_irrigation_setting_usecase.dart';
 import '../data_source/irrigation_settings_remote_source.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class IrrigationSettingsRepositoryImpl extends IrrigationSettingsRepository{
   final IrrigationSettingsRemoteSource dataSource;
 
@@ -36,8 +37,8 @@ class IrrigationSettingsRepositoryImpl extends IrrigationSettingsRepository{
       }
 
     }catch(e, stackTrace){
-      print(stackTrace);
-      print('getTemplateSetting => ${e.toString()}');
+      logD(stackTrace);
+      logD('getTemplateSetting => ${e.toString()}');
       return Left(ServerFailure('getTemplateSetting failed : ${e.toString()}'));
     }
   }
@@ -49,7 +50,7 @@ class IrrigationSettingsRepositoryImpl extends IrrigationSettingsRepository{
       ControllerIrrigationSettingModel.fromEntity(entity: params.controllerIrrigationSettingEntity);
       var jsonData = controllerIrrigationSettingModel.toJson();
       var mqttData = controllerIrrigationSettingModel.getMqttPayload(groupIndex: params.groupIndex, settingIndex: params.settingIndex);
-      print("mqttData : $mqttData");
+      logD("mqttData : $mqttData");
       final response = await dataSource.updateTemplateSetting(
           urlData: {
             'userId' : params.userId,
@@ -70,8 +71,8 @@ class IrrigationSettingsRepositoryImpl extends IrrigationSettingsRepository{
         return Left(ServerFailure(response['message']));
       }
     }catch(e, stackTrace){
-      print(stackTrace);
-      print('updateTemplateSetting => ${e.toString()}');
+      logD(stackTrace);
+      logD('updateTemplateSetting => ${e.toString()}');
       return Left(ServerFailure('updateTemplateSetting failed : ${e.toString()}'));
     }
   }

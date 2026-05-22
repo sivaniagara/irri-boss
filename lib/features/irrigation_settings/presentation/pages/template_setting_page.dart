@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
@@ -16,6 +16,7 @@ import '../../domain/entities/controller_irrigation_setting_entity.dart';
 import '../bloc/template_irrigation_settings_bloc.dart';
 import '../enums/update_template_setting_status.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class TemplateSettingPage extends StatelessWidget {
   final String appBarTitle;
   final String settingNo;
@@ -23,7 +24,7 @@ class TemplateSettingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("appBarTitle:$appBarTitle");
+    logD("appBarTitle:$appBarTitle");
     return Scaffold(
       appBar: CustomAppBar(
         title: appBarTitle,
@@ -98,7 +99,7 @@ class TemplateSettingPage extends StatelessWidget {
                                                   singleSettingItemEntity: setting.copyWith(updateValue: value),
                                                   hideSendButton: false,
                                                   onChanged: (value) {
-                                                    print('value : $value');
+                                                    logD('value : $value');
                                                     context.read<TemplateIrrigationSettingsBloc>().add(
                                                         UpdateSingleSettingRowEvent(
                                                             groupIndex: groupIndex,
@@ -281,7 +282,7 @@ class TemplateSettingPage extends StatelessWidget {
                                                               singleSettingItemEntity: childEntity.copyWith(updateValue: currentValue),
                                                               hideSendButton: true,
                                                               onChanged: (value) {
-                                                                print('multi onChanged: $value');
+                                                                logD('multi onChanged: $value');
                                                                 context.read<TemplateIrrigationSettingsBloc>().add(
                                                                   UpdateMultipleSettingRowEvent(
                                                                     groupIndex: groupIndex,

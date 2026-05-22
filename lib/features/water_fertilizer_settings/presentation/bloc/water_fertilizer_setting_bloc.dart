@@ -1,10 +1,11 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+﻿import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/water_fertilizer_settings/domain/usecases/update_zone_set_setting_usecase.dart';
 
 import '../../domain/entities/program_zone_set_entity.dart';
 import '../../domain/usecases/fetch_program_zone_sets_usecase.dart';
 import '../../domain/usecases/fetch_zone_set_setting_usecase.dart';
 import '../enums/zone_set_update_status_enum.dart';
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 part 'water_fertilizer_setting_event.dart';
 part 'water_fertilizer_setting_state.dart';
 
@@ -47,8 +48,8 @@ class WaterFertilizerSettingBloc extends Bloc<WaterFertilizerSettingEvent, Water
     });
 
     on<FetchZoneSetSettingEvent>((event, emit)async{
-      print('state => $state');
-      print("FetchZoneSetSettingEvent called....");
+      logD('state => $state');
+      logD("FetchZoneSetSettingEvent called....");
       emit(WaterFertilizerSettingLoading());
       FetchZoneSetSettingParams fetchZoneSetSettingParams = FetchZoneSetSettingParams(
           userId: event.userId,
@@ -284,8 +285,8 @@ class WaterFertilizerSettingBloc extends Bloc<WaterFertilizerSettingEvent, Water
 
     on<UpdateChannelLiters>((event, emit){
       final current = state as WaterFertilizerSettingLoaded;
-      print("UpdateChannelLiters called");
-      print("${event.liters} , ${event.channelIndex}, ${event.zoneNo}");
+      logD("UpdateChannelLiters called");
+      logD("${event.liters} , ${event.channelIndex}, ${event.zoneNo}");
       emit(WaterFertilizerSettingLoaded(
           userId: current.userId,
           controllerId: current.controllerId,
@@ -297,7 +298,7 @@ class WaterFertilizerSettingBloc extends Bloc<WaterFertilizerSettingEvent, Water
                       if(index != event.zoneNo){
                         return current.programZoneSetEntity.listOfZoneSet.first.listOfZoneWaterFertilizer[index];
                       }else{
-                        print("update success");
+                        logD("update success");
                         return current.programZoneSetEntity.listOfZoneSet.first.listOfZoneWaterFertilizer[index]
                             .copyWith(
                           updatedCh1Liters: event.channelIndex == 0 ? event.liters : null,

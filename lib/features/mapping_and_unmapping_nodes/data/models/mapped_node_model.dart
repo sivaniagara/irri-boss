@@ -1,5 +1,6 @@
-import '../../domain/entities/mapped_node_entity.dart';
+﻿import '../../domain/entities/mapped_node_entity.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class MappedNodeModel extends MappedNodeEntity {
   MappedNodeModel({
     required super.nodeId,
@@ -16,7 +17,7 @@ class MappedNodeModel extends MappedNodeEntity {
   });
 
   factory MappedNodeModel.fromJson(Map<String, dynamic> json) {
-    print(json);
+    logD(json);
     return MappedNodeModel(
       nodeId: json['nodeId'],
       categoryId: json['categoryId'],

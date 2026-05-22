@@ -1,4 +1,4 @@
-import 'package:dartz/dartz.dart';
+﻿import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
 import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/edit_zone/domain/repositories/zone_configuration_repository.dart';
@@ -10,6 +10,7 @@ import '../../domain/usecases/submit_while_edit_zone_configuration.dart';
 import '../data_source/zone_configuration_remote_source.dart';
 import '../models/zone_configuration_model.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class ZoneConfigurationRepositoryImpl implements ZoneConfigurationRepository{
   final ZoneConfigurationRemoteSource zoneConfigurationRemoteSource;
   ZoneConfigurationRepositoryImpl({required this.zoneConfigurationRemoteSource});
@@ -18,7 +19,7 @@ class ZoneConfigurationRepositoryImpl implements ZoneConfigurationRepository{
   Future<Either<Failure, ZoneConfigurationEntity>>
   getZoneConfiguration(GetZoneConfigurationParams params) async {
     if(kDebugMode){
-      print('ZoneConfigurationRepositoryImpl --> getZoneConfiguration --> ** initialize  **');
+      logD('ZoneConfigurationRepositoryImpl --> getZoneConfiguration --> ** initialize  **');
     }
     try {
       final response =
@@ -34,8 +35,8 @@ class ZoneConfigurationRepositoryImpl implements ZoneConfigurationRepository{
       return Right(model);
     } catch (e, stackTrace) {
       if(kDebugMode){
-        print('getZoneConfiguration :: $e');
-        print('stackTrace :: $stackTrace');
+        logD('getZoneConfiguration :: $e');
+        logD('stackTrace :: $stackTrace');
       }
       return Left(
         ServerFailure('getZoneConfiguration failed: $e'),
@@ -61,8 +62,8 @@ class ZoneConfigurationRepositoryImpl implements ZoneConfigurationRepository{
         return Left(ServerFailure(response['message']));
       }
     }catch(e, stackTrace){
-      print(e.toString());
-      print(stackTrace);
+      logD(e.toString());
+      logD(stackTrace);
       return Left(ServerFailure('submitZoneConfiguration failed: $e'));
     }
 
@@ -85,8 +86,8 @@ class ZoneConfigurationRepositoryImpl implements ZoneConfigurationRepository{
         return Left(ServerFailure(response['message']));
       }
     }catch(e, stackTrace){
-      print(e.toString());
-      print(stackTrace);
+      logD(e.toString());
+      logD(stackTrace);
       return Left(ServerFailure('submitZoneConfiguration failed: $e'));
     }
 
@@ -97,7 +98,7 @@ class ZoneConfigurationRepositoryImpl implements ZoneConfigurationRepository{
   Future<Either<Failure, ZoneConfigurationEntity>>
   editZoneConfiguration(EditZoneConfigurationParams params) async {
     if(kDebugMode){
-      print('ZoneConfigurationRepositoryImpl --> editZoneConfiguration --> ** initialize  **');
+      logD('ZoneConfigurationRepositoryImpl --> editZoneConfiguration --> ** initialize  **');
     }
     try {
       final response =
@@ -114,8 +115,8 @@ class ZoneConfigurationRepositoryImpl implements ZoneConfigurationRepository{
       return Right(model);
     } catch (e, stackTrace) {
       if(kDebugMode){
-        print('editZoneConfiguration :: $e');
-        print('stackTrace :: $stackTrace');
+        logD('editZoneConfiguration :: $e');
+        logD('stackTrace :: $stackTrace');
       }
       return Left(
         ServerFailure('editZoneConfiguration failed: $e'),

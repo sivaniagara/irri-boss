@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 
 import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
@@ -12,6 +12,7 @@ import '../../domain/usecases/update_zone_set_setting_usecase.dart';
 import '../data_source/water_fertilizer_settings_remote_source.dart';
 import '../models/program_zone_set_model.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class WaterFertilizerSettingsRepositoryImpl extends WaterFertilizerSettingsRepository{
   final WaterFertilizerSettingsRemoteSource remoteSource;
   WaterFertilizerSettingsRepositoryImpl({required this.remoteSource});
@@ -39,9 +40,9 @@ class WaterFertilizerSettingsRepositoryImpl extends WaterFertilizerSettingsRepos
 
     }catch(e, stackTrace){
       if (kDebugMode) {
-        print(stackTrace);
+        logD(stackTrace);
       }
-      print(e);
+      logD(e);
       return Left(ServerFailure('Fetch zone set failed :: ${e.toString()}'));
     }
   }
@@ -71,9 +72,9 @@ class WaterFertilizerSettingsRepositoryImpl extends WaterFertilizerSettingsRepos
 
     }catch(e, stackTrace){
       if (kDebugMode) {
-        print(stackTrace);
+        logD(stackTrace);
       }
-      print(e);
+      logD(e);
       return Left(ServerFailure('Fetch zone set failed :: ${e.toString()}'));
     }
   }
@@ -105,9 +106,9 @@ class WaterFertilizerSettingsRepositoryImpl extends WaterFertilizerSettingsRepos
 
     }catch(e, stackTrace){
       if (kDebugMode) {
-        print(stackTrace);
+        logD(stackTrace);
       }
-      print(e);
+      logD(e);
       return Left(ServerFailure('Fetch zone set failed :: ${e.toString()}'));
     }
   }

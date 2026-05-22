@@ -1,5 +1,6 @@
-
+﻿
 import '../../../core/di/injection.dart' as di;
+import '../../../core/utils/log.dart';
 import '../../controller_settings/utils/controller_settings_routes.dart';
 import '../sub_module/edit_zone/presentation/bloc/edit_zone_bloc.dart';
 import '../sub_module/edit_zone/presentation/pages/edit_zone_page.dart';
@@ -21,7 +22,7 @@ final programSettingsGoRoutes = [
         final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
         final progId = state.pathParameters['programId']!;
         final zoneSerialNo = state.pathParameters['zoneSerialNo'];
-        print("zoneSerialNo => $zoneSerialNo");
+        logD("zoneSerialNo => $zoneSerialNo");
 
         late EditZoneEvent editZoneEvent;
         if(zoneSerialNo == ':zoneSerialNo'){

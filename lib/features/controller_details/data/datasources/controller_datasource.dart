@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 
 import '../../../../../core/error/exceptions.dart';
 import '../../../../../core/services/api_client.dart';
@@ -7,6 +7,7 @@ import '../../domain/usecase/controller_details_params.dart';
 import '../../domain/usecase/update_controllerDetails_params.dart';
 import '../models/controller_details_model.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 abstract class ControllerRemoteDataSource {
   Future<ControllerResponseModel> getControllerDetails(
       GetControllerDetailsParams params);
@@ -26,11 +27,11 @@ class ControllerRemoteDataSourceImpl extends ControllerRemoteDataSource {
           .replaceAll(':userId', params.userId.toString())
           .replaceAll(':userDeviceId', params.controllerId.toString());
 
-      print("➡️ GET API: $endpoint");
+      logD("âž¡ï¸ GET API: $endpoint");
 
       final response = await apiClient.get(endpoint);
 
-      print("⬅️ GET RESPONSE: $response");
+      logD("â¬…ï¸ GET RESPONSE: $response");
 
       if (response == null) {
         throw ServerException(statusCode: 500, message: "Empty server response");
@@ -45,7 +46,7 @@ class ControllerRemoteDataSourceImpl extends ControllerRemoteDataSource {
         message: response['message'] ?? "Unknown server error",
       );
     } catch (e) {
-      print("❌ getControllerDetails ERROR: $e");
+      logD("âŒ getControllerDetails ERROR: $e");
       throw ServerException(statusCode: 500, message: e.toString());
     }
   }
@@ -57,7 +58,7 @@ class ControllerRemoteDataSourceImpl extends ControllerRemoteDataSource {
     try {
       final endpoint = ApiUrls.updateController;
 
-       // print("➡️ BODY: $body");
+       // logD("âž¡ï¸ BODY: $body");
       Map<String, dynamic> body = {
         "userId" : params.userId,
         "userDeviceId" : params.controllerId,
@@ -72,7 +73,7 @@ class ControllerRemoteDataSourceImpl extends ControllerRemoteDataSource {
         "editType" : params.editType
       };
 
-       print(" ️ body RESPONSE: ${jsonEncode(body)}");
+       logD(" ï¸ body RESPONSE: ${jsonEncode(body)}");
       final response = await apiClient.put(
         endpoint,
         body: body,
@@ -82,7 +83,7 @@ class ControllerRemoteDataSourceImpl extends ControllerRemoteDataSource {
         },
       );
 
-      print("⬅️ PUT RESPONSE: $response");
+      logD("â¬…ï¸ PUT RESPONSE: $response");
 
       if (response == null) {
         throw ServerException(statusCode: 500, message: "Empty server response");
@@ -97,8 +98,8 @@ class ControllerRemoteDataSourceImpl extends ControllerRemoteDataSource {
         message: response["message"] ?? "Update failed",
       );
     } catch (e) {
-      print("❌ updateController ERROR: $e");
-      print("❌  error ${e.toString()}");
+      logD("âŒ updateController ERROR: $e");
+      logD("âŒ  error ${e.toString()}");
       throw ServerException(statusCode: 500, message: e.toString());
     }
   }

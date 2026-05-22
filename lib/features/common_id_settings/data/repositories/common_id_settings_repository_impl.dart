@@ -1,4 +1,4 @@
-import 'package:dartz/dartz.dart';
+﻿import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
@@ -13,6 +13,7 @@ import '../../domain/usecases/reset_common_id_usecase.dart';
 import '../../domain/usecases/view_common_id_usecase.dart';
 import '../data_source/common_id_settings_remote_source.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class CommonIdSettingsRepositoryImpl implements CommonIdSettingsRepository{
   final CommonIdSettingsRemoteSource commonIdSettingsDataSource;
   CommonIdSettingsRepositoryImpl({required this.commonIdSettingsDataSource});
@@ -20,7 +21,7 @@ class CommonIdSettingsRepositoryImpl implements CommonIdSettingsRepository{
   @override
   Future<Either<Failure, List<CategoryEntity>>> getCommonIdSettings(GetCommonIdSettingsParams params) async{
     if(kDebugMode){
-      print('CommonIdSettingsRepositoryImpl --> getCommonIdSettings --> ** initialize  **');
+      logD('CommonIdSettingsRepositoryImpl --> getCommonIdSettings --> ** initialize  **');
     }
     try {
       final response =
@@ -34,8 +35,8 @@ class CommonIdSettingsRepositoryImpl implements CommonIdSettingsRepository{
       return Right(listOfCategoryModel);
     } catch (e, stackTrace) {
       if(kDebugMode){
-        print('getCommonIdSettings :: $e');
-        print('stackTrace :: $stackTrace');
+        logD('getCommonIdSettings :: $e');
+        logD('stackTrace :: $stackTrace');
       }
       return Left(
         ServerFailure('getCommonIdSettings failed: $e'),
@@ -46,7 +47,7 @@ class CommonIdSettingsRepositoryImpl implements CommonIdSettingsRepository{
   @override
   Future<Either<Failure, Unit>> updateCategoryNodeSerialNo(SubmitCategoryParams params) async{
     if(kDebugMode){
-      print('CommonIdSettingsRepositoryImpl --> updateCategoryNodeSerialNo --> ** initialize  **');
+      logD('CommonIdSettingsRepositoryImpl --> updateCategoryNodeSerialNo --> ** initialize  **');
     }
     try {
       var urlData = {
@@ -57,7 +58,7 @@ class CommonIdSettingsRepositoryImpl implements CommonIdSettingsRepository{
 
       CategoryModel categoryModel = CategoryModel.fromEntity(params.categoryEntity);
       var bodyData = categoryModel.updateCategoryNodeSerialNoPayload();
-      print('bodyData : $bodyData');
+      logD('bodyData : $bodyData');
       final response =
       await commonIdSettingsDataSource.updateCategoryNodeSerialNo(
           urlData: urlData,
@@ -72,8 +73,8 @@ class CommonIdSettingsRepositoryImpl implements CommonIdSettingsRepository{
 
     } catch (e, stackTrace) {
       if(kDebugMode){
-        print('updateCategoryNodeSerialNo :: $e');
-        print('stackTrace :: $stackTrace');
+        logD('updateCategoryNodeSerialNo :: $e');
+        logD('stackTrace :: $stackTrace');
       }
       return Left(
         ServerFailure('updateCategoryNodeSerialNo failed: $e'),

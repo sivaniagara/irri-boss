@@ -1,4 +1,4 @@
-import 'dart:convert';
+﻿import 'dart:convert';
 
 import 'package:niagara_smart_drip_irrigation/features/water_fertilizer_settings/data/models/zone_set_model.dart';
 
@@ -6,6 +6,7 @@ import '../../domain/entities/program_zone_set_entity.dart';
 import '../../domain/entities/zone_set_entity.dart';
 import '../../domain/entities/zone_water_fertilizer_entity.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class ProgramZoneSetModel extends ProgramZoneSetEntity {
   ProgramZoneSetModel({
     required super.programId,
@@ -221,7 +222,7 @@ class ProgramZoneSetModel extends ProgramZoneSetEntity {
         }
       ])
     };
-    print("payload === > ${jsonEncode(payload)}");
+    logD("payload === > ${jsonEncode(payload)}");
     return  payload;
   }
 

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:niagara_smart_drip_irrigation/features/program_settings/presentation/bloc/program_bloc.dart';
@@ -9,6 +9,7 @@ import 'features/progam_zone_set/presentation/cubit/program_tab_cubit.dart';
 import 'features/pump_settings/presentation/cubit/pump_settings_view_response_cubit.dart';
 import 'firebase_options.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 // import 'package:niagara_smart_drip_irrigation/features/mqtt/bloc/mqtt_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -37,7 +38,7 @@ Future<void> appMain() async {
     } on UnsupportedError catch (e) {
       // Platform not supported for Firebase initialization (e.g., desktop without config)
       // Log and continue; Firebase-dependent features should handle missing Firebase gracefully.
-      if (kDebugMode) print('Firebase initialize skipped: $e');
+      if (kDebugMode) logD('Firebase initialize skipped: $e');
     }
   }
   await FirebaseMessaging.instance.setAutoInitEnabled(true);
@@ -119,7 +120,7 @@ class RootApp extends StatelessWidget {
                 themeMode: ThemeMode.light,
                 routerConfig: appRouter.router,
 
-                // ✅ GLOBAL OVERLAY HERE
+                // âœ… GLOBAL OVERLAY HERE
                 builder: (context, child) {
                   return Stack(
                     children: [

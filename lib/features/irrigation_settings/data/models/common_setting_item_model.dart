@@ -1,6 +1,7 @@
-import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/domain/entities/common_setting_item_entity.dart';
+﻿import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/domain/entities/common_setting_item_entity.dart';
 
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class SingleSettingItemModel extends SingleSettingItemEntity{
   SingleSettingItemModel({
     required super.sNo,
@@ -13,8 +14,8 @@ class SingleSettingItemModel extends SingleSettingItemEntity{
   });
 
   factory SingleSettingItemModel.fromJson({required Map<String, dynamic> json}){
-    print("json : $json");
-    print(json['OPTION']);
+    logD("json : $json");
+    logD(json['OPTION']);
     return SingleSettingItemModel(
         sNo: json['SN'],
         widgetType: json['WT'],
@@ -111,9 +112,9 @@ class MultipleSettingItemModel extends MultipleSettingItemEntity{
   });
 
   factory MultipleSettingItemModel.fromJson({required Map<String, dynamic> json}){
-    print("MultipleSettingItemModel.fromJson called");
+    logD("MultipleSettingItemModel.fromJson called");
     List<Map<String, dynamic>> data = List.generate(json['VAL'].split(';').length, (index){
-      print("multi json : $json");
+      logD("multi json : $json");
       return {
         "SN": json['SN'],
         "WT": json['WT'],

@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +10,7 @@ import '../../../features/dashboard/data/models/live_message_model.dart';
 import '../../../features/dashboard/domain/entities/livemessage_entity.dart';
 import '../../../features/dashboard/presentation/helper/get_sms_sync.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class MqttMessageType {
   final String code;
   const MqttMessageType(this.code);
@@ -227,7 +228,7 @@ class FaultSms {
         return "MOTOR 2 OFF";
 
     // -----------------------
-    // Fault Messages 101–141
+    // Fault Messages 101â€“141
     // -----------------------
 
       case "101":
@@ -307,9 +308,9 @@ class MqttMessageHelper {
       qrCode = (jsonObject['cC'] ?? '').toString().trim();
 
       if (kDebugMode) {
-        print('--- MQTT PACKET RECEIVED ---');
-        print('Raw: $mqttMsg');
-        print('Type: $typeStr | Device: $qrCode');
+        logD('--- MQTT PACKET RECEIVED ---');
+        logD('Raw: $mqttMsg');
+        logD('Type: $typeStr | Device: $qrCode');
       }
     } catch (e) {
       if (kDebugMode) debugPrint('MQTT JSON Parse Error: $e | Raw: $mqttMsg');
@@ -330,7 +331,7 @@ class MqttMessageHelper {
     String cl = (jsonObject['cL'] ?? '').toString();
 
     if (kDebugMode) {
-      print('Extracted Data -> Date: $cd, Time: $ct');
+      logD('Extracted Data -> Date: $cd, Time: $ct');
     }
 
     String trimmedMsg = msg.trim();
@@ -339,9 +340,9 @@ class MqttMessageHelper {
 
     final type = MqttMessageType.fromCode(typeStr);
 
-    // ✅ UPDATE SERVER TIME FOR EVERY PACKET
+    // âœ… UPDATE SERVER TIME FOR EVERY PACKET
     if (cd.isNotEmpty && ct.isNotEmpty) {
-      if (kDebugMode) print('Updating Server Time -> $cd $ct');
+      if (kDebugMode) logD('Updating Server Time -> $cd $ct');
       dispatcher.onServerTimeUpdate(qrCode, date: cd, time: ct);
     }
 
@@ -360,7 +361,7 @@ class MqttMessageHelper {
       });
 
       if (kDebugMode) {
-        print('Dispatching Live Update: Date=$cd Time=$ct Msg=$trimmedMsg');
+        logD('Dispatching Live Update: Date=$cd Time=$ct Msg=$trimmedMsg');
       }
 
       // Format the display message instead of using raw MQTT message
@@ -403,7 +404,7 @@ class MqttMessageHelper {
 
       // Also update Live Sync UI with timestamp from SMS packet if available
       if (cd.isNotEmpty && ct.isNotEmpty) {
-        if (kDebugMode) print('SMS Packet Update -> Syncing time from SMS packet');
+        if (kDebugMode) logD('SMS Packet Update -> Syncing time from SMS packet');
         dispatcher.onServerTimeUpdate(qrCode, date: cd, time: ct);
       }
     }

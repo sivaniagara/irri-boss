@@ -1,9 +1,10 @@
-import '../../../groups/utils/groups_urls.dart';
+﻿import '../../../groups/utils/groups_urls.dart';
 import '../../../../../core/error/exceptions.dart';
 import '../../../../../core/services/api_client.dart';
 import '../../domain/entities/group_entity.dart';
 import '../model/group_details.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 abstract class GroupDataSources {
   Future<List<GroupEntity>> fetchGroups(int userId);
   Future<String> addGroups(int userId, String groupName);
@@ -31,7 +32,7 @@ class GroupDataSourcesImpl extends GroupDataSources {
         );
       }
     } catch (e) {
-      print('Fetch dashboard groups error: $e');
+      logD('Fetch dashboard groups error: $e');
       throw Exception('Failed to fetch dashboard groups: $e');
     }
   }
@@ -56,7 +57,7 @@ class GroupDataSourcesImpl extends GroupDataSources {
         );
       }
     } catch (e) {
-      print('Group adding error: $e');
+      logD('Group adding error: $e');
       throw Exception('Group adding error: $e');
     }
   }
@@ -70,7 +71,7 @@ class GroupDataSourcesImpl extends GroupDataSources {
         'groupId': groupId,
         'groupName': groupName
       };
-      // print("body :: $body");
+      // logD("body :: $body");
       final response = await apiClient.put(
         endpoint,
         body: body,
@@ -84,7 +85,7 @@ class GroupDataSourcesImpl extends GroupDataSources {
         );
       }
     } catch (e) {
-      print('editGroups error: $e');
+      logD('editGroups error: $e');
       throw Exception('Failed to fetch editGroups: $e');
     }
   }
@@ -96,7 +97,7 @@ class GroupDataSourcesImpl extends GroupDataSources {
       final response = await apiClient.delete(
         endpoint,
       );
-      // print("response :: $response");
+      // logD("response :: $response");
       if (response['code'] == 200) {
         return response['message'];
       } else {
@@ -106,7 +107,7 @@ class GroupDataSourcesImpl extends GroupDataSources {
         );
       }
     } catch (e) {
-      print('deleteGroup error: $e');
+      logD('deleteGroup error: $e');
       throw Exception('Failed to fetch deleteGroup: $e');
     }
   }

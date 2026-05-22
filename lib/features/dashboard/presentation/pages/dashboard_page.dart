@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +29,7 @@ import '../../domain/entities/group_entity.dart';
 import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 enum BottomNavigationOption{home, report, manual, setting, sentAndReceive, faultMsgMsgPage}
 
 extension BottomNavivigationOptionExtension on BottomNavigationOption{
@@ -65,7 +66,7 @@ class DashboardPage extends StatefulWidget {
     mqttManager.publish(deviceId, publishMessage);
 
     if (kDebugMode) {
-      print("Live message requested for device: $deviceId");
+      logD("Live message requested for device: $deviceId");
     }
   }
 }
@@ -325,15 +326,15 @@ class _DashboardPageState extends State<DashboardPage> {
       listener: (context, state) {
         if(state is DashboardGroupsLoaded){
           if(state.selectedGroupId != null){
-            print("state.selectedGroupId => ${state.selectedGroupId}");
-            print("state.selectedControllerIndex => ${state.selectedControllerIndex}");
-            print("state.groupControllers[state.selectedGroupId] => ${state.groupControllers[state.selectedGroupId]}");
-            print("state.groupControllers => ${state.groupControllers.keys}");
+            logD("state.selectedGroupId => ${state.selectedGroupId}");
+            logD("state.selectedControllerIndex => ${state.selectedControllerIndex}");
+            logD("state.groupControllers[state.selectedGroupId] => ${state.groupControllers[state.selectedGroupId]}");
+            logD("state.groupControllers => ${state.groupControllers.keys}");
             if(state.groupControllers[state.selectedGroupId] != null && state.groupControllers[state.selectedGroupId]!.isNotEmpty){
               final selectedController = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!];
-              print("controllerId = > ${selectedController.userDeviceId}");
-              print("deviceId = > ${selectedController.deviceId}");
-              print("modelId = > ${selectedController.modelId}");
+              logD("controllerId = > ${selectedController.userDeviceId}");
+              logD("deviceId = > ${selectedController.deviceId}");
+              logD("modelId = > ${selectedController.modelId}");
 
             }
           }
@@ -457,7 +458,7 @@ class _DashboardPageState extends State<DashboardPage> {
           selectedBottomNavigation = BottomNavigationOption.report;
           final controllerContext = context.read<ControllerContextCubit>().state
               as ControllerContextLoaded;
-          print(
+          logD(
               "controllerContext.userId:${controllerContext.userId},controllerContext.controllerId:${controllerContext.controllerId},");
           context.pushReplacement(
               "${DashBoardRoutes.report}?userId=$userId&userType=$userType",
@@ -556,7 +557,7 @@ class _DashboardPageState extends State<DashboardPage> {
           selectedBottomNavigation = BottomNavigationOption.report;
           final controllerContext = context.read<ControllerContextCubit>().state
               as ControllerContextLoaded;
-          print(
+          logD(
               "controllerContext.userId:${controllerContext.userId},controllerContext.controllerId:${controllerContext.controllerId},");
           context.pushReplacement(
               "${PowerGraphPageRoutes.PowerGraphPage}?userId=$userId&userType=$userType",
@@ -805,12 +806,12 @@ class _DashboardPageState extends State<DashboardPage> {
             ],
           ),
           onSelected: (groupId) async{
-            print("groupId change ");
-            print(groupId);
-            print(userId);
+            logD("groupId change ");
+            logD(groupId);
+            logD(userId);
             (int, int, String) result = await cubit.selectGroup(groupId, userId, GoRouterState.of(context));
             // final selectedGroup = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!];
-            // print("selectedGroup  => ${selectedGroup.userDeviceId}");
+            // logD("selectedGroup  => ${selectedGroup.userDeviceId}");
             context.read<ControllerContextCubit>().updateController(
                 modelId: result.$1,
                 controllerId: result.$2.toString(),
@@ -869,10 +870,10 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
         onSelected: (index) {
-          print("controller change ");
-          print(index);
-          print(controllers[index].userDeviceId);
-          print(controllers[index].deviceId);
+          logD("controller change ");
+          logD(index);
+          logD(controllers[index].userDeviceId);
+          logD(controllers[index].deviceId);
           cubit.selectController(index);
           context.read<ControllerContextCubit>().updateController(
                 controllerId: controllers[index].userDeviceId.toString(),

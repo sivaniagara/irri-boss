@@ -1,4 +1,4 @@
-import 'package:dartz/dartz.dart';
+﻿import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
@@ -20,6 +20,7 @@ import '../data_source/edit_program_remote_source.dart';
 import '../models/edit_program_model.dart';
 import '../models/zone_setting_model.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class GetProgramRepositoryImpl extends EditProgramRepository{
   final EditProgramRemoteSource remoteSource;
   GetProgramRepositoryImpl({required this.remoteSource});
@@ -38,8 +39,8 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
           EditProgramModel.fromJson(response)
       );
     } catch (e, stackTrace) {
-      print('getPrograms Fetching Failure: $e');
-      print(stackTrace);
+      logD('getPrograms Fetching Failure: $e');
+      logD(stackTrace);
       return Left(ServerFailure('getPrograms Fetching Failure: $e'));
     }
   }
@@ -67,8 +68,8 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
       }
 
     } catch (e, stackTrace) {
-      print('saveProgram Fetching Failure: $e');
-      print(stackTrace);
+      logD('saveProgram Fetching Failure: $e');
+      logD(stackTrace);
       return Left(ServerFailure('saveProgram Fetching Failure: $e'));
     }
   }
@@ -88,8 +89,8 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
       return Right(unit);
     } catch (e, stackTrace) {
       if (kDebugMode) {
-        print('sendZoneConfigurationPayload Failure: $e');
-        print(stackTrace);
+        logD('sendZoneConfigurationPayload Failure: $e');
+        logD(stackTrace);
       }
       return Left(ServerFailure('sendZoneConfigurationPayload Fetching Failure: $e'));
     }
@@ -113,8 +114,8 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
     } catch (e, stackTrace) {
 
       if (kDebugMode) {
-        print('sendZoneViewCommandPayload Failure: $e');
-        print(stackTrace);
+        logD('sendZoneViewCommandPayload Failure: $e');
+        logD(stackTrace);
       }
       return Left(ServerFailure('sendZoneViewCommandPayload Fetching Failure: $e'));
     }
@@ -153,9 +154,9 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
         return zoneLength;
       }
         EditProgramModel editProgramModel = EditProgramModel.fromEntity(params.editProgramEntity);
-      print("takingActiveZoneByZoneSet : $takingActiveZoneByZoneSet");
-      print(start(params.zoneSetNo));
-      print(end(params.zoneSetNo, params.editProgramEntity.zones.length));
+      logD("takingActiveZoneByZoneSet : $takingActiveZoneByZoneSet");
+      logD(start(params.zoneSetNo));
+      logD(end(params.zoneSetNo, params.editProgramEntity.zones.length));
         List<ZoneSettingModel> zoneSet = takingActiveZoneByZoneSet.sublist(
             start(params.zoneSetNo),
             end(params.zoneSetNo, params.editProgramEntity.zones.length).clamp(0, takingActiveZoneByZoneSet.length)
@@ -189,8 +190,8 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
       return Right(unit);
     } catch (e, stackTrace) {
       if (kDebugMode) {
-        print('sendZoneConfigurationPayload Failure: $e');
-        print(stackTrace);
+        logD('sendZoneConfigurationPayload Failure: $e');
+        logD(stackTrace);
       }
       return Left(ServerFailure('sendZoneConfigurationPayload Fetching Failure: $e'));
     }

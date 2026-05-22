@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:mqtt_client/mqtt_client.dart';
@@ -6,6 +6,7 @@ import 'package:mqtt_client/mqtt_client.dart';
 import 'mqtt_message_helper.dart';
 import 'mqtt_service.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class MqttManager {
   final MqttService mqttService;
   final MessageDispatcher dispatcher;
@@ -49,7 +50,7 @@ class MqttManager {
   }
 
   void subscribe(String deviceId, {bool force = false}) {
-    print("call subscribe");
+    logD("call subscribe");
 
     if (_currentDeviceId == deviceId && !force) return;
 

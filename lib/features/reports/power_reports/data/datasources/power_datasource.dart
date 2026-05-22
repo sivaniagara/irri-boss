@@ -1,7 +1,8 @@
-
+﻿
 
 import '../../../../../../core/error/exceptions.dart';
 import '../../../../../../core/services/api_client.dart';
+import '../../../../../core/utils/log.dart';
 import '../../utils/Power_routes.dart';
 import '../models/power_model.dart';
 
@@ -51,7 +52,7 @@ class PowerRemoteDataSourceImpl extends PowerRemoteDataSource {
 
       /// Make API call
       final response = await apiClient.get(endpoint);
-      print("endpoint--->$endpoint");
+      logD("endpoint--->$endpoint");
 
       if (response == null) {
         throw ServerException(statusCode: 500, message: "Empty server response");

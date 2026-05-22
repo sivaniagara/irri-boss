@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
@@ -12,6 +12,7 @@ import '../../domain/entities/zone_water_fertilizer_entity.dart';
 import '../bloc/water_fertilizer_setting_bloc.dart';
 
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class ListOfZoneInZoneSet extends StatefulWidget {
   const ListOfZoneInZoneSet({super.key});
 
@@ -324,7 +325,7 @@ class _ListOfZoneInZoneSetState extends State<ListOfZoneInZoneSet> {
 
     if (picked != null) {
       final String formattedTime = _formatTime(picked);
-      print(formattedTime);
+      logD(formattedTime);
       if(irrigationDosingOrPrePostMode == 1 && timeOrQuantity == 1 && mode == 1){
         context.read<WaterFertilizerSettingBloc>().add(
             UpdateTotalTime(

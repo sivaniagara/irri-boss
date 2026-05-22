@@ -1,7 +1,8 @@
-import '../../../../core/services/api_client.dart';
+﻿import '../../../../core/services/api_client.dart';
 import '../../../../core/utils/api_urls.dart';
 import '../../utils/water_fertilizer_settings_url.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 abstract class WaterFertilizerSettingsRemoteSource{
   Future<Map<String, dynamic>> fetchProgramZoneSets({required Map<String, String> urlData});
   Future<Map<String, dynamic>> fetchZoneSetSettings({required Map<String, String> urlData});
@@ -18,7 +19,7 @@ class WaterFertilizerSettingsRemoteSourceImpl extends WaterFertilizerSettingsRem
     try{
       String endPoint = buildUrl(WaterFertilizerSettingsUrl.program, urlData);
       final response = await apiClient.get(endPoint);
-      print('fetchProgramZoneSets response  => $response');
+      logD('fetchProgramZoneSets response  => $response');
       return response;
     }catch (e){
       rethrow;
@@ -30,7 +31,7 @@ class WaterFertilizerSettingsRemoteSourceImpl extends WaterFertilizerSettingsRem
     try{
       String endPoint = buildUrl(WaterFertilizerSettingsUrl.zoneSet, urlData);
       final response = await apiClient.get(endPoint);
-      print('fetchZoneSetSettings response  => $response');
+      logD('fetchZoneSetSettings response  => $response');
       return response;
     }catch (e){
       rethrow;
@@ -42,7 +43,7 @@ class WaterFertilizerSettingsRemoteSourceImpl extends WaterFertilizerSettingsRem
     try{
       String endPoint = buildUrl(WaterFertilizerSettingsUrl.updateZoneSet, urlData);
       final response = await apiClient.post(endPoint, body: bodyData);
-      print('updateZoneSetSettings response  => $response');
+      logD('updateZoneSetSettings response  => $response');
       return response;
     }catch (e){
       rethrow;

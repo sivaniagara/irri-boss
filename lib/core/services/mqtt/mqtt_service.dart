@@ -1,9 +1,10 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart'
     if (dart.library.html) 'package:mqtt_client/mqtt_browser_client.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class MqttService {
   final String broker;
   final int port;
@@ -44,7 +45,7 @@ class MqttService {
     _connectingCompleter = Completer<void>();
 
     if (kDebugMode) {
-      print('MQTT CONNECTING -> $broker:$port ($clientIdentifier)');
+      logD('MQTT CONNECTING -> $broker:$port ($clientIdentifier)');
     }
 
     _client = MqttServerClient(broker, clientIdentifier)
@@ -70,8 +71,8 @@ class MqttService {
       _connectingCompleter?.complete();
     } catch (e, stackTrace) {
       if (kDebugMode) {
-        print('MQTT CONNECT FAILED: $e');
-        print(stackTrace);
+        logD('MQTT CONNECT FAILED: $e');
+        logD(stackTrace);
       }
       _client.disconnect();
       _connectingCompleter?.completeError(e);
@@ -87,7 +88,7 @@ class MqttService {
     _flushPendingSubscriptions();
 
     if (kDebugMode) {
-      print('MQTT CONNECTED');
+      logD('MQTT CONNECTED');
     }
   }
   void _onDisconnected() {
@@ -95,7 +96,7 @@ class MqttService {
     _connectionController.add(false);
 
     if (kDebugMode) {
-      print('MQTT DISCONNECTED');
+      logD('MQTT DISCONNECTED');
     }
   }
 
@@ -103,7 +104,7 @@ class MqttService {
     _connected = false;
     _connectionController.add(false);
     if (kDebugMode) {
-      print('MQTT AUTO RECONNECTING...');
+      logD('MQTT AUTO RECONNECTING...');
     }
   }
 
@@ -112,7 +113,7 @@ class MqttService {
     _connectionController.add(true);
     _flushPendingSubscriptions();
     if (kDebugMode) {
-      print('MQTT AUTO RECONNECTED');
+      logD('MQTT AUTO RECONNECTED');
     }
   }
 
@@ -147,7 +148,7 @@ class MqttService {
       _pendingSubscriptions.add(deviceId);
       unawaited(_ensureConnected());
       if (kDebugMode) {
-        print('Subscribe queued until MQTT connected');
+        logD('Subscribe queued until MQTT connected');
       }
       return;
     }
@@ -156,7 +157,7 @@ class MqttService {
     _client.subscribe(topic, qos);
 
     if (kDebugMode) {
-      print('SUBSCRIBED -> $topic');
+      logD('SUBSCRIBED -> $topic');
     }
   }
 
@@ -171,7 +172,7 @@ class MqttService {
     _client.unsubscribe(topic);
 
     if (kDebugMode) {
-      print('UNSUBSCRIBED -> $topic');
+      logD('UNSUBSCRIBED -> $topic');
     }
   }
 
@@ -184,7 +185,7 @@ class MqttService {
         _client.connectionStatus?.state != MqttConnectionState.connected) {
       unawaited(_publishWhenConnected(deviceId, message, qos: qos));
       if (kDebugMode) {
-        print(
+        logD(
             'Publish queued: MQTT state is ${_client.connectionStatus?.state}');
       }
       return;
@@ -197,11 +198,11 @@ class MqttService {
     try {
       _client.publishMessage(topic, qos, builder.payload!);
       if (kDebugMode) {
-        print('PUBLISHED -> $topic | $message');
+        logD('PUBLISHED -> $topic | $message');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Publish failed: $e');
+        logD('Publish failed: $e');
       }
     }
   }
@@ -223,11 +224,11 @@ class MqttService {
     try {
       _client.publishMessage(topic, qos, builder.payload!);
       if (kDebugMode) {
-        print('PUBLISHED (delayed) -> $topic | $message');
+        logD('PUBLISHED (delayed) -> $topic | $message');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Delayed publish failed: $e');
+        logD('Delayed publish failed: $e');
       }
     }
   }

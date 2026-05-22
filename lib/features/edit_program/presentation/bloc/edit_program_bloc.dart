@@ -1,4 +1,4 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+﻿import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/entities/selected_node_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/usecases/delete_zone_usecase.dart';
 
@@ -13,6 +13,7 @@ import '../../domain/usecases/send_zone_view_command_usecase.dart';
 import '../enums/add_remove_enum.dart';
 import '../enums/send_view_message_enum.dart';
 import '../pages/payload_page.dart';
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 part 'edit_program_event.dart';
 part 'edit_program_state.dart';
 
@@ -87,7 +88,7 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
     on<SendViewMessageEvent>((event, emit)async{
       if (state is! EditProgramLoaded) return;
 
-      // 1. First — go to loading
+      // 1. First â€” go to loading
       var current = state as EditProgramLoaded;
       emit(current.copyWith(sendViewMessageStatusEnum: SendViewMessageStatusEnum.loading));
 
@@ -343,7 +344,7 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
     });
 
     on<UpdateTotalTime>((event, emit){
-      print("zone Index => ${event.zoneIndex}");
+      logD("zone Index => ${event.zoneIndex}");
       final current = state as EditProgramLoaded;
 
       emit(EditProgramLoaded(
@@ -491,7 +492,7 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
     });
 
     on<UpdateChannelLiters>((event, emit){
-      print('Channel => ${event.channelIndex}');
+      logD('Channel => ${event.channelIndex}');
       final current = state as EditProgramLoaded;
       emit(EditProgramLoaded(
           userId: current.userId,

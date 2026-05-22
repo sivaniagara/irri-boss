@@ -1,6 +1,7 @@
-
+﻿
 import '../../../../../../core/services/api_client.dart';
 import '../../../../../../core/utils/api_urls.dart';
+import '../../../../../../core/utils/log.dart';
 import '../../../../utils/program_settings_urls.dart';
 
 abstract class ZoneConfigurationRemoteSource{
@@ -27,7 +28,7 @@ class ZoneConfigurationRemoteSourceImpl extends ZoneConfigurationRemoteSource{
       final response = await apiClient.get(endpoint);
       return response;
     }catch (e){
-      print('getZoneConfiguration error in data source impl : ${e.toString()}');
+      logD('getZoneConfiguration error in data source impl : ${e.toString()}');
       rethrow;
     }
   }
@@ -38,12 +39,12 @@ class ZoneConfigurationRemoteSourceImpl extends ZoneConfigurationRemoteSource{
     required Map<String, String> urlData,
   }) async{
     try{
-      print("body => $body == urlData => $urlData");
+      logD("body => $body == urlData => $urlData");
       String endpoint = buildUrl(ProgramSettingsUrls.submitZone, urlData);
       final response = await apiClient.post(endpoint, body: body);
       return response;
     }catch (e){
-      print('getZoneConfiguration error in data source impl : ${e.toString()}');
+      logD('getZoneConfiguration error in data source impl : ${e.toString()}');
       rethrow;
     }
   }
@@ -54,12 +55,12 @@ class ZoneConfigurationRemoteSourceImpl extends ZoneConfigurationRemoteSource{
     required Map<String, String> urlData,
   }) async{
     try{
-      print("body => $body == urlData => $urlData");
+      logD("body => $body == urlData => $urlData");
       String endpoint = buildUrl(ProgramSettingsUrls.submitZone, urlData);
       final response = await apiClient.put(endpoint, body: body);
       return response;
     }catch (e){
-      print('submitWhenEditZoneConfiguration error in data source impl : ${e.toString()}');
+      logD('submitWhenEditZoneConfiguration error in data source impl : ${e.toString()}');
       rethrow;
     }
   }
@@ -71,7 +72,7 @@ class ZoneConfigurationRemoteSourceImpl extends ZoneConfigurationRemoteSource{
       final response = await apiClient.get(endpoint);
       return response;
     }catch (e){
-      print('getZoneConfiguration error in data source impl : ${e.toString()}');
+      logD('getZoneConfiguration error in data source impl : ${e.toString()}');
       rethrow;
     }
   }

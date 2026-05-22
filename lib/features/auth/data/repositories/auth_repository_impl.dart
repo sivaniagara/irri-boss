@@ -1,9 +1,10 @@
-import 'package:dartz/dartz.dart';
+﻿import 'package:dartz/dartz.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../domain/auth_domain.dart';
 import '../../data/auth_data.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remote;
   final AuthLocalDataSource local;
@@ -19,7 +20,7 @@ class AuthRepositoryImpl implements AuthRepository {
     } on AuthException catch (e) {
       return Left(AuthFailure(e.message));
     } catch (e, stackTrace) {
-      print("stackTrace :: $stackTrace");
+      logD("stackTrace :: $stackTrace");
       return Left(ServerFailure('Login failed: $e'));
     }
   }
@@ -40,7 +41,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, RegisterDetailsEntity>> verifyOtp(String verificationId, String otp, String countryCode) async {
     try {
       final authData = await remote.verifyOtp(verificationId, otp, countryCode);
-      // print("authData in verifyOtp :: $authData");
+      // logD("authData in verifyOtp :: $authData");
       await local.cacheAuthData(authData);
       return Right(authData);
     } on AuthException catch (e) {

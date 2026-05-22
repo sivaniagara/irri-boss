@@ -1,10 +1,11 @@
-import 'package:dartz/dartz.dart';
+﻿import 'package:dartz/dartz.dart';
 import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
 import 'package:niagara_smart_drip_irrigation/core/usecases/usecase.dart';
 
 import '../entities/zone_nodes_entity.dart';
 import '../repositories/zone_configuration_repository.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class SubmitWhileEditZoneConfigurationParams{
   final String userId;
   final String controllerId;
@@ -25,7 +26,7 @@ class SubmitWhileEditZoneConfigurationUseCase extends UseCase<Unit, SubmitWhileE
 
   @override
   Future<Either<Failure, Unit>> call(SubmitWhileEditZoneConfigurationParams params) async{
-    print('SubmitWhileEditZoneConfigurationUsecase called.....');
+    logD('SubmitWhileEditZoneConfigurationUsecase called.....');
     return repository.submitWhileEditZoneConfiguration(params);
   }
 }

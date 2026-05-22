@@ -1,3 +1,5 @@
+﻿import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
+
 class ZoneWaterFertilizerEntity{
   final String zoneNumber;
   String time;
@@ -61,7 +63,7 @@ class ZoneWaterFertilizerEntity{
     String? updatedPostTime,
     String? updatedPostLiters,
   }){
-    print('updatedCh1Liters : $updatedCh1Liters');
+    logD('updatedCh1Liters : $updatedCh1Liters');
     return ZoneWaterFertilizerEntity(
         zoneNumber: zoneNumber,
         time: updatedTime ?? time,

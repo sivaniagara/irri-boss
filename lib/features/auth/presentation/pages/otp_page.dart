@@ -207,7 +207,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                               border: Border.all(color: Colors.blueAccent, width: 2),
                             ),
                           ),
-                          onCompleted: (pin) => print("Entered Pin: $pin"),
+                          onCompleted: (pin) => debugPrint("Entered Pin: $pin"),
                         ),
 
                         const SizedBox(height: 32),

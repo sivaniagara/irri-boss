@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/gradiant_background.dart';
@@ -11,6 +11,7 @@ import '../../../water_fertilizer_settings/utils/water_fertilizer_settings_route
 import '../cubit/program_tab_cubit.dart';
 
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class ProgramAppBar extends StatelessWidget {
   final Widget child;
   const ProgramAppBar({super.key, required this.child});
@@ -54,7 +55,7 @@ class ProgramAppBar extends StatelessWidget {
       child: GestureDetector(
         onTap: () {
           context.read<ProgramTabCubit>().changeTab(tab);
-          print("context.read<ProgramTabCubit>() ==> ${context.read<ProgramTabCubit>().state.tab.id()}");
+          logD("context.read<ProgramTabCubit>() ==> ${context.read<ProgramTabCubit>().state.tab.id()}");
           final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
           context.read<WaterFertilizerSettingBloc>().add(FetchProgramZoneSetEvent(
               userId: controllerContext.userId,

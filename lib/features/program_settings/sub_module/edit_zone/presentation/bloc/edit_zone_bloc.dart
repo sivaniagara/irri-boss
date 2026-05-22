@@ -1,4 +1,4 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+﻿import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/node_entity.dart';
 import '../../domain/usecases/edit_zone_configuration_usecase.dart';
 import '../../domain/usecases/get_zone_configuration_usecase.dart';
@@ -7,6 +7,7 @@ import '../../domain/usecases/submit_while_edit_zone_configuration.dart';
 import '../../domain/usecases/submit_zone_configuration_usecase.dart';
 import '../enums/edit_zone_enums.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 part 'edit_zone_event.dart';
 part 'edit_zone_state.dart';
 
@@ -24,7 +25,7 @@ class EditZoneBloc extends Bloc<EditZoneEvent, EditZoneState> {
   }) : super(EditZoneInitial()) {
 
     on<AddZone>((event, emit) async {
-      print('AddZone --> ** initialize **');
+      logD('AddZone --> ** initialize **');
       emit(EditZoneLoading());
       GetZoneConfigurationParams params = GetZoneConfigurationParams(userId: event.userId, controllerId: event.controllerId, programId: event.programId);
       final result = await getZoneNodesUseCase(params);
@@ -45,7 +46,7 @@ class EditZoneBloc extends Bloc<EditZoneEvent, EditZoneState> {
     });
 
     on<EditZone>((event, emit) async {
-      print('EditZone --> ** initialize **');
+      logD('EditZone --> ** initialize **');
       emit(EditZoneLoading());
       EditZoneConfigurationParams params = EditZoneConfigurationParams(
           userId: event.userId,

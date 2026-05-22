@@ -1,8 +1,9 @@
-import '../../domain/entities/controller_entity.dart';
+﻿import '../../domain/entities/controller_entity.dart';
 import '../../domain/entities/livemessage_entity.dart';
 import '../../presentation/helper/get_sms_sync.dart';
 import 'live_message_model.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class ProgramModel extends ProgramEntity {
   const ProgramModel({
     required super.programId,
@@ -12,7 +13,7 @@ class ProgramModel extends ProgramEntity {
   });
 
   factory ProgramModel.fromJson(Map<String, dynamic> json) {
-    print("json ====> $json");
+    logD("json ====> $json");
     return ProgramModel(
       programId: json['programId'] as int? ?? 0,
       programName: json['programName'] as String? ?? '',

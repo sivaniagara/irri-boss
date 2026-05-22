@@ -1,10 +1,11 @@
-import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
+﻿import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
 
 
 import '../../../../../../core/error/exceptions.dart';
 import '../../../../../../core/services/api_client.dart';
 import '../models/motor_cyclic_model.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 abstract class MotorCyclicRemoteDataSource {
   Future<MotoCyclicModel> MotorCyclicData({
     required int userId,
@@ -47,7 +48,7 @@ class MotorCyclicRemoteDataSourceImpl extends MotorCyclicRemoteDataSource {
 
       /// Make API call
       final response = await apiClient.get(endpoint);
-       print("endpoint--->$endpoint");
+       logD("endpoint--->$endpoint");
 
       if (response == null) {
         throw ServerException(statusCode: 500, message: "Empty server response");

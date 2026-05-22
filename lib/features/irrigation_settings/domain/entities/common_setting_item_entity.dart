@@ -1,3 +1,5 @@
+﻿import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
+
 abstract class CommonSettingItemEntity {
   // int get widgetType;
   // String get settingField;
@@ -25,7 +27,7 @@ class SingleSettingItemEntity extends CommonSettingItemEntity{
   });
 
   SingleSettingItemEntity copyWith({String? updateValue, String? updateHf}){
-    print("updateHf : $updateHf");
+    logD("updateHf : $updateHf");
     return SingleSettingItemEntity(
         sNo: sNo,
         widgetType: widgetType,

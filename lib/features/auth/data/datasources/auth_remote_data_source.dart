@@ -1,7 +1,8 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 // For platform-specific handling if needed
 import 'package:get_it/get_it.dart';
 import 'package:crypto/crypto.dart';
@@ -41,12 +42,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final deviceToken = '';
       final ipAddress = '';
       if (kDebugMode) {
-        print('Device token: $deviceToken, IP address: $ipAddress');
+        logD('Device token: $deviceToken, IP address: $ipAddress');
       }
       return {'deviceToken': deviceToken, 'macAddress': ipAddress};
     } catch (e) {
       if (kDebugMode) {
-        print('Error fetching device info: $e');
+        logD('Error fetching device info: $e');
       }
       // Return empty values to avoid blocking; backend can handle gracefully.
       return {'deviceToken': '', 'macAddress': ''};
@@ -80,7 +81,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       if (kDebugMode) {
-        print('Login API response: $response');
+        logD('Login API response: $response');
       }
 
       final data = _handleApiResponse(response, operation: 'Login');
@@ -89,7 +90,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       rethrow; // Preserve existing AuthExceptions
     } catch (e) {
       if (kDebugMode) {
-        print('Login error: $e');
+        logD('Login error: $e');
       }
       throw AuthException(statusCode: 'login-failed', message: 'Login failed: $e');
     }
@@ -104,7 +105,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         // Web-specific flow: Use signInWithPhoneNumber directly.
         final confirmationResult = await _firebaseAuth.signInWithPhoneNumber(phone);
         if (kDebugMode) {
-          print('Web: OTP sent, verificationId=${confirmationResult.verificationId}');
+          logD('Web: OTP sent, verificationId=${confirmationResult.verificationId}');
         }
         return confirmationResult.verificationId;
       } else {
@@ -119,13 +120,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
               // Auto-verification success; no need for manual OTP.
             } on FirebaseAuthException catch (e) {
               if (kDebugMode) {
-                print('Auto-verification failed: ${e.code}');
+                logD('Auto-verification failed: ${e.code}');
               }
             }
           },
           verificationFailed: (FirebaseAuthException e) {
             if (kDebugMode) {
-              print('Verification failed: ${e.code}, ${e.message}');
+              logD('Verification failed: ${e.code}, ${e.message}');
             }
             completer.completeError(
               AuthException(statusCode: e.code, message: e.message ?? 'Failed to send OTP'),
@@ -133,7 +134,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           },
           codeSent: (String verificationId, int? resendToken) {
             if (kDebugMode) {
-              print('OTP sent: verificationId=$verificationId');
+              logD('OTP sent: verificationId=$verificationId');
             }
             if (!completer.isCompleted) {
               completer.complete(verificationId);
@@ -141,7 +142,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
           },
           codeAutoRetrievalTimeout: (String verificationId) {
             if (kDebugMode) {
-              print('Code auto-retrieval timeout: verificationId=$verificationId');
+              logD('Code auto-retrieval timeout: verificationId=$verificationId');
             }
             if (!completer.isCompleted) {
               completer.complete(verificationId);
@@ -152,7 +153,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Send OTP error: $e');
+        logD('Send OTP error: $e');
       }
       throw AuthException(statusCode: 'otp-send-failed', message: 'Failed to send OTP: $e');
     }
@@ -192,7 +193,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       );
 
       if (kDebugMode) {
-        print('OTP Login API response: $response');
+        logD('OTP Login API response: $response');
       }
 
       final data = _handleApiResponse(response, operation: 'OTP Verification');
@@ -210,8 +211,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw AuthException(statusCode: e.code, message: message);
     } catch (e, stackTrace) {
       if (kDebugMode) {
-        print('Verify OTP error: $e');
-        print('Verify OTP stacktrace: $stackTrace');
+        logD('Verify OTP error: $e');
+        logD('Verify OTP stacktrace: $stackTrace');
       }
       throw AuthException(statusCode: 'verification-failed', message: 'OTP verification failed: $e');
     }
@@ -242,21 +243,21 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'mobileNumber': phone,
         'countryCode': countryCode.substring(1),
       };
-print("checkPhoneNumber,$body");
+logD("checkPhoneNumber,$body");
       if (kDebugMode) {
-        print('Check phone body: $body');
+        logD('Check phone body: $body');
       }
 
       final response = await _apiClient.post(AuthUrls.verifyUserUrl, body: body);
-      print(response);
+      logD(response);
       if (kDebugMode) {
-        print('Check phone response: $response');
+        logD('Check phone response: $response');
       }
 
       return response['code'] == 200;
     } catch (e) {
       if (kDebugMode) {
-        print('Check phone number error: $e');
+        logD('Check phone number error: $e');
       }
       throw AuthException(statusCode: 'phone-check-failed', message: 'Failed to check phone number: $e');
     }
@@ -292,15 +293,15 @@ print("checkPhoneNumber,$body");
       final response = await _apiClient.post(AuthUrls.signUp, body: body);
 
       if (kDebugMode) {
-        print('Sign up req body: $body');
-        print('Sign up response: $response');
+        logD('Sign up req body: $body');
+        logD('Sign up response: $response');
       }
 
       final data = _handleApiResponse(response, operation: 'Sign up');
       return RegisterDetailsModel.fromJson(data);
     } catch (e) {
       if (kDebugMode) {
-        print('Sign up error: $e');
+        logD('Sign up error: $e');
       }
       throw AuthException(statusCode: 'signup-failed', message: 'Sign up failed: $e');
     }
@@ -331,14 +332,14 @@ print("checkPhoneNumber,$body");
       final response = await _apiClient.put(AuthUrls.editProfile, body: body); // Or apiClient.put if available
 
       if (kDebugMode) {
-        print('Update profile response: $response');
+        logD('Update profile response: $response');
       }
 
       final data = _handleApiResponse(response, operation: 'Profile update');
       return RegisterDetailsModel.fromJson(data);
     } catch (e) {
       if (kDebugMode) {
-        print('Update profile error: $e');
+        logD('Update profile error: $e');
       }
       throw AuthException(statusCode: 'profile-update-failed', message: 'Profile update failed: $e');
     }
@@ -357,11 +358,11 @@ print("checkPhoneNumber,$body");
       await di.init();
       await _apiClient.put(AuthUrls.logOutUrl, body: {});
       if (kDebugMode) {
-        print('User logged out successfully');
+        logD('User logged out successfully');
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Logout error: $e');
+        logD('Logout error: $e');
       }
       // Don't throw on logout failure; it's non-critical
       rethrow;

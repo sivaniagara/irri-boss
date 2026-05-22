@@ -1,8 +1,9 @@
-import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/domain/entities/common_setting_group_entity.dart';
+﻿import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/domain/entities/common_setting_group_entity.dart';
 
 import '../../domain/entities/common_setting_item_entity.dart';
 import 'common_setting_item_model.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class CommonSettingGroupModel extends CommonSettingGroupEntity{
   CommonSettingGroupModel({
     required super.tid,
@@ -45,7 +46,7 @@ class CommonSettingGroupModel extends CommonSettingGroupEntity{
       'TID': tid,
       'NAME': name,
       'SETS': sets.map((setting){
-        print(setting);
+        logD(setting);
         if(setting is SingleSettingItemModel){
           return setting.toJson();
         }else{

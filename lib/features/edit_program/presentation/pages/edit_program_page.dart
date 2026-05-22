@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
@@ -20,6 +20,7 @@ import '../bloc/edit_program_bloc.dart';
 import '../../../../core/widgets/tiny_text_form_field.dart';
 import '../enums/send_view_message_enum.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class EditProgramPage extends StatefulWidget {
   final String programId;
   const EditProgramPage({super.key, required this.programId});
@@ -80,7 +81,7 @@ class _EditProgramPageState extends State<EditProgramPage> {
       floatingActionButton: BlocListener<EditProgramBloc, EditProgramState>(
         listener: (BuildContext context, state) {
           if(state is EditProgramLoaded){
-            print(state.zoneDeleteStatusEditProgram);
+            logD(state.zoneDeleteStatusEditProgram);
           }
           if(state is EditProgramLoaded && state.saveProgramStatus == SaveProgramStatus.loading){
             showGradientLoadingDialog(context);
@@ -368,7 +369,7 @@ class _EditProgramPageState extends State<EditProgramPage> {
         },
         listener: (BuildContext context, state) {
           if(state is EditProgramLoaded){
-            print("state.sendViewMessageStatusEnum :: ${state.sendViewMessageStatusEnum}");
+            logD("state.sendViewMessageStatusEnum :: ${state.sendViewMessageStatusEnum}");
           }
           if(state is EditProgramLoaded && state.sendViewMessageStatusEnum == SendViewMessageStatusEnum.loading){
             showGradientLoadingDialog(context);
@@ -405,7 +406,7 @@ class _EditProgramPageState extends State<EditProgramPage> {
 
     if (picked != null) {
       final String formattedTime = _formatTime(picked);
-      print(formattedTime);
+      logD(formattedTime);
       if(irrigationDosingOrPrePostMode == 1 && timeOrQuantity == 1 && mode == 1){
         context.read<EditProgramBloc>().add(
             UpdateTotalTime(
@@ -518,7 +519,7 @@ class _EditProgramPageState extends State<EditProgramPage> {
         required int channelIndex,
         required int mode,
       }) {
-    print("value : $value");
+    logD("value : $value");
     return leafBox(
       child: TinyTextFormField(
         value: value,

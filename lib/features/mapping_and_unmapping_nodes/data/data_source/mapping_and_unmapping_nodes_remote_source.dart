@@ -1,9 +1,10 @@
-import '../../../../core/services/api_client.dart';
+﻿import '../../../../core/services/api_client.dart';
 import '../../../../core/services/mqtt/mqtt_manager.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/utils/api_urls.dart';
 import '../../utils/mapping_and_unmapping_nodes_urls.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 abstract class MappingAndUnmappingNodesRemoteSource{
 
   Future<Map<String, dynamic>> fetchMappingUnMappingNodeData({required Map<String, String> urlData});
@@ -33,7 +34,7 @@ class MappingAndUnmappingNodesRemoteSourceImpl extends MappingAndUnmappingNodesR
     try{
       String endPoint = buildUrl(MappingAndUnmappingNodesUrls.getMappingAndUnmappingNode, urlData);
       final response = await apiClient.get(endPoint);
-      print('fetchMappingUnMappingNodeData response  => $response');
+      logD('fetchMappingUnMappingNodeData response  => $response');
       return response;
     }catch (e){
       rethrow;
@@ -61,7 +62,7 @@ class MappingAndUnmappingNodesRemoteSourceImpl extends MappingAndUnmappingNodesR
     try{
       String endPoint = buildUrl(MappingAndUnmappingNodesUrls.unMappedToMapped, urlData);
       final response = await apiClient.post(endPoint, body: bodyData);
-      print('unmappedToMapped response  => $response');
+      logD('unmappedToMapped response  => $response');
       for(var node in bodyData['nodeList']){
         mqttManager.publish(deviceId, PublishMessageHelper.settingsPayload(node['sentSms']));
       }
