@@ -38,7 +38,7 @@ class _CtrlLivePageState extends State<CtrlLivePage>
     super.initState();
     _refreshController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 60),
     );
 
     if (widget.deviceId != null) {
