@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
@@ -8,7 +8,6 @@ import '../../features/auth/data/models/user_model.dart';
 import '../error/exceptions.dart';
 import 'network_info.dart';
 
-import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class ApiClient {
   final String baseUrl;
   final http.Client client;
@@ -28,7 +27,7 @@ class ApiClient {
     Map<String, String>? headers,
     dynamic body,
   }) async {
-    logD('endpoint:$endpoint, body:$body,headers:$headers');
+    print('endpoint:$endpoint, body:${body},headers:$headers');
     return _makeRequest('POST', endpoint, headers: headers, body: body);
   }
 
@@ -65,9 +64,9 @@ class ApiClient {
         ...?headers,
       };
 
-      logD("Request Method: $method | Endpoint: $endpoint");
-      logD("Request Body: $body");
-      // logD("Encoded Body: ${jsonEncode(body)}");
+      print("Request Method: $method | Endpoint: $endpoint");
+      print("Request Body: $body");
+      // print("Encoded Body: ${jsonEncode(body)}");
 
       // Make the initial request
       final requestUri = Uri.parse('$baseUrl$endpoint');
@@ -153,7 +152,7 @@ class ApiClient {
         'Authorization': 'Bearer $newToken',
       };
 
-      logD("Token refreshed. Retrying $method request to $endpoint");
+      print("Token refreshed. Retrying $method request to $endpoint");
 
       // Retry the request
       final requestUri = Uri.parse('$baseUrl$endpoint');
