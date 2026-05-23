@@ -131,16 +131,16 @@ class AppDrawer extends StatelessWidget {
                     Navigator.pop(context);
                   },
                 ),
-                const Divider(indent: 10, endIndent: 10),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.chat,
-                  title: 'Chat',
-                  onTap: () {
-                    context.push(RouteConstants.chat);
-                    Navigator.pop(context);
-                  },
-                ),
+                // const Divider(indent: 10, endIndent: 10),
+                // _buildDrawerItem(
+                //   context,
+                //   icon: Icons.chat,
+                //   title: 'Chat',
+                //   onTap: () {
+                //     context.push(RouteConstants.chat);
+                //     Navigator.pop(context);
+                //   },
+                // ),
                 const Divider(indent: 10, endIndent: 10),
                 _buildDrawerItem(
                   context,

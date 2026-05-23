@@ -43,8 +43,8 @@ final sideDrawerRoutes = <ShellRoute>[
         title = 'Groups';
       } else if (location == SubUserRoutes.subUsers) {
         title = 'Sub Users';
-      } else if (location == RouteConstants.chat) {
-        title = 'Chat';
+      // } else if (location == RouteConstants.chat) {
+      //   title = 'Chat';
       } else if (location == SubUserRoutes.subUserDetails) {
         title = 'Sub User Details';
       }
@@ -151,14 +151,14 @@ final sideDrawerRoutes = <ShellRoute>[
           );
         },
       ),
-      GoRoute(
-        name: 'chat',
-        path: RouteConstants.chat,
-        builder: (context, state) => BlocProvider.value(
-            value: sl.get<AuthBloc>(),
-            child:  const Chat()
-        ),
-      ),
+      // GoRoute(
+      //   name: 'chat',
+      //   path: RouteConstants.chat,
+      //   builder: (context, state) => BlocProvider.value(
+      //       value: sl.get<AuthBloc>(),
+      //       child:  const Chat()
+      //   ),
+      // ),
       GoRoute(
         path: DashBoardRoutes.dashboard,
         builder: (context, state) {
