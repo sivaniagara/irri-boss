@@ -10,10 +10,10 @@ public static String reportUrl = "http://192.168.1.134:8086/report/";
 
 // Prod
 public static String baseUrl = "http://20.193.232.190:8090/api/v1/";
-//public static String baseUrl = "http://3.1.62.165:8080/api/v1/";
+//public static String baseUrl = "http://20.193.232.190:8090/api/v1/";
 
 // prod report
- public static String reportUrl = "http://3.1.62.165:8086/report/";
+ public static String reportUrl = "http://20.193.232.190:8090/report/";
 
 
     @GET("/maps/api/geocode/json?")

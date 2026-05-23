@@ -1,7 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 
-import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class SettingListTile extends StatelessWidget {
   final String title;
   final String? subtitle;

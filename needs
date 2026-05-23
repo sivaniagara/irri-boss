@@ -1,5 +1,5 @@
-     static let baseurl = "http://3.1.62.165:8080"
-    static let reporturl = "http://3.1.62.165:8086"
+     static let baseurl = "http://20.193.232.190:8090"
+    static let reporturl = "http://20.193.232.190:8090"
     static var mqttpublishtopic = String(format:"irribossMobileAppToFirmware/%@",BASEURL.mqttposturlstr)
     static var mqttpsubscribetopic = String(format:"firmwareToIrribossApp/%@",BASEURL.mqttposturlstr)
 

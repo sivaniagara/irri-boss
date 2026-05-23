@@ -199,7 +199,7 @@ class ApiUrls {
   static const String getcommncalviewUrl = 'user/:userId/cluster/:groupId/controller';
   //TODO: Send & Receive Message URLS
   /// Get
-  /// http://3.1.62.165:8080/api/v1/user/153/subuser/0/controller/938/report?fromDate='2025-12-04'&toDate='2025-12-04'&type=sendrevmsg
+  /// http://20.193.232.190:8090/api/v1/user/153/subuser/0/controller/938/report?fromDate='2025-12-04'&toDate='2025-12-04'&type=sendrevmsg
 
 }
 

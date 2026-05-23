@@ -73,33 +73,6 @@ class RootApp extends StatelessWidget {
 
   RootApp({super.key, required this.authBloc});
 
-  // @override
-  // Widget build(BuildContext dialogContext) {
-  //   return MultiProvider(
-  //     providers: [
-  //       ChangeNotifierProvider.value(value: _themeProvider),
-  //       BlocProvider<AuthBloc>.value(value: authBloc),
-  //      /* BlocProvider<MqttBloc>(
-  //         lazy: false,
-  //         create: (context) {
-  //           final bloc = di.sl<MqttBloc>();
-  //           return bloc;
-  //         },
-  //       ),*/
-  //     ],
-  //     child: Consumer<ThemeProvider>(
-  //       builder: (context, themeProvider, _) {
-  //         return MaterialApp.router(
-  //           debugShowCheckedModeBanner: false,
-  //           theme: themeProvider.theme,
-  //           themeMode: ThemeMode.light,
-  //           routerConfig: appRouter.router,
-  //         );
-  //       },
-  //     ),
-  //   );
-  // }
-
   @override
   Widget build(BuildContext dialogContext) {
     return MultiProvider(

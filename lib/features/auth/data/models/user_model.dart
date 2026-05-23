@@ -1,9 +1,8 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../../dashboard/data/models/group_model.dart';
 import '../../domain/entities/user_entity.dart';
 
-import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class RegisterDetailsModel extends RegisterDetailsEntity {
   RegisterDetailsModel({
     required super.userDetails,

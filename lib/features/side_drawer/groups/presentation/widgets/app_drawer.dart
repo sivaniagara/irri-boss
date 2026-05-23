@@ -5,7 +5,6 @@ import 'package:niagara_smart_drip_irrigation/features/auth/utils/auth_routes.da
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/utils/dealer_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/groups/utils/group_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/utils/sub_user_routes.dart';
-import 'package:niagara_smart_drip_irrigation/features/standalone_settings/utils/standalone_routes.dart';
 
 import '../../../../../core/utils/route_constants.dart';
 import '../../../../auth/presentation/bloc/auth_bloc.dart';

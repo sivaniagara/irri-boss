@@ -60,8 +60,9 @@ class _CtrlLivePageState extends State<CtrlLivePage>
   }
 
   double _safeParse(String? value) {
-    if (value == null || value.isEmpty || value.toUpperCase() == "NA")
+    if (value == null || value.isEmpty || value.toUpperCase() == "NA") {
       return 0.0;
+    }
     String cleanValue = value.replaceAll(RegExp(r'[^0-9.]'), '').trim();
     return double.tryParse(cleanValue) ?? 0.0;
   }
