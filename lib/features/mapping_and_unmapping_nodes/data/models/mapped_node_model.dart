@@ -48,6 +48,6 @@ class MappedNodeModel extends MappedNodeEntity {
   }
 
   String deleteMappedNodePayload(){
-    return 'IDSET$serialNo,000,000,000';
+    return 'SLSET$serialNo,000,000,000';
   }
 }
