@@ -176,7 +176,7 @@ class StandaloneBloc extends Bloc<StandaloneEvent, StandaloneState> {
             sentSms = currentStateData.settingValue == "1" ? "STANDALONEMODEON" : "STANDALONEMODEOF";
           }
         } else if (event.sendType == StandaloneSendType.drip) {
-          sentSms = currentStateData.dripSettingValue == "1" ? "DRIPMODEON" : "DRIPMODEOF";
+          sentSms = currentStateData.dripSettingValue == "1" ? "VALVEONLYMODEON" : "VALVEONLYMODEOF";
         } else if (event.sendType == StandaloneSendType.zones) {
           ZoneEntity? activeZone;
           try {
