@@ -203,7 +203,7 @@ class FaultSms {
         return "GREEN FOG CYCLE COMPLETED";
 
       case "062":
-        return "GREEN FOG CYCLE RESET BACAUSE OF CYCLIC TIMER";
+        return "GREEN FOG CYCLE RESET BECAUSE OF CYCLIC TIMER";
 
       case "063":
       case "064":

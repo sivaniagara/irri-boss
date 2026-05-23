@@ -38,7 +38,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
     super.initState();
     _refreshController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 60),
     );
 
     sl.get<MqttManager>().subscribe(widget.deviceId);
