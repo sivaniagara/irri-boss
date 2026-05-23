@@ -74,7 +74,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         // AuthUrls.loginWithPasswordUrl,
         body: {
           'mobileNumber': mobileNumber,
-          'password': password,
+          'password': md5.convert(utf8.encode(password ?? '')).toString(),
           ...deviceInfo,
         },
       );
@@ -324,7 +324,7 @@ print("checkPhoneNumber,$body");
         'postalCode': params.postalCode,
         'altPhone': params.altPhone,
         'email': params.email,
-        'password': params.password ?? '', // Optional password update
+        'password': md5.convert(utf8.encode(params.password ?? '')).toString(),// Optional password update
       };
 
       // Note: Consider using PUT instead of POST for updates if backend supports it.

@@ -27,7 +27,7 @@ class ApiClient {
     Map<String, String>? headers,
     dynamic body,
   }) async {
-    print('endpoint:$endpoint, body:$body,headers:$headers');
+    print('endpoint:$endpoint, body:${body},headers:$headers');
     return _makeRequest('POST', endpoint, headers: headers, body: body);
   }
 
