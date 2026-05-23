@@ -114,7 +114,7 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
   @override
   Future<Either<Failure, Unit>> viewNodeDetailsMqtt(ViewNodeDetailsMqttParams params) async {
     try {
-      String payload = "VIDSET${params.mappedNodeEntity.serialNo}";
+      String payload = "VSLSET${params.mappedNodeEntity.serialNo}";
       final result = await mappingAndUnmappingNodesRemoteSource.sendMessageViaMqtt(
         deviceId: params.deviceId,
         payload: payload,
@@ -143,7 +143,7 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
         ];
         return splitList.join(',');
       }
-      String payload = "IDSET${params.mappedNodeEntity.serialNo},${splitQrCode(params.mappedNodeEntity.qrCode)}";
+      String payload = "SLSET${params.mappedNodeEntity.serialNo},${splitQrCode(params.mappedNodeEntity.qrCode)}";
       final result = await mappingAndUnmappingNodesRemoteSource.sendMessageViaMqtt(
         deviceId: params.deviceId,
         payload: payload,
