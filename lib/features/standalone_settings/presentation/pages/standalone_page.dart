@@ -36,9 +36,10 @@ class _StandalonePageState extends State<StandalonePage> {
               controllerId: controllerId,
               subUserId: subUserId,
               deviceId: deviceId,
-              successMessage: _selectedIndex == 0
-                  ? "Sending View Standalone..."
-                  : "Sending View Configuration...",
+              successMessage: "Sending View MANUAL...",
+              // successMessage: _selectedIndex == 0
+              //     ? "Sending View MANUAL..."
+              //     : "Sending View Configuration...",
             ),
           );
         },
@@ -66,60 +67,61 @@ class _StandalonePageState extends State<StandalonePage> {
                         });
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: _selectedIndex == 0 ? Colors.white : Colors.transparent,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: _selectedIndex == 0 ? [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            )
-                          ] : null,
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          "STANDALONE",
-                          style: TextStyle(
-                            color: _selectedIndex == 0 ? Theme.of(context).colorScheme.primary : Colors.grey,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        // padding: const EdgeInsets.symmetric(vertical: 10),
+                        // decoration: BoxDecoration(
+                        //   color: _selectedIndex == 0 ? Colors.white : Colors.transparent,
+                        //   borderRadius: BorderRadius.circular(10),
+                        //   boxShadow: _selectedIndex == 0 ? [
+                        //     BoxShadow(
+                        //       color: Colors.black.withOpacity(0.05),
+                        //       blurRadius: 4,
+                        //       offset: const Offset(0, 2),
+                        //     )
+                        //   ] : null,
+                        // ),
+                        // alignment: Alignment.center,
+                        // child: Text(
+                        //   "MANUAL",
+                        //   style: TextStyle(
+                        //     color: _selectedIndex == 0 ? Theme.of(context).colorScheme.primary : Colors.grey,
+                        //     fontWeight: FontWeight.bold,
+                        //   ),
+                        // ),
                       ),
                     ),
                   ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedIndex = 1;
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: _selectedIndex == 1 ? Colors.white : Colors.transparent,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: _selectedIndex == 1 ? [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            )
-                          ] : null,
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          "CONFIGURATION",
-                          style: TextStyle(
-                            color: _selectedIndex == 1 ? Theme.of(context).colorScheme.primary : Colors.grey,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  // CONFIGURATION tab commented out
+                  // Expanded(
+                  //   child: GestureDetector(
+                  //     onTap: () {
+                  //       setState(() {
+                  //         _selectedIndex = 1;
+                  //       });
+                  //     },
+                  //     child: Container(
+                  //       padding: const EdgeInsets.symmetric(vertical: 10),
+                  //       decoration: BoxDecoration(
+                  //         color: _selectedIndex == 1 ? Colors.white : Colors.transparent,
+                  //         borderRadius: BorderRadius.circular(10),
+                  //         boxShadow: _selectedIndex == 1 ? [
+                  //           BoxShadow(
+                  //             color: Colors.black.withOpacity(0.05),
+                  //             blurRadius: 4,
+                  //             offset: const Offset(0, 2),
+                  //           )
+                  //         ] : null,
+                  //       ),
+                  //       alignment: Alignment.center,
+                  //       child: Text(
+                  //         "CONFIGURATION",
+                  //         style: TextStyle(
+                  //           color: _selectedIndex == 1 ? Theme.of(context).colorScheme.primary : Colors.grey,
+                  //           fontWeight: FontWeight.bold,
+                  //         ),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),
@@ -143,9 +145,10 @@ class _StandalonePageState extends State<StandalonePage> {
                       ? (state).data
                       : (state as StandaloneSuccess).data;
 
-                  return _selectedIndex == 0
-                      ? _buildStandaloneContent(context, standaloneData, userId, controllerId, deviceId, subUserId)
-                      : _buildConfigurationContent(context, standaloneData, userId, controllerId, deviceId, subUserId);
+                  return _buildStandaloneContent(context, standaloneData, userId, controllerId, deviceId, subUserId);
+                  // return _selectedIndex == 0
+                  //     ? _buildStandaloneContent(context, standaloneData, userId, controllerId, deviceId, subUserId)
+                  //     : _buildConfigurationContent(context, standaloneData, userId, controllerId, deviceId, subUserId);
                 } else if (state is StandaloneError) {
                   return Center(child: Text(state.message));
                 }
@@ -170,16 +173,11 @@ class _StandalonePageState extends State<StandalonePage> {
             children: [
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 5),
                 alignment: Alignment.center,
-                child: Text(
-                  standaloneData.programName,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                ),
               ),
-              const Divider(height: 1),
               StandaloneHeader(
-                title: "STANDALONE MODE",
+                title: "MANUAL MODE",
                 isOn: standaloneData.settingValue == "1",
                 onChanged: (v) {
                   context.read<StandaloneBloc>().add(ToggleStandalone(
@@ -199,7 +197,7 @@ class _StandalonePageState extends State<StandalonePage> {
                       controllerId: controllerId,
                       subUserId: subUserId,
                       deviceId: deviceId,
-                      successMessage: "Sending View Standalone...",
+                      successMessage: "Sending View MANUAL...",
                     ),
                   );
                 },
@@ -330,142 +328,143 @@ class _StandalonePageState extends State<StandalonePage> {
     );
   }
 
-  Widget _buildConfigurationContent(BuildContext context, dynamic standaloneData, String userId, String controllerId, String deviceId, String subUserId) {
-    return ListView(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      children: [
-        _buildCard(
-          context,
-          child: Column(
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                alignment: Alignment.center,
-                child: Text(
-                  "Config Mode",
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                ),
-              ),
-              const Divider(height: 1),
-              StandaloneHeader(
-                title: "CONFIG MODE",
-                isOn: standaloneData.settingValue == "1",
-                onChanged: (v) {
-                  context.read<StandaloneBloc>().add(ToggleStandalone(
-                    userId: userId,
-                    controllerId: controllerId,
-                    deviceId: deviceId,
-                    subUserId: subUserId,
-                    menuId: "94",
-                    settingsId: "500",
-                    value: v,
-                  ));
-                },
-                onView: () {
-                  context.read<StandaloneBloc>().add(
-                    ViewStandaloneEvent(
-                      userId: userId,
-                      controllerId: controllerId,
-                      subUserId: subUserId,
-                      deviceId: deviceId,
-                      successMessage: "Sending View Configuration...",
-                    ),
-                  );
-                },
-                onSend: () {
-                  context.read<StandaloneBloc>().add(
-                    SendStandaloneConfigEvent(
-                      userId: userId,
-                      controllerId: controllerId,
-                      deviceId: deviceId,
-                      subUserId: subUserId,
-                      menuId: "94",
-                      settingsId: "500",
-                      successMessage: "Configuration mode updated",
-                      sendType: StandaloneSendType.mode,
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        _buildCard(
-          context,
-          padding: EdgeInsets.zero,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "CONFIGURED BLOCKS",
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: Colors.grey.shade600,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        "${standaloneData.zones.length} Blocks",
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-              ...standaloneData.zones.asMap().entries.map((entry) {
-                return ZoneItem(index: entry.key, zone: entry.value);
-              }),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.centerRight,
-          child: ElevatedButton.icon(
-            onPressed: () {
-              context.read<StandaloneBloc>().add(
-                SendStandaloneConfigEvent(
-                  userId: userId,
-                  controllerId: controllerId,
-                  deviceId: deviceId,
-                  subUserId: subUserId,
-                  menuId: "94",
-                  settingsId: "500",
-                  successMessage: "Block configuration saved",
-                  sendType: StandaloneSendType.zones,
-                ),
-              );
-            },
-            icon: const Icon(Icons.send_rounded, size: 18, color: Colors.white),
-            label: const Text("SEND BLOCKS", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
-      ],
-    );
-  }
+  // CONFIGURATION content commented out
+  // Widget _buildConfigurationContent(BuildContext context, dynamic standaloneData, String userId, String controllerId, String deviceId, String subUserId) {
+  //   return ListView(
+  //     padding: const EdgeInsets.symmetric(horizontal: 16),
+  //     children: [
+  //       _buildCard(
+  //         context,
+  //         child: Column(
+  //           children: [
+  //             Container(
+  //               width: double.infinity,
+  //               padding: const EdgeInsets.symmetric(vertical: 12),
+  //               alignment: Alignment.center,
+  //               child: Text(
+  //                 "Config Mode",
+  //                 style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+  //               ),
+  //             ),
+  //             const Divider(height: 1),
+  //             StandaloneHeader(
+  //               title: "CONFIG MODE",
+  //               isOn: standaloneData.settingValue == "1",
+  //               onChanged: (v) {
+  //                 context.read<StandaloneBloc>().add(ToggleStandalone(
+  //                   userId: userId,
+  //                   controllerId: controllerId,
+  //                   deviceId: deviceId,
+  //                   subUserId: subUserId,
+  //                   menuId: "94",
+  //                   settingsId: "500",
+  //                   value: v,
+  //                 ));
+  //               },
+  //               onView: () {
+  //                 context.read<StandaloneBloc>().add(
+  //                   ViewStandaloneEvent(
+  //                     userId: userId,
+  //                     controllerId: controllerId,
+  //                     subUserId: subUserId,
+  //                     deviceId: deviceId,
+  //                     successMessage: "Sending View Configuration...",
+  //                   ),
+  //                 );
+  //               },
+  //               onSend: () {
+  //                 context.read<StandaloneBloc>().add(
+  //                   SendStandaloneConfigEvent(
+  //                     userId: userId,
+  //                     controllerId: controllerId,
+  //                     deviceId: deviceId,
+  //                     subUserId: subUserId,
+  //                     menuId: "94",
+  //                     settingsId: "500",
+  //                     successMessage: "Configuration mode updated",
+  //                     sendType: StandaloneSendType.mode,
+  //                   ),
+  //                 );
+  //               },
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //       const SizedBox(height: 16),
+  //       _buildCard(
+  //         context,
+  //         padding: EdgeInsets.zero,
+  //         child: Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Padding(
+  //               padding: const EdgeInsets.all(16.0),
+  //               child: Row(
+  //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                 children: [
+  //                   Text(
+  //                     "CONFIGURED BLOCKS",
+  //                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
+  //                       color: Colors.grey.shade600,
+  //                       fontWeight: FontWeight.bold,
+  //                       letterSpacing: 1.2,
+  //                     ),
+  //                   ),
+  //                   Container(
+  //                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+  //                     decoration: BoxDecoration(
+  //                       color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+  //                       borderRadius: BorderRadius.circular(12),
+  //                     ),
+  //                     child: Text(
+  //                       "${standaloneData.zones.length} Blocks",
+  //                       style: TextStyle(
+  //                         color: Theme.of(context).colorScheme.primary,
+  //                         fontWeight: FontWeight.bold,
+  //                         fontSize: 12,
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //             const Divider(height: 1),
+  //             ...standaloneData.zones.asMap().entries.map((entry) {
+  //               return ZoneItem(index: entry.key, zone: entry.value);
+  //             }),
+  //           ],
+  //         ),
+  //       ),
+  //       const SizedBox(height: 12),
+  //       Align(
+  //         alignment: Alignment.centerRight,
+  //         child: ElevatedButton.icon(
+  //           onPressed: () {
+  //             context.read<StandaloneBloc>().add(
+  //               SendStandaloneConfigEvent(
+  //                 userId: userId,
+  //                 controllerId: controllerId,
+  //                 deviceId: deviceId,
+  //                 subUserId: subUserId,
+  //                 menuId: "94",
+  //                 settingsId: "500",
+  //                 successMessage: "Block configuration saved",
+  //                 sendType: StandaloneSendType.zones,
+  //               ),
+  //             );
+  //           },
+  //           icon: const Icon(Icons.send_rounded, size: 18, color: Colors.white),
+  //           label: const Text("SEND BLOCKS", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+  //           style: ElevatedButton.styleFrom(
+  //             backgroundColor: Theme.of(context).colorScheme.primary,
+  //             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+  //           ),
+  //         ),
+  //       ),
+  //       const SizedBox(height: 24),
+  //     ],
+  //   );
+  // }
 
   Widget _buildCard(BuildContext context, {required Widget child, EdgeInsetsGeometry? padding}) {
     return Container(
