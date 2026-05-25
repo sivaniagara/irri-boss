@@ -116,7 +116,7 @@ class SettingsPage extends StatelessWidget {
 
                 _buildSettingsItem(
                     context: context,
-                    title: 'Serial Set',
+                    title: 'Individual Series Set',
                     iconPath: AppImages.setserialIcon,
                     onTap: () {
                       context.push(

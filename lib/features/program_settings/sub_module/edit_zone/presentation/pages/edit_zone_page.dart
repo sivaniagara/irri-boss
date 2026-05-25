@@ -70,7 +70,7 @@ class EditZonePage extends StatelessWidget {
             }
             if(state is EditZoneLoaded){
               return Scaffold(
-                appBar: CustomAppBar(title: 'EDIT / REST ZONE'),
+                appBar: CustomAppBar(title: 'EDIT / REST BLOCK'),
                 body: GradiantBackground(
                   child: Column(
                     children: [
@@ -157,7 +157,7 @@ class EditZonePage extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Text('Zone Name', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.black),),
+        Text('BLOCK Name', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.black),),
         Text((state as EditZoneLoaded).zoneNodes.zoneNumber, style:  TextStyle(fontSize: 28, fontWeight: FontWeight.w500, color: Colors.black),),
       ],
     );

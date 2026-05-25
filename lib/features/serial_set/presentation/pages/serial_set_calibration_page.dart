@@ -48,7 +48,7 @@ class SerialSetCalibrationSheet extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20.0),
                 child: Text(
-                  'Serial set Calibration',
+                  'Individual Series Set Calibration',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: Theme.of(context).primaryColor,
                     fontWeight: FontWeight.bold,

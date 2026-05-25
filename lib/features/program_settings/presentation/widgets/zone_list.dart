@@ -61,7 +61,7 @@ class ZoneList extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   child: Text(
-                    'Zones',
+                    'BLOCK',
                     style: TextStyle(
                         color: Theme.of(context).primaryColor,
                         fontSize: 22,

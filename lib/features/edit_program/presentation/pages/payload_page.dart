@@ -67,7 +67,7 @@ class _PayloadPageState extends State<PayloadPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Zone Configuration', style: Theme.of(context).textTheme.labelLarge,),
+                            Text('BLOCK Configuration', style: Theme.of(context).textTheme.labelLarge,),
                             ...List.generate(zoneSelection.length, (index){
                               final zone = state.editProgramEntity.zones[index];
                               if(!zone.active) {
@@ -87,7 +87,7 @@ class _PayloadPageState extends State<PayloadPage> {
                                 secondary: getStatusWidget(zoneSelection[index]['mode']),
                               );
                             }),
-                            Text('Zone View Command', style: Theme.of(context).textTheme.labelLarge,),
+                            Text('BLOCK View Command', style: Theme.of(context).textTheme.labelLarge,),
                             ...List.generate(zoneSelection.length, (index){
                               final zone = state.editProgramEntity.zones[index];
                               if(!zone.active) {
@@ -107,7 +107,7 @@ class _PayloadPageState extends State<PayloadPage> {
                                 secondary: getStatusWidget(zoneViewCommandSelection[index]['mode']),
                               );
                             }),
-                            Text('Zone Set Setting', style: Theme.of(context).textTheme.labelLarge,),
+                            Text('BLOCK Set Setting', style: Theme.of(context).textTheme.labelLarge,),
                             ...List.generate(zoneSetSelection.length, (index){
                               return CheckboxListTile(
                                 enabled: enableEdit,
@@ -158,7 +158,7 @@ class _PayloadPageState extends State<PayloadPage> {
                                     setState(() {
                                       zoneSelection[zonePayload]['mode'] = PayloadModeEnum.failure;
                                     });
-                                    logD("Zone $zonePayload failed: $e");
+                                    logD("BLOCK $zonePayload failed: $e");
                                   }
                                 }
 
@@ -181,7 +181,7 @@ class _PayloadPageState extends State<PayloadPage> {
                                     setState(() {
                                       zoneViewCommandSelection[zonePayload]['mode'] = PayloadModeEnum.failure;
                                     });
-                                    logD("zoneViewCommandSelection $zonePayload failed: $e");
+                                    logD("BLOCKViewCommandSelection $zonePayload failed: $e");
                                   }
                                 }
 
@@ -206,7 +206,7 @@ class _PayloadPageState extends State<PayloadPage> {
                                   setState(() {
                                     zoneSetSelection[zoneSetPayload]['mode'] = PayloadModeEnum.failure;
                                   });
-                                  logD("Zone $zoneSetPayload failed: $e");
+                                  logD("BLOCK $zoneSetPayload failed: $e");
                                 }
                               }
                             },

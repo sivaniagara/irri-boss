@@ -39,7 +39,7 @@ class SerialSetMenuPage extends StatelessWidget {
         },
         child: Scaffold(
           backgroundColor: AppThemes.scaffoldBackGround,
-          appBar: const CustomAppBar(title: 'Serial set'),
+          appBar: const CustomAppBar(title: 'Series set'),
           body: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: BlocBuilder<SerialSetBloc, SerialSetState>(
@@ -60,7 +60,7 @@ class SerialSetMenuPage extends StatelessWidget {
                     const SizedBox(height: 16),
                     CustomListTile(
                       onTap: () => _showSerialSetSheet(context),
-                      title: 'Serial Set',
+                      title: 'Individual series Set',
                       iconData: Icons.chevron_right,
                     ),
                     CustomListTile(
@@ -70,7 +70,7 @@ class SerialSetMenuPage extends StatelessWidget {
                           successMessage: "message delivered",
                         ));
                       },
-                      title: 'Set Serial',
+                      title: 'Set Series',
                       iconData: Icons.visibility,
                     ),
                     CustomListTile(
@@ -80,12 +80,12 @@ class SerialSetMenuPage extends StatelessWidget {
                           successMessage: "message delivered",
                         ));
                       },
-                      title: 'Clear Serial',
+                      title: 'Clear Series',
                       iconData: Icons.visibility,
                     ),
                     CustomListTile(
                       onTap: () => _showCommonSheet(context),
-                      title: 'Common Calibration',
+                      title: 'General Calibration',
                       iconData: Icons.chevron_right,
                     ),
                     _LoraKeyTile(initialValue: loraValue),
@@ -178,7 +178,7 @@ class _LoraKeyTileState extends State<_LoraKeyTile> {
         children: [
           Expanded(
             child: Text(
-              'LORA Key value',
+              'LORA Pass key',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: Colors.black,
