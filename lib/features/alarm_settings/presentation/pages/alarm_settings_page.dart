@@ -75,14 +75,10 @@ class AlarmSettingsPage extends StatelessWidget {
                             label: "Alarm Type",
                             value: data.alarmType,
                             items: const {
-                              "0": "Timer",
                               "1": "HIGH FLOW",
                               "2": "LOW FLOW",
                               "3": "NO FLOW",
-                              "4": "EC HIGH",
-                              "5": "EC LOW",
-                              "6": "PH HIGH",
-                              "7": "PH LOW",
+
                             },
                             onChanged: (val) => context
                                 .read<AlarmBloc>()
@@ -127,23 +123,23 @@ class AlarmSettingsPage extends StatelessWidget {
                             },
                           ),
                           _divider(),
-                          _buildSwitchRow(
-                            context,
-                            label: "Irrigation Stop",
-                            value: data.irrigationStop == "1",
-                            onChanged: (val) => context.read<AlarmBloc>().add(
-                                UpdateAlarmFieldEvent(
-                                    irrigationStop: val == true ? "1" : "0")),
-                          ),
-                          _divider(),
-                          _buildSwitchRow(
-                            context,
-                            label: "Dosing Stop",
-                            value: data.dosingStop == "1",
-                            onChanged: (val) => context.read<AlarmBloc>().add(
-                                UpdateAlarmFieldEvent(
-                                    dosingStop: val == true ? "1" : "0")),
-                          ),
+                          // _buildSwitchRow(
+                          //   context,
+                          //   label: "Irrigation Stop",
+                          //   value: data.irrigationStop == "1",
+                          //   onChanged: (val) => context.read<AlarmBloc>().add(
+                          //       UpdateAlarmFieldEvent(
+                          //           irrigationStop: val == true ? "1" : "0")),
+                          // ),
+                          // _divider(),
+                          // _buildSwitchRow(
+                          //   context,
+                          //   label: "Dosing Stop",
+                          //   value: data.dosingStop == "1",
+                          //   onChanged: (val) => context.read<AlarmBloc>().add(
+                          //       UpdateAlarmFieldEvent(
+                          //           dosingStop: val == true ? "1" : "0")),
+                          // ),
                           _divider(),
                           _buildInputRow(
                             context,
@@ -154,37 +150,37 @@ class AlarmSettingsPage extends StatelessWidget {
                                 .add(UpdateAlarmFieldEvent(threshold: val)),
                           ),
                           _divider(),
-                          _buildSwitchRow(
-                            context,
-                            label: "Rest After Complete",
-                            value: data.reset == "1",
-                            onChanged: (val) => context.read<AlarmBloc>().add(
-                                UpdateAlarmFieldEvent(
-                                    reset: val == true ? "1" : "0")),
-                          ),
-                          _divider(),
-                          _buildTimePickerRow(
-                            context,
-                            label: "Duration For Auto Rest",
-                            value: data.hour.padLeft(2, '0'),
-                            onTap: () async {
-                              final initialTime =
-                                  "${data.hour.padLeft(2, '0')}:00:00";
-                              final result = await TimePickerService.show(
-                                context: context,
-                                initialTime: initialTime,
-                              );
-                              if (result != null) {
-                                final parts = result.split(':');
-                                if (parts.length >= 3 && context.mounted) {
-                                  context.read<AlarmBloc>().add(
-                                          UpdateAlarmFieldEvent(
-                                        hour: parts[0],
-                                      ));
-                                }
-                              }
-                            },
-                          ),
+                          // _buildSwitchRow(
+                          //   context,
+                          //   label: "Rest After Complete",
+                          //   value: data.reset == "1",
+                          //   onChanged: (val) => context.read<AlarmBloc>().add(
+                          //       UpdateAlarmFieldEvent(
+                          //           reset: val == true ? "1" : "0")),
+                          // ),
+                          // _divider(),
+                          // _buildTimePickerRow(
+                          //   context,
+                          //   label: "Duration For Auto Rest",
+                          //   value: data.hour.padLeft(2, '0'),
+                          //   onTap: () async {
+                          //     final initialTime =
+                          //         "${data.hour.padLeft(2, '0')}:00:00";
+                          //     final result = await TimePickerService.show(
+                          //       context: context,
+                          //       initialTime: initialTime,
+                          //     );
+                          //     if (result != null) {
+                          //       final parts = result.split(':');
+                          //       if (parts.length >= 3 && context.mounted) {
+                          //         context.read<AlarmBloc>().add(
+                          //                 UpdateAlarmFieldEvent(
+                          //               hour: parts[0],
+                          //             ));
+                          //       }
+                          //     }
+                          //   },
+                          // ),
                         ],
                       ),
                     ),

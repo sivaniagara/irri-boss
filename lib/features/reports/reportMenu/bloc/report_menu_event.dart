@@ -30,3 +30,13 @@ class ReportMenuClicked extends ReportMenuEvent {
   @override
   List<Object?> get props => [reportType];
 }
+
+class FetchReportMenuData extends ReportMenuEvent {
+  final String userId;
+  final String controllerId;
+
+  const FetchReportMenuData({required this.userId, required this.controllerId});
+
+  @override
+  List<Object?> get props => [userId, controllerId];
+}

@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../core/di/injection.dart';
 import '../bloc/report_menu_bloc.dart';
 import '../presentation/reportmenu_page.dart';
 
@@ -16,14 +17,9 @@ final reportPageRoutes = <GoRoute>[
       final params = state.extra as Map<String, dynamic>? ?? {};
 
       return BlocProvider(
-        create: (_) => ReportMenuBloc(),
+        create: (_) => sl<ReportMenuBloc>(),
         child: ReportMenuPage(params: params),
       );
     },
   ),
 ];
-
-
-
-
-
