@@ -65,7 +65,7 @@ class IrrigationSettingsPage extends StatelessWidget {
                 sectionTitle: 'Water Source & Pump Control',
                 items: [
                   settings[6],
-                  settings[9],
+                  // settings[9],
                   settings[7],
                 ],
               ),
