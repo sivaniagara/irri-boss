@@ -167,7 +167,9 @@ class _MenuListView extends StatelessWidget {
   Widget _buildGroupedMenu(BuildContext context, List<MenuItemEntity> items) {
     final grouped = <String, List<MenuItemEntity>>{};
 
-    for (final item in items) {
+    // Backend can hide a menu item by setting `hiddenFlag = 0` in the
+    // settings-menu list response. Default is visible (`hiddenFlag = 1`).
+    for (final item in items.where((e) => e.menu.hiddenFlag != 0)) {
       final group = item.menu.groupName;
       grouped.putIfAbsent(group, () => []).add(item);
     }

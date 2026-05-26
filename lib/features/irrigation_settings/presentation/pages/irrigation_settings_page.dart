@@ -17,16 +17,16 @@ class IrrigationSettingsPage extends StatelessWidget {
   final settings = [
     SettingItemEntity(name: 'Irrigation & Fertigation', image: 'assets/images/common/irrigation_fertigation.png', irrigationSettingsEnum: IrrigationSettingsEnum.irrigationFertigation),
     SettingItemEntity(name: 'Drip Common Settings', image: 'assets/images/common/drip_common_setting.png', irrigationSettingsEnum: IrrigationSettingsEnum.dripCommonSettings),
-    SettingItemEntity(name: 'Program Common Settings', image: 'assets/images/common/program_common_setting.png', irrigationSettingsEnum: IrrigationSettingsEnum.programCommonSettings),
+    SettingItemEntity(name: 'Process Common Settings', image: 'assets/images/common/program_common_setting.png', irrigationSettingsEnum: IrrigationSettingsEnum.programCommonSettings),
     SettingItemEntity(name: 'Adjust %', image: 'assets/images/common/adjust_percentage.png', irrigationSettingsEnum: IrrigationSettingsEnum.adjustPercentage),
     SettingItemEntity(name: 'Change From', image: 'assets/images/common/change_from.png', irrigationSettingsEnum: IrrigationSettingsEnum.changeFrom),
     SettingItemEntity(name: 'Backwash', image: 'assets/images/common/backwash.png', irrigationSettingsEnum: IrrigationSettingsEnum.backwash),
-    SettingItemEntity(name: 'Pump Change Over', image: 'assets/images/common/pump_change_over.png', irrigationSettingsEnum: IrrigationSettingsEnum.pumpChangeOver),
+    SettingItemEntity(name: 'Pump Switch Over', image: 'assets/images/common/pump_change_over.png', irrigationSettingsEnum: IrrigationSettingsEnum.pumpChangeOver),
     SettingItemEntity(name: 'Sump', image: 'assets/images/common/sump_setting.png', irrigationSettingsEnum: IrrigationSettingsEnum.sump),
     SettingItemEntity(name: 'Moisture & Level', image: 'assets/images/common/moisture_level.png', irrigationSettingsEnum: IrrigationSettingsEnum.moistureAndLevel),
     SettingItemEntity(name: 'Pump Configuration', image: 'assets/images/common/pump_configuration.png', irrigationSettingsEnum: IrrigationSettingsEnum.pumpConfiguration),
     SettingItemEntity(name: 'Valve Flow', image: 'assets/images/common/valve_flow.png', irrigationSettingsEnum: IrrigationSettingsEnum.valveFlow),
-    SettingItemEntity(name: 'Day Count RTC', image: 'assets/images/common/day_count_rtc.png', irrigationSettingsEnum: IrrigationSettingsEnum.dayCountRtc),
+    SettingItemEntity(name: 'RTC Day Count ', image: 'assets/images/common/day_count_rtc.png', irrigationSettingsEnum: IrrigationSettingsEnum.dayCountRtc),
     SettingItemEntity(name: 'Alarm', image: 'assets/images/common/alarm.png', irrigationSettingsEnum: IrrigationSettingsEnum.alarm),
     SettingItemEntity(name: 'Ec & Ph', image: 'assets/images/common/ec_ph.png', irrigationSettingsEnum: IrrigationSettingsEnum.ecAndPh),
     SettingItemEntity(name: 'Green House', image: 'assets/images/common/green_house.png', irrigationSettingsEnum: IrrigationSettingsEnum.greenHouse),
@@ -69,13 +69,13 @@ class IrrigationSettingsPage extends StatelessWidget {
                   settings[7],
                 ],
               ),
-              settingsSection(
-                context: context, sectionTitle: 'Sensors & Field Conditions',
-                items: [
-                  settings[8],
-                  settings[13],
-                ],
-              ),
+              // settingsSection(
+              //   context: context, sectionTitle: 'Sensors & Field Conditions',
+              //   items: [
+              //     settings[8],
+              //     settings[13],
+              //   ],
+              // ),
               settingsSection(
                 context: context,
                 sectionTitle: 'Time, Safety & Alerts',
@@ -84,13 +84,13 @@ class IrrigationSettingsPage extends StatelessWidget {
                   settings[12],
                 ],
               ),
-              settingsSection(
-                context: context,
-                sectionTitle: 'Protected Cultivation',
-                items: [
-                  settings[14],
-                ],
-              ),
+              // settingsSection(
+              //   context: context,
+              //   sectionTitle: 'Protected Cultivation',
+              //   items: [
+              //     settings[14],
+              //   ],
+              // ),
               SizedBox(height: 60,)
             ],
           ),

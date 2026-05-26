@@ -407,7 +407,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
         const SizedBox(height: 10),
         Row(
           children: [
-            Expanded(child: _buildRowBox("Zone Cyc Rst", (_program?.zoneCycRst == "1") ? "ON" : "OFF", isBadge: true, badgeOn: _program?.zoneCycRst == "1")),
+            Expanded(child: _buildRowBox("Block Cyc Rst", (_program?.zoneCycRst == "1") ? "ON" : "OFF", isBadge: true, badgeOn: _program?.zoneCycRst == "1")),
             const SizedBox(width: 6),
             Expanded(child: _buildStartFromBox()),
           ],
@@ -629,7 +629,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
           const Expanded(child: Text("Start from", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Colors.black54))),
           _miniValueCol("PRGM", prgm, primaryColor),
           const SizedBox(width: 8),
-          _miniValueCol("ZONE", zone, primaryColor),
+          _miniValueCol("BLOCK", zone, primaryColor),
         ],
       ),
     );
