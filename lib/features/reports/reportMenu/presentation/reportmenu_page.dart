@@ -230,11 +230,11 @@ class _ReportMenuPageState extends State<ReportMenuPage> {
               ),
           ]),
         ],
-        _sectionTitle('System & Greenhouse Reports'),
+        _sectionTitle('System Reports'),
         _card([
           _menuItem(
             icon: 'assets/images/report_menu/stand_alone.png',
-            title: 'Standalone',
+            title: 'Manual ',
             onTap: () => context.push(
               StandaloneReportPageRoutes.Standalonepage,
               extra: widget.params,

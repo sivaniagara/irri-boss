@@ -237,14 +237,14 @@ class ZoneCyclicPage extends StatelessWidget {
       child: DropdownButtonFormField<int>(
         initialValue: context.watch<ZoneCyclicCubit>().state.selectedProgramIndex,
         decoration: const InputDecoration(
-          labelText: "Select Program",
+          labelText: "Select Process",
           border: OutlineInputBorder(),
         ),
         items: List.generate(
           6,
               (index) => DropdownMenuItem(
             value: index,
-            child: Text("Program ${index + 1}"),
+            child: Text("Process ${index + 1}"),
           ),
         ),
         onChanged: (index) {

@@ -64,7 +64,7 @@ class TdyZoneStatusGraph extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.only(left: 8),
             child: Text(
-              "Zones",
+              "Block",
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,

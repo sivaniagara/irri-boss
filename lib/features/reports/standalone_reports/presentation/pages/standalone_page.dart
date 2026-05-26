@@ -34,7 +34,7 @@ class StandaloneReportPage extends StatelessWidget {
     return GlassyWrapper(
       child: Scaffold(
         appBar: AppBar(
-          title: Text("STANDALONE REPORTS"),
+          title: Text("MANUAL REPORTS"),
            actions: [
 
             IconButton(
@@ -74,7 +74,7 @@ class StandaloneReportPage extends StatelessWidget {
                 context.push(
                   ReportDownloadPageRoutes.ReportDownloadPage,
                   extra: {
-                    "title": "StandAlone Reports",
+                    "title": "Manual Reports",
                     "data": excelData,
                   },
                 );

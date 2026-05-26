@@ -105,7 +105,7 @@ class _ZoneCyclicPageReportState extends State<ZoneCyclicPageReport> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Program ${program.program} Cycle is completed",
+                                    "Process ${program.program} Cycle is completed",
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
@@ -114,7 +114,7 @@ class _ZoneCyclicPageReportState extends State<ZoneCyclicPageReport> {
                                   ),
                                   const SizedBox(height: 4),
                                   const Text(
-                                    "Motor stopped after zone cycle",
+                                    "Motor stopped after Block cycle",
                                     style: TextStyle(
                                       color: Colors.black54,
                                       fontSize: 15,
