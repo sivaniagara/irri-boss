@@ -173,10 +173,10 @@ class StandaloneBloc extends Bloc<StandaloneEvent, StandaloneState> {
           if (event.menuId == "94") {
             sentSms = currentStateData.settingValue == "1" ? "CONFIGMODEON" : "CONFIGMODEOF";
           } else {
-            sentSms = currentStateData.settingValue == "1" ? "STANDALONEMODEON" : "STANDALONEMODEOF";
+            sentSms = currentStateData.settingValue == "1" ? "MANUALMODEON" : "MANUALMODEOF";
           }
         } else if (event.sendType == StandaloneSendType.drip) {
-          sentSms = currentStateData.dripSettingValue == "1" ? "VALVEONLYMODEON" : "VALVEONLYMODEOF";
+          sentSms = currentStateData.dripSettingValue == "1" ? "DRIPSTANDALONEON" : "DRIPSTANDALONEOF";
         } else if (event.sendType == StandaloneSendType.zones) {
           ZoneEntity? activeZone;
           try {
@@ -189,7 +189,7 @@ class StandaloneBloc extends Bloc<StandaloneEvent, StandaloneState> {
             final mm = timeParts.length > 1 ? timeParts[1].padLeft(2, '0') : '00';
             sentSms = "STZ,${activeZone.zoneNumber.padLeft(3, '0')},ON,$hh,$mm,";
           } else {
-            sentSms = "ZONESETUP";
+            sentSms = "BLOCKSETUP";
           }
         }
 
@@ -229,7 +229,7 @@ class StandaloneBloc extends Bloc<StandaloneEvent, StandaloneState> {
           : (state as StandaloneSuccess).data;
 
       try {
-        final statusMsg = "VSTANDALONEMODE";
+        final statusMsg = "VVALVEONLYMODE";
         final cmd = json.encode({"sentSms": statusMsg});
 
         await publishMqttCommand(
