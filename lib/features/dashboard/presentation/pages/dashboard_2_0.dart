@@ -641,11 +641,15 @@ class _Dashboard20State extends State<Dashboard20> {
                         spacing: 10,
                         children: [
                           StaticProgressCircleWithImage(
-                            progress: 0.68,
+                            progress: programStatus ? (SafeParser.parseDouble(liveMessageEntity.programPercentage) / 100) : 0.0,
                             size: 70,
                             progressColor: programAvailable ? Theme.of(context).colorScheme.primary : Colors.grey,
                             backgroundColor: Colors.grey.shade300,
                             strokeWidth: 5,
+                            edgeWidget: programStatus ? Text(
+                              '${liveMessageEntity.programPercentage}%',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 8, color: Colors.blue),
+                            ) : null,
                             edgeIcon: Icons.bolt,
                             iconColor: programAvailable ? Theme.of(context).colorScheme.primary : Colors.grey,
                             iconSize: 15,

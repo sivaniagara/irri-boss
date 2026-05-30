@@ -8,6 +8,7 @@ class StaticProgressCircleWithImage extends StatelessWidget {
   final double strokeWidth;
   final Widget? centerWidget;     // usually an Image
   final IconData edgeIcon;
+  final Widget? edgeWidget;       // Custom widget for the edge (e.g., percentage text)
   final Color iconColor;
   final double iconSize;
   final double size;              // overall widget diameter
@@ -20,6 +21,7 @@ class StaticProgressCircleWithImage extends StatelessWidget {
     this.strokeWidth = 12,
     this.centerWidget,
     this.edgeIcon = Icons.bolt,
+    this.edgeWidget,
     this.iconColor = Colors.blue,
     this.iconSize = 28,
     this.size = 140,
@@ -61,7 +63,7 @@ class StaticProgressCircleWithImage extends StatelessWidget {
               child: centerWidget,
             ),
 
-          // 4. Icon on the progress edge
+          // 4. Icon/Widget on the progress edge
           _buildProgressIcon(),
         ],
       ),
@@ -79,12 +81,13 @@ class StaticProgressCircleWithImage extends StatelessWidget {
       size / 2 + radius * sin(angle),
     );
 
+    // If a custom edgeWidget is provided, use its preferred size or adjust container
     return Positioned(
-      left: offset.dx - iconSize / 2,
-      top: offset.dy - iconSize / 2,
+      left: offset.dx - (edgeWidget != null ? 15 : iconSize / 2),
+      top: offset.dy - (edgeWidget != null ? 15 : iconSize / 2),
       child: Container(
-        width: iconSize + 8,
-        height: iconSize + 8,
+        width: edgeWidget != null ? 30 : iconSize + 8,
+        height: edgeWidget != null ? 30 : iconSize + 8,
         decoration: BoxDecoration(
           color: Colors.white,
           shape: BoxShape.circle,
@@ -96,10 +99,12 @@ class StaticProgressCircleWithImage extends StatelessWidget {
             ),
           ],
         ),
-        child: Icon(
-          edgeIcon,
-          color: iconColor,
-          size: iconSize,
+        child: Center(
+          child: edgeWidget ?? Icon(
+            edgeIcon,
+            color: iconColor,
+            size: iconSize,
+          ),
         ),
       ),
     );

@@ -47,6 +47,7 @@ class LiveMessageModel extends LiveMessageEntity {
     required super.fertValues,
     required super.versionModule,
     required super.versionBoard,
+    required super.programPercentage,
     required super.lastsync,
     super.fullMessage = '',
     super.msgDesc = '',
@@ -152,6 +153,7 @@ class LiveMessageModel extends LiveMessageEntity {
     String ph = "0";
     String versionModule = '';
     String versionBoard = '';
+    String programPercentage = '0';
     String lastsync = externalLastSync ?? '--';
 
     bool isPumpLive = typeCode == 'LD04' || message.startsWith('LD04');
@@ -239,6 +241,7 @@ class LiveMessageModel extends LiveMessageEntity {
           separator: ';');
       versionModule = safeString(40 + ld04Offset, '');
       versionBoard = safeString(44 + ld04Offset, '');
+      programPercentage = safeString(45 + ld04Offset, '0');
       signal = safeString(46 + ld04Offset, '0');
       batVolt = safeString(47 + ld04Offset, '0');
     } else {
@@ -307,6 +310,7 @@ class LiveMessageModel extends LiveMessageEntity {
       signal = safeString(37, '0');
       versionModule = safeString(39, '');
       versionBoard = safeString(40, '');
+      programPercentage = safeString(41, '0');
     }
 
     return LiveMessageModel(
@@ -355,6 +359,7 @@ class LiveMessageModel extends LiveMessageEntity {
       fertValues: fertValues,
       versionModule: versionModule,
       versionBoard: versionBoard,
+      programPercentage: programPercentage,
       lastsync: lastsync,
       fullMessage: message,
     );
@@ -416,6 +421,7 @@ class LiveMessageModel extends LiveMessageEntity {
       fertValues: const ['0', '0', '0', '0', '0', '0'],
       versionModule: '',
       versionBoard: '',
+      programPercentage: '0',
       lastsync: sync ?? '--',
       fullMessage: '',
       msgDesc: '',
@@ -469,6 +475,7 @@ class LiveMessageModel extends LiveMessageEntity {
     List<String>? fertValues,
     String? versionModule,
     String? versionBoard,
+    String? programPercentage,
     String? lastsync,
     String? fullMessage,
     String? msgDesc,
@@ -519,6 +526,7 @@ class LiveMessageModel extends LiveMessageEntity {
       fertValues: fertValues ?? this.fertValues,
       versionModule: versionModule ?? this.versionModule,
       versionBoard: versionBoard ?? this.versionBoard,
+      programPercentage: programPercentage ?? this.programPercentage,
       lastsync: lastsync ?? this.lastsync,
       fullMessage: fullMessage ?? this.fullMessage,
       msgDesc: msgDesc ?? this.msgDesc,

@@ -46,6 +46,7 @@ class LiveMessageEntity extends Equatable {
   final List<String> fertValues; // f1–f6
   final String versionModule;
   final String versionBoard;
+  final String programPercentage;
   final String lastsync;
   final String fullMessage;
   final String msgDesc;
@@ -96,6 +97,7 @@ class LiveMessageEntity extends Equatable {
     required this.fertValues,
     required this.versionModule,
     required this.versionBoard,
+    required this.programPercentage,
     required this.lastsync,
     this.fullMessage = '',
     this.msgDesc = '',
@@ -148,6 +150,7 @@ class LiveMessageEntity extends Equatable {
         fertValues,
         versionModule,
         versionBoard,
+        programPercentage,
         lastsync,
         fullMessage,
         msgDesc,
@@ -199,6 +202,7 @@ class LiveMessageEntity extends Equatable {
     List<String>? fertValues,
     String? versionModule,
     String? versionBoard,
+    String? programPercentage,
     String? lastsync,
     String? fullMessage,
     String? msgDesc,
@@ -249,6 +253,7 @@ class LiveMessageEntity extends Equatable {
       fertValues: fertValues ?? this.fertValues,
       versionModule: versionModule ?? this.versionModule,
       versionBoard: versionBoard ?? this.versionBoard,
+      programPercentage: programPercentage ?? this.programPercentage,
       lastsync: lastsync ?? this.lastsync,
       fullMessage: fullMessage ?? this.fullMessage,
       msgDesc: msgDesc ?? this.msgDesc,
