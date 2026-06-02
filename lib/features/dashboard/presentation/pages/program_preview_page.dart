@@ -433,11 +433,11 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
         const SizedBox(height: 16),
 
         ConfigSection(
-          title: "Adjust Settings",
+          title: "Scale Factor Settings",
           icon: Icons.tune,
           children: [
             ConfigGridRow(
-              label: "Adjust Percent(%)",
+              label: "Scale Factor (%)",
               values: (liveMessage != null && liveMessage.fertValues.length >= 12)
                   ? liveMessage.fertValues.sublist(8, 12)
                   : (_program?.adjustPercent ?? ["100", "100", "100", "100"]),

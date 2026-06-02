@@ -19,6 +19,36 @@ class _StandalonePageState extends State<StandalonePage> {
   int _selectedIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final bloc = context.read<StandaloneBloc>();
+      final state = bloc.state;
+      final String controllerId = widget.data['controllerId']?.toString() ?? '';
+
+      bool shouldFetch = false;
+      if (state is StandaloneInitial) {
+        shouldFetch = true;
+      } else if (state is StandaloneLoaded) {
+        if (state.controllerId != controllerId) {
+          shouldFetch = true;
+        }
+      } else if (state is StandaloneError) {
+        shouldFetch = true;
+      }
+
+      if (shouldFetch && controllerId.isNotEmpty) {
+        bloc.add(FetchStandaloneDataEvent(
+          userId: widget.data['userId']?.toString() ?? '',
+          controllerId: controllerId,
+          deviceId: widget.data['deviceId']?.toString() ?? '',
+          subUserId: widget.data['subUserId']?.toString() ?? '0',
+        ));
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final String controllerId = widget.data['controllerId']?.toString() ?? '';
     final String userId = widget.data['userId']?.toString() ?? '';

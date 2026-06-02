@@ -18,7 +18,7 @@ class IrrigationSettingsPage extends StatelessWidget {
     SettingItemEntity(name: 'Irrigation & Fertigation', image: 'assets/images/common/irrigation_fertigation.png', irrigationSettingsEnum: IrrigationSettingsEnum.irrigationFertigation),
     SettingItemEntity(name: 'Drip Common Settings', image: 'assets/images/common/drip_common_setting.png', irrigationSettingsEnum: IrrigationSettingsEnum.dripCommonSettings),
     SettingItemEntity(name: 'Process Common Settings', image: 'assets/images/common/program_common_setting.png', irrigationSettingsEnum: IrrigationSettingsEnum.programCommonSettings),
-    SettingItemEntity(name: 'Adjust %', image: 'assets/images/common/adjust_percentage.png', irrigationSettingsEnum: IrrigationSettingsEnum.adjustPercentage),
+    SettingItemEntity(name: 'Scale Factor %', image: 'assets/images/common/adjust_percentage.png', irrigationSettingsEnum: IrrigationSettingsEnum.adjustPercentage),
     SettingItemEntity(name: 'Change From', image: 'assets/images/common/change_from.png', irrigationSettingsEnum: IrrigationSettingsEnum.changeFrom),
     SettingItemEntity(name: 'Backwash', image: 'assets/images/common/backwash.png', irrigationSettingsEnum: IrrigationSettingsEnum.backwash),
     SettingItemEntity(name: 'Pump Switch Over', image: 'assets/images/common/pump_change_over.png', irrigationSettingsEnum: IrrigationSettingsEnum.pumpChangeOver),

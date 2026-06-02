@@ -869,7 +869,7 @@ class _EditProgramPageState extends State<EditProgramPage> {
         spacing: 10,
         children: [
           CardHeader(
-            title: 'Adjust Percentage',
+            title: 'Scale Factor ',
             onPressed: (){
               setState(() {
                 showAdjustPercent = !showAdjustPercent;
