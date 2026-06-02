@@ -200,7 +200,7 @@ class StandaloneBloc extends Bloc<StandaloneEvent, StandaloneState> {
             controllerId: event.controllerId,
             deviceId: event.deviceId,
             command: json.encode({"sentSms": sentSms}),
-            sentSms: "",
+            sentSms: sentSms,
           );
         }
 

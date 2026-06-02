@@ -179,9 +179,16 @@ class StandaloneRemoteDataSourceImpl implements StandaloneRemoteDataSource {
     required String controllerId,
     required String sentSms,
   }) async {
-    final historyEndpoint = 'user/$userId/subuser/$subuserId/controller/$controllerId/view/messages/';
+    final historyEndpoint = 'user/$userId/controller/$controllerId/program/0/timeflowsetting/sendAndReceived';
     try {
-      await sl<ApiClient>().post(historyEndpoint, body: {"sentSms": sentSms});
+      await sl<ApiClient>().post(
+        historyEndpoint, 
+        body: {
+          "sentAndReceived": [
+            {"sentSms": sentSms}
+          ]
+        }
+      );
     } catch (e) {
     }
   }
