@@ -34,12 +34,20 @@ class ControllerIrrigationSettingModel extends ControllerIrrigationSettingEntity
   String getMqttPayload({required int groupIndex, required int settingIndex}){
     final singleOrMultiple = settings[groupIndex].sets[settingIndex];
     if(singleOrMultiple is SingleSettingItemModel){
-      if(singleOrMultiple.titleText == 'Irrigation'){
-        String programNo = (settings[groupIndex].sets[settingIndex - 1] as SingleSettingItemModel).value.split('Program ')[1];
+      if(singleOrMultiple.titleText == 'Irrigation' && settingIndex > 0){
+        var prevSet = settings[groupIndex].sets[settingIndex - 1];
+        String programNo = '';
+        if(prevSet is SingleSettingItemModel){
+          programNo = prevSet.value.contains('Program ') ? prevSet.value.split('Program ')[1] : prevSet.value;
+        }
         return singleOrMultiple.mqttPayload(dependentValue: programNo);
       }
-      if(singleOrMultiple.titleText == 'Dosing'){
-        String programNo = (settings[groupIndex].sets[settingIndex - 2] as SingleSettingItemModel).value.split('Program ')[1];
+      if(singleOrMultiple.titleText == 'Dosing' && settingIndex > 1){
+        var prevSet = settings[groupIndex].sets[settingIndex - 2];
+        String programNo = '';
+        if(prevSet is SingleSettingItemModel){
+          programNo = prevSet.value.contains('Program ') ? prevSet.value.split('Program ')[1] : prevSet.value;
+        }
         return singleOrMultiple.mqttPayload(dependentValue: programNo);
       }
       return singleOrMultiple.mqttPayload();
