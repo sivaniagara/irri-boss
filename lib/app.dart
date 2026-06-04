@@ -99,16 +99,16 @@ class RootApp extends StatelessWidget {
                     children: [
                       child!,
 
-                      if (!isOnline)
-                        Container(
-                          color: Colors.black54,
-                          child: Center(
-                            child: AlertDialog(
-                              title: Text("No Internet"),
-                              content: Text("Please check your connection"),
-                            ),
-                          ),
-                        ),
+                      // if (!isOnline)
+                      //   Container(
+                      //     color: Colors.black54,
+                      //     child: Center(
+                      //       child: AlertDialog(
+                      //         title: Text("No Internet"),
+                      //         content: Text("Please check your connection"),
+                      //       ),
+                      //     ),
+                      //   ),
                     ],
                   );
                 },
