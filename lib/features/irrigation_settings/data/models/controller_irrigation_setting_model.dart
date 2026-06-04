@@ -38,7 +38,7 @@ class ControllerIrrigationSettingModel extends ControllerIrrigationSettingEntity
         var prevSet = settings[groupIndex].sets[settingIndex - 1];
         String programNo = '';
         if(prevSet is SingleSettingItemModel){
-          programNo = prevSet.value.contains('Program ') ? prevSet.value.split('Program ')[1] : prevSet.value;
+          programNo = prevSet.value.contains('Process ') ? prevSet.value.split('Process ')[1] : prevSet.value;
         }
         return singleOrMultiple.mqttPayload(dependentValue: programNo);
       }
@@ -46,7 +46,7 @@ class ControllerIrrigationSettingModel extends ControllerIrrigationSettingEntity
         var prevSet = settings[groupIndex].sets[settingIndex - 2];
         String programNo = '';
         if(prevSet is SingleSettingItemModel){
-          programNo = prevSet.value.contains('Program ') ? prevSet.value.split('Program ')[1] : prevSet.value;
+          programNo = prevSet.value.contains('Process ') ? prevSet.value.split('Process ')[1] : prevSet.value;
         }
         return singleOrMultiple.mqttPayload(dependentValue: programNo);
       }
