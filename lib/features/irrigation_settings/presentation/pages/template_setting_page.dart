@@ -17,17 +17,36 @@ import '../bloc/template_irrigation_settings_bloc.dart';
 import '../enums/update_template_setting_status.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
-class TemplateSettingPage extends StatelessWidget {
+class TemplateSettingPage extends StatefulWidget {
   final String appBarTitle;
   final String settingNo;
   const TemplateSettingPage({super.key, required this.appBarTitle, required this.settingNo});
 
   @override
+  State<TemplateSettingPage> createState() => _TemplateSettingPageState();
+}
+
+class _TemplateSettingPageState extends State<TemplateSettingPage> {
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    logD("appBarTitle:$appBarTitle");
+    logD("appBarTitle:${widget.appBarTitle}");
     return Scaffold(
       appBar: CustomAppBar(
-        title: appBarTitle,
+        title: widget.appBarTitle,
         actions: [
           IconButton(
             onPressed: () {
@@ -48,6 +67,7 @@ class TemplateSettingPage extends StatelessWidget {
               final currentEntity = state.updatedControllerIrrigationSettingEntity ?? state.controllerIrrigationSettingEntity;
 
               return SingleChildScrollView(
+                controller: _scrollController,
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Column(
@@ -96,6 +116,7 @@ class TemplateSettingPage extends StatelessWidget {
                                               },
                                               builder: (context, value){
                                                 return SettingRow(
+                                                  key: ValueKey('setting_row_${groupIndex}_$index'),
                                                   singleSettingItemEntity: setting.copyWith(updateValue: value),
                                                   hideSendButton: false,
                                                   onChanged: (value) {
@@ -113,6 +134,7 @@ class TemplateSettingPage extends StatelessWidget {
                                                         context: context,
                                                         initialTime: value
                                                     );
+                                                    if (!mounted) return;
                                                     if(result != null) {
                                                       context.read<TemplateIrrigationSettingsBloc>().add(
                                                           UpdateSingleSettingRowEvent(
@@ -279,6 +301,7 @@ class TemplateSettingPage extends StatelessWidget {
                                                             final childEntity = setting.listOfSingleSettingItemEntity[multipleIndex];
 
                                                             return SettingRow(
+                                                              key: ValueKey('setting_row_${groupIndex}_${index}_$multipleIndex'),
                                                               singleSettingItemEntity: childEntity.copyWith(updateValue: currentValue),
                                                               hideSendButton: true,
                                                               onChanged: (value) {
@@ -299,6 +322,7 @@ class TemplateSettingPage extends StatelessWidget {
                                                                   context: context,
                                                                   initialTime: currentValue,
                                                                 );
+                                                                if (!mounted) return;
                                                                 if (result != null) {
                                                                   context.read<TemplateIrrigationSettingsBloc>().add(
                                                                     UpdateMultipleSettingRowEvent(
@@ -370,7 +394,7 @@ class TemplateSettingPage extends StatelessWidget {
                               userId: controllerContext.userId,
                               controllerId: controllerContext.controllerId,
                               subUserId: controllerContext.subUserId,
-                              settingNo: settingNo,
+                              settingNo: widget.settingNo,
                               deviceId: controllerContext.deviceId
                           )
                       );
@@ -439,7 +463,7 @@ class TemplateSettingPage extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: Theme.of(context).primaryColor.withOpacity(0.1),
+                              color: Theme.of(context).primaryColor.withAlpha((0.1 * 255).round()),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(Icons.visibility_outlined, color: Theme.of(context).primaryColor),

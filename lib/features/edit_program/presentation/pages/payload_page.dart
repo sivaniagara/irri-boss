@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_material_button.dart';
@@ -50,6 +50,27 @@ class _PayloadPageState extends State<PayloadPage> {
     return chunks;
   }
 
+  bool get isAllSelected {
+    final allZone = zoneSelection.every((e) => e['value'] == true);
+    final allView = zoneViewCommandSelection.every((e) => e['value'] == true);
+    final allSet = zoneSetSelection.every((e) => e['value'] == true);
+    return allZone && allView && allSet;
+  }
+
+  void toggleAll(bool value) {
+    setState(() {
+      for (var element in zoneSelection) {
+        element['value'] = value;
+      }
+      for (var element in zoneViewCommandSelection) {
+        element['value'] = value;
+      }
+      for (var element in zoneSetSelection) {
+        element['value'] = value;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<EditProgramBloc, EditProgramState>(
@@ -67,6 +88,17 @@ class _PayloadPageState extends State<PayloadPage> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            CheckboxListTile(
+                              enabled: enableEdit,
+                              controlAffinity: ListTileControlAffinity.leading,
+                              title: const Text('Select All', style: TextStyle(fontWeight: FontWeight.bold)),
+                              value: isAllSelected,
+                              onChanged: (value){
+                                toggleAll(value ?? false);
+                              },
+                              activeColor: Colors.green,
+                            ),
+                            const Divider(),
                             Text('BLOCK Configuration', style: Theme.of(context).textTheme.labelLarge,),
                             ...List.generate(zoneSelection.length, (index){
                               final zone = state.editProgramEntity.zones[index];

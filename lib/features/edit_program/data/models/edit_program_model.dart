@@ -1,4 +1,4 @@
-﻿import 'package:niagara_smart_drip_irrigation/features/edit_program/data/models/zone_setting_model.dart';
+import 'package:niagara_smart_drip_irrigation/features/edit_program/data/models/zone_setting_model.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/entities/edit_program_entity.dart';
 
 import '../../../../core/services/mqtt/publish_messages.dart';
@@ -84,9 +84,10 @@ class EditProgramModel extends EditProgramEntity {
   }
 
   String _joinTimes(Iterable<String> values) {
+    int padLength = 8 - values.length;
     final formEightZone = [
       ...values.map((e) => e.replaceAll(':', '')),
-      ...List.generate(8 - values.length, (index){
+      ...List.generate(padLength < 0 ? 0 : padLength, (index){
         return '0000';
       })
     ];
@@ -94,9 +95,10 @@ class EditProgramModel extends EditProgramEntity {
   }
 
   String _joinLiters(Iterable<String> values) {
+    int padLength = 8 - values.length;
     final formEightZone = [
       ...values.map((e) => e.padLeft(5, '0')),
-      ...List.generate(8 - values.length, (index){
+      ...List.generate(padLength < 0 ? 0 : padLength, (index){
         return '00000';
       })
     ];
@@ -145,9 +147,10 @@ class EditProgramModel extends EditProgramEntity {
     final values = listOfZone.map(
           (e) => _channelValue(e, channelNo, method),
     );
+    int padLength = 8 - values.length;
     final formEightZone = [
       ...values,
-      ...List.generate(8 - values.length, (index){
+      ...List.generate(padLength < 0 ? 0 : padLength, (index){
         return method == 1 ? '0000' : '00000';
       })
     ];

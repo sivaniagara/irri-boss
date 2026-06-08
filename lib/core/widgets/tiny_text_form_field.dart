@@ -46,11 +46,11 @@ class _TinyTextFormFieldState extends State<TinyTextFormField> {
   @override
   void didUpdateWidget(covariant TinyTextFormField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Only update controller if external value actually changed
-    if (oldWidget.value != widget.value) {
+    // Only update controller if external value actually changed and the field is not currently focused
+    if (oldWidget.value != widget.value && !_focusNode.hasFocus) {
       _controller.text = widget.value;
 
-      // Optional: Preserve cursor at end
+      // Preserve cursor position at end when updating value programmatically
       _controller.selection = TextSelection.fromPosition(
         TextPosition(offset: _controller.text.length),
       );
