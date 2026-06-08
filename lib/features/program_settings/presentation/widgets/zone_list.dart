@@ -134,7 +134,7 @@ class ZoneList extends StatelessWidget {
                               '${DashBoardRoutes.dashboard}${ProgramSettingsRoutes.editZone.replaceAll(':programId', program.programId.toString())}',
                             );
                           },
-                          title: 'Add Zone')
+                          title: 'Add Block')
                     ],
                   ),
                 ),
