@@ -632,7 +632,7 @@ class _Dashboard20State extends State<Dashboard20> {
                 children: [
                   ...List.generate(4, (index) {
                     bool programAvailable = controllerEntity.programList.length   >= (index+1);
-                    bool programStatus = liveMessageEntity.programName == 'program${index+1}';
+                    bool programStatus = SafeParser.getProgramId(liveMessageEntity.programName) == '${index + 1}';
                     return GestureDetector(
                       onTap: (){
                         context.push('${EditProgramRoutes.program}?programId=${index+1}');
@@ -760,8 +760,10 @@ class _Dashboard20State extends State<Dashboard20> {
 
   List<String> getZoneNumberOfActiveProgram({required ControllerEntity controllerEntity, required LiveMessageEntity liveMessageEntity}){
     List<String> zoneNumbers = [];
+    final activeProgramId = SafeParser.getProgramId(liveMessageEntity.programName);
     for(var program = 0;program < controllerEntity.programList.length;program++){
-      if(liveMessageEntity.programName == 'program${program+1}'){
+      final programId = controllerEntity.programList[program].programId.toString();
+      if(activeProgramId == programId){
         zoneNumbers = controllerEntity.programList[program].listOfZone.map((e) => e.zoneNumber).toList();
       }
     }

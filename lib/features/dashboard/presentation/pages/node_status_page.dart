@@ -119,7 +119,7 @@ class _NodeStatusPageState extends State<NodeStatusPage> {
                   final bool isError = node.status == "1" && widget.motorStatus == "0" && node.category.toLowerCase().contains('valve');
                   
                   Color backgroundColor = Colors.white;
-                  Color textColor = Colors.black87;
+                  Color textColor = Colors.black;
                   String assetPath = '';
                   
                   final cat = node.category.toLowerCase();
@@ -130,7 +130,7 @@ class _NodeStatusPageState extends State<NodeStatusPage> {
                       assetPath = 'assets/images/common/valve_flag.png';
                     } else if (isValveRunning) {
                       backgroundColor = Colors.lightGreenAccent;
-                      textColor = Colors.white;
+                      textColor = Colors.black;
                       assetPath = 'assets/images/common/valve_running.gif';
                     } else {
                       backgroundColor = Colors.white;

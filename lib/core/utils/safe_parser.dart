@@ -1,10 +1,10 @@
 class SafeParser {
-  /// Safely extracts the numeric ID from a program name string (e.g., "program1" -> "1")
+  /// Safely extracts the numeric ID from a program name string.
   static String getProgramId(String programName) {
     if (programName.isEmpty) return '0';
-    // Remove "program" (case-insensitive) and return the rest
-    String id = programName.toLowerCase().replaceAll('program', '').trim();
-    return id.isEmpty ? '0' : id;
+
+    final match = RegExp(r'\d+').firstMatch(programName);
+    return match?.group(0) ?? '0';
   }
 
   /// Parses double from string, removing any non-numeric characters except '.'
