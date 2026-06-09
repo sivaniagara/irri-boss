@@ -5,7 +5,7 @@ import '../bloc/report_menu_bloc.dart';
 
 Future<void> initReportDependencies() async {
   /// Bloc
-  sl.registerFactory<ReportMenuBloc>(
+  sl.registerLazySingleton<ReportMenuBloc>(
         () => ReportMenuBloc(fetchMappingUnmappingNodesUsecase: sl<FetchMappingUnmappingNodesUsecase>()),
   );
 }

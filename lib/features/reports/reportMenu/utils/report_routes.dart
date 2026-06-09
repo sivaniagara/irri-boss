@@ -16,8 +16,8 @@ final reportPageRoutes = <GoRoute>[
     builder: (context, state) {
       final params = state.extra as Map<String, dynamic>? ?? {};
 
-      return BlocProvider(
-        create: (_) => sl<ReportMenuBloc>(),
+      return BlocProvider.value(
+        value: sl<ReportMenuBloc>(),
         child: ReportMenuPage(params: params),
       );
     },

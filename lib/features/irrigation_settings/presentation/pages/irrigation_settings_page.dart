@@ -76,7 +76,7 @@ class IrrigationSettingsPage extends StatelessWidget {
                 sectionTitle: 'Flow & Valve Management',
                 items: [
                   settings[10],
-                  settings[5],
+                  // settings[5],
                 ],
               ),
               settingsSection(
