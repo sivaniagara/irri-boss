@@ -115,8 +115,9 @@ class _NodeStatusPageState extends State<NodeStatusPage> {
                 itemCount: nodes.length,
                 itemBuilder: (context, index) {
                   final node = nodes[index];
-                  final bool isValveRunning = node.status == "1";
-                  final bool isError = node.status == "1" && widget.motorStatus == "0" && node.category.toLowerCase().contains('valve');
+                  final String normalizedStatus = node.status.toString().trim().toLowerCase();
+                  final bool isValveRunning = normalizedStatus == "1" || normalizedStatus == "on" || normalizedStatus == "true";
+                  final bool isError = isValveRunning && widget.motorStatus.toString().trim() == "0" && node.category.toLowerCase().contains('valve');
                   
                   Color backgroundColor = Colors.white;
                   Color textColor = Colors.black;
@@ -177,7 +178,7 @@ class _NodeStatusPageState extends State<NodeStatusPage> {
                               errorBuilder: (context, error, stackTrace) => Icon(
                                 Icons.settings_input_component,
                                 size: 40,
-                                color: textColor.withOpacity(0.5),
+                                color: textColor.withValues(alpha:0.5),
                               ),
                             ),
                           ),
@@ -192,7 +193,7 @@ class _NodeStatusPageState extends State<NodeStatusPage> {
                               ),
                               Text(
                                 'SN:${node.serialNumber}',
-                                style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 8),
+                                style: TextStyle(color: textColor.withValues(alpha:0.7), fontSize: 8),
                               ),
                             ],
                           ),
@@ -211,10 +212,21 @@ class _NodeStatusPageState extends State<NodeStatusPage> {
   }
 
   String extractZoneNumber(String msg) {
-    final regex = RegExp(r'(?:ZONE=)?(\d+)\s*OPEN|OPEN\s*(\d+)');
+    if (msg.trim().isEmpty) return "0";
+    final regex = RegExp(r'(?:BLOCK=|ZONE=)?(\d+)\s*OPEN|OPEN\s*(\d+)|Z(\d+)', caseSensitive: false);
     final match = regex.firstMatch(msg);
     if (match != null) {
-      return match.group(1) ?? match.group(2) ?? "0";
+      return match.group(1) ?? match.group(2) ?? match.group(3) ?? "0";
+    }
+    final numberRegex = RegExp(r'^\d+$');
+    if (numberRegex.hasMatch(msg.trim())) {
+      return msg.trim();
+    }
+    // Attempt to extract any number if it contains one
+    final anyNumberRegex = RegExp(r'(\d+)');
+    final anyMatch = anyNumberRegex.firstMatch(msg);
+    if (anyMatch != null) {
+        return anyMatch.group(1) ?? "0";
     }
     return "0";
   }

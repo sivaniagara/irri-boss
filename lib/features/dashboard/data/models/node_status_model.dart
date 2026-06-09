@@ -13,13 +13,13 @@ class NodeStatusModel extends NodeStatusEntity {
 
   factory NodeStatusModel.fromJson(Map<String, dynamic> json) {
     return NodeStatusModel(
-        serialNumber: json["serialNumber"],
-        category: json["category"],
-        deviceName: json["deviceName"],
-        status: json["status"],
-        value: json["value"],
-        latlong: json["latlong"],
-        message: json["message"]
+        serialNumber: json["serialNumber"]?.toString() ?? "",
+        category: json["category"]?.toString() ?? "",
+        deviceName: json["deviceName"]?.toString() ?? "",
+        status: json["status"]?.toString() ?? "",
+        value: json["value"]?.toString() ?? "",
+        latlong: json["latlong"]?.toString() ?? "",
+        message: json["message"]?.toString() ?? ""
     );
   }
 }
