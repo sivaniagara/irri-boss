@@ -5,6 +5,7 @@ import 'package:niagara_smart_drip_irrigation/features/alarm_settings/utils/alar
 import 'package:niagara_smart_drip_irrigation/features/edit_program/presentation/widgets/custom_card.dart';
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/presentation/enums/irrigation_settings_enum.dart';
 import 'package:niagara_smart_drip_irrigation/features/valve_flow_settings/utils/valve_flow_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/sendrev_msg/utils/senrev_routes.dart';
 
 import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../domain/entities/setting_item_entity.dart';
@@ -36,7 +37,25 @@ class IrrigationSettingsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-          title: 'Irrigation Settings'
+          title: 'Irrigation Settings',
+          actions: [
+            Builder(
+              builder: (ctx) => IconButton(
+                onPressed: () {
+                  final controllerContext = (ctx.read<ControllerContextCubit>().state as ControllerContextLoaded);
+                  ctx.push(
+                    SendRevPageRoutes.sendRevMsgPage,
+                    extra: {
+                      'userId': controllerContext.userId,
+                      'controllerId': controllerContext.controllerId,
+                      'subuserId': controllerContext.subUserId
+                    },
+                  );
+                },
+                icon: const Icon(Icons.history_edu_outlined, color: Colors.black87),
+              ),
+            )
+          ]
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),

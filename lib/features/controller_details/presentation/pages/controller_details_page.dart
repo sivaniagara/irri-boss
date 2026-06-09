@@ -11,6 +11,8 @@ import '../../domain/usecase/controller_details_params.dart';
 import '../bloc/controller_details_bloc.dart';
 import '../bloc/controller_details_bloc_event.dart';
 import '../bloc/controller_details_state.dart';
+import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
+import '../../../sendrev_msg/utils/senrev_routes.dart';
 
 class ControllerDetailsPage extends StatefulWidget {
   final GetControllerDetailsParams params;
@@ -61,7 +63,27 @@ class _ControllerDetailsPageState extends State<ControllerDetailsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppThemes.scaffoldBackGround,
-      appBar: const CustomAppBar(title: "CONTROLLER DETAILS"),
+      appBar: CustomAppBar(
+        title: "CONTROLLER DETAILS",
+        actions: [
+          Builder(
+            builder: (ctx) => IconButton(
+              onPressed: () {
+                final controllerContext = (ctx.read<ControllerContextCubit>().state as ControllerContextLoaded);
+                ctx.push(
+                  SendRevPageRoutes.sendRevMsgPage,
+                  extra: {
+                    'userId': controllerContext.userId,
+                    'controllerId': controllerContext.controllerId,
+                    'subuserId': controllerContext.subUserId
+                  },
+                );
+              },
+              icon: const Icon(Icons.history_edu_outlined, color: Colors.black87),
+            ),
+          )
+        ],
+      ),
       body: BlocListener<ControllerDetailsBloc, ControllerDetailsState>(
         listener: (context, state) {
           if (state is UpdateControllerSuccess) {

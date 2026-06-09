@@ -9,8 +9,10 @@ import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../bloc/serial_set_bloc.dart';
 import '../bloc/serial_set_event.dart';
 import '../bloc/serial_set_state.dart';
+import 'package:go_router/go_router.dart';
 import 'serial_set_calibration_page.dart';
 import 'common_calibration_page.dart';
+import '../../../sendrev_msg/utils/senrev_routes.dart';
 
 class SerialSetMenuPage extends StatelessWidget {
   const SerialSetMenuPage({super.key});
@@ -39,7 +41,27 @@ class SerialSetMenuPage extends StatelessWidget {
         },
         child: Scaffold(
           backgroundColor: AppThemes.scaffoldBackGround,
-          appBar: const CustomAppBar(title: 'Series set'),
+          appBar: CustomAppBar(
+            title: 'Series set',
+            actions: [
+              Builder(
+                builder: (ctx) => IconButton(
+                  onPressed: () {
+                    final controllerContext = (ctx.read<ControllerContextCubit>().state as ControllerContextLoaded);
+                    ctx.push(
+                      SendRevPageRoutes.sendRevMsgPage,
+                      extra: {
+                        'userId': controllerContext.userId,
+                        'controllerId': controllerContext.controllerId,
+                        'subuserId': controllerContext.subUserId
+                      },
+                    );
+                  },
+                  icon: const Icon(Icons.history_edu_outlined, color: Colors.black87),
+                ),
+              )
+            ],
+          ),
           body: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: BlocBuilder<SerialSetBloc, SerialSetState>(

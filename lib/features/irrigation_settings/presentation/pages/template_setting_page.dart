@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
@@ -15,6 +15,7 @@ import '../../domain/entities/common_setting_item_entity.dart';
 import '../../domain/entities/controller_irrigation_setting_entity.dart';
 import '../bloc/template_irrigation_settings_bloc.dart';
 import '../enums/update_template_setting_status.dart';
+import '../../../sendrev_msg/utils/senrev_routes.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class TemplateSettingPage extends StatefulWidget {
@@ -57,6 +58,22 @@ class _TemplateSettingPageState extends State<TemplateSettingPage> {
             },
             icon: const Icon(Icons.settings_suggest_outlined),
           ),
+          Builder(
+            builder: (ctx) => IconButton(
+              onPressed: () {
+                final controllerContext = (ctx.read<ControllerContextCubit>().state as ControllerContextLoaded);
+                ctx.push(
+                  SendRevPageRoutes.sendRevMsgPage,
+                  extra: {
+                    'userId': controllerContext.userId,
+                    'controllerId': controllerContext.controllerId,
+                    'subuserId': controllerContext.subUserId
+                  },
+                );
+              },
+              icon: const Icon(Icons.history_edu_outlined, color: Colors.black87),
+            ),
+          )
         ],
       ),
       body: BlocConsumer<TemplateIrrigationSettingsBloc, TemplateIrrigationSettingsState>(

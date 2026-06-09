@@ -15,6 +15,7 @@ import '../cubit/pump_settings_view_response_cubit.dart';
 import '../../../../core/di/injection.dart' as di;
 import '../../utils/pump_settings_images.dart';
 import '../../utils/pump_settings_page_routes.dart';
+import '../../../sendrev_msg/utils/senrev_routes.dart';
 
 class PumpSettingsMenuPage extends StatelessWidget {
   final int userId, subUserId, controllerId, modelId;
@@ -67,6 +68,21 @@ class PumpSettingsMenuPage extends StatelessWidget {
                 onPressed: () => _showHideMenuDialog(ctx),
               ),
             ),
+            Builder(
+              builder: (ctx) => IconButton(
+                onPressed: () {
+                  ctx.push(
+                    SendRevPageRoutes.sendRevMsgPage,
+                    extra: {
+                      'userId': userId,
+                      'controllerId': controllerId,
+                      'subuserId': subUserId
+                    },
+                  );
+                },
+                icon: const Icon(Icons.history_edu_outlined, color: Colors.black87),
+              ),
+            )
           ],
         ),
         body: _MenuListView(

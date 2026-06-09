@@ -10,6 +10,8 @@ import '../../../../core/widgets/app_alerts.dart';
 import '../bloc/alarm_bloc.dart';
 import '../bloc/alarm_event.dart';
 import '../bloc/alarm_state.dart';
+import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
+import '../../../sendrev_msg/utils/senrev_routes.dart';
 
 class AlarmSettingsPage extends StatelessWidget {
   const AlarmSettingsPage({super.key});
@@ -17,7 +19,27 @@ class AlarmSettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(title: "Alarm"),
+      appBar: CustomAppBar(
+        title: "Alarm",
+        actions: [
+          Builder(
+            builder: (ctx) => IconButton(
+              onPressed: () {
+                final controllerContext = (ctx.read<ControllerContextCubit>().state as ControllerContextLoaded);
+                ctx.push(
+                  SendRevPageRoutes.sendRevMsgPage,
+                  extra: {
+                    'userId': controllerContext.userId,
+                    'controllerId': controllerContext.controllerId,
+                    'subuserId': controllerContext.subUserId
+                  },
+                );
+              },
+              icon: const Icon(Icons.history_edu_outlined, color: Colors.black87),
+            ),
+          )
+        ],
+      ),
       body: BlocConsumer<AlarmBloc, AlarmState>(
         listener: (context, state) {
           if (state is AlarmSuccess) {

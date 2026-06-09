@@ -1,4 +1,5 @@
-﻿import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/domain/entities/common_setting_item_entity.dart';
+﻿import 'package:flutter/foundation.dart';
+import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/domain/entities/common_setting_item_entity.dart';
 
 
 import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
@@ -112,9 +113,15 @@ class MultipleSettingItemModel extends MultipleSettingItemEntity{
   });
 
   factory MultipleSettingItemModel.fromJson({required Map<String, dynamic> json}){
-    logD("MultipleSettingItemModel.fromJson called");
+
+    if(kDebugMode){
+      ("MultipleSettingItemModel.fromJson called");
+    }
+
     List<Map<String, dynamic>> data = List.generate(json['VAL'].split(';').length, (index){
-      logD("multi json : $json");
+      if(kDebugMode){
+        ("multi json : $json");
+      }
       return {
         "SN": json['SN'],
         "WT": json['WT'],
@@ -143,7 +150,7 @@ class MultipleSettingItemModel extends MultipleSettingItemEntity{
 
   String mqttPayload({String? firstDependent}){
     if(listOfSingleSettingItemEntity.first.widgetType == 2){
-      if(['FERTOBOF', 'REFRESHONOF', 'FERTONOF'].contains(listOfSingleSettingItemEntity.first.settingField)){
+      if(['FERTOBOF', 'FILONOF', 'FERTONOF'].contains(listOfSingleSettingItemEntity.first.settingField)){
         List<String> channelPayloadList = List.generate(listOfSingleSettingItemEntity.length, (index){
           return '${index+1}${listOfSingleSettingItemEntity[index].value == 'ON' ? '1' : '0'}';
         });

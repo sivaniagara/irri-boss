@@ -29,9 +29,9 @@ final sendRevPageRoutes = <GoRoute>[
       /// Get parameters from extra
       final params = state.extra as Map<String, dynamic>;
 
-      final userId = params["userId"];
-      final subuserId = params["subuserId"] ?? 0;
-      final controllerId = params["controllerId"];
+      final userId = params["userId"] is String ? int.parse(params["userId"]) : (params["userId"] as int? ?? 0);
+      final subuserId = params["subuserId"] == null ? 0 : (params["subuserId"] is String ? int.parse(params["subuserId"]) : params["subuserId"]);
+      final controllerId = params["controllerId"] is String ? int.parse(params["controllerId"]) : (params["controllerId"] as int? ?? 0);
       final fromDate = params["fromDate"] ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
       final toDate = params["toDate"] ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
 

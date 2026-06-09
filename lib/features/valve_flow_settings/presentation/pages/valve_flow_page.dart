@@ -7,6 +7,9 @@ import 'package:niagara_smart_drip_irrigation/core/widgets/tiny_text_form_field.
 import '../bloc/valve_flow_bloc.dart';
 import '../bloc/valve_flow_event.dart';
 import '../bloc/valve_flow_state.dart';
+import 'package:go_router/go_router.dart';
+import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
+import '../../../sendrev_msg/utils/senrev_routes.dart';
 
 class ValveFlowPage extends StatelessWidget {
   const ValveFlowPage({super.key});
@@ -31,6 +34,22 @@ class ValveFlowPage extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
+          Builder(
+            builder: (ctx) => IconButton(
+              onPressed: () {
+                final controllerContext = (ctx.read<ControllerContextCubit>().state as ControllerContextLoaded);
+                ctx.push(
+                  SendRevPageRoutes.sendRevMsgPage,
+                  extra: {
+                    'userId': controllerContext.userId,
+                    'controllerId': controllerContext.controllerId,
+                    'subuserId': controllerContext.subUserId
+                  },
+                );
+              },
+              icon: const Icon(Icons.history_edu_outlined, color: Colors.black87),
+            ),
+          ),
           Container(
             margin: const EdgeInsets.only(right: 8),
             decoration: BoxDecoration(

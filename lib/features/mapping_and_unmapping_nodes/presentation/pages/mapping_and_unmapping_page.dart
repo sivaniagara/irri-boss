@@ -9,6 +9,8 @@ import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nod
 
 import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../../domain/entities/unmapped_category_entity.dart';
+import 'package:go_router/go_router.dart';
+import '../../../sendrev_msg/utils/senrev_routes.dart';
 
 
 class MappingAndUnmappingPage extends StatefulWidget {
@@ -46,7 +48,27 @@ class _MappingAndUnmappingPageState extends State<MappingAndUnmappingPage> {
               return const Center(child: CircularProgressIndicator());
             }else if(state is MappingAndUnmappingNodesLoaded){
               return Scaffold(
-                appBar: CustomAppBar(title: 'Node Settings'),
+                appBar: CustomAppBar(
+                  title: 'Node Settings',
+                  actions: [
+                    Builder(
+                      builder: (ctx) => IconButton(
+                        onPressed: () {
+                          final controllerContext = (ctx.read<ControllerContextCubit>().state as ControllerContextLoaded);
+                          ctx.push(
+                            SendRevPageRoutes.sendRevMsgPage,
+                            extra: {
+                              'userId': controllerContext.userId,
+                              'controllerId': controllerContext.controllerId,
+                              'subuserId': controllerContext.subUserId
+                            },
+                          );
+                        },
+                        icon: const Icon(Icons.history_edu_outlined, color: Colors.black87),
+                      ),
+                    )
+                  ],
+                ),
                 body: SingleChildScrollView(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),

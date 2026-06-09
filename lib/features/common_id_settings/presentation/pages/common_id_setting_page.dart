@@ -15,6 +15,7 @@ import '../../../dashboard/presentation/cubit/controller_context_cubit.dart';
 import '../bloc/common_id_settings_event.dart';
 import '../enums/reset_common_id_enum.dart';
 import '../enums/view_common_id_enum.dart';
+import '../../../sendrev_msg/utils/senrev_routes.dart';
 
 class CommonIdSettingPage extends StatelessWidget {
   const CommonIdSettingPage({super.key});
@@ -22,7 +23,27 @@ class CommonIdSettingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Common Id Settings'),
+      appBar: CustomAppBar(
+        title: 'Common Id Settings',
+        actions: [
+          Builder(
+            builder: (ctx) => IconButton(
+              onPressed: () {
+                final controllerContext = (ctx.read<ControllerContextCubit>().state as ControllerContextLoaded);
+                ctx.push(
+                  SendRevPageRoutes.sendRevMsgPage,
+                  extra: {
+                    'userId': controllerContext.userId,
+                    'controllerId': controllerContext.controllerId,
+                    'subuserId': controllerContext.subUserId
+                  },
+                );
+              },
+              icon: const Icon(Icons.history_edu_outlined, color: Colors.black87),
+            ),
+          )
+        ],
+      ),
       body: BlocListener<CommonIdSettingsBloc, CommonIdSettingsState>(
         listener: (context, state){
           if(state is CommonIdSettingsLoaded && state.commonIdSettingsUpdateStatus == CommonIdSettingsUpdateStatus.loading){
