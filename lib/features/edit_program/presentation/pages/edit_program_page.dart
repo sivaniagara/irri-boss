@@ -336,7 +336,7 @@ class _EditProgramPageState extends State<EditProgramPage> {
                                     controllerId: controllerContext.controllerId,
                                     programId: '0',
                                     deviceId: controllerContext.deviceId,
-                                    payload: 'VFERTTIMERSETP${state.editProgramEntity.programId}F${selectedChannel+1}01,'
+                                    payload: 'VFTIMERSETP${state.editProgramEntity.programId}F${selectedChannel+1}01,'
                                 )
                             );
                           },

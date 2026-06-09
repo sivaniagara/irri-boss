@@ -1,4 +1,4 @@
-import 'package:niagara_smart_drip_irrigation/features/edit_program/data/models/zone_setting_model.dart';
+﻿import 'package:niagara_smart_drip_irrigation/features/edit_program/data/models/zone_setting_model.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/entities/edit_program_entity.dart';
 
 import '../../../../core/services/mqtt/publish_messages.dart';
@@ -69,8 +69,8 @@ class EditProgramModel extends EditProgramEntity {
   // ---------------- COMMAND TEMPLATES ----------------
   static const _zoneTimeSetCommand = 'BLOCKTIMERSETP:programId:zoneSetId';
   static const _zoneFlowSetCommand = 'FLOWSETP:programId:zoneSetId';
-  static const _fertTimeSetCommand = 'FERTTIMERSETP:programIdF:channelNo:zoneSetId';
-  static const _fertFlowSetCommand = 'FLOWFERTSETP:programIdF:channelNo:zoneSetId';
+  static const _fertTimeSetCommand = 'FTIMERSETP:programIdF:channelNo:zoneSetId';
+  static const _fertFlowSetCommand = 'FERTFLOWSETP:programIdF:channelNo:zoneSetId';
   static const _preTimeSetCommand = 'PRETIMERSETP:programId:zoneSetId';
   static const _postTimeSetCommand = 'POSTTIMERSETP:programId:zoneSetId';
   static const _preFlowSetCommand = 'SETPREFLOWP:programId:zoneSetId';

@@ -143,7 +143,7 @@ class MultipleSettingItemModel extends MultipleSettingItemEntity{
 
   String mqttPayload({String? firstDependent}){
     if(listOfSingleSettingItemEntity.first.widgetType == 2){
-      if(['FERTOBOF', 'REFRESHONOF', 'FERTONOF'].contains(listOfSingleSettingItemEntity.first.settingField)){
+      if(['FERTOBOF', 'FILONOF', 'FERTONOF'].contains(listOfSingleSettingItemEntity.first.settingField)){
         List<String> channelPayloadList = List.generate(listOfSingleSettingItemEntity.length, (index){
           return '${index+1}${listOfSingleSettingItemEntity[index].value == 'ON' ? '1' : '0'}';
         });
@@ -174,7 +174,7 @@ class MultipleSettingItemModel extends MultipleSettingItemEntity{
       return '${listOfSingleSettingItemEntity.first.settingField},${listOfSingleSettingItemEntity.map((set) => formatTo000(int.parse(set.value.isEmpty ? '0' : set.value))).join(',')}';
     }else if(listOfSingleSettingItemEntity.first.widgetType == 3){
       return '${listOfSingleSettingItemEntity.first.settingField}'
-          '${['REFTIMON'].contains(listOfSingleSettingItemEntity.first.settingField) ? '' : ','}'
+          '${['FILTIMON'].contains(listOfSingleSettingItemEntity.first.settingField) ? '' : ','}'
           '${listOfSingleSettingItemEntity.map((set) => set.value.replaceAll(':', '')).join(',')}';
     }else{
       return '${listOfSingleSettingItemEntity.first.settingField},${listOfSingleSettingItemEntity.map((set) => set.value).join(',')}';
