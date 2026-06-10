@@ -164,86 +164,85 @@ class _PayloadPageState extends State<PayloadPage> {
                       children: [
                         CustomOutlinedButton(
                             title: 'Cancel',
-                            onPressed: (){
+                            onPressed: () {
                               context.pop();
                             }
                         ),
-                        CustomMaterialButton(
-                            onPressed: () async {
-                              enableEdit = false;
-                              setState(() {});
-                              for (var zonePayload = 0; zonePayload < zoneSelection.length; zonePayload++) {
-                                if(state.editProgramEntity.zones[zonePayload].active){
-                                  if(!zoneSelection[zonePayload]['value']) continue;
+                        if (enableEdit)
+                          CustomMaterialButton(
+                              onPressed: () async {
+                                enableEdit = false;
+                                setState(() {});
+                                for (var zonePayload = 0; zonePayload < zoneSelection.length; zonePayload++) {
+                                  if(state.editProgramEntity.zones[zonePayload].active){
+                                    if(!zoneSelection[zonePayload]['value']) continue;
+                                    setState(() {
+                                      zoneSelection[zonePayload]['mode'] = PayloadModeEnum.loading;
+                                    });
+
+                                    try {
+                                      final result = await context.read<EditProgramBloc>().sendZonePayload(
+                                        zoneIndex: zonePayload,
+                                      );
+                                      setState(() {
+                                        zoneSelection[zonePayload]['mode'] = result;
+                                      });
+                                    } catch (e) {
+                                      setState(() {
+                                        zoneSelection[zonePayload]['mode'] = PayloadModeEnum.failure;
+                                      });
+                                      kdebugmode("BLOCK $zonePayload failed: $e");
+                                    }
+                                  }
+                                }
+                                for (var zonePayload = 0; zonePayload < zoneViewCommandSelection.length; zonePayload++) {
+                                  if(state.editProgramEntity.zones[zonePayload].active){
+                                    if(!zoneViewCommandSelection[zonePayload]['value']) continue;
+                                    setState(() {
+                                      zoneViewCommandSelection[zonePayload]['mode'] = PayloadModeEnum.loading;
+                                    });
+
+                                    try {
+                                      final result = await context.read<EditProgramBloc>().sendZoneViewCommandPayload(
+                                        zoneIndex: zonePayload + 1,
+                                      );
+                                      setState(() {
+                                        zoneViewCommandSelection[zonePayload]['mode'] = result;
+                                      });
+                                    } catch (e) {
+                                      setState(() {
+                                        zoneViewCommandSelection[zonePayload]['mode'] = PayloadModeEnum.failure;
+                                      });
+                                      kdebugmode("BLOCKViewCommandSelection $zonePayload failed: $e");
+                                    }
+                                  }
+                                }
+                                for (var zoneSetPayload = 0; zoneSetPayload < zoneSetSelection.length; zoneSetPayload++) {
+                                  if(!zoneSetSelection[zoneSetPayload]['value']) continue;
                                   setState(() {
-                                    zoneSelection[zonePayload]['mode'] = PayloadModeEnum.loading;
+                                    zoneSetSelection[zoneSetPayload]['mode'] = PayloadModeEnum.loading;
                                   });
 
                                   try {
-                                    final result = await context.read<EditProgramBloc>().sendZonePayload(
-                                      zoneIndex: zonePayload,
+                                    final result = await context.read<EditProgramBloc>().sendZoneSetPayload(
+                                      zoneSetNo: zoneSetPayload + 1,
+                                      channelNo: widget.channelNo,
+                                      irrigationDosingOrPrePost: widget.irrigationDosingOrPrePost,
+                                      method: widget.method,
                                     );
                                     setState(() {
-                                      zoneSelection[zonePayload]['mode'] = result; // â† now result is the real enum value
+                                      zoneSetSelection[zoneSetPayload]['mode'] = result;
                                     });
                                   } catch (e) {
                                     setState(() {
-                                      zoneSelection[zonePayload]['mode'] = PayloadModeEnum.failure;
+                                      zoneSetSelection[zoneSetPayload]['mode'] = PayloadModeEnum.failure;
                                     });
-                                    kdebugmode("BLOCK $zonePayload failed: $e");
+                                    kdebugmode("BLOCK $zoneSetPayload failed: $e");
                                   }
                                 }
-
-                              }
-                              for (var zonePayload = 0; zonePayload < zoneViewCommandSelection.length; zonePayload++) {
-                                if(state.editProgramEntity.zones[zonePayload].active){
-                                  if(!zoneViewCommandSelection[zonePayload]['value']) continue;
-                                  setState(() {
-                                    zoneViewCommandSelection[zonePayload]['mode'] = PayloadModeEnum.loading;
-                                  });
-
-                                  try {
-                                    final result = await context.read<EditProgramBloc>().sendZoneViewCommandPayload(
-                                      zoneIndex: zonePayload + 1,
-                                    );
-                                    setState(() {
-                                      zoneViewCommandSelection[zonePayload]['mode'] = result; // â† now result is the real enum value
-                                    });
-                                  } catch (e) {
-                                    setState(() {
-                                      zoneViewCommandSelection[zonePayload]['mode'] = PayloadModeEnum.failure;
-                                    });
-                                    kdebugmode("BLOCKViewCommandSelection $zonePayload failed: $e");
-                                  }
-                                }
-
-                              }
-                              for (var zoneSetPayload = 0; zoneSetPayload < zoneSetSelection.length; zoneSetPayload++) {
-                                if(!zoneSetSelection[zoneSetPayload]['value']) continue;
-                                setState(() {
-                                  zoneSetSelection[zoneSetPayload]['mode'] = PayloadModeEnum.loading;
-                                });
-
-                                try {
-                                  final result = await context.read<EditProgramBloc>().sendZoneSetPayload(
-                                    zoneSetNo: zoneSetPayload + 1,
-                                    channelNo: widget.channelNo,
-                                    irrigationDosingOrPrePost: widget.irrigationDosingOrPrePost,
-                                    method: widget.method,
-                                  );
-                                  setState(() {
-                                    zoneSetSelection[zoneSetPayload]['mode'] = result; // â† now result is the real enum value
-                                  });
-                                } catch (e) {
-                                  setState(() {
-                                    zoneSetSelection[zoneSetPayload]['mode'] = PayloadModeEnum.failure;
-                                  });
-                                  kdebugmode("BLOCK $zoneSetPayload failed: $e");
-                                }
-                              }
-                            },
-                            title: 'Send'
-                        )
+                              },
+                              title: 'Send'
+                          )
                       ],
                     )
                   ],
