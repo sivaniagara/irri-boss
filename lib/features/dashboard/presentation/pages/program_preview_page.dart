@@ -482,7 +482,7 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
                 _normalize(liveMessage.programName) == _normalize(_program?.programName ?? "");
 
             return ConfigSection(
-              title: "Zone ${z.zoneNumber}",
+              title: "Block ${z.zoneNumber}",
               trailing: isRunning ? _buildBadge("RUNNING", isOn: true) : null,
               children: [
                 Wrap(
