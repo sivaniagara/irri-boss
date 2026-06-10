@@ -11,12 +11,14 @@ class DeleteZoneParamsEditProgram{
   final String controllerId;
   final String programId;
   final String zoneSerialNo;
+  final String deviceId;
 
   DeleteZoneParamsEditProgram({
     required this.userId,
     required this.controllerId,
     required this.programId,
     required this.zoneSerialNo,
+    required this.deviceId,
   });
 }
 

@@ -1,4 +1,4 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
+﻿import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/entities/selected_node_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/usecases/delete_zone_usecase.dart';
 
@@ -180,7 +180,8 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
           userId: event.userId,
           controllerId: event.controllerId,
           programId: event.programId,
-          zoneSerialNo: event.zoneSerialNo
+          zoneSerialNo: event.zoneSerialNo,
+        deviceId: event.deviceId
       );
 
       final result = await deleteZoneEditProgramUseCase(deleteZoneParams);
@@ -518,32 +519,33 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
       ));
     });
 
-    on<DeleteZone>((event, emit) async{
-      if (state is! EditProgramLoaded) return;
-      final current = state as EditProgramLoaded;
-
-      emit(current.copyWith(zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.loading));
-
-      DeleteZoneParamsEditProgram deleteZoneParams = DeleteZoneParamsEditProgram(
-          userId: event.userId,
-          controllerId: event.controllerId,
-          programId: event.programId,
-          zoneSerialNo: event.zoneSerialNo
-      );
-
-      final result = await deleteZoneEditProgramUseCase(deleteZoneParams);
-
-      result.fold(
-              (failure){
-            emit(current.copyWith(zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.failure));
-            emit(current.copyWith(zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.initial));
-          },
-              (unit){
-            emit(current.copyWith(zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.success));
-            emit(current.copyWith(zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.initial));
-          }
-      );
-    });
+    // on<DeleteZone>((event, emit) async{
+    //   if (state is! EditProgramLoaded) return;
+    //   final current = state as EditProgramLoaded;
+    //
+    //   emit(current.copyWith(zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.loading));
+    //
+    //   DeleteZoneParamsEditProgram deleteZoneParams = DeleteZoneParamsEditProgram(
+    //       userId: event.userId,
+    //       controllerId: event.controllerId,
+    //       programId: event.programId,
+    //       zoneSerialNo: event.zoneSerialNo,
+    //     deviceId: event.d
+    //   );
+    //
+    //   final result = await deleteZoneEditProgramUseCase(deleteZoneParams);
+    //
+    //   result.fold(
+    //           (failure){
+    //         emit(current.copyWith(zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.failure));
+    //         emit(current.copyWith(zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.initial));
+    //       },
+    //           (unit){
+    //         emit(current.copyWith(zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.success));
+    //         emit(current.copyWith(zoneDeleteStatusEditProgram: ZoneDeleteStatusEditProgram.initial));
+    //       }
+    //   );
+    // });
   }
 
   Future<PayloadModeEnum> sendZoneViewCommandPayload({

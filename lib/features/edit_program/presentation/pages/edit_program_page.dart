@@ -704,7 +704,8 @@ class _EditProgramPageState extends State<EditProgramPage> {
                           userId: controllerContext.userId,
                           controllerId: controllerContext.controllerId,
                           programId: state.editProgramEntity.programId.toString(),
-                          zoneSerialNo: (selectedZone + 1).toString().padLeft(3, '0')
+                          zoneSerialNo: (selectedZone + 1).toString().padLeft(3, '0'),
+                        deviceId: controllerContext.deviceId
                       )
                   );
                 }

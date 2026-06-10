@@ -1,4 +1,4 @@
-import 'package:dartz/dartz.dart';
+﻿import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
@@ -124,15 +124,36 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
   @override
   Future<Either<Failure, Unit>> deleteZone(DeleteZoneParamsEditProgram params) async{
     try {
-      final response = await remoteSource.deleteZone({'userId' : params.userId, 'controllerId' : params.controllerId, 'programId' : params.programId, 'zoneSerialNo' : params.zoneSerialNo});
-      if(response['code'] == 200){
+      final response = await remoteSource.sendViewMessage(
+        userId: params.userId,
+        controllerId: params.controllerId,
+        programId: params.programId,
+        deviceId: params.deviceId,
+        payload: [
+          "IDZONESELP${params.programId}${params.zoneSerialNo},000,000,000,000",
+          "IDZLMSETP${params.programId}${params.zoneSerialNo},000,000,000,000"
+        ],
+      );
+      if(response){
         return Right(unit);
       }else{
-        return Left(ServerFailure(response['message']));
+        return Left(ServerFailure('sendViewMessage Payload not sent'));
       }
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
     } catch (e) {
-      return Left(ServerFailure('getPrograms Fetching Failure: $e'));
+      return Left(ServerFailure('Failed to fetch controllers: $e'));
     }
+    // try {
+    //   final response = await remoteSource.deleteZone({'userId' : params.userId, 'controllerId' : params.controllerId, 'programId' : params.programId, 'zoneSerialNo' : params.zoneSerialNo});
+    //   if(response['code'] == 200){
+    //     return Right(unit);
+    //   }else{
+    //     return Left(ServerFailure(response['message']));
+    //   }
+    // } catch (e) {
+    //   return Left(ServerFailure('getPrograms Fetching Failure: $e'));
+    // }
   }
 
   @override
@@ -205,7 +226,7 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
         controllerId: params.controllerId,
         programId: params.programId,
         deviceId: params.deviceId,
-        payload: params.payload,
+        payload: [params.payload],
       );
       if(response){
         return Right(unit);

@@ -21,7 +21,7 @@ abstract class EditProgramRemoteSource{
     required String controllerId,
     required String programId,
     required String deviceId,
-    required String payload,
+    required List<String> payload,
   });
 }
 
@@ -106,7 +106,7 @@ class EditProgramRemoteSourceImpl extends EditProgramRemoteSource{
     required String controllerId,
     required String programId,
     required String deviceId,
-    required String payload
+    required List<String> payload
   }) async{
     try{
       String endPoint = buildUrl(
@@ -122,10 +122,13 @@ class EditProgramRemoteSourceImpl extends EditProgramRemoteSource{
           endPoint,
           body: {
             "sentAndReceived": [
-              PublishMessageHelper.settingsPayload(payload)
+              ...payload.map((e) => PublishMessageHelper.settingsPayload(e))
+
             ]}
       );
-      mqttManager.publish(deviceId, PublishMessageHelper.settingsPayload(payload));
+      for(var i in payload){
+        mqttManager.publish(deviceId, PublishMessageHelper.settingsPayload(i));
+      }
       if(response['code'] == 200){
         return true;
       }else{
