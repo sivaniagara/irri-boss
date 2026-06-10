@@ -1,4 +1,4 @@
-﻿import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../sub_users_barrel.dart';
 
@@ -130,7 +130,7 @@ class SubUsersBloc extends Bloc<SubUsersEvent, SubUsersState> {
           ),
         ),
             (subUserModel) {
-          logD("subUserModel :: $subUserModel");
+          kdebugmode("subUserModel :: $subUserModel");
           if (subUserModel is! Map<String, dynamic>) {
             emit(GetSubUserByPhoneError(
               message: 'Invalid subUserModel format',

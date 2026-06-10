@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -308,9 +308,9 @@ class MqttMessageHelper {
       qrCode = (jsonObject['cC'] ?? '').toString().trim();
 
       if (kDebugMode) {
-        logD('--- MQTT PACKET RECEIVED ---');
-        logD('Raw: $mqttMsg');
-        logD('Type: $typeStr | Device: $qrCode');
+        kdebugmode('--- MQTT PACKET RECEIVED ---');
+        kdebugmode('Raw: $mqttMsg');
+        kdebugmode('Type: $typeStr | Device: $qrCode');
       }
     } catch (e) {
       if (kDebugMode) debugPrint('MQTT JSON Parse Error: $e | Raw: $mqttMsg');
@@ -331,7 +331,7 @@ class MqttMessageHelper {
     String cl = (jsonObject['cL'] ?? '').toString();
 
     if (kDebugMode) {
-      logD('Extracted Data -> Date: $cd, Time: $ct');
+      kdebugmode('Extracted Data -> Date: $cd, Time: $ct');
     }
 
     String trimmedMsg = msg.trim();
@@ -342,7 +342,7 @@ class MqttMessageHelper {
 
     // âœ… UPDATE SERVER TIME FOR EVERY PACKET
     if (cd.isNotEmpty && ct.isNotEmpty) {
-      if (kDebugMode) logD('Updating Server Time -> $cd $ct');
+      if (kDebugMode) kdebugmode('Updating Server Time -> $cd $ct');
       dispatcher.onServerTimeUpdate(qrCode, date: cd, time: ct);
     }
 
@@ -361,7 +361,7 @@ class MqttMessageHelper {
       });
 
       if (kDebugMode) {
-        logD('Dispatching Live Update: Date=$cd Time=$ct Msg=$trimmedMsg');
+        kdebugmode('Dispatching Live Update: Date=$cd Time=$ct Msg=$trimmedMsg');
       }
 
       // Format the display message instead of using raw MQTT message
@@ -404,7 +404,7 @@ class MqttMessageHelper {
 
       // Also update Live Sync UI with timestamp from SMS packet if available
       if (cd.isNotEmpty && ct.isNotEmpty) {
-        if (kDebugMode) logD('SMS Packet Update -> Syncing time from SMS packet');
+        if (kDebugMode) kdebugmode('SMS Packet Update -> Syncing time from SMS packet');
         dispatcher.onServerTimeUpdate(qrCode, date: cd, time: ct);
       }
     }

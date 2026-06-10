@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 
 import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
@@ -40,9 +40,9 @@ class WaterFertilizerSettingsRepositoryImpl extends WaterFertilizerSettingsRepos
 
     }catch(e, stackTrace){
       if (kDebugMode) {
-        logD(stackTrace);
+        kdebugmode(stackTrace);
       }
-      logD(e);
+      kdebugmode(e);
       return Left(ServerFailure('Fetch zone set failed :: ${e.toString()}'));
     }
   }
@@ -72,9 +72,9 @@ class WaterFertilizerSettingsRepositoryImpl extends WaterFertilizerSettingsRepos
 
     }catch(e, stackTrace){
       if (kDebugMode) {
-        logD(stackTrace);
+        kdebugmode(stackTrace);
       }
-      logD(e);
+      kdebugmode(e);
       return Left(ServerFailure('Fetch zone set failed :: ${e.toString()}'));
     }
   }
@@ -106,9 +106,9 @@ class WaterFertilizerSettingsRepositoryImpl extends WaterFertilizerSettingsRepos
 
     }catch(e, stackTrace){
       if (kDebugMode) {
-        logD(stackTrace);
+        kdebugmode(stackTrace);
       }
-      logD(e);
+      kdebugmode(e);
       return Left(ServerFailure('Fetch zone set failed :: ${e.toString()}'));
     }
   }

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/utils/api_urls.dart';
 import 'package:niagara_smart_drip_irrigation/core/utils/common_toast.dart';
@@ -105,7 +105,7 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
       }
       final response = await apiClient.get(endpoint);
       for (var i in response['data']) {
-        logD("controller response => $i");
+        kdebugmode("controller response => $i");
       }
       return handleListResponse<ControllerModel>(
         response,
@@ -115,8 +115,8 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
         (controllers) => controllers.cast<ControllerEntity>(),
       );
     } catch (e, stackTrace) {
-      logD(stackTrace);
-      logD("Error :: $e");
+      kdebugmode(stackTrace);
+      kdebugmode("Error :: $e");
       rethrow;
     }
   }
@@ -133,7 +133,7 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
     required bool mOff,
     required bool dualPump,
   }) async {
-    logD("motor on off call");
+    kdebugmode("motor on off call");
     final motorSms = status == "1" ? "MOTORON" : "MTROF";
     final motor2Sms = status == "1"
         ? m1on
@@ -146,7 +146,7 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
       "status": status,
       "sentSms": sendsmsName,
     };
-    logD("payload:$payload");
+    kdebugmode("payload:$payload");
 
     final endpoint = DashboardUrls.motorOnOffUrl
         .replaceAll(':userId', userId.toString())
@@ -252,7 +252,7 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
       );
     } catch (e) {
       // Log history failure shouldn't affect the main operation
-      logD("Failed to log motor command to history: $e");
+      kdebugmode("Failed to log motor command to history: $e");
     }
   }
 }

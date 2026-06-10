@@ -1,4 +1,4 @@
-﻿
+
 import '../../../../core/services/api_client.dart';
 import '../../../../core/services/mqtt/mqtt_manager.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
@@ -37,10 +37,10 @@ class EditProgramRemoteSourceImpl extends EditProgramRemoteSource{
   @override
   Future<Map<String, dynamic>> getProgram({required Map<String, String> urlData})async {
     try{
-      logD('getPrograms => $urlData');
+      kdebugmode('getPrograms => $urlData');
       String endPoint = buildUrl(EditProgramUrls.getProgram, urlData);
       final response = await apiClient.get(endPoint);
-      logD('getPrograms => $response');
+      kdebugmode('getPrograms => $response');
       return response;
     }catch (e){
       rethrow;
@@ -52,7 +52,7 @@ class EditProgramRemoteSourceImpl extends EditProgramRemoteSource{
     try{
       String endPoint = buildUrl(EditProgramUrls.deleteZone, urlData);
       final response = await apiClient.delete(endPoint);
-      logD('delete zone => $response');
+      kdebugmode('delete zone => $response');
       return response;
     }catch(e){
       rethrow;
@@ -62,13 +62,13 @@ class EditProgramRemoteSourceImpl extends EditProgramRemoteSource{
   @override
   Future<Map<String, dynamic>> saveProgram({required Map<String, String> urlData, required Map<String, dynamic> bodyData})async {
     try{
-      logD('saveProgram => $urlData');
+      kdebugmode('saveProgram => $urlData');
       String endPoint = buildUrl(EditProgramUrls.getProgram, urlData);
       final response = await apiClient.post(
           endPoint,
         body: bodyData
       );
-      logD('saveProgram => $response');
+      kdebugmode('saveProgram => $response');
       return response;
     }catch (e){
       rethrow;
@@ -89,7 +89,7 @@ class EditProgramRemoteSourceImpl extends EditProgramRemoteSource{
           endPoint,
         body: {"sentAndReceived": listOfPayload}
       );
-      logD('getPrograms => $response');
+      kdebugmode('getPrograms => $response');
       for(var payload in listOfPayload){
         await Future.delayed(Duration(seconds: 8));
         mqttManager.publish(deviceId, payload);

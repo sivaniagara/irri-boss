@@ -1,4 +1,4 @@
-﻿import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/node_entity.dart';
 import '../../domain/usecases/edit_zone_configuration_usecase.dart';
 import '../../domain/usecases/get_zone_configuration_usecase.dart';
@@ -25,7 +25,7 @@ class EditZoneBloc extends Bloc<EditZoneEvent, EditZoneState> {
   }) : super(EditZoneInitial()) {
 
     on<AddZone>((event, emit) async {
-      logD('AddZone --> ** initialize **');
+      kdebugmode('AddZone --> ** initialize **');
       emit(EditZoneLoading());
       GetZoneConfigurationParams params = GetZoneConfigurationParams(userId: event.userId, controllerId: event.controllerId, programId: event.programId);
       final result = await getZoneNodesUseCase(params);
@@ -46,7 +46,7 @@ class EditZoneBloc extends Bloc<EditZoneEvent, EditZoneState> {
     });
 
     on<EditZone>((event, emit) async {
-      logD('EditZone --> ** initialize **');
+      kdebugmode('EditZone --> ** initialize **');
       emit(EditZoneLoading());
       EditZoneConfigurationParams params = EditZoneConfigurationParams(
           userId: event.userId,

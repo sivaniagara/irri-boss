@@ -1,4 +1,4 @@
-﻿
+
 
 import '../../../../../../core/error/exceptions.dart';
 import '../../../../../../core/services/api_client.dart';
@@ -50,7 +50,7 @@ class TdyValveStatusRemoteDataSourceImpl extends TdyValveStatusRemoteDataSource 
       /// Make API call
       final response = await apiClient.get(endpoint);
       // final response = await apiClient.get("user/2489/subuser/0/controller/3827/zone/graph?&fromDate=2026-02-09&programName=p2");
-       logD("endpoint--->$endpoint");
+       kdebugmode("endpoint--->$endpoint");
        if (response == null) {
         throw ServerException(statusCode: 500, message: "Empty server response");
       }

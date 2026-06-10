@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -289,7 +289,7 @@ class AppRouter {
         GoRoute(
           path: DashBoardRoutes.programCommonSettings,
           builder: (context, state) {
-            logD("state.pathParameters => ${state.pathParameters}");
+            kdebugmode("state.pathParameters => ${state.pathParameters}");
             var settingName = state.pathParameters['settingName']!;
             var settingNo = state.pathParameters['settingNo']!;
             final controllerContext = (context.read<ControllerContextCubit>().state as ControllerContextLoaded);
@@ -320,7 +320,7 @@ class AppRouter {
             name: 'ctrlLivePage',
             path: DashBoardRoutes.ctrlLivePage,
             builder: (context, state) {
-              logD('Building ctrlLivePage, AuthBloc state: ${sl.get<AuthBloc>().state}');
+              kdebugmode('Building ctrlLivePage, AuthBloc state: ${sl.get<AuthBloc>().state}');
               
               LiveMessageEntity? liveMessage;
               String? deviceId;

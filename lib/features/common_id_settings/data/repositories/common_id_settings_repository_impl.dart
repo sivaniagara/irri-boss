@@ -1,4 +1,4 @@
-﻿import 'package:dartz/dartz.dart';
+import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
@@ -21,7 +21,7 @@ class CommonIdSettingsRepositoryImpl implements CommonIdSettingsRepository{
   @override
   Future<Either<Failure, List<CategoryEntity>>> getCommonIdSettings(GetCommonIdSettingsParams params) async{
     if(kDebugMode){
-      logD('CommonIdSettingsRepositoryImpl --> getCommonIdSettings --> ** initialize  **');
+      kdebugmode('CommonIdSettingsRepositoryImpl --> getCommonIdSettings --> ** initialize  **');
     }
     try {
       final response =
@@ -35,8 +35,8 @@ class CommonIdSettingsRepositoryImpl implements CommonIdSettingsRepository{
       return Right(listOfCategoryModel);
     } catch (e, stackTrace) {
       if(kDebugMode){
-        logD('getCommonIdSettings :: $e');
-        logD('stackTrace :: $stackTrace');
+        kdebugmode('getCommonIdSettings :: $e');
+        kdebugmode('stackTrace :: $stackTrace');
       }
       return Left(
         ServerFailure('getCommonIdSettings failed: $e'),
@@ -47,7 +47,7 @@ class CommonIdSettingsRepositoryImpl implements CommonIdSettingsRepository{
   @override
   Future<Either<Failure, Unit>> updateCategoryNodeSerialNo(SubmitCategoryParams params) async{
     if(kDebugMode){
-      logD('CommonIdSettingsRepositoryImpl --> updateCategoryNodeSerialNo --> ** initialize  **');
+      kdebugmode('CommonIdSettingsRepositoryImpl --> updateCategoryNodeSerialNo --> ** initialize  **');
     }
     try {
       var urlData = {
@@ -58,7 +58,7 @@ class CommonIdSettingsRepositoryImpl implements CommonIdSettingsRepository{
 
       CategoryModel categoryModel = CategoryModel.fromEntity(params.categoryEntity);
       var bodyData = categoryModel.updateCategoryNodeSerialNoPayload();
-      logD('bodyData : $bodyData');
+      kdebugmode('bodyData : $bodyData');
       final response =
       await commonIdSettingsDataSource.updateCategoryNodeSerialNo(
           urlData: urlData,
@@ -73,8 +73,8 @@ class CommonIdSettingsRepositoryImpl implements CommonIdSettingsRepository{
 
     } catch (e, stackTrace) {
       if(kDebugMode){
-        logD('updateCategoryNodeSerialNo :: $e');
-        logD('stackTrace :: $stackTrace');
+        kdebugmode('updateCategoryNodeSerialNo :: $e');
+        kdebugmode('stackTrace :: $stackTrace');
       }
       return Left(
         ServerFailure('updateCategoryNodeSerialNo failed: $e'),

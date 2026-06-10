@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 
 import 'package:dartz/dartz.dart';
 
@@ -37,8 +37,8 @@ class IrrigationSettingsRepositoryImpl extends IrrigationSettingsRepository{
       }
 
     }catch(e, stackTrace){
-      logD(stackTrace);
-      logD('getTemplateSetting => ${e.toString()}');
+      kdebugmode(stackTrace);
+      kdebugmode('getTemplateSetting => ${e.toString()}');
       return Left(ServerFailure('getTemplateSetting failed : ${e.toString()}'));
     }
   }
@@ -50,7 +50,7 @@ class IrrigationSettingsRepositoryImpl extends IrrigationSettingsRepository{
       ControllerIrrigationSettingModel.fromEntity(entity: params.controllerIrrigationSettingEntity);
       var jsonData = controllerIrrigationSettingModel.toJson();
       var mqttData = controllerIrrigationSettingModel.getMqttPayload(groupIndex: params.groupIndex, settingIndex: params.settingIndex);
-      logD("mqttData : $mqttData");
+      kdebugmode("mqttData : $mqttData");
       final response = await dataSource.updateTemplateSetting(
           urlData: {
             'userId' : params.userId,
@@ -71,8 +71,8 @@ class IrrigationSettingsRepositoryImpl extends IrrigationSettingsRepository{
         return Left(ServerFailure(response['message']));
       }
     }catch(e, stackTrace){
-      logD(stackTrace);
-      logD('updateTemplateSetting => ${e.toString()}');
+      kdebugmode(stackTrace);
+      kdebugmode('updateTemplateSetting => ${e.toString()}');
       return Left(ServerFailure('updateTemplateSetting failed : ${e.toString()}'));
     }
   }

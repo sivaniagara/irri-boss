@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -293,7 +293,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
   Future<void> fetchControllersForGroup(
       int userId, int groupId, GoRouterState routeState) async {
-    logD("fetchControllersForGroup");
+    kdebugmode("fetchControllersForGroup");
     if (state is DashboardGroupsLoaded) {
       final currentState = state as DashboardGroupsLoaded;
       final result =
@@ -339,7 +339,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
   Future<(int modelId, int controllerId, String deviceId)> selectGroup(
       int groupId, int userId, GoRouterState routeState) async {
-    logD("selectGroup");
+    kdebugmode("selectGroup");
 
     if (state is! DashboardGroupsLoaded) return (0, 0, '');
      final currentState = state as DashboardGroupsLoaded;
@@ -398,7 +398,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
   }
 
   Future<void> selectController(int controllerIndex) async {
-    logD('selectController');
+    kdebugmode('selectController');
     if (state is! DashboardGroupsLoaded) return;
 
     final currentState = state as DashboardGroupsLoaded;

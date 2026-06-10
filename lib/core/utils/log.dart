@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 ///
 /// - Uses [debugPrint] to avoid log truncation/throttling issues.
 /// - No-ops in release/profile builds.
-void logD(Object? message) {
+void kdebugmode(Object? message) {
   if (kDebugMode) {
     debugPrint(message?.toString() ?? 'null');
   }

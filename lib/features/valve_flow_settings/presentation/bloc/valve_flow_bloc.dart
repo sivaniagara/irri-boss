@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/valve_flow_entity.dart';
@@ -63,7 +63,7 @@ class ValveFlowBloc extends Bloc<ValveFlowEvent, ValveFlowState> {
       final payload = "$command,${node.serialNo},${node.nodeValue}".replaceAll(RegExp(r'\s+'), '');
 
       if (kDebugMode) {
-        logD("VALVE FLOW MQTT: Topic: ${currentState.deviceId}, Cmd: $payload");
+        kdebugmode("VALVE FLOW MQTT: Topic: ${currentState.deviceId}, Cmd: $payload");
       }
 
       final result = await repository.saveValveFlowSettings(
@@ -92,7 +92,7 @@ class ValveFlowBloc extends Bloc<ValveFlowEvent, ValveFlowState> {
       final payload = "$command,${entity.flowDeviation}".replaceAll(RegExp(r'\s+'), '');
 
       if (kDebugMode) {
-        logD("VALVE DEVIATION MQTT: Topic: ${currentState.deviceId}, Cmd: $payload");
+        kdebugmode("VALVE DEVIATION MQTT: Topic: ${currentState.deviceId}, Cmd: $payload");
       }
 
       final result = await repository.saveValveFlowSettings(
@@ -124,7 +124,7 @@ class ValveFlowBloc extends Bloc<ValveFlowEvent, ValveFlowState> {
         final statusMsg = "#VFLOWSET";
 
         if (kDebugMode) {
-          logD("VALVE FLOW VIEW MQTT: Topic: ${currentState.deviceId}, Cmd: $statusMsg");
+          kdebugmode("VALVE FLOW VIEW MQTT: Topic: ${currentState.deviceId}, Cmd: $statusMsg");
         }
 
         await repository.saveValveFlowSettings(

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_list_tile.dart';
@@ -39,7 +39,7 @@ class _ListOfZoneSetState extends State<ListOfZoneSet> {
   Widget build(BuildContext context) {
     return BlocBuilder<WaterFertilizerSettingBloc, WaterFertilizerSettingState>(
         builder: (context,state){
-          logD("state =ListOfZoneSet= $state");
+          kdebugmode("state =ListOfZoneSet= $state");
           if (state is WaterFertilizerSettingLoading) {
             return const Center(child: CircularProgressIndicator());
           }else if(state is WaterFertilizerSettingLoaded){

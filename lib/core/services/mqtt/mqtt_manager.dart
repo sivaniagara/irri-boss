@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:mqtt_client/mqtt_client.dart';
@@ -50,7 +50,7 @@ class MqttManager {
   }
 
   void subscribe(String deviceId, {bool force = false}) {
-    logD("call subscribe");
+    kdebugmode("call subscribe");
 
     if (_currentDeviceId == deviceId && !force) return;
 

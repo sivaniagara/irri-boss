@@ -1,4 +1,4 @@
-﻿
+
 
 import '../../../../../../core/error/exceptions.dart';
 import '../../../../../../core/services/api_client.dart';
@@ -51,7 +51,7 @@ class FlowGraphRemoteDataSourceImpl extends FlowGraphRemoteDataSource {
 
       /// Make API call
       final response = await apiClient.get(endpoint);
-       logD("endpoint--->$endpoint");
+       kdebugmode("endpoint--->$endpoint");
 
       if (response == null) {
         throw ServerException(statusCode: 500, message: "Empty server response");

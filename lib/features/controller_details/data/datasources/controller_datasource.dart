@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 
 import '../../../../../core/error/exceptions.dart';
 import '../../../../../core/services/api_client.dart';
@@ -27,11 +27,11 @@ class ControllerRemoteDataSourceImpl extends ControllerRemoteDataSource {
           .replaceAll(':userId', params.userId.toString())
           .replaceAll(':userDeviceId', params.controllerId.toString());
 
-      logD("âž¡ï¸ GET API: $endpoint");
+      kdebugmode("âž¡ï¸ GET API: $endpoint");
 
       final response = await apiClient.get(endpoint);
 
-      logD("â¬…ï¸ GET RESPONSE: $response");
+      kdebugmode("â¬…ï¸ GET RESPONSE: $response");
 
       if (response == null) {
         throw ServerException(statusCode: 500, message: "Empty server response");
@@ -46,7 +46,7 @@ class ControllerRemoteDataSourceImpl extends ControllerRemoteDataSource {
         message: response['message'] ?? "Unknown server error",
       );
     } catch (e) {
-      logD("âŒ getControllerDetails ERROR: $e");
+      kdebugmode("âŒ getControllerDetails ERROR: $e");
       throw ServerException(statusCode: 500, message: e.toString());
     }
   }
@@ -58,7 +58,7 @@ class ControllerRemoteDataSourceImpl extends ControllerRemoteDataSource {
     try {
       final endpoint = ApiUrls.updateController;
 
-       // logD("âž¡ï¸ BODY: $body");
+       // kdebugmode("âž¡ï¸ BODY: $body");
       Map<String, dynamic> body = {
         "userId" : params.userId,
         "userDeviceId" : params.controllerId,
@@ -73,7 +73,7 @@ class ControllerRemoteDataSourceImpl extends ControllerRemoteDataSource {
         "editType" : params.editType
       };
 
-       logD(" ï¸ body RESPONSE: ${jsonEncode(body)}");
+       kdebugmode(" ï¸ body RESPONSE: ${jsonEncode(body)}");
       final response = await apiClient.put(
         endpoint,
         body: body,
@@ -83,7 +83,7 @@ class ControllerRemoteDataSourceImpl extends ControllerRemoteDataSource {
         },
       );
 
-      logD("â¬…ï¸ PUT RESPONSE: $response");
+      kdebugmode("â¬…ï¸ PUT RESPONSE: $response");
 
       if (response == null) {
         throw ServerException(statusCode: 500, message: "Empty server response");
@@ -98,8 +98,8 @@ class ControllerRemoteDataSourceImpl extends ControllerRemoteDataSource {
         message: response["message"] ?? "Update failed",
       );
     } catch (e) {
-      logD("âŒ updateController ERROR: $e");
-      logD("âŒ  error ${e.toString()}");
+      kdebugmode("âŒ updateController ERROR: $e");
+      kdebugmode("âŒ  error ${e.toString()}");
       throw ServerException(statusCode: 500, message: e.toString());
     }
   }

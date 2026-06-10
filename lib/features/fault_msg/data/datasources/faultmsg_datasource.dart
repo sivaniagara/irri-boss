@@ -1,4 +1,4 @@
-﻿import '../../../../core/error/exceptions.dart';
+import '../../../../core/error/exceptions.dart';
 import '../../../../core/services/api_client.dart';
 import '../../utils/faultmsg_routes.dart';
 import '../models/faultmsg_model.dart';
@@ -47,7 +47,7 @@ class faultmsgRemoteDataSourceImpl extends faultmsgRemoteDataSource {
         message: response["message"] ?? "Unknown error in faultmsg API",
       );
     } catch (e) {
-      logD("âŒ getSendReceiveMessages ERROR: ${e.toString()}");
+      kdebugmode("âŒ getSendReceiveMessages ERROR: ${e.toString()}");
       throw ServerException(statusCode: 500, message: e.toString());
     }
   }

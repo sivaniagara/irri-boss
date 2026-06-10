@@ -1,4 +1,4 @@
-﻿
+
 import '../../../../core/services/api_client.dart';
 import '../../../../core/services/mqtt/mqtt_manager.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
@@ -47,7 +47,7 @@ class CommonIdSettingsDataSourceImpl extends CommonIdSettingsRemoteSource{
       final response = await apiClient.get(endpoint);
       return response;
     }catch (e){
-      logD('getCommonIdSettings error in data source impl : ${e.toString()}');
+      kdebugmode('getCommonIdSettings error in data source impl : ${e.toString()}');
       rethrow;
     }
   }
@@ -64,7 +64,7 @@ class CommonIdSettingsDataSourceImpl extends CommonIdSettingsRemoteSource{
       mqttManager.publish(deviceId, PublishMessageHelper.settingsPayload(body['sentSms']));
       return response;
     }catch (e){
-      logD('updateCategoryNodeSerialNo error in data source impl : ${e.toString()}');
+      kdebugmode('updateCategoryNodeSerialNo error in data source impl : ${e.toString()}');
       rethrow;
     }
   }

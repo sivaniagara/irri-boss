@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
@@ -81,7 +81,7 @@ class _EditProgramPageState extends State<EditProgramPage> {
       floatingActionButton: BlocListener<EditProgramBloc, EditProgramState>(
         listener: (BuildContext context, state) {
           if(state is EditProgramLoaded){
-            logD(state.zoneDeleteStatusEditProgram);
+            kdebugmode(state.zoneDeleteStatusEditProgram);
           }
           if(state is EditProgramLoaded && state.saveProgramStatus == SaveProgramStatus.loading){
             showGradientLoadingDialog(context);
@@ -369,7 +369,7 @@ class _EditProgramPageState extends State<EditProgramPage> {
         },
         listener: (BuildContext context, state) {
           if(state is EditProgramLoaded){
-            logD("state.sendViewMessageStatusEnum :: ${state.sendViewMessageStatusEnum}");
+            kdebugmode("state.sendViewMessageStatusEnum :: ${state.sendViewMessageStatusEnum}");
           }
           if(state is EditProgramLoaded && state.sendViewMessageStatusEnum == SendViewMessageStatusEnum.loading){
             showGradientLoadingDialog(context);
@@ -406,7 +406,7 @@ class _EditProgramPageState extends State<EditProgramPage> {
 
     if (picked != null) {
       final String formattedTime = _formatTime(picked);
-      logD(formattedTime);
+      kdebugmode(formattedTime);
       if(irrigationDosingOrPrePostMode == 1 && timeOrQuantity == 1 && mode == 1){
         context.read<EditProgramBloc>().add(
             UpdateTotalTime(
@@ -519,7 +519,7 @@ class _EditProgramPageState extends State<EditProgramPage> {
         required int channelIndex,
         required int mode,
       }) {
-    logD("value : $value");
+    kdebugmode("value : $value");
     return leafBox(
       child: TinyTextFormField(
         value: value,

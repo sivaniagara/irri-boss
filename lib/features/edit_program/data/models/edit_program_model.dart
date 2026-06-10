@@ -1,4 +1,4 @@
-﻿import 'package:niagara_smart_drip_irrigation/features/edit_program/data/models/zone_setting_model.dart';
+import 'package:niagara_smart_drip_irrigation/features/edit_program/data/models/zone_setting_model.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/entities/edit_program_entity.dart';
 
 import '../../../../core/services/mqtt/publish_messages.dart';
@@ -77,7 +77,7 @@ class EditProgramModel extends EditProgramEntity {
   static const _postFlowSetCommand = 'SETPOSTFLOWP:programId:zoneSetId';
 
   String _cmd(String template, String zoneSetId) {
-    logD("zoneSetId :: $zoneSetId");
+    kdebugmode("zoneSetId :: $zoneSetId");
     return template
         .replaceAll(':programId', programId.toString())
         .replaceAll(':zoneSetId', zoneSetId.toString().padLeft(2, '0'));
@@ -182,7 +182,7 @@ class EditProgramModel extends EditProgramEntity {
       e.ch5Liters,
       e.ch6Liters,
     ];
-    logD("times => $times");
+    kdebugmode("times => $times");
     return method == 1
         ? times[index].replaceAll(':', '')
         : liters[index].padLeft(5, '0');

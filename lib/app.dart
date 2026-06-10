@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:niagara_smart_drip_irrigation/features/program_settings/presentation/bloc/program_bloc.dart';
@@ -38,7 +38,7 @@ Future<void> appMain() async {
     } on UnsupportedError catch (e) {
       // Platform not supported for Firebase initialization (e.g., desktop without config)
       // Log and continue; Firebase-dependent features should handle missing Firebase gracefully.
-      if (kDebugMode) logD('Firebase initialize skipped: $e');
+      if (kDebugMode) ('Firebase initialize skipped: $e');
     }
   }
   await FirebaseMessaging.instance.setAutoInitEnabled(true);

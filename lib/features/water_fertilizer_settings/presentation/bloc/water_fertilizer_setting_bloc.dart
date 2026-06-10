@@ -1,4 +1,4 @@
-﻿import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/water_fertilizer_settings/domain/usecases/update_zone_set_setting_usecase.dart';
 
 import '../../domain/entities/program_zone_set_entity.dart';
@@ -48,8 +48,8 @@ class WaterFertilizerSettingBloc extends Bloc<WaterFertilizerSettingEvent, Water
     });
 
     on<FetchZoneSetSettingEvent>((event, emit)async{
-      logD('state => $state');
-      logD("FetchZoneSetSettingEvent called....");
+      kdebugmode('state => $state');
+      kdebugmode("FetchZoneSetSettingEvent called....");
       emit(WaterFertilizerSettingLoading());
       FetchZoneSetSettingParams fetchZoneSetSettingParams = FetchZoneSetSettingParams(
           userId: event.userId,
@@ -285,8 +285,8 @@ class WaterFertilizerSettingBloc extends Bloc<WaterFertilizerSettingEvent, Water
 
     on<UpdateChannelLiters>((event, emit){
       final current = state as WaterFertilizerSettingLoaded;
-      logD("UpdateChannelLiters called");
-      logD("${event.liters} , ${event.channelIndex}, ${event.zoneNo}");
+      kdebugmode("UpdateChannelLiters called");
+      kdebugmode("${event.liters} , ${event.channelIndex}, ${event.zoneNo}");
       emit(WaterFertilizerSettingLoaded(
           userId: current.userId,
           controllerId: current.controllerId,
@@ -298,7 +298,7 @@ class WaterFertilizerSettingBloc extends Bloc<WaterFertilizerSettingEvent, Water
                       if(index != event.zoneNo){
                         return current.programZoneSetEntity.listOfZoneSet.first.listOfZoneWaterFertilizer[index];
                       }else{
-                        logD("update success");
+                        kdebugmode("update success");
                         return current.programZoneSetEntity.listOfZoneSet.first.listOfZoneWaterFertilizer[index]
                             .copyWith(
                           updatedCh1Liters: event.channelIndex == 0 ? event.liters : null,

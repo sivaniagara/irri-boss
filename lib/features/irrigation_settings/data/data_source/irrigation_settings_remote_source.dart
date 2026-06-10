@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/utils/irrigation_settings_urls.dart';
 
 import '../../../../core/services/api_client.dart';
@@ -31,7 +31,7 @@ class IrrigationSettingsRemoteSourceImpl extends IrrigationSettingsRemoteSource{
       String endPoint = buildUrl(IrrigationSettingsUrls.getTemplateSetting, urlData);
       final response = await apiClient.get(endPoint);
       if(kDebugMode){
-        logD('getTemplateSetting response  => $response');
+        kdebugmode('getTemplateSetting response  => $response');
       }
       return response;
     }catch (e){
@@ -47,16 +47,16 @@ class IrrigationSettingsRemoteSourceImpl extends IrrigationSettingsRemoteSource{
   }) async{
     try{
       if(kDebugMode){
-        logD("urlData : $urlData");
+        kdebugmode("urlData : $urlData");
       }
       String endPoint = buildUrl(IrrigationSettingsUrls.updateTemplateSetting, urlData);
       final response = await apiClient.post(endPoint, body: body);
       if(kDebugMode){
-        logD("deviceId :: $deviceId");
+        kdebugmode("deviceId :: $deviceId");
       }
       mqttManager.publish(deviceId, PublishMessageHelper.settingsPayload(body['sentSms']));
       if(kDebugMode){
-        logD('updateTemplateSetting response  => $response');
+        kdebugmode('updateTemplateSetting response  => $response');
       }
       return response;
     }catch (e){

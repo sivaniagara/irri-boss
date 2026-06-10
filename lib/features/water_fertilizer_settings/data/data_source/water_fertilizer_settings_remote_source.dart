@@ -1,4 +1,4 @@
-﻿import '../../../../core/services/api_client.dart';
+import '../../../../core/services/api_client.dart';
 import '../../../../core/utils/api_urls.dart';
 import '../../utils/water_fertilizer_settings_url.dart';
 
@@ -19,7 +19,7 @@ class WaterFertilizerSettingsRemoteSourceImpl extends WaterFertilizerSettingsRem
     try{
       String endPoint = buildUrl(WaterFertilizerSettingsUrl.program, urlData);
       final response = await apiClient.get(endPoint);
-      logD('fetchProgramZoneSets response  => $response');
+      kdebugmode('fetchProgramZoneSets response  => $response');
       return response;
     }catch (e){
       rethrow;
@@ -31,7 +31,7 @@ class WaterFertilizerSettingsRemoteSourceImpl extends WaterFertilizerSettingsRem
     try{
       String endPoint = buildUrl(WaterFertilizerSettingsUrl.zoneSet, urlData);
       final response = await apiClient.get(endPoint);
-      logD('fetchZoneSetSettings response  => $response');
+      kdebugmode('fetchZoneSetSettings response  => $response');
       return response;
     }catch (e){
       rethrow;
@@ -43,7 +43,7 @@ class WaterFertilizerSettingsRemoteSourceImpl extends WaterFertilizerSettingsRem
     try{
       String endPoint = buildUrl(WaterFertilizerSettingsUrl.updateZoneSet, urlData);
       final response = await apiClient.post(endPoint, body: bodyData);
-      logD('updateZoneSetSettings response  => $response');
+      kdebugmode('updateZoneSetSettings response  => $response');
       return response;
     }catch (e){
       rethrow;

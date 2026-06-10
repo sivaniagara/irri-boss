@@ -1,4 +1,4 @@
-﻿import 'package:dartz/dartz.dart';
+import 'package:dartz/dartz.dart';
 import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
 import 'package:niagara_smart_drip_irrigation/core/usecases/usecase.dart';
 
@@ -26,7 +26,7 @@ class SubmitZoneConfigurationUseCase extends UseCase<Unit, SubmitZoneConfigurati
 
   @override
   Future<Either<Failure, Unit>> call(SubmitZoneConfigurationParams params) async{
-    logD('SubmitZoneConfigurationUsecase called.....');
+    kdebugmode('SubmitZoneConfigurationUsecase called.....');
     return repository.submitZoneConfiguration(params);
   }
 }

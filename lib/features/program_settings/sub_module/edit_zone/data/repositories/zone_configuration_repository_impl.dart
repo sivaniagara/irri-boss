@@ -1,4 +1,4 @@
-﻿import 'package:dartz/dartz.dart';
+import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
 import 'package:niagara_smart_drip_irrigation/features/program_settings/sub_module/edit_zone/domain/repositories/zone_configuration_repository.dart';
@@ -19,7 +19,7 @@ class ZoneConfigurationRepositoryImpl implements ZoneConfigurationRepository{
   Future<Either<Failure, ZoneConfigurationEntity>>
   getZoneConfiguration(GetZoneConfigurationParams params) async {
     if(kDebugMode){
-      logD('ZoneConfigurationRepositoryImpl --> getZoneConfiguration --> ** initialize  **');
+      kdebugmode('ZoneConfigurationRepositoryImpl --> getZoneConfiguration --> ** initialize  **');
     }
     try {
       final response =
@@ -35,8 +35,8 @@ class ZoneConfigurationRepositoryImpl implements ZoneConfigurationRepository{
       return Right(model);
     } catch (e, stackTrace) {
       if(kDebugMode){
-        logD('getZoneConfiguration :: $e');
-        logD('stackTrace :: $stackTrace');
+        kdebugmode('getZoneConfiguration :: $e');
+        kdebugmode('stackTrace :: $stackTrace');
       }
       return Left(
         ServerFailure('getZoneConfiguration failed: $e'),
@@ -62,8 +62,8 @@ class ZoneConfigurationRepositoryImpl implements ZoneConfigurationRepository{
         return Left(ServerFailure(response['message']));
       }
     }catch(e, stackTrace){
-      logD(e.toString());
-      logD(stackTrace);
+      kdebugmode(e.toString());
+      kdebugmode(stackTrace);
       return Left(ServerFailure('submitZoneConfiguration failed: $e'));
     }
 
@@ -86,8 +86,8 @@ class ZoneConfigurationRepositoryImpl implements ZoneConfigurationRepository{
         return Left(ServerFailure(response['message']));
       }
     }catch(e, stackTrace){
-      logD(e.toString());
-      logD(stackTrace);
+      kdebugmode(e.toString());
+      kdebugmode(stackTrace);
       return Left(ServerFailure('submitZoneConfiguration failed: $e'));
     }
 
@@ -98,7 +98,7 @@ class ZoneConfigurationRepositoryImpl implements ZoneConfigurationRepository{
   Future<Either<Failure, ZoneConfigurationEntity>>
   editZoneConfiguration(EditZoneConfigurationParams params) async {
     if(kDebugMode){
-      logD('ZoneConfigurationRepositoryImpl --> editZoneConfiguration --> ** initialize  **');
+      kdebugmode('ZoneConfigurationRepositoryImpl --> editZoneConfiguration --> ** initialize  **');
     }
     try {
       final response =
@@ -115,8 +115,8 @@ class ZoneConfigurationRepositoryImpl implements ZoneConfigurationRepository{
       return Right(model);
     } catch (e, stackTrace) {
       if(kDebugMode){
-        logD('editZoneConfiguration :: $e');
-        logD('stackTrace :: $stackTrace');
+        kdebugmode('editZoneConfiguration :: $e');
+        kdebugmode('stackTrace :: $stackTrace');
       }
       return Left(
         ServerFailure('editZoneConfiguration failed: $e'),

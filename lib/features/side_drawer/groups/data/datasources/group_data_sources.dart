@@ -1,4 +1,4 @@
-﻿import '../../../groups/utils/groups_urls.dart';
+import '../../../groups/utils/groups_urls.dart';
 import '../../../../../core/error/exceptions.dart';
 import '../../../../../core/services/api_client.dart';
 import '../../domain/entities/group_entity.dart';
@@ -32,7 +32,7 @@ class GroupDataSourcesImpl extends GroupDataSources {
         );
       }
     } catch (e) {
-      logD('Fetch dashboard groups error: $e');
+      kdebugmode('Fetch dashboard groups error: $e');
       throw Exception('Failed to fetch dashboard groups: $e');
     }
   }
@@ -57,7 +57,7 @@ class GroupDataSourcesImpl extends GroupDataSources {
         );
       }
     } catch (e) {
-      logD('Group adding error: $e');
+      kdebugmode('Group adding error: $e');
       throw Exception('Group adding error: $e');
     }
   }
@@ -71,7 +71,7 @@ class GroupDataSourcesImpl extends GroupDataSources {
         'groupId': groupId,
         'groupName': groupName
       };
-      // logD("body :: $body");
+      // kdebugmode("body :: $body");
       final response = await apiClient.put(
         endpoint,
         body: body,
@@ -85,7 +85,7 @@ class GroupDataSourcesImpl extends GroupDataSources {
         );
       }
     } catch (e) {
-      logD('editGroups error: $e');
+      kdebugmode('editGroups error: $e');
       throw Exception('Failed to fetch editGroups: $e');
     }
   }
@@ -97,7 +97,7 @@ class GroupDataSourcesImpl extends GroupDataSources {
       final response = await apiClient.delete(
         endpoint,
       );
-      // logD("response :: $response");
+      // kdebugmode("response :: $response");
       if (response['code'] == 200) {
         return response['message'];
       } else {
@@ -107,7 +107,7 @@ class GroupDataSourcesImpl extends GroupDataSources {
         );
       }
     } catch (e) {
-      logD('deleteGroup error: $e');
+      kdebugmode('deleteGroup error: $e');
       throw Exception('Failed to fetch deleteGroup: $e');
     }
   }

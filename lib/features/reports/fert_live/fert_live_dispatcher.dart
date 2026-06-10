@@ -1,4 +1,4 @@
-﻿import '../../../core/services/mqtt/mqtt_message_helper.dart';
+import '../../../core/services/mqtt/mqtt_message_helper.dart';
 import 'fertstate.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
@@ -12,7 +12,7 @@ class FertilizerLiveDispatcher extends MessageDispatcher {
 
   @override
   void onFertilizerLive(String deviceId, Map<String, dynamic> message) {
-    logD("onFertilizerLive call for $deviceId");
+    kdebugmode("onFertilizerLive call for $deviceId");
 
     // Convert and cache the message
     final newState = fertilizerLiveStateFromRaw(message);

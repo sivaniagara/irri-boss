@@ -1,4 +1,4 @@
-﻿import '../../../../core/services/api_client.dart';
+import '../../../../core/services/api_client.dart';
 import '../../../../core/services/mqtt/mqtt_manager.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../../../core/utils/api_urls.dart';
@@ -34,7 +34,7 @@ class MappingAndUnmappingNodesRemoteSourceImpl extends MappingAndUnmappingNodesR
     try{
       String endPoint = buildUrl(MappingAndUnmappingNodesUrls.getMappingAndUnmappingNode, urlData);
       final response = await apiClient.get(endPoint);
-      logD('fetchMappingUnMappingNodeData response  => $response');
+      kdebugmode('fetchMappingUnMappingNodeData response  => $response');
       return response;
     }catch (e){
       rethrow;
@@ -62,7 +62,7 @@ class MappingAndUnmappingNodesRemoteSourceImpl extends MappingAndUnmappingNodesR
     try{
       String endPoint = buildUrl(MappingAndUnmappingNodesUrls.unMappedToMapped, urlData);
       final response = await apiClient.post(endPoint, body: bodyData);
-      logD('unmappedToMapped response  => $response');
+      kdebugmode('unmappedToMapped response  => $response');
       for(var node in bodyData['nodeList']){
         mqttManager.publish(deviceId, PublishMessageHelper.settingsPayload(node['sentSms']));
       }

@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 import '../../../../core/error/failures.dart';
@@ -45,7 +45,7 @@ class AlarmRepositoryImpl implements AlarmRepository {
       // 1. Publish command to hardware using the 15-digit deviceId
       if (entity.deviceId.isNotEmpty) {
         if (kDebugMode) {
-          logD("ðŸ“¤ ALARM MQTT ATTEMPT: Topic ID: ${entity.deviceId}, Payload: {\"sentSms\":\"$sentSms\"}");
+          kdebugmode("ðŸ“¤ ALARM MQTT ATTEMPT: Topic ID: ${entity.deviceId}, Payload: {\"sentSms\":\"$sentSms\"}");
         }
         await remoteSource.publishMqttCommand(
           controllerId: entity.deviceId,
@@ -83,7 +83,7 @@ class AlarmRepositoryImpl implements AlarmRepository {
 
       return const Right(null);
     } catch (e) {
-      if (kDebugMode) logD("âŒ ALARM SAVE ERROR: $e");
+      if (kDebugMode) kdebugmode("âŒ ALARM SAVE ERROR: $e");
       return Left(ServerFailure(e.toString()));
     }
   }

@@ -1,4 +1,4 @@
-﻿import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/entities/selected_node_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/usecases/delete_zone_usecase.dart';
 
@@ -344,7 +344,7 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
     });
 
     on<UpdateTotalTime>((event, emit){
-      logD("zone Index => ${event.zoneIndex}");
+      kdebugmode("zone Index => ${event.zoneIndex}");
       final current = state as EditProgramLoaded;
 
       emit(EditProgramLoaded(
@@ -492,7 +492,7 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
     });
 
     on<UpdateChannelLiters>((event, emit){
-      logD('Channel => ${event.channelIndex}');
+      kdebugmode('Channel => ${event.channelIndex}');
       final current = state as EditProgramLoaded;
       emit(EditProgramLoaded(
           userId: current.userId,

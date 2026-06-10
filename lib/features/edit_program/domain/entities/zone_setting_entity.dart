@@ -1,4 +1,4 @@
-﻿import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/entities/selected_node_entity.dart';
+import 'package:niagara_smart_drip_irrigation/features/edit_program/domain/entities/selected_node_entity.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class ZoneSettingEntity{
@@ -104,7 +104,7 @@ class ZoneSettingEntity{
     String? updatedPostLiters,
     bool? isActive,
   }){
-    logD('updatedCh1Liters : $updatedCh1Liters');
+    kdebugmode('updatedCh1Liters : $updatedCh1Liters');
     return ZoneSettingEntity(
         valves: updatedValves ?? valves,
         moistureSensors: updatedMoistureSensors ?? moistureSensors,

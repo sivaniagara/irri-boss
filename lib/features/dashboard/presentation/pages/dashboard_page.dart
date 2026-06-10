@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -66,7 +66,7 @@ class DashboardPage extends StatefulWidget {
     mqttManager.publish(deviceId, publishMessage);
 
     if (kDebugMode) {
-      logD("Live message requested for device: $deviceId");
+      kdebugmode("Live message requested for device: $deviceId");
     }
   }
 }
@@ -326,15 +326,15 @@ class _DashboardPageState extends State<DashboardPage> {
       listener: (context, state) {
         if(state is DashboardGroupsLoaded){
           if(state.selectedGroupId != null){
-            logD("state.selectedGroupId => ${state.selectedGroupId}");
-            logD("state.selectedControllerIndex => ${state.selectedControllerIndex}");
-            logD("state.groupControllers[state.selectedGroupId] => ${state.groupControllers[state.selectedGroupId]}");
-            logD("state.groupControllers => ${state.groupControllers.keys}");
+            kdebugmode("state.selectedGroupId => ${state.selectedGroupId}");
+            kdebugmode("state.selectedControllerIndex => ${state.selectedControllerIndex}");
+            kdebugmode("state.groupControllers[state.selectedGroupId] => ${state.groupControllers[state.selectedGroupId]}");
+            kdebugmode("state.groupControllers => ${state.groupControllers.keys}");
             if(state.groupControllers[state.selectedGroupId] != null && state.groupControllers[state.selectedGroupId]!.isNotEmpty){
               final selectedController = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!];
-              logD("controllerId = > ${selectedController.userDeviceId}");
-              logD("deviceId = > ${selectedController.deviceId}");
-              logD("modelId = > ${selectedController.modelId}");
+              kdebugmode("controllerId = > ${selectedController.userDeviceId}");
+              kdebugmode("deviceId = > ${selectedController.deviceId}");
+              kdebugmode("modelId = > ${selectedController.modelId}");
 
             }
           }
@@ -458,7 +458,7 @@ class _DashboardPageState extends State<DashboardPage> {
           selectedBottomNavigation = BottomNavigationOption.report;
           final controllerContext = context.read<ControllerContextCubit>().state
               as ControllerContextLoaded;
-          logD(
+          kdebugmode(
               "controllerContext.userId:${controllerContext.userId},controllerContext.controllerId:${controllerContext.controllerId},");
           context.pushReplacement(
               "${DashBoardRoutes.report}?userId=$userId&userType=$userType",
@@ -557,7 +557,7 @@ class _DashboardPageState extends State<DashboardPage> {
           selectedBottomNavigation = BottomNavigationOption.report;
           final controllerContext = context.read<ControllerContextCubit>().state
               as ControllerContextLoaded;
-          logD(
+          kdebugmode(
               "controllerContext.userId:${controllerContext.userId},controllerContext.controllerId:${controllerContext.controllerId},");
           context.pushReplacement(
               "${PowerGraphPageRoutes.PowerGraphPage}?userId=$userId&userType=$userType",
@@ -806,12 +806,12 @@ class _DashboardPageState extends State<DashboardPage> {
             ],
           ),
           onSelected: (groupId) async{
-            logD("groupId change ");
-            logD(groupId);
-            logD(userId);
+            kdebugmode("groupId change ");
+            kdebugmode(groupId);
+            kdebugmode(userId);
             (int, int, String) result = await cubit.selectGroup(groupId, userId, GoRouterState.of(context));
             // final selectedGroup = state.groupControllers[state.selectedGroupId]![state.selectedControllerIndex!];
-            // logD("selectedGroup  => ${selectedGroup.userDeviceId}");
+            // kdebugmode("selectedGroup  => ${selectedGroup.userDeviceId}");
             context.read<ControllerContextCubit>().updateController(
                 modelId: result.$1,
                 controllerId: result.$2.toString(),
@@ -870,10 +870,10 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
         onSelected: (index) {
-          logD("controller change ");
-          logD(index);
-          logD(controllers[index].userDeviceId);
-          logD(controllers[index].deviceId);
+          kdebugmode("controller change ");
+          kdebugmode(index);
+          kdebugmode(controllers[index].userDeviceId);
+          kdebugmode(controllers[index].deviceId);
           cubit.selectController(index);
           context.read<ControllerContextCubit>().updateController(
                 controllerId: controllers[index].userDeviceId.toString(),

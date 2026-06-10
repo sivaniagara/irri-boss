@@ -1,4 +1,4 @@
-﻿import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
+import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 
 abstract class CommonSettingItemEntity {
   // int get widgetType;
@@ -27,7 +27,7 @@ class SingleSettingItemEntity extends CommonSettingItemEntity{
   });
 
   SingleSettingItemEntity copyWith({String? updateValue, String? updateHf}){
-    logD("updateHf : $updateHf");
+    kdebugmode("updateHf : $updateHf");
     return SingleSettingItemEntity(
         sNo: sNo,
         widgetType: widgetType,

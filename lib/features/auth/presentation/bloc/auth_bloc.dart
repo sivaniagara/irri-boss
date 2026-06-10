@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/error/failures.dart';
@@ -46,8 +46,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
       } catch(e, s) {
         if(kDebugMode){
-          logD("Error :: $e");
-          logD("Stack trace :: $s");
+          kdebugmode("Error :: $e");
+          kdebugmode("Stack trace :: $s");
         }
 
       }
@@ -87,7 +87,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     // Similar changes for VerifyOtpEvent:
     on<VerifyOtpEvent>((event, emit) async {
-      // logD('Processing VerifyOtpEvent: verificationId=${event.params.verificationId}, otp=${event.params.otp}');
+      // kdebugmode('Processing VerifyOtpEvent: verificationId=${event.params.verificationId}, otp=${event.params.otp}');
       emit(AuthLoading());
       final result = await verifyOtp(
           VerifyOtpParams(
@@ -98,7 +98,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       result.fold(
         (failure) {
-          logD('VerifyOtpEvent failed: $failure');
+          kdebugmode('VerifyOtpEvent failed: $failure');
           emit(failure is AuthFailure
               ? AuthError(message: failure.message, code: failure.code)
               : AuthError(message: failure.message));
@@ -156,12 +156,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     });
 
     on<CheckPhoneNumberEvent>((event, emit) async {
-      // logD('Processing CheckPhoneNumberEvent: phone=${event.params.phone}');
+      // kdebugmode('Processing CheckPhoneNumberEvent: phone=${event.params.phone}');
       emit(AuthLoading());
       final result = await checkPhoneNumber(PhoneParams(event.phone, event.countryCode));
       result.fold(
         (failure) {
-          logD('CheckPhoneNumberEvent failed: $failure');
+          kdebugmode('CheckPhoneNumberEvent failed: $failure');
           emit(failure is AuthFailure
               ? AuthError(message: failure.message, code: failure.code)
               : AuthError(message: failure.message));

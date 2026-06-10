@@ -1,4 +1,4 @@
-﻿import 'package:flutter/cupertino.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/domain/entities/unmapped_category_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/domain/entities/unmapped_category_node_entity.dart';
@@ -134,7 +134,7 @@ class MappingAndUnmappingNodesBloc extends Bloc<MappingAndUnmappingNodesEvent, M
       final result = await unmappedNodeToMappedNodeUsecase(unmappedNodeToMappedNodeParams);
       result.fold(
               (failure){
-            logD("failure.message : ${failure.message}");
+            kdebugmode("failure.message : ${failure.message}");
             emit(currentState.copyWith(unMapToMapStatus: UnmappedNodeToMappedEnum.failure, msg: failure.message));
           },
               (success){

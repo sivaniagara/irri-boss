@@ -60,7 +60,7 @@ class SettingListTile extends StatelessWidget {
               : null);
     }
 
-    // logD("leadingIcon :: $leadingIcon");
+    // kdebugmode("leadingIcon :: $leadingIcon");
     return ListTile(
       leading: leadingIcon !=null ? Image.asset(leadingIcon!, width: 22, height: 22,) : null,
       title: Text(

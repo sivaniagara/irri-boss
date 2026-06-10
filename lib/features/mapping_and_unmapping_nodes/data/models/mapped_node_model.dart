@@ -1,4 +1,4 @@
-﻿import '../../domain/entities/mapped_node_entity.dart';
+import '../../domain/entities/mapped_node_entity.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class MappedNodeModel extends MappedNodeEntity {
@@ -17,7 +17,7 @@ class MappedNodeModel extends MappedNodeEntity {
   });
 
   factory MappedNodeModel.fromJson(Map<String, dynamic> json) {
-    logD(json);
+    kdebugmode(json);
     return MappedNodeModel(
       nodeId: json['nodeId'],
       categoryId: json['categoryId'],

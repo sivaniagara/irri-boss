@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -101,7 +101,7 @@ class _Dashboard20State extends State<Dashboard20> {
           if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.loading){
             showGradientLoadingDialog(context);
           }else if(state is DashboardGroupsLoaded && state.changeFromStatus == ChangeFromStatus.success){
-            logD("pop of");
+            kdebugmode("pop of");
             context.pop();
             showSuccessAlert(
                 context: context,
@@ -436,7 +436,7 @@ class _Dashboard20State extends State<Dashboard20> {
                             backgroundColor: WidgetStatePropertyAll(Colors.red)
                           ),
                             onPressed: (){
-                            logD("call motor off");
+                            kdebugmode("call motor off");
                               final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
                               String payload = 'MTROF,';
                               context.read<DashboardPageCubit>().controlMotorStatus(
@@ -454,7 +454,7 @@ class _Dashboard20State extends State<Dashboard20> {
                                 backgroundColor: WidgetStatePropertyAll(Colors.green)
                             ),
                             onPressed: (){
-                              logD("call motor on");
+                              kdebugmode("call motor on");
                               final controllerContext = context.read<ControllerContextCubit>().state as ControllerContextLoaded;
                               String payload = 'MTRON,';
                               context.read<DashboardPageCubit>().controlMotorStatus(
@@ -804,7 +804,7 @@ class _Dashboard20State extends State<Dashboard20> {
       return DateFormat("d/MMM/yyyy").format(DateTime(int.parse(liveData.cd.split('/')[2]), int.parse(liveData.cd.split('/')[1]), int.parse(liveData.cd.split('/')[0]))).toUpperCase();
     }catch(e){
       if (kDebugMode) {
-        logD(e.toString());
+        kdebugmode(e.toString());
       }
       return '---';
     }
@@ -910,9 +910,9 @@ class _Dashboard20State extends State<Dashboard20> {
   }
 
   Widget switches({required LiveMessageEntity liveMessageEntity, required int motorNo}) {
-    logD("Call switches");
-    logD("deviceid:$liveMessageEntity");
-    logD("Call switches");
+    kdebugmode("Call switches");
+    kdebugmode("deviceid:$liveMessageEntity");
+    kdebugmode("Call switches");
     return Row(
       children: [
         Column(

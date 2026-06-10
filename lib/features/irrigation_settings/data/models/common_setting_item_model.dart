@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:niagara_smart_drip_irrigation/features/irrigation_settings/domain/entities/common_setting_item_entity.dart';
 
 
@@ -15,8 +15,8 @@ class SingleSettingItemModel extends SingleSettingItemEntity{
   });
 
   factory SingleSettingItemModel.fromJson({required Map<String, dynamic> json}){
-    logD("json : $json");
-    logD(json['OPTION']);
+    kdebugmode("json : $json");
+    kdebugmode(json['OPTION']);
     return SingleSettingItemModel(
         sNo: json['SN'],
         widgetType: json['WT'],

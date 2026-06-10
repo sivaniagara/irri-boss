@@ -190,7 +190,7 @@ class _PayloadPageState extends State<PayloadPage> {
                                     setState(() {
                                       zoneSelection[zonePayload]['mode'] = PayloadModeEnum.failure;
                                     });
-                                    logD("BLOCK $zonePayload failed: $e");
+                                    kdebugmode("BLOCK $zonePayload failed: $e");
                                   }
                                 }
 
@@ -213,7 +213,7 @@ class _PayloadPageState extends State<PayloadPage> {
                                     setState(() {
                                       zoneViewCommandSelection[zonePayload]['mode'] = PayloadModeEnum.failure;
                                     });
-                                    logD("BLOCKViewCommandSelection $zonePayload failed: $e");
+                                    kdebugmode("BLOCKViewCommandSelection $zonePayload failed: $e");
                                   }
                                 }
 
@@ -238,7 +238,7 @@ class _PayloadPageState extends State<PayloadPage> {
                                   setState(() {
                                     zoneSetSelection[zoneSetPayload]['mode'] = PayloadModeEnum.failure;
                                   });
-                                  logD("BLOCK $zoneSetPayload failed: $e");
+                                  kdebugmode("BLOCK $zoneSetPayload failed: $e");
                                 }
                               }
                             },

@@ -66,7 +66,7 @@ class ApiClient {
       };
 
       print("Request Method: $method | Endpoint: $endpoint");
-      logD("Request Body: $body");
+      kdebugmode("Request Body: $body");
       // print("Encoded Body: ${jsonEncode(body)}");
 
       // Make the initial request

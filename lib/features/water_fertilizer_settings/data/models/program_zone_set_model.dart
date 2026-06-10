@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 
 import 'package:niagara_smart_drip_irrigation/features/water_fertilizer_settings/data/models/zone_set_model.dart';
 
@@ -222,7 +222,7 @@ class ProgramZoneSetModel extends ProgramZoneSetEntity {
         }
       ])
     };
-    logD("payload === > ${jsonEncode(payload)}");
+    kdebugmode("payload === > ${jsonEncode(payload)}");
     return  payload;
   }
 

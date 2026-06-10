@@ -1,4 +1,4 @@
-﻿import 'dart:convert';
+import 'dart:convert';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_manager.dart';
@@ -314,12 +314,12 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     final timestamp = DateTime.now().toString().substring(0, 19);
     final displayText = '[$timestamp] Device response:\n$prettyString';
 
-    logD("state :: $state");
+    kdebugmode("state :: $state");
     if (state is GetPumpSettingsLoaded) {
       final current = state as GetPumpSettingsLoaded;
       emit(current.copyWith(lastReceivedViewMessage: displayText));
     }
 
-    logD("Device view settings received:\n$prettyString");
+    kdebugmode("Device view settings received:\n$prettyString");
   }
 }

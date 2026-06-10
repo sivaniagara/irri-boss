@@ -1,4 +1,4 @@
-﻿import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
@@ -48,7 +48,7 @@ class NotificationService {
       onDidReceiveNotificationResponse: (NotificationResponse response) {
         if (response.payload != null) {
           if (kDebugMode) {
-            logD('Notification payload: ${response.payload}');
+            kdebugmode('Notification payload: ${response.payload}');
           }
           // Handle navigation in app.dart using NavigatorKey
         }
@@ -62,7 +62,7 @@ class NotificationService {
     if (androidPlugin != null) {
       final granted = await androidPlugin.requestNotificationsPermission();
       if (kDebugMode) {
-        logD('Notification permission granted: $granted');
+        kdebugmode('Notification permission granted: $granted');
       }
     }
   }
@@ -100,12 +100,12 @@ class NotificationService {
     try {
       final token = await _firebaseMessaging!.getToken();
       if (kDebugMode) {
-        logD('FCM Token: $token');
+        kdebugmode('FCM Token: $token');
       }
       return token;
     } catch (e) {
       if (kDebugMode) {
-        logD('Error getting FCM token: $e');
+        kdebugmode('Error getting FCM token: $e');
       }
       return null;
     }
@@ -113,7 +113,7 @@ class NotificationService {
 
   void handleBackgroundMessage(RemoteMessage message) {
     if (kDebugMode) {
-      logD('Handling background message: ${message.messageId}');
+      kdebugmode('Handling background message: ${message.messageId}');
     }
     showNotification(
       title: message.notification?.title ?? 'App Notification',

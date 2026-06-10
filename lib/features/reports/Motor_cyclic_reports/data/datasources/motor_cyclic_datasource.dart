@@ -1,4 +1,4 @@
-﻿import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
+import 'package:niagara_smart_drip_irrigation/features/reports/Motor_cyclic_reports/utils/motor_cyclic_routes.dart';
 
 
 import '../../../../../../core/error/exceptions.dart';
@@ -48,7 +48,7 @@ class MotorCyclicRemoteDataSourceImpl extends MotorCyclicRemoteDataSource {
 
       /// Make API call
       final response = await apiClient.get(endpoint);
-       logD("endpoint--->$endpoint");
+       kdebugmode("endpoint--->$endpoint");
 
       if (response == null) {
         throw ServerException(statusCode: 500, message: "Empty server response");

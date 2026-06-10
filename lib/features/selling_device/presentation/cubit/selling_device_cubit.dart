@@ -1,4 +1,4 @@
-﻿import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/selling_unit_entity.dart';
 import '../../domain/repositories/selling_device_repository.dart';
@@ -171,7 +171,7 @@ class SellingDeviceCubit extends Cubit<SellingDeviceState> {
   }
 
   Future<void> traceDevice(String userId, String deviceId) async {
-    if (kDebugMode) logD("DEBUG: Cubit.traceDevice starting... User: $userId, Device: $deviceId");
+    if (kDebugMode) kdebugmode("DEBUG: Cubit.traceDevice starting... User: $userId, Device: $deviceId");
 
     if (state is! SellingDeviceLoaded) {
       emit(const SellingDeviceLoaded(categories: []));
@@ -189,7 +189,7 @@ class SellingDeviceCubit extends Cubit<SellingDeviceState> {
 
     result.fold(
           (failure) {
-        if (kDebugMode) logD("DEBUG: Trace Failed Result: ${failure.message}");
+        if (kDebugMode) kdebugmode("DEBUG: Trace Failed Result: ${failure.message}");
         emit((state as SellingDeviceLoaded).copyWith(
           isTraceLoading: false,
           traceError: failure.message,
@@ -197,7 +197,7 @@ class SellingDeviceCubit extends Cubit<SellingDeviceState> {
         ));
       },
           (device) {
-        if (kDebugMode) logD("DEBUG: Trace Success Result: ${device.modelName}");
+        if (kDebugMode) kdebugmode("DEBUG: Trace Success Result: ${device.modelName}");
         emit((state as SellingDeviceLoaded).copyWith(
           isTraceLoading: false,
           tracedDevice: device,

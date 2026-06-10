@@ -44,7 +44,7 @@ class _TemplateSettingPageState extends State<TemplateSettingPage> {
 
   @override
   Widget build(BuildContext context) {
-    logD("appBarTitle:${widget.appBarTitle}");
+    kdebugmode("appBarTitle:${widget.appBarTitle}");
     return Scaffold(
       appBar: CustomAppBar(
         title: widget.appBarTitle,
@@ -137,7 +137,7 @@ class _TemplateSettingPageState extends State<TemplateSettingPage> {
                                                   singleSettingItemEntity: setting.copyWith(updateValue: value),
                                                   hideSendButton: false,
                                                   onChanged: (value) {
-                                                    logD('value : $value');
+                                                    kdebugmode('value : $value');
                                                     context.read<TemplateIrrigationSettingsBloc>().add(
                                                         UpdateSingleSettingRowEvent(
                                                             groupIndex: groupIndex,
@@ -322,7 +322,7 @@ class _TemplateSettingPageState extends State<TemplateSettingPage> {
                                                               singleSettingItemEntity: childEntity.copyWith(updateValue: currentValue),
                                                               hideSendButton: true,
                                                               onChanged: (value) {
-                                                                logD('multi onChanged: $value');
+                                                                kdebugmode('multi onChanged: $value');
                                                                 context.read<TemplateIrrigationSettingsBloc>().add(
                                                                   UpdateMultipleSettingRowEvent(
                                                                     groupIndex: groupIndex,

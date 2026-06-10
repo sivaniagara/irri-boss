@@ -13,7 +13,7 @@ class RegisterDetailsModel extends RegisterDetailsEntity {
   });
 
   factory RegisterDetailsModel.fromJson(Map<String, dynamic> json) {
-    // logD("json in the RegisterDetailsModel :: $json");
+    // kdebugmode("json in the RegisterDetailsModel :: $json");
     return RegisterDetailsModel(
       userDetails: UserModel.fromJson(json['regDetails'] as Map<String, dynamic>),
       mqttIPAddress: json['mqttIPAddress'] as String? ?? '',

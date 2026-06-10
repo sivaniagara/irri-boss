@@ -1,4 +1,4 @@
-﻿
+
 import '../../../../../../core/services/api_client.dart';
 import '../../../../../../core/utils/api_urls.dart';
 import '../../../../../../core/utils/log.dart';
@@ -28,7 +28,7 @@ class ZoneConfigurationRemoteSourceImpl extends ZoneConfigurationRemoteSource{
       final response = await apiClient.get(endpoint);
       return response;
     }catch (e){
-      logD('getZoneConfiguration error in data source impl : ${e.toString()}');
+      kdebugmode('getZoneConfiguration error in data source impl : ${e.toString()}');
       rethrow;
     }
   }
@@ -39,12 +39,12 @@ class ZoneConfigurationRemoteSourceImpl extends ZoneConfigurationRemoteSource{
     required Map<String, String> urlData,
   }) async{
     try{
-      logD("body => $body == urlData => $urlData");
+      kdebugmode("body => $body == urlData => $urlData");
       String endpoint = buildUrl(ProgramSettingsUrls.submitZone, urlData);
       final response = await apiClient.post(endpoint, body: body);
       return response;
     }catch (e){
-      logD('getZoneConfiguration error in data source impl : ${e.toString()}');
+      kdebugmode('getZoneConfiguration error in data source impl : ${e.toString()}');
       rethrow;
     }
   }
@@ -55,12 +55,12 @@ class ZoneConfigurationRemoteSourceImpl extends ZoneConfigurationRemoteSource{
     required Map<String, String> urlData,
   }) async{
     try{
-      logD("body => $body == urlData => $urlData");
+      kdebugmode("body => $body == urlData => $urlData");
       String endpoint = buildUrl(ProgramSettingsUrls.submitZone, urlData);
       final response = await apiClient.put(endpoint, body: body);
       return response;
     }catch (e){
-      logD('submitWhenEditZoneConfiguration error in data source impl : ${e.toString()}');
+      kdebugmode('submitWhenEditZoneConfiguration error in data source impl : ${e.toString()}');
       rethrow;
     }
   }
@@ -72,7 +72,7 @@ class ZoneConfigurationRemoteSourceImpl extends ZoneConfigurationRemoteSource{
       final response = await apiClient.get(endpoint);
       return response;
     }catch (e){
-      logD('getZoneConfiguration error in data source impl : ${e.toString()}');
+      kdebugmode('getZoneConfiguration error in data source impl : ${e.toString()}');
       rethrow;
     }
   }

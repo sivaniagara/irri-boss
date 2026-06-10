@@ -1,4 +1,4 @@
-﻿
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/tdy_valve_status_reports/presentation/pages/tdy_valve_status_graph.dart';
@@ -99,7 +99,7 @@ class TdyValveStatusPage extends StatelessWidget {
         /// ðŸ”¹ BODY â†’ Bloc State (API)
         body: BlocBuilder<TdyValveStatusBloc, TdyValveStatusState>(
           builder: (context, state) {
-            logD("state:$state");
+            kdebugmode("state:$state");
             if (state is TdyValveStatusLoading) {
               return const Center(child: CircularProgressIndicator());
             }

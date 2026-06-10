@@ -1,4 +1,4 @@
-﻿import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/program_and_zone_entity.dart';
 import '../../domain/usecases/delete_zone_usecase.dart';
 import '../../domain/usecases/get_programs_usecase.dart';
@@ -13,7 +13,7 @@ class ProgramBloc extends Bloc<ProgramEvent, ProgramState> {
 
   ProgramBloc({required this.getProgramsUseCase, required this.deleteZoneUseCase,}) : super(ProgramInitial()) {
     on<FetchPrograms>((event, emit) async {
-      logD('FetchPrograms calling....');
+      kdebugmode('FetchPrograms calling....');
       emit(ProgramLoading());
       try {
         ProgramParams params = ProgramParams(userId: event.userId, controllerId: event.controllerId);

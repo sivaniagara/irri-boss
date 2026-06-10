@@ -1,4 +1,4 @@
-﻿// data/sources/program_remote_source.dart
+// data/sources/program_remote_source.dart
 import 'package:niagara_smart_drip_irrigation/core/utils/api_urls.dart';
 
 import '../../../../core/services/api_client.dart';
@@ -18,10 +18,10 @@ class ProgramRemoteSourceImplements extends ProgramRemoteSource{
   @override
   Future<Map<String, dynamic>> getPrograms(Map<String, String> data) async{
     try{
-      logD('ProgramRemoteSourceImplements');
+      kdebugmode('ProgramRemoteSourceImplements');
       String endPoint = buildUrl(ProgramSettingsUrls.getProgram, data);
       final response = await apiClient.get(endPoint);
-      logD('getPrograms => $response');
+      kdebugmode('getPrograms => $response');
       return response;
     }catch (e){
       rethrow;
@@ -33,7 +33,7 @@ class ProgramRemoteSourceImplements extends ProgramRemoteSource{
     try{
       String endPoint = buildUrl(ProgramSettingsUrls.deleteZone, urlData);
       final response = await apiClient.delete(endPoint);
-      logD('delete zone => $response');
+      kdebugmode('delete zone => $response');
       return response;
     }catch(e){
       rethrow;

@@ -1,4 +1,4 @@
-﻿import 'package:dartz/dartz.dart';
+import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 import 'package:niagara_smart_drip_irrigation/core/error/failures.dart';
 import 'package:niagara_smart_drip_irrigation/features/mapping_and_unmapping_nodes/data/models/mapped_node_model.dart';
@@ -27,9 +27,9 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
       return Right(mappingAndUnmappingNodeModel);
     }catch(e, stackTrace){
       if (kDebugMode) {
-        logD(stackTrace);
+        kdebugmode(stackTrace);
       }
-      logD(e);
+      kdebugmode(e);
       return Left(ServerFailure('Fetch Mapping and Unmapping Node failed :: ${e.toString()}'));
     }
   }
@@ -55,8 +55,8 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
       }
     }catch(e, stackTrace){
       if (kDebugMode) {
-        logD(stackTrace);
-        logD(e);
+        kdebugmode(stackTrace);
+        kdebugmode(e);
       }
       return Left(ServerFailure('Delete Mapped Node Failed :: ${e.toString()}'));
     }
@@ -69,7 +69,7 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
       List<UnmappedCategoryNodeModel> unmappedCategoryNodeModel = params.listOfUnmappedCategoryNodeEntity.map(((e){
         return UnmappedCategoryNodeModel.fromEntity(e);
       })).toList();
-      logD("listOfMappedSerialNo :: $listOfMappedSerialNo");
+      kdebugmode("listOfMappedSerialNo :: $listOfMappedSerialNo");
       final response = await mappingAndUnmappingNodesRemoteSource
           .unmappedToMapped(
           urlData: {
@@ -89,7 +89,7 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
                   break;
                 }
               }
-              logD(serialNo.toString().padLeft(3, '0'));
+              kdebugmode(serialNo.toString().padLeft(3, '0'));
               return unmappedCategoryNodeModel[index].formPayload(
                   params.categoryId,
                   serialNo.toString().padLeft(3, '0')
@@ -104,8 +104,8 @@ class MappingAndUnmappingNodesRepositoryImpl extends MappingAndUnmappingNodesRep
       }
     }catch(e, stackTrace){
       if (kDebugMode) {
-        logD(stackTrace);
-        logD(e);
+        kdebugmode(stackTrace);
+        kdebugmode(e);
       }
       return Left(ServerFailure('Delete Mapped Node Failed :: ${e.toString()}'));
     }
