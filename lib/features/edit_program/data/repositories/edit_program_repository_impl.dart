@@ -114,16 +114,18 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
             PublishMessageHelper.settingsPayload('VSLZLMSETP${params.programId}${params.zoneNo.padLeft(3, '0')}'),
           ],
           deviceId: params.deviceId
+
       );
       await Future.delayed(Duration(seconds: 2));
       return Right(unit);
+      debugPrint("${response}");
     } catch (e, stackTrace) {
 
       if (kDebugMode) {
         kdebugmode('sendZoneViewCommandPayload Failure: $e');
         kdebugmode(stackTrace);
       }
-      return Left(ServerFailure('sendZoneViewCommandPayload Fetching Failure: $e'));
+      return Left(ServerFailure('sendBlockViewCommandPayload Fetching Failure: $e'));
     }
   }
 
@@ -181,7 +183,7 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
         return zoneLength;
       }
         EditProgramModel editProgramModel = EditProgramModel.fromEntity(params.editProgramEntity);
-      kdebugmode("takingActiveZoneByZoneSet : $takingActiveZoneByZoneSet");
+      kdebugmode("takingActiveBlockByZoneSet : $takingActiveZoneByZoneSet");
       kdebugmode(start(params.zoneSetNo));
       kdebugmode(end(params.zoneSetNo, params.editProgramEntity.zones.length));
         List<ZoneSettingModel> zoneSet = takingActiveZoneByZoneSet.sublist(
@@ -220,7 +222,7 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
         kdebugmode('sendZoneConfigurationPayload Failure: $e');
         kdebugmode(stackTrace);
       }
-      return Left(ServerFailure('sendZoneConfigurationPayload Fetching Failure: $e'));
+      return Left(ServerFailure('sendBlockConfigurationPayload Fetching Failure: $e'));
     }
   }
 
