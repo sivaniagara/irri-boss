@@ -35,9 +35,14 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
             'subUserId' : params.subUserId,
             'programId' : params.programId.toString()
           });
-      return Right(
-          EditProgramModel.fromJson(response)
-      );
+
+      if (response['code'] == 200 && response['data'] != null && response['data']['setting'] != null) {
+        return Right(EditProgramModel.fromJson(response));
+      }
+
+      return Left(ServerFailure(
+        response['message']?.toString() ?? 'Failed to load program data',
+      ));
     } catch (e, stackTrace) {
       kdebugmode('getPrograms Fetching Failure: $e');
       kdebugmode(stackTrace);
@@ -85,6 +90,7 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
           listOfPayload: zoneSettingModel.submitZone(programId: params.programId),
           deviceId: params.deviceId
       );
+
       await Future.delayed(Duration(seconds: 2));
       return Right(unit);
     } catch (e, stackTrace) {
@@ -130,7 +136,7 @@ class GetProgramRepositoryImpl extends EditProgramRepository{
         programId: params.programId,
         deviceId: params.deviceId,
         payload: [
-          "IDZONESELP${params.programId}${params.zoneSerialNo},000,000,000,000",
+          "IDBLOCKSELP${params.programId}${params.zoneSerialNo},000,000,000,000",
           "IDZLMSETP${params.programId}${params.zoneSerialNo},000,000,000,000"
         ],
       );

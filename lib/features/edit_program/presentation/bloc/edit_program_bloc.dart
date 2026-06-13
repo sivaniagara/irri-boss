@@ -168,6 +168,9 @@ class EditProgramBloc extends Bloc<EditProgramEvent, EditProgramState>{
       var zonesToUpdate = List.generate(current.editProgramEntity.zones.length, (index){
         if(event.zoneIndex == index){
           return current.editProgramEntity.zones[index].copyWith(
+              updatedValves: [],
+              updatedMoistureSensors: [],
+              updatedLevelSensors: [],
               isActive: false,
           );
         }else{
