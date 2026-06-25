@@ -77,6 +77,9 @@ dependencies:
   flutter_launcher_icons: ^0.14.4
   pinput: ^6.0.2
   readmore: ^3.0.0
+  audioplayers: ^6.7.1
+  mobile_scanner: ^7.2.0
+  image_picker: ^1.2.2
 
 dev_dependencies:
   flutter_test:
@@ -116,6 +119,7 @@ flutter:
     - assets/ic_launcher.png
     - assets/images/report_menu/
     - assets/images/common/valve_running.gif
+    - assets/sounds/beep.mp3
 
 
 flutter_launcher_icons:

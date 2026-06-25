@@ -5,4 +5,6 @@ class RouteConstants {
   static const String ctrlLivePage = "/ctrlLivePage";
   static const String ctrlDetailsPage = "/ctrlDetailsPage";
   static const String setSerialPage = "/setSerialPage";
+  static const String QRScannerPage = "/QRScanner";
+  static const String QRScannerListPage = "/QRScannerList";
 }

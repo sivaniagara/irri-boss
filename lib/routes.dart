@@ -31,6 +31,7 @@ import 'features/dashboard/presentation/pages/dashboard_page.dart';
 import 'features/dashboard/presentation/pages/program_preview_page.dart';
 import 'features/dashboard/utils/dashboard_routes.dart';
 import 'features/dealer_dashboard/utils/dealer_routes.dart';
+import 'features/device_scan/utils/device_scan_routes.dart';
 import 'features/edit_program/utils/edit_program_routes.dart';
 import 'features/irrigation_settings/presentation/bloc/template_irrigation_settings_bloc.dart';
 import 'features/irrigation_settings/presentation/pages/template_setting_page.dart';
@@ -412,6 +413,7 @@ class AppRouter {
         ...SerialSetRoutes.routes,
         ...SellingDeviceRoutes.sellingDeviceRoutes,
         ...nodeMoistureStatusRoutes,
+        ...deviceScanRoutes,
       ],
     );
   }

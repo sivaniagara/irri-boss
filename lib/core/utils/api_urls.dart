@@ -197,6 +197,7 @@ class ApiUrls {
   static const String getcommncalUrl = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/92/settings/481';
   static const String putcommncalUrl = 'user/:userId/cluster/:groupId/controller';
   static const String getcommncalviewUrl = 'user/:userId/cluster/:groupId/controller';
+   static const String postBleProduct = 'bleProduct';
   //TODO: Send & Receive Message URLS
   /// Get
   /// http://20.193.232.190:8090/api/v1/user/153/subuser/0/controller/938/report?fromDate='2025-12-04'&toDate='2025-12-04'&type=sendrevmsg

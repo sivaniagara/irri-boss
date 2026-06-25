@@ -26,7 +26,8 @@ class SendRevRemoteDataSourceImpl extends SendRevRemoteDataSource {
     required int controllerId,
     required String fromDate,
     required String toDate,
-  }) async {
+  }) async
+  {
     try {
       /// Validate required params
       if (fromDate.isEmpty || toDate.isEmpty) {

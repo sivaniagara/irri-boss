@@ -15,7 +15,8 @@ class SendrevRepositoryImpl implements SendrevRepository {
     required int controllerId,
     required String fromDate,
     required String toDate,
-  }) async {
+  }) async
+   {
     // Call remote data source
     final model = await dataSource.getSendReceiveMessages(
       userId: userId,
