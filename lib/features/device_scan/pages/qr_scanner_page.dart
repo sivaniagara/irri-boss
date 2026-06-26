@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -61,14 +62,14 @@ class _QrScannerPageState extends State<QrScannerPage> {
   }
 
   bool isValidQr(String qrData) {
-    return qrData.contains('NIA-45') &&
+    return qrData.contains('NA-45') &&
         ','.allMatches(qrData).length == 4;
   }
   void showAlertDialog(
       String message,
       )
   {
-    if (!isValidQr(message)) {
+     if (!isValidQr(message)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Invalid QR Code'),
@@ -87,49 +88,30 @@ class _QrScannerPageState extends State<QrScannerPage> {
     final data =
     message.split(',');
 
+    String inputdate = data[3].trim();
+
+    DateTime date = DateFormat('dd-MM-yyyy').parse(inputdate);
+    String outputdate = DateFormat('yyyy-MM-dd').format(date);
+
     final device =
     QRDeviceModel(
-      deviceId:
-      data.length > 0
-          ? data[0]
-          : '',
+      deviceId: data.length > 0 ? data[0].trim() : '',
 
-      modelId:
-      data.length > 1
-          ? int.parse(data[1])
-          : 45,
+      modelId: data.length > 1 ? int.parse(data[1]) : 45,
 
-      categoryId:
-      data.length > 2
-          ? int.parse(data[2])
-          : 1,
+      categoryId: data.length > 2 ? int.parse(data[2]) : 1,
 
-      manufactureDate:
-      data.length > 3
-          ? data[3]
-          : '',
+      manufactureDate: outputdate.trim(),
+
       warrentyMonths: 15,
     );
 
-    showDialog(
-
-      context: context,
-
-      barrierDismissible:
-      false,
-
+    showDialog(context: context, barrierDismissible: false,
       builder:
-          (_) =>
-          AlertDialog(
+          (_) => AlertDialog(
+            title: const Text("QR Detected",),
 
-            title:
-            const Text(
-              "QR Detected",
-            ),
-
-            content:
-            Column(
-
+            content: Column(
               mainAxisSize:
               MainAxisSize.min,
 
