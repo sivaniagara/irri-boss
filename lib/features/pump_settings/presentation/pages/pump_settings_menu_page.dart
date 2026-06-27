@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/core/utils/app_constants.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/alert_dialog.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_switch.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_app_bar.dart';
@@ -42,16 +43,20 @@ class PumpSettingsMenuPage extends StatelessWidget {
                 userId: userId,
                 subUserId: subUserId,
                 controllerId: controllerId,
+                modelId: modelId,
               ));
+            if(!AppConstants.isWlc(modelId)){
+              Future.microtask(() {
+                context.read<PumpSettingsCubit>().loadSettings(
+                  userId: userId,
+                  subUserId: subUserId,
+                  controllerId: controllerId,
+                  menuId: 502,
+                  modelId: modelId,
+                );
+              });
+            }
 
-            Future.microtask(() {
-              context.read<PumpSettingsCubit>().loadSettings(
-                userId: userId,
-                subUserId: subUserId,
-                controllerId: controllerId,
-                menuId: 502,
-              );
-            });
 
             return bloc;
           },
@@ -111,6 +116,7 @@ class PumpSettingsMenuPage extends StatelessWidget {
             subUserId: subUserId,
             controllerId: controllerId,
             deviceId: deviceId,
+            modelId: modelId,
           ),
         ),
       ),
@@ -144,7 +150,7 @@ class _MenuListView extends StatelessWidget {
         context.read<PumpSettingsMenuBloc>().add(GetPumpSettingsMenuEvent(
           userId: userId,
           subUserId: subUserId,
-          controllerId: controllerId,
+          controllerId: controllerId, modelId: modelId,
         ));
       },
       buildWhen: (_, state) =>
@@ -165,6 +171,7 @@ class _MenuListView extends StatelessWidget {
                   userId: userId,
                   subUserId: subUserId,
                   controllerId: controllerId,
+                  modelId: modelId
                 ),
               ),
             ),
@@ -321,7 +328,7 @@ class _MenuListView extends StatelessWidget {
   void _sendTwoPhaseSettings(BuildContext context, MenuItemEntity item) {
     final cubit = context.read<PumpSettingsCubit>();
     cubit.sendCurrentSetting(
-        0, 0, deviceId, userId, subUserId, controllerId, item);
+        0, 0, deviceId, userId, subUserId, controllerId, item, modelId, '');
     context.read<PumpSettingsViewResponseCubit>().clear();
   }
 
@@ -493,7 +500,7 @@ class _MenuItemTile extends StatelessWidget {
 }
 
 class _HideShowSettingsDialog extends StatelessWidget {
-  final int userId, subUserId, controllerId;
+  final int userId, subUserId, controllerId, modelId;
   final String deviceId;
 
   const _HideShowSettingsDialog({
@@ -501,6 +508,7 @@ class _HideShowSettingsDialog extends StatelessWidget {
     required this.subUserId,
     required this.controllerId,
     required this.deviceId,
+    required this.modelId,
   });
 
   @override
@@ -547,6 +555,7 @@ class _HideShowSettingsDialog extends StatelessWidget {
               controllerId: controllerId,
               menuItemEntity: updated.settings,
               sentSms: "",
+                modelId: modelId
             );
 
             if (context.mounted) Navigator.pop(context);

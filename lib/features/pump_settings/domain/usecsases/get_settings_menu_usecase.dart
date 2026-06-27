@@ -11,7 +11,7 @@ class GetPumpSettingsMenuUsecase extends UseCase<List<MenuItemEntity>, GetPumpSe
 
   @override
   Future<Either<Failure, List<MenuItemEntity>>> call(GetPumpSettingsMenuParams params) {
-    return pumpSettingsRepository.getSettingsMenuList(params.userId, params.subUserId, params.controllerId);
+    return pumpSettingsRepository.getSettingsMenuList(params.userId, params.subUserId, params.controllerId, params.modelId);
   }
 }
 
@@ -19,11 +19,13 @@ class GetPumpSettingsMenuParams extends Equatable {
   final int userId;
   final int subUserId;
   final int controllerId;
+  final int modelId;
 
   const GetPumpSettingsMenuParams({
     required this.userId,
     required this.subUserId,
-    required this.controllerId
+    required this.controllerId,
+    required this.modelId,
   });
 
   @override

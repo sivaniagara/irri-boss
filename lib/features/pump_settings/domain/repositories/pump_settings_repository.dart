@@ -5,11 +5,11 @@ import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/enti
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/settings_menu_entity.dart';
 
 abstract class PumpSettingsRepository {
-  Future<Either<Failure, List<MenuItemEntity>>> getSettingsMenuList(int userId, int subUserId, int controllerId);
-  Future<Either<Failure, MenuItemEntity>> getPumpSettings(int userId, int subUserId, int controllerId, int menuId);
+  Future<Either<Failure, List<MenuItemEntity>>> getSettingsMenuList(int userId, int subUserId, int controllerId, int modelId);
+  Future<Either<Failure, MenuItemEntity>> getPumpSettings(int userId, int subUserId, int controllerId, int menuId, int modelId);
   Future<Either<Failure, List<NotificationsEntity>>> getNotifications(int userId, int subUserId, int controllerId);
   Future<Either<Failure, String>> subscribeNotifications(int userId, int subUserId, int controllerId, Map<String, dynamic> body);
-  Future<Either<Failure, String>> sendPumpSettings(int userId, int subUserId, int controllerId, MenuItemEntity menuItem, String sentSms);
+  Future<Either<Failure, String>> sendPumpSettings(int userId, int subUserId, int controllerId, MenuItemEntity menuItem, String sentSms, int modelId);
   Future<Either<Failure, String>> updateMenuStatus(int userId, int subUserId, int controllerId, SettingsMenuEntity menuList);
   Future<Either<Failure, String>> verifyMenuPassword(String password, int modelId);
 }

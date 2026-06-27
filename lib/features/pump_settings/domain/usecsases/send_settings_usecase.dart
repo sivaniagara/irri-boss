@@ -11,7 +11,7 @@ class SendPumpSettingsUsecase extends UseCase<String, SendPumpSettingsParams> {
 
   @override
   Future<Either<Failure, String>> call(SendPumpSettingsParams params) {
-    return pumpSettingsRepository.sendPumpSettings(params.userId, params.subUserId, params.controllerId, params.menuItemEntity, params.sentSms);
+    return pumpSettingsRepository.sendPumpSettings(params.userId, params.subUserId, params.controllerId, params.menuItemEntity, params.sentSms, params.modelId);
   }
 }
 
@@ -20,6 +20,7 @@ class SendPumpSettingsParams extends Equatable {
   final int subUserId;
   final int controllerId;
   final int menuId;
+  final int modelId;
   final String sentSms;
   final MenuItemEntity menuItemEntity;
 
@@ -28,10 +29,11 @@ class SendPumpSettingsParams extends Equatable {
     required this.subUserId,
     required this.controllerId,
     required this.menuId,
+    required this.modelId,
     required this.menuItemEntity,
     required this.sentSms
   });
 
   @override
-  List<Object?> get props => [userId, subUserId, controllerId, menuId, menuItemEntity, sentSms];
+  List<Object?> get props => [userId, subUserId, controllerId, menuId, modelId, menuItemEntity, sentSms];
 }

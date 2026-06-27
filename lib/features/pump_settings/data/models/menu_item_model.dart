@@ -11,6 +11,7 @@ class MenuItemModel extends MenuItemEntity {
   });
 
   factory MenuItemModel.fromJson(Map<String, dynamic> json) {
+    print("json : $json");
     return MenuItemModel(
         menu: SettingsMenuModel.fromJson(json),
         template: TemplateJsonModel.fromJson(jsonDecode(json['sendData']))

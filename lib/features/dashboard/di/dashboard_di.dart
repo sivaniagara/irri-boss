@@ -7,6 +7,11 @@ import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cu
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/program_preview_dispatcher.dart';
 
 import '../../../core/di/injection.dart';
+import '../../../core/services/mqtt/app_message_dispatcher.dart';
+import '../../../core/services/ble/ble_manager.dart';
+import '../../../core/services/ble/ble_service.dart';
+import '../../../core/services/ble/mqtt_or_ble.dart';
+import '../../../core/services/mqtt/mqtt_manager.dart';
 import '../../../core/services/selected_controller_persistence.dart';
 import '../domain/usecases/control_motor_usecase.dart';
 import '../domain/usecases/update_change_from_usecase.dart';
@@ -42,5 +47,17 @@ void initDashboardDependencies() {
   sl.registerLazySingleton<NodeStatusRepository>(() => NodeStatusRepositoryImpl(nodeStatusDataSource: sl()));
   sl.registerLazySingleton(() => GetNodeStatusUsecase(nodeStatusRepository: sl()));
   sl.registerFactory(() => NodeStatusCubit(getNodeStatusUsecase: sl()));
+
+  sl.registerLazySingleton<BleService>(() => BleService());
+
+  sl.registerLazySingleton<BleManager>(() => BleManager(
+    bleService: sl<BleService>(),
+    dispatcher: sl<AppMessageDispatcher>(), // same dispatcher used by MqttManager
+  ));
+
+  sl.registerLazySingleton<MqttOrBle>(() => MqttOrBle(
+    mqttManager: sl<MqttManager>(),
+    bleManager: sl<BleManager>(),
+  ));
 
 }

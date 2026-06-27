@@ -64,4 +64,9 @@ class AppMessageDispatcher extends MessageDispatcher {
     pumpSettings?.onViewSettings(deviceId, message);
   }
 
+  @override
+  void onNewViewSettings(String deviceId, String message) {
+    pumpSettings?.onNewViewSettings(deviceId, message);
+  }
+
 }

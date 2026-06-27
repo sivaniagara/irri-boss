@@ -50,166 +50,205 @@ class PumpSettingsPage extends StatelessWidget {
           subUserId: subUserId,
           controllerId: controllerId,
           menuId: menuId,
+          modelId: modelId,
         ),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(menuName ?? 'Pump Settings'),
-          centerTitle: true,
-          elevation: 0,
-          foregroundColor: Colors.black,
-          actions: [
-            Builder(
-              builder: (appBarContext) => IconButton(
-                onPressed: () {
-                  final cubit = appBarContext.read<PumpSettingsCubit>();
-                  GlassyAlertDialog.show(
-                    context: context,
-                    title: "Hide/Show Settings",
-                    content: BlocProvider<PumpSettingsCubit>.value(
-                      value: cubit,
-                      child: SizedBox(
-                        width: double.maxFinite,
-                        child: _HideShowSettingsDialog(
-                          userId: userId,
-                          subUserId: subUserId,
-                          controllerId: controllerId,
-                          modelId: modelId,
-                        ),
-                      ),
-                    ),
-                    actionsBuilder: (dialogContext) => [
-                      ActionButton(
-                        onPressed: () {
-                          cubit.updateHiddenFlags(
+      child: Builder(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: Text(menuName ?? 'Pump Settings'),
+            centerTitle: true,
+            elevation: 0,
+            foregroundColor: Colors.black,
+            actions: [
+              Builder(
+                builder: (appBarContext) => IconButton(
+                  onPressed: () {
+                    final cubit = appBarContext.read<PumpSettingsCubit>();
+                    GlassyAlertDialog.show(
+                      context: context,
+                      title: "Hide/Show Settings",
+                      content: BlocProvider<PumpSettingsCubit>.value(
+                        value: cubit,
+                        child: SizedBox(
+                          width: double.maxFinite,
+                          child: _HideShowSettingsDialog(
                             userId: userId,
                             subUserId: subUserId,
                             controllerId: controllerId,
-                            menuItemEntity:
-                            (cubit.state as GetPumpSettingsLoaded).settings,
-                            sentSms: "",
-                          );
-                          Navigator.pop(dialogContext);
-                        },
-                        isPrimary: true,
-                        child: const Text("OK"),
+                            modelId: modelId,
+                          ),
+                        ),
                       ),
-                    ],
+                      actionsBuilder: (dialogContext) => [
+                        ActionButton(
+                          onPressed: () {
+                            cubit.updateHiddenFlags(
+                                userId: userId,
+                                subUserId: subUserId,
+                                controllerId: controllerId,
+                                menuItemEntity:
+                                (cubit.state as GetPumpSettingsLoaded).settings,
+                                sentSms: "",
+                                modelId: modelId
+                            );
+                            Navigator.pop(dialogContext);
+                          },
+                          isPrimary: true,
+                          child: const Text("OK"),
+                        ),
+                      ],
+                    );
+                  },
+                  icon: const Icon(Icons.settings_suggest_outlined),
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  context.push(
+                    SendRevPageRoutes.sendRevMsgPage,
+                    extra: {
+                      'userId': userId,
+                      'controllerId': controllerId,
+                      'subuserId': subUserId
+                    },
                   );
                 },
-                icon: const Icon(Icons.settings_suggest_outlined),
-              ),
-            ),
-            IconButton(
-              onPressed: () {
-                context.push(
-                  SendRevPageRoutes.sendRevMsgPage,
-                  extra: {
-                    'userId': userId,
-                    'controllerId': controllerId,
-                    'subuserId': subUserId
-                  },
-                );
-              },
-              icon: const Icon(Icons.history_edu_outlined),
-            )
-          ],
-        ),
-        body: BlocListener<PumpSettingsCubit, PumpSettingsState>(
-          listenWhen: (previous, current) =>
-          current is SettingsSendStartedState ||
-              current is SettingsSendSuccessState ||
-              current is SettingsFailureState,
-          listener: (context, state) {
-            if (state is SettingsSendStartedState) {
-              Fluttertoast.showToast(msg: "Sending...");
-            } else if (state is SettingsSendSuccessState) {
-              Fluttertoast.showToast(
-                msg: state.message,
-                backgroundColor: Colors.green,
-              );
-            } else if (state is SettingsFailureState) {
-              Fluttertoast.showToast(
-                msg: state.message,
-                backgroundColor: Colors.red,
-              );
-            }
-          },
-          child: BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
-            buildWhen: (previous, current) =>
-            current is GetPumpSettingsInitial ||
-                current is GetPumpSettingsError ||
-                current is GetPumpSettingsLoaded,
-            builder: (context, state) {
-              if (state is GetPumpSettingsInitial) {
-                return const Center(child: CircularProgressIndicator());
+                icon: const Icon(Icons.history_edu_outlined),
+              )
+            ],
+          ),
+          floatingActionButton: AppConstants.isWlc(modelId) ? FloatingActionButton(
+            backgroundColor: Colors.white,
+            onPressed: (){
+              final cubit = context.read<PumpSettingsCubit>();
+              if(cubit.state is GetPumpSettingsLoaded){
+                cubit.sendCurrentSetting(
+                    0,
+                    0,
+                    deviceId,
+                    userId,
+                    subUserId,
+                    controllerId,
+                    (cubit.state as GetPumpSettingsLoaded).settings,
+                    modelId,
+                    menuName ?? 'Pump Settings'                );
+                context.read<PumpSettingsViewResponseCubit>().clear();
               }
-              if (state is GetPumpSettingsError) {
-                return Center(
-                  child: Retry(
-                    message: state.message,
-                    onPressed: () =>
-                        context.read<PumpSettingsCubit>().loadSettings(
+
+            },
+            child: Image.asset(
+              'assets/images/icons/send_icon.png',
+              width: 25,
+            ),
+          ) : null,
+          body: BlocListener<PumpSettingsCubit, PumpSettingsState>(
+            listenWhen: (previous, current) =>
+            current is SettingsSendStartedState ||
+                current is SettingsSendSuccessState ||
+                current is SettingsFailureState,
+            listener: (context, state) {
+              if (state is SettingsSendStartedState) {
+                Fluttertoast.showToast(msg: "Sending...");
+              } else if (state is SettingsSendSuccessState) {
+                Fluttertoast.showToast(
+                  msg: state.message,
+                  backgroundColor: Colors.green,
+                );
+              } else if (state is SettingsFailureState) {
+                Fluttertoast.showToast(
+                  msg: state.message,
+                  backgroundColor: Colors.red,
+                );
+              }
+            },
+            child: BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
+              buildWhen: (previous, current) =>
+              current is GetPumpSettingsInitial ||
+                  current is GetPumpSettingsError ||
+                  current is GetPumpSettingsLoaded,
+              builder: (context, state) {
+                if (state is GetPumpSettingsInitial) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                if (state is GetPumpSettingsError) {
+                  return Center(
+                    child: Retry(
+                      message: state.message,
+                      onPressed: () =>
+                          context.read<PumpSettingsCubit>().loadSettings(
+                            userId: userId,
+                            subUserId: subUserId,
+                            controllerId: controllerId,
+                            menuId: menuId,
+                            modelId: modelId,
+                          ),
+                    ),
+                  );
+                }
+                final loadedState = state as GetPumpSettingsLoaded;
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    context.read<PumpSettingsCubit>().sendPumpSettingViewCommand(
+                      deviceId: deviceId,
+                      menuItemEntity: loadedState.settings,
+                    );
+                  },
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics()),
+                    padding: const EdgeInsets.only(bottom: 80),
+                    child: Column(
+                      children: [
+                        if ([509, 511].contains(menuId))
+                          BlocBuilder<PumpSettingsViewResponseCubit,
+                              PumpSettingViewState>(
+                            builder: (context, state) {
+                              if (state is PumpSettingsViewReceived) {
+                                return Container(
+                                  margin: const EdgeInsets.all(12),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                        color: Colors.blue.withOpacity(0.3)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.info_outline,
+                                          color: Colors.blue),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          state.message,
+                                          style: const TextStyle(
+                                              fontSize: 13,
+                                              color: Colors.blueAccent),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                              return const SizedBox();
+                            },
+                          ),
+                        _SettingsList(
+                          menu: loadedState.settings,
+                          deviceId: deviceId,
                           userId: userId,
-                          subUserId: subUserId,
                           controllerId: controllerId,
-                          menuId: menuId,
+                          subUserId: subUserId,
+                          modelId: modelId,
+                          menuName: menuName ?? 'Pump Settings',
                         ),
+                        const SizedBox(height: 100),
+                      ],
+                    ),
                   ),
                 );
-              }
-              final loadedState = state as GetPumpSettingsLoaded;
-              return SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(bottom: 80),
-                child: Column(
-                  children: [
-                    if ([509, 511].contains(menuId))
-                      BlocBuilder<PumpSettingsViewResponseCubit,
-                          PumpSettingViewState>(
-                        builder: (context, state) {
-                          if (state is PumpSettingsViewReceived) {
-                            return Container(
-                              margin: const EdgeInsets.all(12),
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: Colors.blue.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                    color: Colors.blue.withOpacity(0.3)),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.info_outline,
-                                      color: Colors.blue),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      state.message,
-                                      style: const TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.blueAccent),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
-                          return const SizedBox();
-                        },
-                      ),
-                    _SettingsList(
-                      menu: loadedState.settings,
-                      deviceId: deviceId,
-                      userId: userId,
-                      controllerId: controllerId,
-                      subUserId: subUserId,
-                      modelId: modelId,
-                    ),
-                    const SizedBox(height: 100),
-                  ],
-                ),
-              );
-            },
+              },
+            ),
           ),
         ),
       ),
@@ -450,14 +489,16 @@ class _SettingsList extends StatelessWidget {
   final int modelId;
   final MenuItemEntity menu;
   final String deviceId;
+  String? menuName;
 
-  const _SettingsList({
+  _SettingsList({
     required this.menu,
     required this.deviceId,
     required this.userId,
     required this.subUserId,
     required this.controllerId,
     required this.modelId,
+    this.menuName,
   });
 
   @override
@@ -516,6 +557,7 @@ class _SettingsList extends StatelessWidget {
                       subUserId: subUserId,
                       controllerId: controllerId,
                       modelId: modelId,
+                      menuName: menuName ?? 'Pump Settings',
                     );
                   },
                   separatorBuilder: (BuildContext context, int index) {
@@ -550,8 +592,9 @@ class _SettingRow extends StatelessWidget {
   final int sectionIndex;
   final int settingIndex;
   final String deviceId;
+  String? menuName;
 
-  const _SettingRow({
+  _SettingRow({
     required this.menuItemEntity,
     required this.sectionIndex,
     required this.settingIndex,
@@ -560,6 +603,7 @@ class _SettingRow extends StatelessWidget {
     required this.subUserId,
     required this.controllerId,
     required this.modelId,
+    this.menuName,
   });
 
   static final _formKeys = <String, GlobalKey<FormState>>{};
@@ -588,25 +632,28 @@ class _SettingRow extends StatelessWidget {
         children: [
           Expanded(child: _buildInput(context)),
           const SizedBox(width: 8),
-          _SendButton(
-            isSending: isSending,
-            onPressed: () {
-              if (formKey.currentState!.validate()) {
-                cubit.sendCurrentSetting(
-                  sectionIndex,
-                  settingIndex,
-                  deviceId,
-                  userId,
-                  subUserId,
-                  controllerId,
-                  menuItemEntity,
-                );
-                context.read<PumpSettingsViewResponseCubit>().clear();
-              } else {
-                Fluttertoast.showToast(msg: "Please correct the errors");
-              }
-            },
-          ),
+          if(!AppConstants.isWlc(modelId))
+            _SendButton(
+              isSending: isSending,
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  cubit.sendCurrentSetting(
+                      sectionIndex,
+                      settingIndex,
+                      deviceId,
+                      userId,
+                      subUserId,
+                      controllerId,
+                      menuItemEntity,
+                      modelId,
+                      menuName ?? 'Pump Setting'
+                  );
+                  context.read<PumpSettingsViewResponseCubit>().clear();
+                } else {
+                  Fluttertoast.showToast(msg: "Please correct the errors");
+                }
+              },
+            ),
         ],
       ),
     );

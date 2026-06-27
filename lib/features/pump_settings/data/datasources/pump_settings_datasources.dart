@@ -2,10 +2,12 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:niagara_smart_drip_irrigation/core/utils/api_urls.dart';
+import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/dashboard_2_0.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/data/models/notifications_model.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/data/models/template_json_model.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/notifications_entity.dart';
 
+import '../../../../core/utils/app_constants.dart';
 import '../../domain/entities/menu_item_entity.dart';
 import '../models/menu_item_model.dart';
 import '../models/settings_menu_model.dart';
@@ -18,11 +20,11 @@ import '../../domain/entities/settings_menu_entity.dart';
 import '../../../../core/services/api_client.dart';
 
 abstract class PumpSettingsDataSources {
-  Future<List<MenuItemEntity>> getSettingsMenuList(int userId, int subuserId, int controllerId);
-  Future<MenuItemEntity> getPumpSettings(int userId, int subuserId, int controllerId, int menuId);
+  Future<List<MenuItemEntity>> getSettingsMenuList(int userId, int subuserId, int controllerId, int modelId);
+  Future<MenuItemEntity> getPumpSettings(int userId, int subuserId, int controllerId, int menuId, int modelId);
   Future<List<NotificationsEntity>> getNotifications(int userId, int subuserId, int controllerId);
   Future<String> subscribeNotifications(int userId, int subuserId, int controllerId, Map<String, dynamic> body);
-  Future<String> sendPumpSettings(int userId, int subUserId, int controllerId, MenuItemEntity menuItem, String sentSms);
+  Future<String> sendPumpSettings(int userId, int subUserId, int controllerId, MenuItemEntity menuItem, String sentSms, int modelId);
   Future<String> updateMenuStatus(int userId, int subUserId, int controllerId, SettingsMenuEntity menu);
   Future<String> verifyMenuPassword(String password, int modelId);
 }
@@ -46,10 +48,10 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
   }
 
   @override
-  Future<List<MenuItemEntity>> getSettingsMenuList(int userId, int subuserId, int controllerId) async{
+  Future<List<MenuItemEntity>> getSettingsMenuList(int userId, int subuserId, int controllerId, int modelId) async{
     try {
       final endPoint = buildUrl(
-          PumpSettingsUrls.getSettingsMenu,
+          AppConstants.isWlc(modelId) ? PumpSettingsUrls.getSettingsMenuForWlc : PumpSettingsUrls.getSettingsMenu,
           _baseParams(userId: userId, controllerId: controllerId, subuserId: 0)
       );
       final response = await apiClient.get(endPoint);
@@ -66,10 +68,10 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
   }
 
   @override
-  Future<MenuItemEntity> getPumpSettings(int userId, int subuserId, int controllerId, int menuId) async {
+  Future<MenuItemEntity> getPumpSettings(int userId, int subuserId, int controllerId, int menuId, int modelId) async {
     try {
       final endPoint = buildUrl(
-          PumpSettingsUrls.getFinalMenu,
+          AppConstants.isWlc(modelId) ? PumpSettingsUrls.getFinalMenuForWlc : PumpSettingsUrls.getFinalMenu,
           _baseParams(userId: userId, controllerId: controllerId, subuserId: 0, menuId: menuId)
       );
 
@@ -132,10 +134,10 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
   }
 
   @override
-  Future<String> sendPumpSettings(int userId, int subUserId, int controllerId, MenuItemEntity menuItem, String sentSms) async {
+  Future<String> sendPumpSettings(int userId, int subUserId, int controllerId, MenuItemEntity menuItem, String sentSms, int modelId) async {
     try {
       final endPoint = buildUrl(
-          PumpSettingsUrls.updateTemplate,
+        AppConstants.isWlc(modelId) ? PumpSettingsUrls.updateTemplateForWlc :  PumpSettingsUrls.updateTemplate,
           _baseParams(userId: userId, controllerId: controllerId, subuserId: 0),
       );
       final TemplateJsonModel templateJsonModel = TemplateJsonModel.fromEntity(menuItem.template);

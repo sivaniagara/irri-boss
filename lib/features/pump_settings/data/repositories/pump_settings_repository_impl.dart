@@ -11,9 +11,9 @@ class PumpSettingsRepositoryImpl implements PumpSettingsRepository {
   PumpSettingsRepositoryImpl({required this.pumpSettingsDataSources});
 
   @override
-  Future<Either<Failure, List<MenuItemEntity>>> getSettingsMenuList(int userId, int subUserId, int controllerId) async{
+  Future<Either<Failure, List<MenuItemEntity>>> getSettingsMenuList(int userId, int subUserId, int controllerId, int modelId) async{
     try {
-      final menuList = await pumpSettingsDataSources.getSettingsMenuList(userId, subUserId, controllerId);
+      final menuList = await pumpSettingsDataSources.getSettingsMenuList(userId, subUserId, controllerId, modelId);
       return Right(menuList);
     } catch (e) {
       return Left(ServerFailure('Setting Menu Fetching Failure: $e'));
@@ -21,9 +21,9 @@ class PumpSettingsRepositoryImpl implements PumpSettingsRepository {
   }
 
   @override
-  Future<Either<Failure, MenuItemEntity>> getPumpSettings(int userId, int subUserId, int controllerId, int menuId) async{
+  Future<Either<Failure, MenuItemEntity>> getPumpSettings(int userId, int subUserId, int controllerId, int menuId, int modelId) async{
     try {
-      final menuItems = await pumpSettingsDataSources.getPumpSettings(userId, subUserId, controllerId, menuId);
+      final menuItems = await pumpSettingsDataSources.getPumpSettings(userId, subUserId, controllerId, menuId, modelId);
       return Right(menuItems);
     } catch (e) {
       return Left(ServerFailure('Pump settings Fetching Failure: $e'));
@@ -51,9 +51,9 @@ class PumpSettingsRepositoryImpl implements PumpSettingsRepository {
   }
 
   @override
-  Future<Either<Failure, String>> sendPumpSettings(int userId, int subUserId, int controllerId, MenuItemEntity menuItem, String sentSms) async{
+  Future<Either<Failure, String>> sendPumpSettings(int userId, int subUserId, int controllerId, MenuItemEntity menuItem, String sentSms, int modelId) async{
     try {
-      final response = await pumpSettingsDataSources.sendPumpSettings(userId, subUserId, controllerId, menuItem, sentSms);
+      final response = await pumpSettingsDataSources.sendPumpSettings(userId, subUserId, controllerId, menuItem, sentSms, modelId);
       return Right(response);
     } catch (e) {
       return Left(ServerFailure('Notifications Fetching Failure: $e'));

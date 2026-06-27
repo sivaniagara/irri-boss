@@ -7,6 +7,8 @@ import 'package:niagara_smart_drip_irrigation/core/widgets/app_alerts.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_switch.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'package:readmore/readmore.dart';
+import '../../../../core/services/ble/ble_cubit.dart';
+import '../../../../core/services/ble/ble_status_banner.dart';
 import '../../../../core/utils/app_images.dart';
 import '../../../../core/utils/route_constants.dart';
 import '../../../../core/utils/safe_parser.dart';
@@ -130,7 +132,7 @@ class _GlowButtonState extends State<GlowButton>
   }
 }
 // ---------------------------------------------------------------------------
-
+List<int> wlcModel = [45];
 class Dashboard20 extends StatefulWidget {
   const Dashboard20({super.key});
 
@@ -140,6 +142,29 @@ class Dashboard20 extends StatefulWidget {
 
 class _Dashboard20State extends State<Dashboard20> {
   List<int> pumpModel = [4, 11, 27];
+
+  int _lastModelId = -1; // -1 = not yet seen any model
+
+  /// Called every time the selected controller changes (modelId differs).
+  /// Safe to call from build via addPostFrameCallback.
+  void _onModelChanged(BuildContext context, int newModelId) {
+    final wasWlc = wlcModel.contains(_lastModelId);
+    final isWlc  = wlcModel.contains(newModelId);
+
+    // If we switched AWAY from a WLC model → disconnect BLE immediately.
+    if (wasWlc && !isWlc) {
+      context.read<BleCubit>().disconnect();
+      kdebugmode('Model changed away from WLC ($_lastModelId → $newModelId): BLE disconnected');
+    }
+
+    _lastModelId = newModelId;
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -181,13 +206,65 @@ class _Dashboard20State extends State<Dashboard20> {
 
           ControllerEntity controllerEntity =
           state.groupControllers[groupId]![controllerIndex];
+
+          // Detect model change and handle BLE disconnect outside the build frame.
+          if (_lastModelId != controllerEntity.modelId) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) _onModelChanged(context, controllerEntity.modelId);
+            });
+          }
+
           LiveMessageEntity liveMessageEntity = controllerEntity.liveMessage;
 
+          // ── WLC model: gate everything behind BLE + live data ────────────
+          if (wlcModel.contains(controllerEntity.modelId)) {
+            return BlocBuilder<BleCubit, BleState>(
+              builder: (context, bleState) {
+                final bool bleConnected = bleState is BleConnected &&
+                    bleState.deviceId == controllerEntity.deviceId;
+                final bool hasLiveData = liveMessageEntity.cd.isNotEmpty;
+
+                // Show pump dashboard only once BLE is connected AND live data
+                // has arrived through the BLE → dispatcher → cubit pipeline.
+                if (bleConnected && hasLiveData) {
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      context
+                          .read<DashboardPageCubit>()
+                          .getLive(controllerEntity.deviceId, controllerEntity.modelId);
+                    },
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Column(
+                        spacing: 10,
+                        children: [
+                          const SizedBox(height: 20),
+                          BleStatusBanner(deviceId: controllerEntity.deviceId),
+                          ...pumpDashboard(
+                            controllerEntity: controllerEntity,
+                            liveMessageEntity: liveMessageEntity,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                // Otherwise show the BLE scanning / connecting / error screen.
+                return _WlcBleScreen(
+                  deviceId: controllerEntity.deviceId,
+                  bleState: bleState,
+                );
+              },
+            );
+          }
+
+          // ── Non-WLC models: unchanged flow ────────────────────────────────
           return RefreshIndicator(
             onRefresh: () async {
               context
                   .read<DashboardPageCubit>()
-                  .getLive(controllerEntity.deviceId);
+                  .getLive(controllerEntity.deviceId, controllerEntity.modelId);
             },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -216,7 +293,6 @@ class _Dashboard20State extends State<Dashboard20> {
             showGradientLoadingDialog(context);
           } else if (state is DashboardGroupsLoaded &&
               state.changeFromStatus == ChangeFromStatus.success) {
-            kdebugmode("pop of");
             context.pop();
             showSuccessAlert(
                 context: context,
@@ -248,7 +324,8 @@ class _Dashboard20State extends State<Dashboard20> {
             return statusChanged;
           }
           return true;
-        });
+        }
+    );
   }
 
   Widget mountainWidget(ControllerEntity controllerEntity,
@@ -1327,6 +1404,245 @@ class _Dashboard20State extends State<Dashboard20> {
         borderRadius: BorderRadius.circular(15),
       ),
       child: child,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// WLC BLE scanning / connecting / error / reconnect screen
+// Shown for modelId == 4 until BLE is connected AND first live packet arrives.
+// ---------------------------------------------------------------------------
+class _WlcBleScreen extends StatefulWidget {
+  final String deviceId;
+  final BleState bleState;
+
+  const _WlcBleScreen({
+    required this.deviceId,
+    required this.bleState,
+  });
+
+  @override
+  State<_WlcBleScreen> createState() => _WlcBleScreenState();
+}
+
+class _WlcBleScreenState extends State<_WlcBleScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+    _pulseAnimation = Tween<double>(begin: 0.85, end: 1.15).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
+    // Auto-trigger connect when screen first appears
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final bleState = context.read<BleCubit>().state;
+      if (bleState is BleIdle ||
+          bleState is BleDisconnected ||
+          bleState is BleError) {
+        context.read<BleCubit>().connect(widget.deviceId);
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(_WlcBleScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _syncAnimation(widget.bleState);
+  }
+
+  void _syncAnimation(BleState state) {
+    if (state is BleScanning || state is BleConnecting) {
+      if (!_pulseController.isAnimating) {
+        _pulseController.repeat(reverse: true);
+      }
+    } else {
+      _pulseController.stop();
+      _pulseController.reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final BleState state = widget.bleState;
+    _syncAnimation(state);
+
+    final bool isBusy = state is BleScanning || state is BleConnecting;
+    final bool isError = state is BleError;
+
+    // ── Visual config per state ──────────────────────────────────────────────
+    final Color primaryColor = isError
+        ? const Color(0xffC62828)
+        : isBusy
+        ? const Color(0xff1565C0)
+        : const Color(0xff424242);
+
+    final IconData stateIcon = isError
+        ? Icons.bluetooth_disabled
+        : isBusy
+        ? Icons.bluetooth_searching
+        : Icons.bluetooth;
+
+    final String title = state is BleScanning
+        ? 'Scanning for Device'
+        : state is BleConnecting
+        ? 'Connecting…'
+        : state is BleError
+        ? 'Connection Failed'
+        : 'Bluetooth Disconnected';
+
+    final String subtitle = state is BleScanning
+        ? 'Looking for NIA_${widget.deviceId}'
+        : state is BleConnecting
+        ? 'Establishing BLE connection…'
+        : state is BleError
+        ? (state as BleError).message
+        : 'Device is not connected via Bluetooth.';
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // ── Animated BLE icon ────────────────────────────────────────────
+            AnimatedBuilder(
+              animation: _pulseAnimation,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: isBusy ? _pulseAnimation.value : 1.0,
+                  child: child,
+                );
+              },
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: primaryColor.withOpacity(0.1),
+                  border: Border.all(color: primaryColor.withOpacity(0.4), width: 2),
+                ),
+                child: Center(
+                  child: Icon(stateIcon, size: 56, color: primaryColor),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 32),
+
+            // ── Status title ─────────────────────────────────────────────────
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: primaryColor,
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // ── Subtitle / error message ──────────────────────────────────────
+            Text(
+              subtitle,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade600,
+                height: 1.5,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // ── Device ID chip ────────────────────────────────────────────────
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.memory, size: 14, color: Colors.grey.shade500),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Device: ${widget.deviceId}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade600,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 36),
+
+            // ── Spinner or action button ──────────────────────────────────────
+            if (isBusy)
+              Column(
+                children: [
+                  CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
+                    strokeWidth: 3,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    state is BleScanning
+                        ? 'This may take up to 15 seconds…'
+                        : 'Please keep the device nearby',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                ],
+              )
+            else
+              ElevatedButton.icon(
+                onPressed: () =>
+                    context.read<BleCubit>().connect(widget.deviceId),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: isError
+                      ? const Color(0xffC62828)
+                      : const Color(0xff1565C0),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 32, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 2,
+                ),
+                icon: Icon(isError ? Icons.refresh : Icons.bluetooth),
+                label: Text(
+                  isError ? 'Retry Connection' : 'Connect',
+                  style: const TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.w600),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

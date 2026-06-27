@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_manager.dart';
+import 'package:niagara_smart_drip_irrigation/core/utils/app_constants.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/menu_item_entity.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/setting_widget_type.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/template_json_entity.dart';
@@ -9,6 +10,7 @@ import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/usec
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/di/injection.dart' as di;
+import '../../../../core/services/ble/mqtt_or_ble.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
 import '../../domain/usecsases/get_menu_items.dart';
 import '../../domain/usecsases/sms_payload_builder.dart';
@@ -54,6 +56,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     required int subUserId,
     required int controllerId,
     required int menuId,
+    required int modelId,
   }) async {
     if (state is GetPumpSettingsLoaded) return;
 
@@ -62,11 +65,12 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       subUserId: subUserId,
       controllerId: controllerId,
       menuId: menuId,
+      modelId: modelId,
     ));
 
     result.fold(
-      (failure) => emit(GetPumpSettingsError(message: failure.message)),
-      (menuItem) {
+          (failure) => emit(GetPumpSettingsError(message: failure.message)),
+          (menuItem) {
         final updatedSections = menuItem.template.sections.map((section) {
           final updatedSettings = section.settings.map((setting) {
             // Don't load cached values - wait for live data from device
@@ -86,17 +90,17 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
   }
 
   void updateSettingValue(
-    String newValue,
-    int sectionIndex,
-    int settingIndex,
-    MenuItemEntity menuItemEntity, {
-    bool isHiddenFlag = false,
-    int? userId,
-    int? subUserId,
-    int? controllerId,
-  }) {
+      String newValue,
+      int sectionIndex,
+      int settingIndex,
+      MenuItemEntity menuItemEntity, {
+        bool isHiddenFlag = false,
+        int? userId,
+        int? subUserId,
+        int? controllerId,
+      }) {
     final newSections =
-        List<SettingSectionEntity>.from(menuItemEntity.template.sections);
+    List<SettingSectionEntity>.from(menuItemEntity.template.sections);
     final targetSection = newSections[sectionIndex];
     final newSettings = List<SettingsEntity>.from(targetSection.settings);
 
@@ -109,7 +113,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
         final trimmed = newValue.trim();
         if (setting.title == 'Dry Run Occurance Count') {
           final val =
-              newValue.contains('.') ? newValue.split('.')[0] : newValue;
+          newValue.contains('.') ? newValue.split('.')[0] : newValue;
           final number = int.tryParse(val);
           if (number != null) {
             processedValue = number.toString().padLeft(2, '0');
@@ -128,7 +132,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
 
             final intClean = integerStr.replaceAll(RegExp(r'^0+'), '');
             final intValue =
-                intClean.isEmpty ? 0 : int.tryParse(intClean) ?? -1;
+            intClean.isEmpty ? 0 : int.tryParse(intClean) ?? -1;
 
             String paddedInteger;
             if (intValue >= 0 && intValue < 100) {
@@ -179,34 +183,80 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     emit(GetPumpSettingsLoaded(settings: newMenuItem));
   }
 
+  void onViewMessageReceived(String message) {
+    print("state : ${state}");
+    if(state is GetPumpSettingsLoaded){
+      print("message successfully get for pump view ::: ${message}");
+
+    }
+  }
+
+  void sendPumpSettingViewCommand({
+    required String deviceId,
+    required MenuItemEntity menuItemEntity,
+}){
+    String command = '';
+    if(menuItemEntity.menu.menuSettingId == 532){
+      command = 'DELAY';
+    }else if(menuItemEntity.menu.menuSettingId == 533){
+      command = 'TIMER';
+    }else if(menuItemEntity.menu.menuSettingId == 534){
+      command = 'SUMP';
+    }else if(menuItemEntity.menu.menuSettingId == 535){
+      command = 'CURRENT';
+    }else if(menuItemEntity.menu.menuSettingId == 536){
+      command = 'VOLTAGE';
+    }else{
+      command = 'OTHER';
+    }
+    di.sl<MqttOrBle>().publish(
+      deviceId, AppConstants.sendWlcCommand('${command}VIEW')
+    );
+  }
+
   void sendCurrentSetting(
-    int sectionIndex,
-    int settingIndex,
-    String deviceId,
-    int userId,
-    int subUserId,
-    int controllerId,
-    MenuItemEntity menuItemEntity,
-  ) async {
+      int sectionIndex,
+      int settingIndex,
+      String deviceId,
+      int userId,
+      int subUserId,
+      int controllerId,
+      MenuItemEntity menuItemEntity,
+      int modelId,
+      String menuName
+      ) async {
     emit(SettingSendingState(sectionIndex, settingIndex));
+    final bool isWlc = AppConstants.isWlc(modelId);
 
     final setting =
-        menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
-    String payload = SmsPayloadBuilder.build(setting, deviceId);
-    if(menuItemEntity.menu.menuSettingId == 531 && sectionIndex == 0 && settingIndex == 1){
-      payload = '${setting.value}${setting.smsFormat}';
-    }
-    if (menuItemEntity.menu.menuSettingId == 508 &&
-        menuItemEntity.template.sections[sectionIndex].typeId == 1 &&
-        setting.serialNumber <= 4) {
-      payload = '';
+    menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
+
+    String payload;
+
+    if (isWlc) {
+      // TODO: build WLC-specific payload here
+      payload = _buildWlcPayload(menuItemEntity, sectionIndex, settingIndex, setting, deviceId);
+    } else {
+      payload = SmsPayloadBuilder.build(setting, deviceId);
+      if (menuItemEntity.menu.menuSettingId == 531 &&
+          sectionIndex == 0 &&
+          settingIndex == 1) {
+        payload = '${setting.value}${setting.smsFormat}';
+      }
+      if (menuItemEntity.menu.menuSettingId == 508 &&
+          menuItemEntity.template.sections[sectionIndex].typeId == 1 &&
+          setting.serialNumber <= 4) {
+        payload = '';
+      }
     }
 
     try {
       final publishMessage =
-          jsonEncode(PublishMessageHelper.settingsPayload(payload));
+      jsonEncode(PublishMessageHelper.settingsPayload(payload));
       if (payload.isNotEmpty) {
-        di.sl.get<MqttManager>().publish(deviceId, publishMessage);
+        di.sl<MqttOrBle>().publish(deviceId,
+            isWlc ? AppConstants.sendWlcCommand(payload) :
+            publishMessage);
       }
       final result = await sendPumpSettingsUsecase(SendPumpSettingsParams(
         userId: userId,
@@ -215,13 +265,14 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
         menuId: menuItemEntity.menu.menuSettingId,
         menuItemEntity: menuItemEntity,
         sentSms: payload,
+        modelId: modelId,
       ));
 
       result.fold(
-        (failure) => emit(SettingsFailureState(
-            message: "${setting.title} sending ${failure.message}")),
-        (message) => emit(SettingsSendSuccessState(
-            message: "${setting.title} sent $message")),
+            (failure) => emit(SettingsFailureState(
+            message: "${isWlc ? menuName : setting.title} sending ${failure.message}")),
+            (message) => emit(SettingsSendSuccessState(
+            message: "${isWlc ? menuName : setting.title} sent $message")),
       );
     } catch (e) {
       emit(SettingsFailureState(
@@ -231,12 +282,53 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     }
   }
 
+  String _buildWlcPayload(
+      MenuItemEntity menuItemEntity,
+      int sectionIndex,
+      int settingIndex,
+      dynamic setting,
+      String deviceId,
+      ) {
+    List<dynamic> payload = [];
+    if(menuItemEntity.menu.menuSettingId == 532){
+      payload.add('DELAY');
+    }else if(menuItemEntity.menu.menuSettingId == 533){
+      payload.add('TIMER');
+    }else if(menuItemEntity.menu.menuSettingId == 534){
+      payload.add('SUMP');
+    }else if(menuItemEntity.menu.menuSettingId == 535){
+      payload.add('CURRENT');
+    }else if(menuItemEntity.menu.menuSettingId == 536){
+      payload.add('VOLTAGE');
+    }else if(menuItemEntity.menu.menuSettingId == 537){
+      payload.add('OTHER');
+    }
+    for (var category in menuItemEntity.template.sections) {
+      for (var categorySetting in category.settings) {
+        if(categorySetting.value == 'OF'){
+          payload.add('0');
+        }else if(categorySetting.value == 'ON'){
+          payload.add('1');
+        }else{
+          payload.add(categorySetting.value.toString());
+        }
+
+      }
+    }
+    print("wlc payload : $payload");
+    return payload.join(',');
+  }
+
+
+
   Future<void> updateHiddenFlags(
       {required int userId,
-      required int subUserId,
-      required int controllerId,
-      required MenuItemEntity menuItemEntity,
-      required String sentSms}) async {
+        required int subUserId,
+        required int controllerId,
+        required MenuItemEntity menuItemEntity,
+        required String sentSms,
+        required int modelId,
+      }) async {
     emit(SettingsSendStartedState());
     try {
       final result = await sendPumpSettingsUsecase(SendPumpSettingsParams(
@@ -245,11 +337,13 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
           controllerId: controllerId,
           menuId: menuItemEntity.menu.menuSettingId,
           menuItemEntity: menuItemEntity,
-          sentSms: sentSms));
+          sentSms: sentSms,
+          modelId: modelId
+      ));
 
       result.fold(
-        (failure) => emit(SettingsFailureState(message: failure.message)),
-        (message) => emit(SettingsSendSuccessState(message: message)),
+            (failure) => emit(SettingsFailureState(message: failure.message)),
+            (message) => emit(SettingsSendSuccessState(message: message)),
       );
     } catch (e) {
       emit(SettingsFailureState(

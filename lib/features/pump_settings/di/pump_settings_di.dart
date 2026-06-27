@@ -44,5 +44,9 @@ void initPumpSettingsDependencies() {
 
   sl.registerFactory<ViewPumpSettingsCubit>(() => ViewPumpSettingsCubit());
   sl.registerLazySingleton<PumpSettingsViewResponseCubit>(() => PumpSettingsViewResponseCubit());
-  sl.registerLazySingleton<PumpSettingsDispatcher>(() => PumpSettingsDispatcher(cubit: sl<ViewPumpSettingsCubit>(), pumpSettings: sl<PumpSettingsViewResponseCubit>()));
+  sl.registerLazySingleton<PumpSettingsDispatcher>(() => PumpSettingsDispatcher(
+      cubit: sl<ViewPumpSettingsCubit>(),
+      pumpSettings: sl<PumpSettingsViewResponseCubit>(),
+    pumpSettingsCubit: sl<PumpSettingsCubit>()
+  ));
 }

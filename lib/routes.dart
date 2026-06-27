@@ -17,6 +17,8 @@ import 'package:niagara_smart_drip_irrigation/features/standalone_settings/prese
 import 'package:niagara_smart_drip_irrigation/features/standalone_settings/presentation/pages/standalone_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/valve_flow_settings/utils/valve_flow_routes.dart';
 import 'core/di/injection.dart';
+import 'core/services/ble/ble_cubit.dart';
+import 'core/services/ble/ble_manager.dart';
 import 'features/common_id_settings/utils/common_id_settings_routes.dart';
 import 'features/controller_details/domain/usecase/controller_details_params.dart';
 import 'features/controller_details/presentation/bloc/controller_details_bloc.dart';
@@ -188,74 +190,80 @@ class AppRouter {
                   'userType': authState.user.userDetails.userType,
                 };
               }
-              return DashboardPage(userData: userData, child: child,);
+              // BleCubit lives here at the shell level — created once and survives
+              // all tab/route changes within the shell. Dashboard20 reads it via
+              // context.read<BleCubit>() without re-triggering connect().
+              return BlocProvider(
+                create: (_) => BleCubit(bleManager: di.sl<BleManager>()),
+                child: DashboardPage(userData: userData, child: child),
+              );
             },
             routes: [
               GoRoute(
-                  path: DashBoardRoutes.dashboard,
-                  builder: (context, state) {
-                    return Dashboard20();
-                  },
+                path: DashBoardRoutes.dashboard,
+                builder: (context, state) {
+                  return const Dashboard20();
+                },
               ),
               GoRoute(
-                  path: DashBoardRoutes.report,
-                  builder: (context, state) {
-                    /// Safe param extraction
-                    final extra = state.extra as Map<String, dynamic>? ?? {};
+                path: DashBoardRoutes.report,
+                builder: (context, state) {
+                  /// Safe param extraction
+                  final extra = state.extra as Map<String, dynamic>? ?? {};
 
-                     final int userId = int.tryParse(extra['userId'].toString()) ?? 0;
-                    final int subUserId = int.tryParse(extra['subUserId'].toString()) ?? 0;
-                    final int controllerId = int.tryParse(extra['controllerId'].toString()) ?? 0;
-                    final String deviceId = extra['deviceId']?.toString() ?? "0";
+                  final int userId = int.tryParse(extra['userId'].toString()) ?? 0;
+                  final int subUserId = int.tryParse(extra['subUserId'].toString()) ?? 0;
+                  final int controllerId = int.tryParse(extra['controllerId'].toString()) ?? 0;
+                  final String deviceId = extra['deviceId']?.toString() ?? "0";
 
-                    final String fromDate = extra['fromDate'] ??
-                        DateFormat('yyyy-MM-dd').format(DateTime.now());
+                  final String fromDate = extra['fromDate'] ??
+                      DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-                    final String toDate = extra['toDate'] ??
-                        DateFormat('yyyy-MM-dd').format(DateTime.now());
+                  final String toDate = extra['toDate'] ??
+                      DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-                    return BlocProvider.value(
-                      value: di.sl<ReportMenuBloc>(),
-                      child: ReportMenuPage(
-                        params: {
-                          "userId": userId,
-                          "subuserId": subUserId,
-                          "controllerId": controllerId,
-                          "deviceId": deviceId,
-                          "fromDate": fromDate,
-                          "toDate": toDate,
-                        },
-                      ),
-                    );
-                  },
+                  return BlocProvider.value(
+                    value: di.sl<ReportMenuBloc>(),
+                    child: ReportMenuPage(
+                      params: {
+                        "userId": userId,
+                        "subuserId": subUserId,
+                        "controllerId": controllerId,
+                        "deviceId": deviceId,
+                        "fromDate": fromDate,
+                        "toDate": toDate,
+                      },
+                    ),
+                  );
+                },
               ),
               GoRoute(
-                  path: DashBoardRoutes.standalone,
-                  builder: (context, state) {
-                    final params = state.extra as Map<String, dynamic>? ?? {};
-                    final String userId = params["userId"]?.toString() ?? '';
-                    final String controllerId = params["controllerId"]?.toString() ?? '';
-                    final String deviceId = params["deviceId"]?.toString() ?? '';
-                    final String subUserId = params["subUserId"]?.toString() ?? '0';
+                path: DashBoardRoutes.standalone,
+                builder: (context, state) {
+                  final params = state.extra as Map<String, dynamic>? ?? {};
+                  final String userId = params["userId"]?.toString() ?? '';
+                  final String controllerId = params["controllerId"]?.toString() ?? '';
+                  final String deviceId = params["deviceId"]?.toString() ?? '';
+                  final String subUserId = params["subUserId"]?.toString() ?? '0';
 
-                    return BlocProvider.value(
-                      value: di.sl<StandaloneBloc>(),
-                      child: Builder(
-                        builder: (context) {
-                          final bloc = context.read<StandaloneBloc>();
-                          if (bloc.state is StandaloneInitial && userId.isNotEmpty) {
-                            bloc.add(FetchStandaloneDataEvent(
-                                userId: userId,
-                                controllerId: controllerId,
-                                deviceId: deviceId,
-                                subUserId: subUserId
-                            ));
-                          }
-                          return StandalonePage(data: params);
-                        },
-                      ),
-                    );
-                  },
+                  return BlocProvider.value(
+                    value: di.sl<StandaloneBloc>(),
+                    child: Builder(
+                      builder: (context) {
+                        final bloc = context.read<StandaloneBloc>();
+                        if (bloc.state is StandaloneInitial && userId.isNotEmpty) {
+                          bloc.add(FetchStandaloneDataEvent(
+                              userId: userId,
+                              controllerId: controllerId,
+                              deviceId: deviceId,
+                              subUserId: subUserId
+                          ));
+                        }
+                        return StandalonePage(data: params);
+                      },
+                    ),
+                  );
+                },
               ),
               GoRoute(
                   path: DashBoardRoutes.settings,
@@ -267,20 +275,20 @@ class AppRouter {
                   ]
               ),
               GoRoute(
-                  path: DashBoardRoutes.sentAndReceive,
-                  builder: (context, state) {
-                    final controllerContext = context.read<ControllerContextCubit>().state;
-                    if (controllerContext is ControllerContextLoaded) {
-                      return SendRevPage(params: {
-                        "userId": controllerContext.userId,
-                        "subuserId": controllerContext.subUserId,
-                        "controllerId": controllerContext.controllerId,
-                      });
-                    }
-                    return const Center(
-                      child: Text('Please select a controller first.'),
-                    );
-                  },
+                path: DashBoardRoutes.sentAndReceive,
+                builder: (context, state) {
+                  final controllerContext = context.read<ControllerContextCubit>().state;
+                  if (controllerContext is ControllerContextLoaded) {
+                    return SendRevPage(params: {
+                      "userId": controllerContext.userId,
+                      "subuserId": controllerContext.subUserId,
+                      "controllerId": controllerContext.controllerId,
+                    });
+                  }
+                  return const Center(
+                    child: Text('Please select a controller first.'),
+                  );
+                },
               ),
               ...PowerGraphRoutes,
               ...FaultMsgPagesRoutes,
@@ -321,10 +329,10 @@ class AppRouter {
             path: DashBoardRoutes.ctrlLivePage,
             builder: (context, state) {
               kdebugmode('Building ctrlLivePage, AuthBloc state: ${sl.get<AuthBloc>().state}');
-              
+
               LiveMessageEntity? liveMessage;
               String? deviceId;
-              
+
               if (state.extra is ControllerEntity) {
                 final controller = state.extra as ControllerEntity;
                 liveMessage = controller.liveMessage;
@@ -339,7 +347,7 @@ class AppRouter {
                   BlocProvider.value(value: sl.get<DashboardPageCubit>()),
                 ],
                 child: CtrlLivePage(
-                  selectedController: liveMessage, 
+                  selectedController: liveMessage,
                   deviceId: deviceId,
                   lastSync: '',
                 ),
@@ -415,7 +423,6 @@ class AppRouter {
       ],
     );
   }
-
 
   Widget _buildWithAuthBloc(Widget child) => BlocProvider.value(value: authBloc, child: child);
 

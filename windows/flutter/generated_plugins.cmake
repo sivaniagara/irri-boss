@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   connectivity_plus
   firebase_auth
   firebase_core
+  flutter_blue_plus_winrt
   permission_handler_windows
   share_plus
   url_launcher_windows

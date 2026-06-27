@@ -97,7 +97,7 @@ class _DashboardPageState extends State<DashboardPage> {
           if (groupId != null && controllerIndex != null) {
             final controllers = state.groupControllers[groupId] ?? [];
             if (controllerIndex < controllers.length) {
-              cubit.getLive(controllers[controllerIndex].deviceId);
+              cubit.getLive(controllers[controllerIndex].deviceId, controllers[controllerIndex].modelId);
             }
           }
         }

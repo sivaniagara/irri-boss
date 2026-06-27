@@ -93,7 +93,19 @@ class LiveMessageModel extends LiveMessageEntity {
       if (index >= parts.length) return defaultValue;
       final str = parts[index];
       if (str.isEmpty || str.toUpperCase() == 'NA') return defaultValue;
-      return str.split(separator).map((s) => s.trim()).toList();
+      final split = str.split(separator).map((s) => s.trim()).toList();
+      final expectedLength = defaultValue.length;
+      if (split.length == expectedLength) return split;
+      // Field didn't contain the expected separator (or had too many/few
+      // parts) — pad with the default's own values or truncate so callers
+      // can always safely index up to expectedLength without a RangeError.
+      if (split.length < expectedLength) {
+        return [
+          ...split,
+          ...defaultValue.sublist(split.length, expectedLength),
+        ];
+      }
+      return split.sublist(0, expectedLength);
     }
 
     bool looksLikeMode(String value) => value.toUpperCase().contains('MODE');
@@ -171,8 +183,8 @@ class LiveMessageModel extends LiveMessageEntity {
       // Double-pump detection: position 1 should be motor status (0/1) AND position 10 is not a mode but position 11 is
       bool looksLikeMotorStatus(String value) => value == '0' || value == '1';
       final int ld04Offset = (looksLikeMotorStatus(safeString(1, '')) &&
-              !looksLikeMode(safeString(10, '')) &&
-              looksLikeMode(safeString(11, '')))
+          !looksLikeMode(safeString(10, '')) &&
+          looksLikeMode(safeString(11, '')))
           ? 1
           : 0;
 

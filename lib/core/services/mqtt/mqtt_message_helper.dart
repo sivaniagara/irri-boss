@@ -11,6 +11,8 @@ import '../../../features/dashboard/domain/entities/livemessage_entity.dart';
 import '../../../features/dashboard/presentation/helper/get_sms_sync.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
+
+import '../../utils/app_constants.dart';
 class MqttMessageType {
   final String code;
   const MqttMessageType(this.code);
@@ -288,6 +290,7 @@ abstract class MessageDispatcher {
   void onScheduleOne(String deviceId, Map<String, dynamic> message) {}
   void onScheduleTwo(String deviceId, Map<String, dynamic> message) {}
   void onViewSettings(String deviceId, Map<String, dynamic> message) {}
+  void onNewViewSettings(String deviceId, String message) {}
   void onServerTimeUpdate(String deviceId, {String? date, String? time}) {}
 }
 
@@ -298,140 +301,165 @@ class MqttMessageHelper {
         required MessageDispatcher dispatcher,
         BuildContext? context,
       }) async {
-    Map<String, dynamic> jsonObject = {};
-    String qrCode = '';
-    String typeStr = '';
+    Map<String, dynamic> samplePayload = {"cC":"94A990E603D9","cM":"0,224,242,236,403,414,398,00.0,00.0,00.0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,","cL":"","cZ":"","cD":"26/06/2026","cT":"15:34:7","mC":"LD04"};
 
-    try {
-      jsonObject = jsonDecode(mqttMsg);
-      typeStr = (jsonObject['mC'] ?? '').toString().trim();
-      qrCode = (jsonObject['cC'] ?? '').toString().trim();
+    if(mqttMsg.contains("|")){
+      try{
+        Map<String, dynamic> wlcLivePayload = {};
+        List<String> splitPayload = mqttMsg.split('|');
+        if(splitPayload.length == 2){
+          if(AppConstants.crcMatch(splitPayload[0], splitPayload[1])){
+            print("CRC matched............");
+            wlcLivePayload = jsonDecode(splitPayload[0]);
+            if(wlcLivePayload.containsKey('cC')){
+              processMessage(splitPayload[0], dispatcher: dispatcher);
+            }else if(wlcLivePayload.containsKey('delayView')){
+              print('yess....');
+              dispatcher.onNewViewSettings('', wlcLivePayload['delayView']);
+            }
+          }
+
+        }
+      }catch(e, stackTrace){
+        print(e);
+        print(stackTrace);
+      }
+    }else{
+      Map<String, dynamic> jsonObject = {};
+      String qrCode = '';
+      String typeStr = '';
+
+      try {
+        jsonObject = jsonDecode(mqttMsg);
+        typeStr = (jsonObject['mC'] ?? '').toString().trim();
+        qrCode = (jsonObject['cC'] ?? '').toString().trim();
+
+        if (kDebugMode) {
+          kdebugmode('--- MQTT PACKET RECEIVED ---');
+          kdebugmode('Raw: $mqttMsg');
+          kdebugmode('Type: $typeStr | Device: $qrCode');
+        }
+      } catch (e) {
+        if (kDebugMode) debugPrint('MQTT JSON Parse Error: $e | Raw: $mqttMsg');
+        return;
+      }
+
+      final String msg = (jsonObject['cM'] ?? '').toString();
+      final now = DateTime.now();
+      final String defaultCd = "${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}";
+      final String defaultCt = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
+
+      final String cd = (jsonObject['cD']?.toString() ?? '').isNotEmpty
+          ? jsonObject['cD'].toString()
+          : defaultCd;
+      final String ct = (jsonObject['cT']?.toString() ?? '').isNotEmpty
+          ? jsonObject['cT'].toString()
+          : defaultCt;
+      String cl = (jsonObject['cL'] ?? '').toString();
 
       if (kDebugMode) {
-        kdebugmode('--- MQTT PACKET RECEIVED ---');
-        kdebugmode('Raw: $mqttMsg');
-        kdebugmode('Type: $typeStr | Device: $qrCode');
-      }
-    } catch (e) {
-      if (kDebugMode) debugPrint('MQTT JSON Parse Error: $e | Raw: $mqttMsg');
-      return;
-    }
-
-    final String msg = (jsonObject['cM'] ?? '').toString();
-    final now = DateTime.now();
-    final String defaultCd = "${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}";
-    final String defaultCt = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}";
-
-    final String cd = (jsonObject['cD']?.toString() ?? '').isNotEmpty 
-        ? jsonObject['cD'].toString() 
-        : defaultCd;
-    final String ct = (jsonObject['cT']?.toString() ?? '').isNotEmpty 
-        ? jsonObject['cT'].toString() 
-        : defaultCt;
-    String cl = (jsonObject['cL'] ?? '').toString();
-
-    if (kDebugMode) {
-      kdebugmode('Extracted Data -> Date: $cd, Time: $ct');
-    }
-
-    String trimmedMsg = msg.trim();
-    String msgCode = getMsgCode(trimmedMsg);
-    String msgDesc = FaultSms.smsMessage(msgCode);
-
-    final type = MqttMessageType.fromCode(typeStr);
-
-    // âœ… UPDATE SERVER TIME FOR EVERY PACKET
-    if (cd.isNotEmpty && ct.isNotEmpty) {
-      if (kDebugMode) kdebugmode('Updating Server Time -> $cd $ct');
-      dispatcher.onServerTimeUpdate(qrCode, date: cd, time: ct);
-    }
-
-    if (type == MqttMessageType.live || type == MqttMessageType.liveExtended || type == MqttMessageType.pumpLive) {
-      LiveMessageEntity? liveModel;
-      String formattedSync = '$ct\n$cd';
-      if (type == MqttMessageType.live) {
-        liveModel = LiveMessageModel.fromLiveMessage(trimmedMsg, externalLastSync: formattedSync);
-      } else {
-        // LD04
-        liveModel = LiveMessageModel.fromLiveMessage(trimmedMsg, typeCode: 'LD04', externalLastSync: formattedSync);
-      }
-      // Fire-and-forget storage write to avoid blocking the message stream
-      SharedPreferences.getInstance().then((prefs) {
-        prefs.setString('LIVEMSG_$qrCode', '$trimmedMsg,$cd,$ct');
-      });
-
-      if (kDebugMode) {
-        kdebugmode('Dispatching Live Update: Date=$cd Time=$ct Msg=$trimmedMsg');
+        kdebugmode('Extracted Data -> Date: $cd, Time: $ct');
       }
 
-      // Format the display message instead of using raw MQTT message
-      // Prefer 'cl' (Latest Message from MQTT) if available, otherwise format 'cM'
-      String formattedDisplayMsg = cl.isNotEmpty ? cl : getDisplayMessage(trimmedMsg);
+      String trimmedMsg = msg.trim();
+      String msgCode = getMsgCode(trimmedMsg);
+      String msgDesc = FaultSms.smsMessage(msgCode);
 
-      // Update Dashboard with formatted fields
-      dispatcher.onLiveUpdate(
-          qrCode,
-          liveModel,
-          date: cd,
-          time: ct,
-          msgDesc: msgDesc,
-          fullMsg: formattedDisplayMsg
-      );
-    }
+      final type = MqttMessageType.fromCode(typeStr);
 
-    if (type == MqttMessageType.fertilizerLive) {
-      SharedPreferences.getInstance().then((prefs) {
-        prefs.setString('FERTLIVEMSG_$qrCode', '$trimmedMsg,$cd,$ct');
-      });
-      dispatcher.onFertilizerUpdate(qrCode, trimmedMsg);
-      dispatcher.onFertilizerLive(qrCode, jsonObject);
-    }
-
-    if(type == MqttMessageType.waterPumpSettings) {
-      dispatcher.onPumpWaterPumpSettings(qrCode, trimmedMsg);
-    }
-
-    if(type == MqttMessageType.scheduleOne) {
-      dispatcher.onScheduleOne(qrCode, jsonObject);
-    }
-
-    if(type == MqttMessageType.scheduleTwo) {
-      dispatcher.onScheduleTwo(qrCode, jsonObject);
-    }
-
-    if(type == MqttMessageType.sms) {
-      dispatcher.onViewSettings(qrCode, jsonObject);
-
-      // Also update Live Sync UI with timestamp from SMS packet if available
+      // âœ… UPDATE SERVER TIME FOR EVERY PACKET
       if (cd.isNotEmpty && ct.isNotEmpty) {
-        if (kDebugMode) kdebugmode('SMS Packet Update -> Syncing time from SMS packet');
+        if (kDebugMode) kdebugmode('Updating Server Time -> $cd $ct');
         dispatcher.onServerTimeUpdate(qrCode, date: cd, time: ct);
       }
-    }
 
-    String displayMsg = trimmedMsg.length > 6 ? trimmedMsg.substring(6) : trimmedMsg;
+      if (type == MqttMessageType.live || type == MqttMessageType.liveExtended || type == MqttMessageType.pumpLive) {
+        LiveMessageEntity? liveModel;
+        String formattedSync = '$ct\n$cd';
+        if (type == MqttMessageType.live) {
+          liveModel = LiveMessageModel.fromLiveMessage(trimmedMsg, externalLastSync: formattedSync);
+        } else {
+          // LD04
+          liveModel = LiveMessageModel.fromLiveMessage(trimmedMsg, typeCode: 'LD04', externalLastSync: formattedSync);
+        }
+        // Fire-and-forget storage write to avoid blocking the message stream
+        SharedPreferences.getInstance().then((prefs) {
+          prefs.setString('LIVEMSG_$qrCode', '$trimmedMsg,$cd,$ct');
+        });
 
-    SharedPreferences.getInstance().then((prefs) async {
-      await prefs.setBool('SEND_FLAG', true);
-      String repeat = prefs.getString('repeat') ?? '';
-
-      if (type == MqttMessageType.sms && repeat != trimmedMsg) {
-        String devicename = prefs.getString('DNAME_NOTIFICATION_$qrCode') ?? qrCode;
-        await prefs.setString('repeat', trimmedMsg);
-        await prefs.setString('SMS_BODY', trimmedMsg);
-        await prefs.setBool('SMS_RECEIVED', true);
-
-        dispatcher.onSmsNotification(qrCode, trimmedMsg, msgDesc);
-
-        if (context != null) {
-          Fluttertoast.showToast(msg: displayMsg, backgroundColor: Colors.black87, textColor: Colors.white);
+        if (kDebugMode) {
+          kdebugmode('Dispatching Live Update: Date=$cd Time=$ct Msg=$trimmedMsg');
         }
 
-        String notificationTitle = msgDesc.isNotEmpty ? '$msgDesc $trimmedMsg' : trimmedMsg;
-        await _sendNotification(notificationTitle, devicename, 'body');
+        // Format the display message instead of using raw MQTT message
+        // Prefer 'cl' (Latest Message from MQTT) if available, otherwise format 'cM'
+        String formattedDisplayMsg = cl.isNotEmpty ? cl : getDisplayMessage(trimmedMsg);
+
+        // Update Dashboard with formatted fields
+        dispatcher.onLiveUpdate(
+            qrCode,
+            liveModel,
+            date: cd,
+            time: ct,
+            msgDesc: msgDesc,
+            fullMsg: formattedDisplayMsg
+        );
       }
-      await prefs.setBool('IOT_STATUS', true);
-    });
+
+      if (type == MqttMessageType.fertilizerLive) {
+        SharedPreferences.getInstance().then((prefs) {
+          prefs.setString('FERTLIVEMSG_$qrCode', '$trimmedMsg,$cd,$ct');
+        });
+        dispatcher.onFertilizerUpdate(qrCode, trimmedMsg);
+        dispatcher.onFertilizerLive(qrCode, jsonObject);
+      }
+
+      if(type == MqttMessageType.waterPumpSettings) {
+        dispatcher.onPumpWaterPumpSettings(qrCode, trimmedMsg);
+      }
+
+      if(type == MqttMessageType.scheduleOne) {
+        dispatcher.onScheduleOne(qrCode, jsonObject);
+      }
+
+      if(type == MqttMessageType.scheduleTwo) {
+        dispatcher.onScheduleTwo(qrCode, jsonObject);
+      }
+
+      if(type == MqttMessageType.sms) {
+        dispatcher.onViewSettings(qrCode, jsonObject);
+
+        // Also update Live Sync UI with timestamp from SMS packet if available
+        if (cd.isNotEmpty && ct.isNotEmpty) {
+          if (kDebugMode) kdebugmode('SMS Packet Update -> Syncing time from SMS packet');
+          dispatcher.onServerTimeUpdate(qrCode, date: cd, time: ct);
+        }
+      }
+
+      String displayMsg = trimmedMsg.length > 6 ? trimmedMsg.substring(6) : trimmedMsg;
+
+      SharedPreferences.getInstance().then((prefs) async {
+        await prefs.setBool('SEND_FLAG', true);
+        String repeat = prefs.getString('repeat') ?? '';
+
+        if (type == MqttMessageType.sms && repeat != trimmedMsg) {
+          String devicename = prefs.getString('DNAME_NOTIFICATION_$qrCode') ?? qrCode;
+          await prefs.setString('repeat', trimmedMsg);
+          await prefs.setString('SMS_BODY', trimmedMsg);
+          await prefs.setBool('SMS_RECEIVED', true);
+
+          dispatcher.onSmsNotification(qrCode, trimmedMsg, msgDesc);
+
+          if (context != null) {
+            Fluttertoast.showToast(msg: displayMsg, backgroundColor: Colors.black87, textColor: Colors.white);
+          }
+
+          String notificationTitle = msgDesc.isNotEmpty ? '$msgDesc $trimmedMsg' : trimmedMsg;
+          await _sendNotification(notificationTitle, devicename, 'body');
+        }
+        await prefs.setBool('IOT_STATUS', true);
+      });
+    }
   }
 
   static Future<void> _sendNotification(String title, String body, String? payload) async {

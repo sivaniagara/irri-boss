@@ -307,20 +307,20 @@ class _ControllerDetailsPageState extends State<ControllerDetailsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
-            DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                value: items.contains(value) ? value : null,
-                isExpanded: true,
-                icon: const Icon(Icons.keyboard_arrow_down, color: AppThemes.primaryColor, size: 20),
-                items: items.map((String item) {
-                  return DropdownMenuItem<String>(
-                    value: item,
-                    child: Text(item, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-                  );
-                }).toList(),
-                onChanged: onChanged,
-              ),
-            ),
+            // DropdownButtonHideUnderline(
+            //   child: DropdownButton<String>(
+            //     value: items.contains(value) ? value : null,
+            //     isExpanded: true,
+            //     icon: const Icon(Icons.keyboard_arrow_down, color: AppThemes.primaryColor, size: 20),
+            //     items: items.map((String item) {
+            //       return DropdownMenuItem<String>(
+            //         value: item,
+            //         child: Text(item, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            //       );
+            //     }).toList(),
+            //     onChanged: onChanged,
+            //   ),
+            // ),
           ],
         ),
       ),

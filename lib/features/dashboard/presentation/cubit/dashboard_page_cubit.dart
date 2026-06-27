@@ -5,13 +5,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/dashboard_routes.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../core/services/ble/mqtt_or_ble.dart';
 import '../../../../core/services/mqtt/mqtt_manager.dart';
 import '../../../../core/services/mqtt/publish_messages.dart';
+import '../../../../core/utils/app_constants.dart';
 import '../../dashboard.dart';
 import '../../domain/usecases/control_motor_usecase.dart';
 import '../../domain/usecases/update_change_from_usecase.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
+
+import '../pages/dashboard_2_0.dart';
 enum ChangeFromStatus { initial, loading, success, failure }
 
 enum ControlMotorStatus { initial, loading, success, failure }
@@ -317,6 +321,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
             sl<MqttManager>().subscribe(selectedDeviceId);
             sl<MqttManager>().publish(
               selectedDeviceId,
+              wlcModel.contains(controllers[0].modelId) ? AppConstants.sendWlcCommand("#live") :
               jsonEncode(PublishMessageHelper.requestLive),
             );
           } else if (newSelectedIndex != null &&
@@ -379,6 +384,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
           sl<MqttManager>().subscribe(selectedDeviceId);
           sl<MqttManager>().publish(
             selectedDeviceId,
+            wlcModel.contains(controllers[0].modelId) ? AppConstants.sendWlcCommand("#live") :
             jsonEncode(PublishMessageHelper.requestLive),
           );
         }
@@ -411,15 +417,17 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     final selectedController = controllers[controllerIndex];
     _cancelInactiveDeviceTimers(selectedController.deviceId);
 
-    sl<MqttManager>().subscribe(selectedController.deviceId);
-    sl<MqttManager>().publish(selectedController.deviceId,
+    sl<MqttOrBle>().subscribe(selectedController.deviceId);
+    sl<MqttOrBle>().publish(selectedController.deviceId,
+        wlcModel.contains(selectedController.modelId) ? AppConstants.sendWlcCommand("#live") :
         jsonEncode(PublishMessageHelper.requestLive));
     emit(currentState.copyWith(selectedControllerIndex: controllerIndex));
   }
 
-  void getLive(String deviceId) {
-    sl<MqttManager>()
-        .publish(deviceId, jsonEncode(PublishMessageHelper.requestLive));
+  void getLive(String deviceId, int modelId) {
+    sl<MqttOrBle>()
+        .publish(
+        deviceId, wlcModel.contains(modelId) ? AppConstants.sendWlcCommand("#live") : jsonEncode(PublishMessageHelper.requestLive));
   }
 
   void resetDashboardSelection() {
@@ -435,6 +443,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
   void updateLiveMessage(String deviceId, LiveMessageEntity liveMessage,
       {String? date, String? time, String? fullMsg, String? msgDesc}) {
+    print("liveMessage : ${liveMessage}");
     if (state is! DashboardGroupsLoaded) return;
 
     // Manage Timer independently from state update to avoid recursion loop
@@ -538,8 +547,8 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
     final cleanPayload = payload.replaceAll(",", "");
 
-    // Get model ID to determine if it's double pump
-    int modelId = 4; // default
+    // Get model ID
+    int modelId = 4;
     for (var groupControllers in currentState.groupControllers.values) {
       for (var controller in groupControllers) {
         if (controller.deviceId == deviceId) {
@@ -549,70 +558,115 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       }
     }
 
+    final isWlc = wlcModel.contains(modelId);
+
     if (cleanPayload.toUpperCase().contains("ON")) {
-      // Step 1: Send MTROF to API
-      await controlMotorUsecase(ControlMotorParams(
-        userId: userId,
-        controllerId: controllerId,
-        programId: programId,
-        deviceId: deviceId,
-        payload: "MTROF,",
-      ));
-      
-      // Publish MTROF to MQTT
-      sl<MqttManager>().publish(deviceId, PublishMessageHelper.settingsPayload("MTROF"));
-          
-      // Step 2: Wait for 5 seconds
+      /// -------------------- STEP 1: OFF FIRST --------------------
+      dynamic offPayload;
+      String offCommand = 'MTROF';
+
+      if (isWlc) {
+        offPayload = AppConstants.sendWlcCommand(offCommand);
+      } else {
+        offPayload = PublishMessageHelper.settingsPayload(offCommand);
+
+        // ✅ Call API ONLY for NON-WLC
+        await controlMotorUsecase(ControlMotorParams(
+          userId: userId,
+          controllerId: controllerId,
+          programId: programId,
+          deviceId: deviceId,
+          payload: "MTROF,",
+        ));
+      }
+
+      // ✅ MQTT for ALL
+      sl<MqttOrBle>().publish(deviceId, offPayload);
       await Future.delayed(const Duration(seconds: 5));
 
-      // Step 3: Send the appropriate ON command based on pump type
-      // For double pump (modelId 27), use the payload directly (MOTOR1ON or MOTOR2ON)
-      // For single pump, use MTRON
+      /// -------------------- STEP 2: ON COMMAND --------------------
       String onCommand;
       if (modelId == 27) {
-        onCommand = cleanPayload.toUpperCase().replaceAll(",", "");
+        onCommand = cleanPayload.toUpperCase();
       } else {
         onCommand = "MTRON";
       }
-      final onResult = await controlMotorUsecase(ControlMotorParams(
-        userId: userId,
-        controllerId: controllerId,
-        programId: programId,
-        deviceId: deviceId,
-        payload: "$onCommand,",
-      ));
 
-      onResult.fold(
-        (failure) => emit(currentState.copyWith(
+      dynamic onPayload;
+      if (isWlc) {
+        onPayload = AppConstants.sendWlcCommand(onCommand);
+      } else {
+        onPayload = PublishMessageHelper.settingsPayload(onCommand);
+      }
+
+      if (isWlc) {
+        // ❌ NO API CALL for WLC
+        sl<MqttOrBle>().publish(deviceId, onPayload);
+
+        emit(currentState.copyWith(
+          controlMotorStatus: ControlMotorStatus.success,
+        ));
+      } else {
+        // ✅ API call for NON-WLC
+        final result = await controlMotorUsecase(ControlMotorParams(
+          userId: userId,
+          controllerId: controllerId,
+          programId: programId,
+          deviceId: deviceId,
+          payload: "$onCommand,",
+        ));
+
+        result.fold(
+              (failure) => emit(currentState.copyWith(
             controlMotorStatus: ControlMotorStatus.failure,
-            errorMsg: failure.message)),
-        (_) {
-          // Publish appropriate ON command to MQTT
-          sl<MqttManager>().publish(
-              deviceId, PublishMessageHelper.settingsPayload(onCommand));
-          emit(currentState.copyWith(
-              controlMotorStatus: ControlMotorStatus.success));
-        },
-      );
-    } else {
-      // For OFF command (MTROF), send once to API and MQTT
-      final result = await controlMotorUsecase(ControlMotorParams(
-        userId: userId,
-        controllerId: controllerId,
-        programId: programId,
-        deviceId: deviceId,
-        payload: payload,
-      ));
+            errorMsg: failure.message,
+          )),
+              (_) {
+                sl<MqttOrBle>().publish(deviceId, onPayload);
 
-      result.fold(
-        (failure) => emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.failure, errorMsg: failure.message)),
-        (_) {
-          sl<MqttManager>().publish(deviceId, PublishMessageHelper.settingsPayload(cleanPayload));
-          emit(currentState.copyWith(controlMotorStatus: ControlMotorStatus.success));
-        },
-      );
+            emit(currentState.copyWith(
+              controlMotorStatus: ControlMotorStatus.success,
+            ));
+          },
+        );
+      }
+    } else {
+      /// -------------------- OFF FLOW --------------------
+      if (isWlc) {
+        // ❌ No API call
+        final offPayload = AppConstants.sendWlcCommand(cleanPayload);
+        sl<MqttOrBle>().publish(deviceId, offPayload);
+
+        emit(currentState.copyWith(
+          controlMotorStatus: ControlMotorStatus.success,
+        ));
+      } else {
+        // ✅ API + MQTT
+        final result = await controlMotorUsecase(ControlMotorParams(
+          userId: userId,
+          controllerId: controllerId,
+          programId: programId,
+          deviceId: deviceId,
+          payload: payload,
+        ));
+
+        result.fold(
+              (failure) => emit(currentState.copyWith(
+            controlMotorStatus: ControlMotorStatus.failure,
+            errorMsg: failure.message,
+          )),
+              (_) {
+                sl<MqttOrBle>().publish(deviceId, PublishMessageHelper.settingsPayload(cleanPayload));
+
+            emit(currentState.copyWith(
+              controlMotorStatus: ControlMotorStatus.success,
+            ));
+          },
+        );
+      }
     }
   }
+
 
   void resetControlStatus() {
     if (state is DashboardGroupsLoaded) {

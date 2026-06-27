@@ -1,15 +1,19 @@
 class PumpSettingsUrls {
   static const String settingReferenceId = "600";
+  static const String settingReferenceIdForWlc = "800";
   static const String newSettings = "newSettings";
   /// Get methods
   static const String getSettingsMenu = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/$settingReferenceId/$newSettings';
+  static const String getSettingsMenuForWlc = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/$settingReferenceIdForWlc/$newSettings';
   static const String getNotificationSettings = 'user/:userId/subuser/:subuserId/controller/:controllerId/message'; //GET & PUT
   static const String getFinalMenu = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/$settingReferenceId/$newSettings/:menuId';
+  static const String getFinalMenuForWlc = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/$settingReferenceIdForWlc/$newSettings/:menuId';
 
   /// Post methods
   static const String addViewType4 = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/$settingReferenceId/$newSettings';
   static const String menuHide = 'user/:userId/subuser/:shareUserId/controller/:controllerId/menu/:menuId/hidemenu';
   static const String updateTemplate = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/$settingReferenceId/$newSettings';
+  static const String updateTemplateForWlc = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/$settingReferenceIdForWlc/$newSettings';
   static const String verifyPassword = 'password';
 
   /// Put methods

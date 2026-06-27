@@ -24,7 +24,8 @@ class PumpSettingsMenuBloc extends Bloc<PumpSettingsEvent, PumpSettingsState> {
           GetPumpSettingsMenuParams(
               userId: event.userId,
               subUserId: event.subUserId,
-              controllerId: event.controllerId
+              controllerId: event.controllerId,
+              modelId: event.modelId,
           )
       );
 

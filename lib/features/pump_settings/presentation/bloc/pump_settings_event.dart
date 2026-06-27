@@ -9,8 +9,8 @@ class PumpSettingsEvent extends Equatable {
 }
 
 class GetPumpSettingsMenuEvent extends PumpSettingsEvent {
-  final int userId, controllerId, subUserId;
-  GetPumpSettingsMenuEvent({required this.userId, required this.subUserId, required this.controllerId});
+  final int userId, controllerId, subUserId, modelId;
+  GetPumpSettingsMenuEvent({required this.userId, required this.subUserId, required this.controllerId, required this.modelId});
 
   @override
   List<Object?> get props => [];
