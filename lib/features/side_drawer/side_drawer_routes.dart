@@ -151,14 +151,14 @@ final sideDrawerRoutes = <ShellRoute>[
           );
         },
       ),
-      // GoRoute(
-      //   name: 'chat',
-      //   path: RouteConstants.chat,
-      //   builder: (context, state) => BlocProvider.value(
-      //       value: sl.get<AuthBloc>(),
-      //       child:  const Chat()
-      //   ),
-      // ),
+      GoRoute(
+        name: 'QRScanner',
+        path: RouteConstants.chat,
+        builder: (context, state) => BlocProvider.value(
+            value: sl.get<AuthBloc>(),
+            child:  const Chat()
+        ),
+      ),
       GoRoute(
         path: DashBoardRoutes.dashboard,
         builder: (context, state) {

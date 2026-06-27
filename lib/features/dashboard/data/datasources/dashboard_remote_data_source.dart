@@ -239,7 +239,7 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
           )
           .replaceAll(
             ':programId',
-            '1', // Default program ID for motor commands
+            '1',
           );
 
       await apiClient.post(

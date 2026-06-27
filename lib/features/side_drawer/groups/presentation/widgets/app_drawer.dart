@@ -151,6 +151,16 @@ class AppDrawer extends StatelessWidget {
                   },
                 ),
                 const Divider(indent: 10, endIndent: 10),
+                 _buildDrawerItem(
+                  context,
+                  icon: Icons.add_a_photo,
+                  title: 'Scan To Add Device',
+                  onTap: () {
+                    // QR Code scannerPage ()
+                    context.push(RouteConstants.QRScannerListPage);
+                    Navigator.pop(context);
+                  },
+                ),
               ],
             ),
           ),
