@@ -120,6 +120,7 @@ flutter:
     - assets/ic_launcher.png
     - assets/images/report_menu/
     - assets/images/common/valve_running.gif
+    - assets/sounds/beep.mp3
 
 
 flutter_launcher_icons:
