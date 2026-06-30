@@ -38,6 +38,7 @@ class SettingsModel extends SettingsEntity {
     required super.serialNumber,
     required super.widgetType,
     required super.value,
+    required super.valueInHw,
     required super.smsFormat,
     required super.title,
     required super.hiddenFlag
@@ -47,7 +48,8 @@ class SettingsModel extends SettingsEntity {
     return SettingsModel(
         serialNumber: json["SN"],
         widgetType: SettingWidgetType.fromInt(json['WT'] ?? 0),
-        value: json["VAL"] ?? '',
+        value: json["VAL"] ?? 'Empty',
+        valueInHw:  '',
         smsFormat: json["SF"],
         title: json["TT"],
         hiddenFlag: json["HF"]
@@ -59,6 +61,7 @@ class SettingsModel extends SettingsEntity {
       serialNumber: entity.serialNumber,
       widgetType: entity.widgetType,
       value: entity.value,
+      valueInHw: '',
       smsFormat: entity.smsFormat,
       title: entity.title,
       hiddenFlag: entity.hiddenFlag,

@@ -17,6 +17,7 @@ import '../../domain/usecsases/sms_payload_builder.dart';
 import '../bloc/pump_settings_state.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
+
 class PumpSettingsCubit extends Cubit<PumpSettingsState> {
   final GetPumpSettingsUsecase getPumpSettingsUsecase;
   final SendPumpSettingsUsecase sendPumpSettingsUsecase;
@@ -58,7 +59,8 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     required int menuId,
     required int modelId,
   }) async {
-    if (state is GetPumpSettingsLoaded) return;
+    // ✅ Always reset and fetch fresh for each menu navigation
+    emit(GetPumpSettingsInitial());
 
     final result = await getPumpSettingsUsecase(GetPumpSettingsParams(
       userId: userId,
@@ -73,10 +75,8 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
           (menuItem) {
         final updatedSections = menuItem.template.sections.map((section) {
           final updatedSettings = section.settings.map((setting) {
-            // Don't load cached values - wait for live data from device
             return setting;
           }).toList();
-
           return section.copyWith(settings: updatedSettings);
         }).toList();
 
@@ -159,7 +159,6 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
 
       newSettings[settingIndex] = setting.copyWith(value: processedValue);
 
-      // Save to SharedPreferences
       if (userId != null && subUserId != null && controllerId != null) {
         final key = _getPrefKey(
           userId: userId,
@@ -183,35 +182,91 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     emit(GetPumpSettingsLoaded(settings: newMenuItem));
   }
 
+  /// ✅ Called by PumpSettingsDispatcher when a BLE view-response payload arrives.
+  ///
+  /// BLE payload format (same as _buildWlcPayload output):
+  ///   "DELAY,val1,val2,val3,..."
+  ///   index 0  → command word (DELAY / TIMER / SUMP / CURRENT / VOLTAGE / OTHER)
+  ///   index 1+ → setting values in the same order as sections → settings
+  ///
+  /// Since PumpSettingsCubit is a lazySingleton, the state here is the SAME
+  /// state that PumpSettingsPage's BlocBuilder is listening to.
+  /// Emitting GetPumpSettingsLoaded with updated values will directly
+  /// refresh every widget on screen.
   void onViewMessageReceived(String message) {
-    print("state : ${state}");
-    if(state is GetPumpSettingsLoaded){
-      print("message successfully get for pump view ::: ${message}");
+    kdebugmode('BLE view payload received: $message');
 
+    if (state is! GetPumpSettingsLoaded) {
+      kdebugmode('onViewMessageReceived: state is not loaded, ignoring payload');
+      return;
     }
+
+    final current = state as GetPumpSettingsLoaded;
+    final menuItem = current.settings;
+
+    // Split payload: ["DELAY", "val1", "val2", ...]
+    final parts = message.split(';');
+    if (parts.isEmpty) {
+      kdebugmode('onViewMessageReceived: payload too short, ignoring');
+      return;
+    }
+
+    // Skip index 0 (the command word), actual values start at index 1
+    final values = parts.sublist(1);
+    Map<String, dynamic> sNoAndValue = {};
+    for(var set in parts){
+      List<String> splitSet = set.split(',');
+      if(set.contains(',') && splitSet.length == 2){
+        String sNo = splitSet[0].trim();
+        sNoAndValue[sNo] = splitSet[1].trim();
+      }
+    }
+    final updatedSections = menuItem.template.sections.map((section) {
+      final updatedSettings = section.settings.map((setting) {
+        String settingSno = setting.serialNumber.toString();
+        String value = '';
+        if(setting.widgetType == SettingWidgetType.toggle){
+          value = sNoAndValue[settingSno] == '1' ? 'ON': 'OFF';
+        }else{
+          value = sNoAndValue.containsKey(settingSno) ? sNoAndValue[settingSno] : 'N/A';
+        }
+        return setting.copyWith(valueInHw: value);
+      }).toList();
+
+      return section.copyWith(settings: updatedSettings);
+    }).toList();
+
+    final updatedTemplate =
+    menuItem.template.copyWith(sections: updatedSections);
+    final updatedMenuItem = menuItem.copyWith(template: updatedTemplate);
+
+    // ✅ Emit updated state — BlocBuilder in PumpSettingsPage rebuilds
+    // and all widgets receive the new values from the device.
+    emit(GetPumpSettingsLoaded(settings: updatedMenuItem));
+
+    kdebugmode('onViewMessageReceived: state updated with ${values.length} values from BLE');
   }
 
   void sendPumpSettingViewCommand({
     required String deviceId,
     required MenuItemEntity menuItemEntity,
-}){
+  }) {
     String command = '';
-    if(menuItemEntity.menu.menuSettingId == 532){
+    if (menuItemEntity.menu.menuSettingId == 532) {
       command = 'DELAY';
-    }else if(menuItemEntity.menu.menuSettingId == 533){
+    } else if (menuItemEntity.menu.menuSettingId == 533) {
       command = 'TIMER';
-    }else if(menuItemEntity.menu.menuSettingId == 534){
+    } else if (menuItemEntity.menu.menuSettingId == 534) {
       command = 'SUMP';
-    }else if(menuItemEntity.menu.menuSettingId == 535){
+    } else if (menuItemEntity.menu.menuSettingId == 535) {
       command = 'CURRENT';
-    }else if(menuItemEntity.menu.menuSettingId == 536){
+    } else if (menuItemEntity.menu.menuSettingId == 536) {
       command = 'VOLTAGE';
-    }else{
+    } else {
       command = 'OTHER';
     }
     di.sl<MqttOrBle>().publish(
-      deviceId, AppConstants.sendWlcCommand('${command}VIEW')
-    );
+        deviceId, AppConstants.sendWlcCommand('${command}VIEW'));
   }
 
   void sendCurrentSetting(
@@ -223,7 +278,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       int controllerId,
       MenuItemEntity menuItemEntity,
       int modelId,
-      String menuName
+      String menuName,
       ) async {
     emit(SettingSendingState(sectionIndex, settingIndex));
     final bool isWlc = AppConstants.isWlc(modelId);
@@ -234,8 +289,8 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     String payload;
 
     if (isWlc) {
-      // TODO: build WLC-specific payload here
-      payload = _buildWlcPayload(menuItemEntity, sectionIndex, settingIndex, setting, deviceId);
+      payload = _buildWlcPayload(
+          menuItemEntity, sectionIndex, settingIndex, setting, deviceId);
     } else {
       payload = SmsPayloadBuilder.build(setting, deviceId);
       if (menuItemEntity.menu.menuSettingId == 531 &&
@@ -254,9 +309,11 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       final publishMessage =
       jsonEncode(PublishMessageHelper.settingsPayload(payload));
       if (payload.isNotEmpty) {
-        di.sl<MqttOrBle>().publish(deviceId,
-            isWlc ? AppConstants.sendWlcCommand(payload) :
-            publishMessage);
+        di.sl<MqttOrBle>().publish(
+            deviceId,
+            isWlc
+                ? AppConstants.sendWlcCommand(payload)
+                : publishMessage);
       }
       final result = await sendPumpSettingsUsecase(SendPumpSettingsParams(
         userId: userId,
@@ -270,7 +327,8 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
 
       result.fold(
             (failure) => emit(SettingsFailureState(
-            message: "${isWlc ? menuName : setting.title} sending ${failure.message}")),
+            message:
+            "${isWlc ? menuName : setting.title} sending ${failure.message}")),
             (message) => emit(SettingsSendSuccessState(
             message: "${isWlc ? menuName : setting.title} sent $message")),
       );
@@ -290,45 +348,46 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       String deviceId,
       ) {
     List<dynamic> payload = [];
-    if(menuItemEntity.menu.menuSettingId == 532){
+
+    if (menuItemEntity.menu.menuSettingId == 532) {
       payload.add('DELAY');
-    }else if(menuItemEntity.menu.menuSettingId == 533){
+    } else if (menuItemEntity.menu.menuSettingId == 533) {
       payload.add('TIMER');
-    }else if(menuItemEntity.menu.menuSettingId == 534){
+    } else if (menuItemEntity.menu.menuSettingId == 534) {
       payload.add('SUMP');
-    }else if(menuItemEntity.menu.menuSettingId == 535){
+    } else if (menuItemEntity.menu.menuSettingId == 535) {
       payload.add('CURRENT');
-    }else if(menuItemEntity.menu.menuSettingId == 536){
+    } else if (menuItemEntity.menu.menuSettingId == 536) {
       payload.add('VOLTAGE');
-    }else if(menuItemEntity.menu.menuSettingId == 537){
+    } else if (menuItemEntity.menu.menuSettingId == 537) {
       payload.add('OTHER');
     }
+
     for (var category in menuItemEntity.template.sections) {
       for (var categorySetting in category.settings) {
-        if(categorySetting.value == 'OF'){
+        if (categorySetting.value == 'OF') {
           payload.add('0');
-        }else if(categorySetting.value == 'ON'){
+        } else if (categorySetting.value == 'ON') {
           payload.add('1');
-        }else{
+        }else if (categorySetting.value.contains(":")) {
+          payload.add(categorySetting.value.split(':').join(','));
+        } else {
           payload.add(categorySetting.value.toString());
         }
-
       }
     }
-    print("wlc payload : $payload");
+    kdebugmode('wlc payload: $payload');
     return payload.join(',');
   }
 
-
-
-  Future<void> updateHiddenFlags(
-      {required int userId,
-        required int subUserId,
-        required int controllerId,
-        required MenuItemEntity menuItemEntity,
-        required String sentSms,
-        required int modelId,
-      }) async {
+  Future<void> updateHiddenFlags({
+    required int userId,
+    required int subUserId,
+    required int controllerId,
+    required MenuItemEntity menuItemEntity,
+    required String sentSms,
+    required int modelId,
+  }) async {
     emit(SettingsSendStartedState());
     try {
       final result = await sendPumpSettingsUsecase(SendPumpSettingsParams(
@@ -338,8 +397,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
           menuId: menuItemEntity.menu.menuSettingId,
           menuItemEntity: menuItemEntity,
           sentSms: sentSms,
-          modelId: modelId
-      ));
+          modelId: modelId));
 
       result.fold(
             (failure) => emit(SettingsFailureState(message: failure.message)),
@@ -404,7 +462,6 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
 
   void getViewSettings(Map<String, dynamic> message) {
     final prettyString = message['cM'];
-
     final timestamp = DateTime.now().toString().substring(0, 19);
     final displayText = '[$timestamp] Device response:\n$prettyString';
 

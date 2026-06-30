@@ -301,7 +301,6 @@ class MqttMessageHelper {
         required MessageDispatcher dispatcher,
         BuildContext? context,
       }) async {
-    Map<String, dynamic> samplePayload = {"cC":"94A990E603D9","cM":"0,224,242,236,403,414,398,00.0,00.0,00.0,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,","cL":"","cZ":"","cD":"26/06/2026","cT":"15:34:7","mC":"LD04"};
 
     if(mqttMsg.contains("|")){
       try{
@@ -309,20 +308,21 @@ class MqttMessageHelper {
         List<String> splitPayload = mqttMsg.split('|');
         if(splitPayload.length == 2){
           if(AppConstants.crcMatch(splitPayload[0], splitPayload[1])){
-            print("CRC matched............");
+            if (kDebugMode) {
+              print("CRC matched............");
+            }
             wlcLivePayload = jsonDecode(splitPayload[0]);
             if(wlcLivePayload.containsKey('cC')){
               processMessage(splitPayload[0], dispatcher: dispatcher);
-            }else if(wlcLivePayload.containsKey('delayView')){
-              print('yess....');
-              dispatcher.onNewViewSettings('', wlcLivePayload['delayView']);
+            }else{
+              debugPrint("pump view setting updated..");
+              dispatcher.onNewViewSettings('', wlcLivePayload.values.first);
             }
           }
-
         }
       }catch(e, stackTrace){
-        print(e);
-        print(stackTrace);
+        debugPrint('wlc payload formation error : $e');
+        debugPrint('wlc payload formation stackTrace : $stackTrace');
       }
     }else{
       Map<String, dynamic> jsonObject = {};

@@ -37,6 +37,7 @@ class SettingsEntity extends Equatable {
   final int serialNumber;
   final SettingWidgetType widgetType;
   final String value;
+  final String valueInHw;
   final String smsFormat;
   final String title;
   final String hiddenFlag;
@@ -45,16 +46,18 @@ class SettingsEntity extends Equatable {
     required this.serialNumber,
     required this.widgetType,
     required this.value,
+    required this.valueInHw,
     required this.smsFormat,
     required this.title,
     required this.hiddenFlag,
   });
 
-  SettingsEntity copyWith({String? value, String? hiddenFlag}) {
+  SettingsEntity copyWith({String? value, String? hiddenFlag, String? valueInHw}) {
     return SettingsEntity(
       serialNumber: serialNumber,
       widgetType: widgetType,
       value: value ?? this.value,
+      valueInHw: valueInHw ?? this.valueInHw,
       smsFormat: smsFormat,
       title: title,
       hiddenFlag: hiddenFlag ?? this.hiddenFlag,
@@ -62,7 +65,7 @@ class SettingsEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [serialNumber, widgetType, value, smsFormat, title, hiddenFlag];
+  List<Object?> get props => [serialNumber, widgetType, value, valueInHw, smsFormat, title, hiddenFlag];
 }
 
 class SettingSectionEntity extends Equatable{

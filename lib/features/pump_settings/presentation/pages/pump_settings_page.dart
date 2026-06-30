@@ -43,8 +43,12 @@ class PumpSettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => di.sl<PumpSettingsCubit>()
+    // ✅ BlocProvider.value — reuses the lazySingleton instance from DI.
+    // This is the SAME instance PumpSettingsDispatcher holds, so when
+    // BLE payload arrives → onViewMessageReceived() emits new state →
+    // this BlocBuilder rebuilds automatically.
+    return BlocProvider.value(
+      value: di.sl<PumpSettingsCubit>()
         ..loadSettings(
           userId: userId,
           subUserId: subUserId,
@@ -83,13 +87,14 @@ class PumpSettingsPage extends StatelessWidget {
                         ActionButton(
                           onPressed: () {
                             cubit.updateHiddenFlags(
-                                userId: userId,
-                                subUserId: subUserId,
-                                controllerId: controllerId,
-                                menuItemEntity:
-                                (cubit.state as GetPumpSettingsLoaded).settings,
-                                sentSms: "",
-                                modelId: modelId
+                              userId: userId,
+                              subUserId: subUserId,
+                              controllerId: controllerId,
+                              menuItemEntity:
+                              (cubit.state as GetPumpSettingsLoaded)
+                                  .settings,
+                              sentSms: "",
+                              modelId: modelId,
                             );
                             Navigator.pop(dialogContext);
                           },
@@ -117,30 +122,32 @@ class PumpSettingsPage extends StatelessWidget {
               )
             ],
           ),
-          floatingActionButton: AppConstants.isWlc(modelId) ? FloatingActionButton(
+          floatingActionButton: AppConstants.isWlc(modelId)
+              ? FloatingActionButton(
             backgroundColor: Colors.white,
-            onPressed: (){
+            onPressed: () {
               final cubit = context.read<PumpSettingsCubit>();
-              if(cubit.state is GetPumpSettingsLoaded){
+              if (cubit.state is GetPumpSettingsLoaded) {
                 cubit.sendCurrentSetting(
-                    0,
-                    0,
-                    deviceId,
-                    userId,
-                    subUserId,
-                    controllerId,
-                    (cubit.state as GetPumpSettingsLoaded).settings,
-                    modelId,
-                    menuName ?? 'Pump Settings'                );
+                  0,
+                  0,
+                  deviceId,
+                  userId,
+                  subUserId,
+                  controllerId,
+                  (cubit.state as GetPumpSettingsLoaded).settings,
+                  modelId,
+                  menuName ?? 'Pump Settings',
+                );
                 context.read<PumpSettingsViewResponseCubit>().clear();
               }
-
             },
             child: Image.asset(
               'assets/images/icons/send_icon.png',
               width: 25,
             ),
-          ) : null,
+          )
+              : null,
           body: BlocListener<PumpSettingsCubit, PumpSettingsState>(
             listenWhen: (previous, current) =>
             current is SettingsSendStartedState ||
@@ -188,7 +195,9 @@ class PumpSettingsPage extends StatelessWidget {
                 final loadedState = state as GetPumpSettingsLoaded;
                 return RefreshIndicator(
                   onRefresh: () async {
-                    context.read<PumpSettingsCubit>().sendPumpSettingViewCommand(
+                    context
+                        .read<PumpSettingsCubit>()
+                        .sendPumpSettingViewCommand(
                       deviceId: deviceId,
                       menuItemEntity: loadedState.settings,
                     );
@@ -299,11 +308,9 @@ String _timerMotorLabel(SettingsEntity setting, int subIndex) {
 
 bool _supportsTimerMotorVisibility(
     MenuItemEntity menu, SettingsEntity setting) {
-  // Broaden this to support any multi-part setting in the Timer Settings menu (505)
   if (menu.menu.menuSettingId != 505) return false;
 
   final combinedText = '${setting.title} ${setting.smsFormat}'.toLowerCase();
-  // Ensure it's a motor/pump related setting and has multiple parts
   return (combinedText.contains('motor') || combinedText.contains('pump')) &&
       _timerMotorPartCount(setting) > 1;
 }
@@ -314,7 +321,6 @@ List<int> _availableTimerMotorSubIndexes({
   required int modelId,
 }) {
   if (!_supportsTimerMotorVisibility(menu, setting)) return const [];
-  // Return all sub-indexes so that Motor 1 and Motor 2 both show in the Hidden/Show dialog
   return List<int>.generate(_timerMotorPartCount(setting), (i) => i);
 }
 
@@ -339,7 +345,6 @@ List<int> _visibleTimerMotorSubIndexes({
     return visible;
   }
 
-  // For single pump, we only show one motor in the UI even if multiple are enabled in hidden settings.
   return visible.isEmpty ? const <int>[] : <int>[visible.first];
 }
 
@@ -408,7 +413,6 @@ class _HideShowSettingsDialog extends StatelessWidget {
                     final settingIndex = entry.key;
                     final setting = entry.value;
 
-                    // Modification: Split labels with ';' into separate checklist items
                     final labelParts = _splitSettingParts(setting.title);
                     final isMultiPart = labelParts.length > 1;
 
@@ -632,21 +636,21 @@ class _SettingRow extends StatelessWidget {
         children: [
           Expanded(child: _buildInput(context)),
           const SizedBox(width: 8),
-          if(!AppConstants.isWlc(modelId))
+          if (!AppConstants.isWlc(modelId))
             _SendButton(
               isSending: isSending,
               onPressed: () {
                 if (formKey.currentState!.validate()) {
                   cubit.sendCurrentSetting(
-                      sectionIndex,
-                      settingIndex,
-                      deviceId,
-                      userId,
-                      subUserId,
-                      controllerId,
-                      menuItemEntity,
-                      modelId,
-                      menuName ?? 'Pump Setting'
+                    sectionIndex,
+                    settingIndex,
+                    deviceId,
+                    userId,
+                    subUserId,
+                    controllerId,
+                    menuItemEntity,
+                    modelId,
+                    menuName ?? 'Pump Setting',
                   );
                   context.read<PumpSettingsViewResponseCubit>().clear();
                 } else {
@@ -662,6 +666,8 @@ class _SettingRow extends StatelessWidget {
   Widget _buildInput(BuildContext context) {
     final section = menuItemEntity.template.sections[sectionIndex];
     final setting = section.settings[settingIndex];
+    print("setting.valueInHw : ${setting.valueInHw}");
+    print("setting.value : ${setting.value}");
     final path =
         '${menuItemEntity.menu.menuSettingId}_${section.typeId}_${setting.serialNumber}';
     final splitMotorVisibility =
@@ -708,6 +714,7 @@ class _SettingRow extends StatelessWidget {
         splitMotorVisibility ? visibleMotorIndexes : null,
       ),
       _ => SettingListTile(
+        valueInHw: setting.valueInHw,
         title: setting.title,
         leadingIcon: [509].contains(menuItemEntity.menu.menuSettingId)
             ? PumpSettingsImages.getStatusCheckIcons(path)
@@ -830,6 +837,8 @@ class _PhoneInput extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: IntlPhoneField(
+        // ✅ ValueKey forces widget rebuild when BLE updates the value
+        key: ValueKey('phone_${setting.serialNumber}_${setting.value}'),
         initialValue: setting.value.isNotEmpty ? setting.value : null,
         initialCountryCode: 'IN',
         decoration: InputDecoration(
@@ -874,6 +883,9 @@ class _TextInput extends StatelessWidget {
               ? const EdgeInsets.symmetric(horizontal: 5, vertical: 5)
               : EdgeInsets.zero,
           child: TextFormField(
+            // ✅ ValueKey forces TextFormField to recreate when BLE
+            // updates the value, so initialValue is applied fresh.
+            key: ValueKey('text_${setting.serialNumber}_${setting.value}'),
             initialValue: setting.value,
             keyboardType: !isTextOnly
                 ? const TextInputType.numberWithOptions(decimal: true)
@@ -942,10 +954,13 @@ class _MultiTimeInput extends StatelessWidget {
               : 'Motor ${i + 1}';
           return SettingListTile(
             title: title,
+            valueInHw: '',
             trailing: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               child: Text(
-                i < values.length && values[i].isNotEmpty ? values[i] : "00:00",
+                i < values.length && values[i].isNotEmpty
+                    ? values[i]
+                    : "00:00",
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -1028,13 +1043,17 @@ class _CalibrationInput extends StatelessWidget {
                   height: 36,
                   padding: EdgeInsets.zero,
                   child: TextFormField(
+                    // ✅ ValueKey per sub-index so each cell rebuilds on BLE update
+                    key: ValueKey(
+                        'cal_${setting.serialNumber}_${i}_${values[i]}'),
                     initialValue: i < values.length ? values[i] : "0",
                     keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                     inputFormatters: isVoltageWhole
                         ? [FilteringTextInputFormatter.digitsOnly]
                         : [
-                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
+                      FilteringTextInputFormatter.allow(
+                          RegExp(r'[0-9.]'))
                     ],
                     textAlign: TextAlign.center,
                     style: const TextStyle(
@@ -1051,7 +1070,8 @@ class _CalibrationInput extends StatelessWidget {
                       const TextStyle(fontSize: 10, color: Colors.grey),
                       border: InputBorder.none,
                       isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                      contentPadding:
+                      const EdgeInsets.symmetric(vertical: 8),
                     ),
                     onChanged: (newValue) {
                       final newValues = List<String>.from(values);
@@ -1125,6 +1145,9 @@ class _MultiTextInput extends StatelessWidget {
                     height: 36,
                     padding: EdgeInsets.zero,
                     child: TextFormField(
+                      // ✅ ValueKey per sub-index so each cell rebuilds on BLE update
+                      key: ValueKey(
+                          'multi_${setting.serialNumber}_${i}_$initialValue'),
                       initialValue: initialValue,
                       keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),

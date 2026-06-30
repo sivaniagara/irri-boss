@@ -35,7 +35,10 @@ class PumpSettingsMenuPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => di.sl<PumpSettingsCubit>()),
+        // ✅ BlocProvider.value — reuses the same lazySingleton PumpSettingsCubit.
+        // Do NOT use BlocProvider(create:) here, that would create a new instance
+        // that is NOT the one PumpSettingsDispatcher holds.
+        BlocProvider.value(value: di.sl<PumpSettingsCubit>()),
         BlocProvider(
           create: (context) {
             final bloc = di.sl<PumpSettingsMenuBloc>()
@@ -45,7 +48,7 @@ class PumpSettingsMenuPage extends StatelessWidget {
                 controllerId: controllerId,
                 modelId: modelId,
               ));
-            if(!AppConstants.isWlc(modelId)){
+            if (!AppConstants.isWlc(modelId)) {
               Future.microtask(() {
                 context.read<PumpSettingsCubit>().loadSettings(
                   userId: userId,
@@ -56,8 +59,6 @@ class PumpSettingsMenuPage extends StatelessWidget {
                 );
               });
             }
-
-
             return bloc;
           },
         ),
@@ -85,7 +86,8 @@ class PumpSettingsMenuPage extends StatelessWidget {
                     },
                   );
                 },
-                icon: const Icon(Icons.history_edu_outlined, color: Colors.black87),
+                icon:
+                const Icon(Icons.history_edu_outlined, color: Colors.black87),
               ),
             )
           ],
@@ -150,7 +152,8 @@ class _MenuListView extends StatelessWidget {
         context.read<PumpSettingsMenuBloc>().add(GetPumpSettingsMenuEvent(
           userId: userId,
           subUserId: subUserId,
-          controllerId: controllerId, modelId: modelId,
+          controllerId: controllerId,
+          modelId: modelId,
         ));
       },
       buildWhen: (_, state) =>
@@ -168,11 +171,10 @@ class _MenuListView extends StatelessWidget {
               message: state.message,
               onPressed: () => context.read<PumpSettingsMenuBloc>().add(
                 GetPumpSettingsMenuEvent(
-                  userId: userId,
-                  subUserId: subUserId,
-                  controllerId: controllerId,
-                  modelId: modelId
-                ),
+                    userId: userId,
+                    subUserId: subUserId,
+                    controllerId: controllerId,
+                    modelId: modelId),
               ),
             ),
           );
@@ -190,8 +192,6 @@ class _MenuListView extends StatelessWidget {
   Widget _buildGroupedMenu(BuildContext context, List<MenuItemEntity> items) {
     final grouped = <String, List<MenuItemEntity>>{};
 
-    // Backend can hide a menu item by setting `hiddenFlag = 0` in the
-    // settings-menu list response. Default is visible (`hiddenFlag = 1`).
     for (final item in items.where((e) => e.menu.hiddenFlag != 0)) {
       final group = item.menu.groupName;
       grouped.putIfAbsent(group, () => []).add(item);
@@ -253,7 +253,6 @@ class _MenuListView extends StatelessWidget {
                 },
               ),
             ),
-            const SizedBox(height: 8),
           ],
         );
       },
@@ -261,57 +260,34 @@ class _MenuListView extends StatelessWidget {
   }
 
   Widget _buildSpecialTwoPhaseTile(BuildContext context) {
-    return BlocSelector<PumpSettingsCubit, PumpSettingsState, MenuItemEntity?>(
-      selector: (state) =>
-      state is GetPumpSettingsLoaded ? state.settings : null,
-      builder: (context, item) {
-        if (item == null) return const SizedBox.shrink();
+    return BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
+      buildWhen: (_, state) => state is GetPumpSettingsLoaded,
+      builder: (context, state) {
+        if (state is! GetPumpSettingsLoaded) return const SizedBox.shrink();
 
+        final item = state.settings;
         final setting = item.template.sections[0].settings[0];
-        if (setting.hiddenFlag == "0") return const SizedBox.shrink();
-
         final isOn = setting.value == "ON";
-        final isSending =
-        context.watch<PumpSettingsCubit>().state is SettingSendingState;
 
-        return CustomCard(
-          horizontalPadding: 16,
-          child: Row(
+        return _navigationRow(
+          context,
+          title: item.menu.menuItem,
+          image: PumpSettingsImages.getMenuIcons(item.menu.menuSettingId),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Expanded(
-                child: _navigationRow(
-                  context,
-                  title: setting.title,
-                  trailing: SizedBox(
-                    width: 50,
-                    height: 25,
-                    child: FittedBox(
-                      child: CustomSwitch(
-                        value: isOn,
-                        onChanged: (_) => _toggleTwoPhase(context, isOn, item),
-                      ),
-                    ),
-                  ),
-                  onTap: () => _toggleTwoPhase(context, isOn, item),
-                ),
+              CustomSwitch(
+                value: isOn,
+                onChanged: (_) => _toggleTwoPhase(context, isOn, item),
               ),
               const SizedBox(width: 8),
-              IconButton(
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                icon: isSending
-                    ? const SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-                    : Image.asset(
-                  'assets/images/icons/send_icon.png',
-                  width: 22,
+              CircleAvatar(
+                backgroundColor: Colors.white,
+                child: IconButton(
+                  onPressed: () => _sendTwoPhaseSettings(context, item),
+                  icon: Icon(Icons.send,
+                      color: Theme.of(context).primaryColor),
                 ),
-                onPressed: isSending
-                    ? null
-                    : () => _sendTwoPhaseSettings(context, item),
               ),
             ],
           ),
@@ -402,13 +378,14 @@ class _MenuItemTile extends StatelessWidget {
           showDialog(
             context: context,
             barrierDismissible: false,
-            builder: (context) => const Center(child: CircularProgressIndicator()),
+            builder: (context) =>
+            const Center(child: CircularProgressIndicator()),
           );
         } else if (state is PasswordVerificationSuccess) {
-          Navigator.pop(context); // Pop loading
+          Navigator.pop(context);
           _navigateToSettings(context);
         } else if (state is PasswordVerificationFailure) {
-          Navigator.pop(context); // Pop loading
+          Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
           );
@@ -543,7 +520,6 @@ class _HideShowSettingsDialog extends StatelessWidget {
               isHiddenFlag: true,
             );
 
-            // Small delay to let state update
             await Future.delayed(const Duration(milliseconds: 60));
 
             final updated = cubit.state;
@@ -555,7 +531,7 @@ class _HideShowSettingsDialog extends StatelessWidget {
               controllerId: controllerId,
               menuItemEntity: updated.settings,
               sentSms: "",
-                modelId: modelId
+              modelId: modelId,
             );
 
             if (context.mounted) Navigator.pop(context);

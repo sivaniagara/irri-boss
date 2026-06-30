@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 class SettingListTile extends StatelessWidget {
   final String title;
+  final String valueInHw;
   final String? subtitle;
   final String? leadingIcon;
   final Widget? trailing;
@@ -16,6 +17,7 @@ class SettingListTile extends StatelessWidget {
   const SettingListTile({
     super.key,
     required this.title,
+    required this.valueInHw,
     this.subtitle,
     this.leadingIcon,
     this.trailing,
@@ -67,11 +69,7 @@ class SettingListTile extends StatelessWidget {
         title,
         style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
       ),
-      subtitle: subtitle != null
-          ? Text(
-        subtitle!,
-      )
-          : null,
+      subtitle: Text('Last Updated Value : $valueInHw', style: TextStyle(color: Theme.of(dialogContext).primaryColor, fontSize: 12),),
       trailing: IntrinsicWidth(child: trailingWidget),
       onTap: onTap,
       minTileHeight: 45,

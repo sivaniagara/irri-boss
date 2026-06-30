@@ -411,6 +411,7 @@ class _ViewPumpSettingsView extends StatelessWidget {
           children: [
             for (int i = 0; i < maxLength; i++)
               SettingListTile(
+                valueInHw: '',
                 title: i < ttItems.length
                     ? ttItems[i].trim()
                     : '', // Safe access with fallback
@@ -430,6 +431,7 @@ class _ViewPumpSettingsView extends StatelessWidget {
       blur: 0,
       opacity: 1,
       child: SettingListTile(
+        valueInHw: '',
         title: data['TT'],
         trailing: trailing,
       ),
