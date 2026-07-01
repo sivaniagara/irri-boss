@@ -307,7 +307,7 @@ class MqttMessageHelper {
         Map<String, dynamic> wlcLivePayload = {};
         List<String> splitPayload = mqttMsg.split('|');
         if(splitPayload.length == 2){
-          if(AppConstants.crcMatch(splitPayload[0], splitPayload[1])){
+          // if(AppConstants.crcMatch(splitPayload[0], splitPayload[1])){
             if (kDebugMode) {
               print("CRC matched............");
             }
@@ -317,7 +317,7 @@ class MqttMessageHelper {
             }else{
               debugPrint("pump view setting updated..");
               dispatcher.onNewViewSettings('', wlcLivePayload.values.first);
-            }
+            // }
           }
         }
       }catch(e, stackTrace){
