@@ -826,34 +826,65 @@ class _SendButton extends StatelessWidget {
   }
 }
 
-class _PhoneInput extends StatelessWidget {
+class _PhoneInput extends StatefulWidget {
   final SettingsEntity setting;
   final ValueChanged<String> onChanged;
 
   const _PhoneInput({required this.setting, required this.onChanged});
 
   @override
+  State<_PhoneInput> createState() => _PhoneInputState();
+}
+
+class _PhoneInputState extends State<_PhoneInput> {
+  late TextEditingController _controller;
+  late FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.setting.value);
+    _focusNode = FocusNode();
+  }
+
+  @override
+  void didUpdateWidget(_PhoneInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.setting.value != oldWidget.setting.value &&
+        widget.setting.value != _controller.text &&
+        !_focusNode.hasFocus) {
+      _controller.text = widget.setting.value;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: IntlPhoneField(
-        // ✅ ValueKey forces widget rebuild when BLE updates the value
-        key: ValueKey('phone_${setting.serialNumber}_${setting.value}'),
-        initialValue: setting.value.isNotEmpty ? setting.value : null,
+        controller: _controller,
+        focusNode: _focusNode,
         initialCountryCode: 'IN',
         decoration: InputDecoration(
-          labelText: setting.title,
+          labelText: widget.setting.title,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           contentPadding:
           const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         ),
-        onChanged: (phone) => onChanged(phone.completeNumber),
+        onChanged: (phone) => widget.onChanged(phone.completeNumber),
       ),
     );
   }
 }
 
-class _TextInput extends StatelessWidget {
+class _TextInput extends StatefulWidget {
   final SettingsEntity setting;
   final ValueChanged<String> onChanged;
   final String? label;
@@ -869,8 +900,40 @@ class _TextInput extends StatelessWidget {
   });
 
   @override
+  State<_TextInput> createState() => _TextInputState();
+}
+
+class _TextInputState extends State<_TextInput> {
+  late TextEditingController _controller;
+  late FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.setting.value);
+    _focusNode = FocusNode();
+  }
+
+  @override
+  void didUpdateWidget(_TextInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.setting.value != oldWidget.setting.value &&
+        widget.setting.value != _controller.text &&
+        !_focusNode.hasFocus) {
+      _controller.text = widget.setting.value;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final isTextOnly = menuId == 508;
+    final isTextOnly = widget.menuId == 508;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -883,10 +946,8 @@ class _TextInput extends StatelessWidget {
               ? const EdgeInsets.symmetric(horizontal: 5, vertical: 5)
               : EdgeInsets.zero,
           child: TextFormField(
-            // ✅ ValueKey forces TextFormField to recreate when BLE
-            // updates the value, so initialValue is applied fresh.
-            key: ValueKey('text_${setting.serialNumber}_${setting.value}'),
-            initialValue: setting.value,
+            controller: _controller,
+            focusNode: _focusNode,
             keyboardType: !isTextOnly
                 ? const TextInputType.numberWithOptions(decimal: true)
                 : TextInputType.text,
@@ -905,20 +966,20 @@ class _TextInput extends StatelessWidget {
               return null;
             },
             decoration: InputDecoration(
-              labelText: label,
+              labelText: widget.label,
               labelStyle: const TextStyle(fontSize: 12, color: Colors.grey),
               border: InputBorder.none,
               isDense: true,
               contentPadding:
               const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              prefixIcon: imagePath != null
+              prefixIcon: widget.imagePath != null
                   ? Padding(
                 padding: const EdgeInsets.all(10),
-                child: Image.asset(imagePath!, width: 20),
+                child: Image.asset(widget.imagePath!, width: 20),
               )
                   : null,
             ),
-            onChanged: onChanged,
+            onChanged: widget.onChanged,
           ),
         ),
       ],
@@ -986,28 +1047,68 @@ class _MultiTimeInput extends StatelessWidget {
   }
 }
 
-class _CalibrationInput extends StatelessWidget {
+class _CalibrationInput extends StatefulWidget {
   final SettingsEntity setting;
   final ValueChanged<String> onChanged;
 
   const _CalibrationInput({required this.setting, required this.onChanged});
 
   @override
-  Widget build(BuildContext context) {
-    final rawTitles = setting.title.split(';').map((e) => e.trim()).toList();
-    final rawValues = setting.value.split(';').map((e) => e.trim()).toList();
+  State<_CalibrationInput> createState() => _CalibrationInputState();
+}
 
+class _CalibrationInputState extends State<_CalibrationInput> {
+  late List<TextEditingController> _controllers;
+  late List<FocusNode> _focusNodes;
+
+  @override
+  void initState() {
+    super.initState();
+    final rawValues =
+        widget.setting.value.split(';').map((e) => e.trim()).toList();
+    _controllers = List.generate(3, (i) {
+      final val = i < rawValues.length ? rawValues[i] : "0";
+      return TextEditingController(text: val);
+    });
+    _focusNodes = List.generate(3, (i) => FocusNode());
+  }
+
+  @override
+  void didUpdateWidget(_CalibrationInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.setting.value != oldWidget.setting.value) {
+      final rawValues =
+          widget.setting.value.split(';').map((e) => e.trim()).toList();
+      for (int i = 0; i < 3; i++) {
+        final val = i < rawValues.length ? rawValues[i] : "0";
+        if (_controllers[i].text != val && !_focusNodes[i].hasFocus) {
+          _controllers[i].text = val;
+        }
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
+    for (var node in _focusNodes) {
+      node.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rawTitles =
+        widget.setting.title.split(';').map((e) => e.trim()).toList();
     final titles = List<String>.generate(3, (i) {
       if (i < rawTitles.length && rawTitles[i].isNotEmpty) return rawTitles[i];
       return i == 0 ? "VR" : (i == 1 ? "VY" : "VB");
     });
 
-    final values = List<String>.generate(3, (i) {
-      if (i < rawValues.length) return rawValues[i];
-      return "0";
-    });
-
-    final String format = setting.smsFormat.trim().toUpperCase();
+    final String format = widget.setting.smsFormat.trim().toUpperCase();
     final bool isVoltageCal = format == "VOLTCAL";
     final bool isVoltageWhole = format == "VOLTAGCAL";
     final bool isCurrentCal = format == "CURRCAL" || format == "CURCAL";
@@ -1021,40 +1122,35 @@ class _CalibrationInput extends StatelessWidget {
           child: Row(
             children: titles
                 .map((t) => Expanded(
-              child: Text(
-                t,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.bold),
-              ),
-            ))
+                      child: Text(
+                        t,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ))
                 .toList(),
           ),
         ),
         Row(
           children: List.generate(
             3,
-                (i) => Expanded(
+            (i) => Expanded(
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 child: LeafBox(
                   height: 36,
                   padding: EdgeInsets.zero,
                   child: TextFormField(
-                    // ✅ ValueKey per sub-index so each cell rebuilds on BLE update
-                    key: ValueKey(
-                        'cal_${setting.serialNumber}_${i}_${values[i]}'),
-                    initialValue: i < values.length ? values[i] : "0",
+                    controller: _controllers[i],
+                    focusNode: _focusNodes[i],
                     keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                        const TextInputType.numberWithOptions(decimal: true),
                     inputFormatters: isVoltageWhole
                         ? [FilteringTextInputFormatter.digitsOnly]
-                        : [
-                      FilteringTextInputFormatter.allow(
-                          RegExp(r'[0-9.]'))
-                    ],
+                        : [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 13),
@@ -1062,21 +1158,20 @@ class _CalibrationInput extends StatelessWidget {
                       hintText: isVoltageCal
                           ? "0.0000"
                           : (isCurrentCal
-                          ? "0.00000"
-                          : (isVoltageWhole
-                          ? "000"
-                          : (isCurrentSecondRow ? "0.00" : "0.0000"))),
+                              ? "0.00000"
+                              : (isVoltageWhole
+                                  ? "000"
+                                  : (isCurrentSecondRow ? "0.00" : "0.0000"))),
                       hintStyle:
-                      const TextStyle(fontSize: 10, color: Colors.grey),
+                          const TextStyle(fontSize: 10, color: Colors.grey),
                       border: InputBorder.none,
                       isDense: true,
-                      contentPadding:
-                      const EdgeInsets.symmetric(vertical: 8),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
                     ),
                     onChanged: (newValue) {
-                      final newValues = List<String>.from(values);
-                      newValues[i] = newValue.trim();
-                      onChanged(newValues.join(';'));
+                      final newValues =
+                          _controllers.map((c) => c.text.trim()).toList();
+                      widget.onChanged(newValues.join(';'));
                     },
                   ),
                 ),
@@ -1090,7 +1185,7 @@ class _CalibrationInput extends StatelessWidget {
   }
 }
 
-class _MultiTextInput extends StatelessWidget {
+class _MultiTextInput extends StatefulWidget {
   final SettingsEntity setting;
   final ValueChanged<String> onChanged;
   final List<int>? visibleIndexes;
@@ -1102,12 +1197,51 @@ class _MultiTextInput extends StatelessWidget {
   });
 
   @override
+  State<_MultiTextInput> createState() => _MultiTextInputState();
+}
+
+class _MultiTextInputState extends State<_MultiTextInput> {
+  late List<TextEditingController> _controllers;
+
+  @override
+  void initState() {
+    super.initState();
+    final values = _splitSettingParts(widget.setting.value);
+    final titles = _splitSettingParts(widget.setting.title);
+    final itemCount = titles.length > values.length ? titles.length : values.length;
+    _controllers = List.generate(itemCount, (i) {
+      return TextEditingController(text: i < values.length ? values[i] : '');
+    });
+  }
+
+  @override
+  void didUpdateWidget(_MultiTextInput oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.setting.value != oldWidget.setting.value) {
+      final values = _splitSettingParts(widget.setting.value);
+      for (int i = 0; i < _controllers.length; i++) {
+        final val = i < values.length ? values[i] : '';
+        if (_controllers[i].text != val) {
+          _controllers[i].text = val;
+        }
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _controllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final titles = _splitSettingParts(setting.title);
-    final values = _splitSettingParts(setting.value);
-    final itemCount =
-    titles.length > values.length ? titles.length : values.length;
-    final indexes = visibleIndexes ?? List<int>.generate(itemCount, (i) => i);
+    final titles = _splitSettingParts(widget.setting.title);
+    final values = _splitSettingParts(widget.setting.value);
+    final itemCount = titles.length > values.length ? titles.length : values.length;
+    final indexes = widget.visibleIndexes ?? List<int>.generate(itemCount, (i) => i);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1137,7 +1271,6 @@ class _MultiTextInput extends StatelessWidget {
             indexes.length,
                 (visibleIndex) {
               final i = indexes[visibleIndex];
-              final initialValue = i < values.length ? values[i] : '';
               return Expanded(
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -1145,10 +1278,7 @@ class _MultiTextInput extends StatelessWidget {
                     height: 36,
                     padding: EdgeInsets.zero,
                     child: TextFormField(
-                      // ✅ ValueKey per sub-index so each cell rebuilds on BLE update
-                      key: ValueKey(
-                          'multi_${setting.serialNumber}_${i}_$initialValue'),
-                      initialValue: initialValue,
+                      controller: _controllers[i],
                       keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                       textAlign: TextAlign.center,
@@ -1160,12 +1290,8 @@ class _MultiTextInput extends StatelessWidget {
                         contentPadding: EdgeInsets.symmetric(vertical: 8),
                       ),
                       onChanged: (newValue) {
-                        final newValues = List<String>.from(values);
-                        while (newValues.length <= i) {
-                          newValues.add("");
-                        }
-                        newValues[i] = newValue;
-                        onChanged(newValues.join(';'));
+                        final newValues = _controllers.map((c) => c.text).toList();
+                        widget.onChanged(newValues.join(';'));
                       },
                     ),
                   ),
