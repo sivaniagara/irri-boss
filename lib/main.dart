@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'core/flavor/flavor_config.dart';
 import 'app.dart';
 import 'firebase_options.dart';
-
 import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,8 +13,7 @@ Future<void> main() async {
   );
 
   try {
-    // kdebugmode("ðŸ” App Check: Activating with provider ${kDebugMode ? 'debug' : 'playIntegrity'}");
-    if (kDebugMode) {
+     if (kDebugMode) {
       await FirebaseAppCheck.instance.activate(androidProvider: AndroidProvider.debug);
     } else {
       await FirebaseAppCheck.instance.activate(androidProvider: AndroidProvider.playIntegrity);
@@ -23,16 +21,16 @@ Future<void> main() async {
     final token = await FirebaseAppCheck.instance.getToken(true);
     if (token != null) {
       if (kDebugMode) {
-        kdebugmode("âœ… App Check Token: $token");
+        kdebugmode(" App Check Token: $token");
       }
     } else {
       if (kDebugMode) {
-        kdebugmode("âŒ No App Check Token received");
+        kdebugmode(" No App Check Token received");
       }
     }
   } catch (e, stackTrace) {
     if (kDebugMode) {
-      kdebugmode("âš ï¸ Detailed AppCheck error: $e\nStackTrace: $stackTrace");
+      kdebugmode("Detailed AppCheck error: $e\nStackTrace: $stackTrace");
     }
   }
 

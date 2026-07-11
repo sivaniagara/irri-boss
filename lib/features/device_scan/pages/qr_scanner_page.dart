@@ -88,12 +88,10 @@ class _QrScannerPageState extends State<QrScannerPage> {
     final data =
     message.split(',');
 
-    String inputdate = data[3].trim();
+    String outputdate = data[3].trim();
 
-    DateTime date = DateFormat('dd-MM-yyyy').parse(inputdate);
-    String outputdate = DateFormat('yyyy-MM-dd').format(date);
 
-    final device =
+     final device =
     QRDeviceModel(
       deviceId: data.length > 0 ? data[0].trim() : '',
 
