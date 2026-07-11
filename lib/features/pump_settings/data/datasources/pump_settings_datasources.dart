@@ -51,7 +51,7 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
   Future<List<MenuItemEntity>> getSettingsMenuList(int userId, int subuserId, int controllerId, int modelId) async{
     try {
       final endPoint = buildUrl(
-          AppConstants.isWlc(modelId) ? PumpSettingsUrls.getSettingsMenuForWlc : PumpSettingsUrls.getSettingsMenu,
+          AppConstants.isWlc(modelId) ? PumpSettingsUrls.getSettingsMenuForWlc : AppConstants.isPumpPro(modelId) ? PumpSettingsUrls.getSettingsMenuForPumpPro : PumpSettingsUrls.getSettingsMenu,
           _baseParams(userId: userId, controllerId: controllerId, subuserId: 0)
       );
       final response = await apiClient.get(endPoint);
@@ -71,7 +71,7 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
   Future<MenuItemEntity> getPumpSettings(int userId, int subuserId, int controllerId, int menuId, int modelId) async {
     try {
       final endPoint = buildUrl(
-          AppConstants.isWlc(modelId) ? PumpSettingsUrls.getFinalMenuForWlc : PumpSettingsUrls.getFinalMenu,
+          AppConstants.isWlc(modelId) ? PumpSettingsUrls.getFinalMenuForWlc : AppConstants.isPumpPro(modelId) ? PumpSettingsUrls.getFinalMenuForPumpPro : PumpSettingsUrls.getFinalMenu,
           _baseParams(userId: userId, controllerId: controllerId, subuserId: 0, menuId: menuId)
       );
 
@@ -137,7 +137,7 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
   Future<String> sendPumpSettings(int userId, int subUserId, int controllerId, MenuItemEntity menuItem, String sentSms, int modelId) async {
     try {
       final endPoint = buildUrl(
-        AppConstants.isWlc(modelId) ? PumpSettingsUrls.updateTemplateForWlc :  PumpSettingsUrls.updateTemplate,
+        AppConstants.isWlc(modelId) ? PumpSettingsUrls.updateTemplateForWlc : AppConstants.isPumpPro(modelId) ? PumpSettingsUrls.updateTemplateForPumpPro : PumpSettingsUrls.updateTemplate,
           _baseParams(userId: userId, controllerId: controllerId, subuserId: 0),
       );
       final TemplateJsonModel templateJsonModel = TemplateJsonModel.fromEntity(menuItem.template);

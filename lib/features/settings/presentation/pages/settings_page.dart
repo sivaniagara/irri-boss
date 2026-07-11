@@ -88,7 +88,7 @@ class SettingsPage extends StatelessWidget {
                 ),
 
               // Hide these items for Single and Double Pump models
-              if (!isAnyPump) ...[
+              if (!isAnyPump && !AppConstants.isWlc(modelId)) ...[
                 _buildSettingsItem(
                     context: context,
                     title: 'Irrigation Settings',

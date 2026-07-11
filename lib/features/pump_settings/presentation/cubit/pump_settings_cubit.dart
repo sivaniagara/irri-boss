@@ -252,18 +252,29 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     required MenuItemEntity menuItemEntity,
   }) {
     String command = '';
-    if (menuItemEntity.menu.menuSettingId == 532) {
+    int menuSettingId = menuItemEntity.menu.menuSettingId;
+    if ([532, 538].contains(menuSettingId)) {
       command = 'DELAY';
-    } else if (menuItemEntity.menu.menuSettingId == 533) {
+    } else if ([533, 541].contains(menuSettingId)) {
       command = 'TIMER';
-    } else if (menuItemEntity.menu.menuSettingId == 534) {
+    } else if ([534, 547].contains(menuSettingId)) {
       command = 'SUMP';
-    } else if (menuItemEntity.menu.menuSettingId == 535) {
+    } else if ([535, 539].contains(menuSettingId)) {
       command = 'CURRENT';
-    } else if (menuItemEntity.menu.menuSettingId == 536) {
+    }else if ([536, 540].contains(menuSettingId)) {
       command = 'VOLTAGE';
-    } else {
+    } else if ([542].contains(menuSettingId)) {
+      command = 'SMS';
+    } else if ([543].contains(menuSettingId)) {
+      command = 'COMMUNICATION';
+    } else if ([544].contains(menuSettingId)) {
+      command = 'STATUS_CHECK';
+    } else if ([545].contains(menuSettingId)) {
+      command = 'NUM_REG';
+    } else if ([537, 546].contains(menuSettingId)) {
       command = 'OTHER';
+    } else if ([548].contains(menuSettingId)) {
+      command = 'NOTIFICATION';
     }
     di.sl<MqttOrBle>().publish(
         deviceId, AppConstants.sendWlcCommand('${command}VIEW'));
@@ -281,14 +292,18 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       String menuName,
       ) async {
     emit(SettingSendingState(sectionIndex, settingIndex));
-    final bool isWlc = AppConstants.isWlc(modelId);
 
     final setting =
     menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
+    final bool sendFullSetting = (
+        AppConstants.sendFullSetting(modelId)
+            &&
+            !AppConstants.statusCheck(menuItemEntity.menu.menuSettingId)
+    );
 
     String payload;
 
-    if (isWlc) {
+    if (sendFullSetting) {
       payload = _buildWlcPayload(
           menuItemEntity, sectionIndex, settingIndex, setting, deviceId);
     } else {
@@ -311,7 +326,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       if (payload.isNotEmpty) {
         di.sl<MqttOrBle>().publish(
             deviceId,
-            isWlc
+            sendFullSetting
                 ? AppConstants.sendWlcCommand(payload)
                 : publishMessage);
       }
@@ -328,9 +343,9 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       result.fold(
             (failure) => emit(SettingsFailureState(
             message:
-            "${isWlc ? menuName : setting.title} sending ${failure.message}")),
+            "${sendFullSetting ? menuName : setting.title} sending ${failure.message}")),
             (message) => emit(SettingsSendSuccessState(
-            message: "${isWlc ? menuName : setting.title} sent $message")),
+            message: "${sendFullSetting ? menuName : setting.title} sent $message")),
       );
     } catch (e) {
       emit(SettingsFailureState(
@@ -349,18 +364,29 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       ) {
     List<dynamic> payload = [];
 
-    if (menuItemEntity.menu.menuSettingId == 532) {
+    int menuSettingId = menuItemEntity.menu.menuSettingId;
+    if ([503, 532, 538].contains(menuSettingId)) {
       payload.add('DELAY');
-    } else if (menuItemEntity.menu.menuSettingId == 533) {
+    } else if ([533, 541].contains(menuSettingId)) {
       payload.add('TIMER');
-    } else if (menuItemEntity.menu.menuSettingId == 534) {
+    } else if ([534, 547].contains(menuSettingId)) {
       payload.add('SUMP');
-    } else if (menuItemEntity.menu.menuSettingId == 535) {
+    } else if ([535, 539].contains(menuSettingId)) {
       payload.add('CURRENT');
-    } else if (menuItemEntity.menu.menuSettingId == 536) {
+    }else if ([536, 540].contains(menuSettingId)) {
       payload.add('VOLTAGE');
-    } else if (menuItemEntity.menu.menuSettingId == 537) {
+    } else if ([542].contains(menuSettingId)) {
+      payload.add('SMS');
+    } else if ([543].contains(menuSettingId)) {
+      payload.add('COMMUNICATION');
+    } else if ([544].contains(menuSettingId)) {
+      payload.add('STATUS_CHECK');
+    } else if ([545].contains(menuSettingId)) {
+      payload.add('NUM_REG');
+    } else if ([537, 546].contains(menuSettingId)) {
       payload.add('OTHER');
+    } else if ([548].contains(menuSettingId)) {
+      payload.add('NOTIFICATION');
     }
 
     for (var category in menuItemEntity.template.sections) {

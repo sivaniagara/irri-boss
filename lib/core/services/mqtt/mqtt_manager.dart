@@ -32,6 +32,7 @@ class MqttManager {
     await mqttService.connect();
 
     _subscription = mqttService.updates.listen((messages) {
+      print("messages : ${messages}");
 
       for (final msg in messages) {
         final payload = msg.payload as MqttPublishMessage;

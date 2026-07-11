@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:niagara_smart_drip_irrigation/core/utils/app_constants.dart';
 
 
 class SettingListTile extends StatelessWidget {
+  final int menuId;
   final String title;
   final String valueInHw;
   final String? subtitle;
@@ -10,12 +12,12 @@ class SettingListTile extends StatelessWidget {
   final VoidCallback? onTap;
   final Color? iconColor;
   final double? iconSize;
-
   final bool hasSendButton;
   final VoidCallback? onSendPressed;
 
   const SettingListTile({
     super.key,
+    required this.menuId,
     required this.title,
     required this.valueInHw,
     this.subtitle,
@@ -31,7 +33,7 @@ class SettingListTile extends StatelessWidget {
   @override
   Widget build(BuildContext dialogContext) {
     final theme = Theme.of(dialogContext);
-
+    print("title :: $title   |   val :: $valueInHw");
     Widget? trailingWidget;
 
     if (hasSendButton) {
@@ -69,7 +71,7 @@ class SettingListTile extends StatelessWidget {
         title,
         style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
       ),
-      subtitle: Text('Last Updated Value : $valueInHw', style: TextStyle(color: Theme.of(dialogContext).primaryColor, fontSize: 12),),
+      subtitle: valueInHw.isEmpty ? null : Text('Last Updated Value : $valueInHw', style: TextStyle(color: Theme.of(dialogContext).primaryColor, fontSize: 12),),
       trailing: IntrinsicWidth(child: trailingWidget),
       onTap: onTap,
       minTileHeight: 45,

@@ -307,7 +307,7 @@ class MqttMessageHelper {
         Map<String, dynamic> wlcLivePayload = {};
         List<String> splitPayload = mqttMsg.split('|');
         if(splitPayload.length == 2){
-          // if(AppConstants.crcMatch(splitPayload[0], splitPayload[1])){
+          if(AppConstants.crcMatch(splitPayload[0], splitPayload[1])){
             if (kDebugMode) {
               print("CRC matched............");
             }
@@ -317,7 +317,7 @@ class MqttMessageHelper {
             }else{
               debugPrint("pump view setting updated..");
               dispatcher.onNewViewSettings('', wlcLivePayload.values.first);
-            // }
+            }
           }
         }
       }catch(e, stackTrace){
@@ -328,11 +328,18 @@ class MqttMessageHelper {
       Map<String, dynamic> jsonObject = {};
       String qrCode = '';
       String typeStr = '';
+      String wlcReasonFlag = '';
+      String manualFlag = '';
 
       try {
         jsonObject = jsonDecode(mqttMsg);
+        if(!jsonObject.containsKey('cC')){
+          dispatcher.onNewViewSettings('', jsonObject[jsonObject.keys.first]);
+        }
         typeStr = (jsonObject['mC'] ?? '').toString().trim();
         qrCode = (jsonObject['cC'] ?? '').toString().trim();
+        wlcReasonFlag = (jsonObject['rF'] ?? '').toString().trim();
+        manualFlag = (jsonObject['mM'] ?? '').toString().trim();
 
         if (kDebugMode) {
           kdebugmode('--- MQTT PACKET RECEIVED ---');
@@ -377,10 +384,10 @@ class MqttMessageHelper {
         LiveMessageEntity? liveModel;
         String formattedSync = '$ct\n$cd';
         if (type == MqttMessageType.live) {
-          liveModel = LiveMessageModel.fromLiveMessage(trimmedMsg, externalLastSync: formattedSync);
+          liveModel = LiveMessageModel.fromLiveMessage(trimmedMsg, externalLastSync: formattedSync, wlcReasonFlag: wlcReasonFlag, manualFlag: manualFlag);
         } else {
           // LD04
-          liveModel = LiveMessageModel.fromLiveMessage(trimmedMsg, typeCode: 'LD04', externalLastSync: formattedSync);
+          liveModel = LiveMessageModel.fromLiveMessage(trimmedMsg, typeCode: 'LD04', externalLastSync: formattedSync, wlcReasonFlag: wlcReasonFlag, manualFlag: manualFlag);
         }
         // Fire-and-forget storage write to avoid blocking the message stream
         SharedPreferences.getInstance().then((prefs) {

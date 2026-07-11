@@ -6,7 +6,8 @@ enum SettingWidgetType {
   multiTime(4),
   fullText(5),
   phone(6),
-  multiText(7)
+  multiText(7),
+  floatText(8),
   ;
 
   final int value;

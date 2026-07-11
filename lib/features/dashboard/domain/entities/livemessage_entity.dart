@@ -1,6 +1,8 @@
 import 'package:equatable/equatable.dart';
 
 class LiveMessageEntity extends Equatable {
+  final String wlcReasonFlag;
+  final String manualFlag;
   final String cd;
   final String ct;
   final String motorOnOff;
@@ -52,6 +54,8 @@ class LiveMessageEntity extends Equatable {
   final String msgDesc;
 
   const LiveMessageEntity({
+    required this.wlcReasonFlag,
+    required this.manualFlag,
     required this.cd,
     required this.ct,
     required this.motorOnOff,
@@ -105,6 +109,8 @@ class LiveMessageEntity extends Equatable {
 
   @override
   List<Object?> get props => [
+        wlcReasonFlag,
+        manualFlag,
         cd,
         ct,
         motorOnOff,
@@ -208,6 +214,8 @@ class LiveMessageEntity extends Equatable {
     String? msgDesc,
   }) {
     return LiveMessageEntity(
+      wlcReasonFlag: wlcReasonFlag,
+      manualFlag: manualFlag,
       cd: cd ?? this.cd,
       ct: ct ?? this.ct,
       motorOnOff: motorOnOff ?? this.motorOnOff,

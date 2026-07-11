@@ -48,7 +48,7 @@ class SettingsModel extends SettingsEntity {
     return SettingsModel(
         serialNumber: json["SN"],
         widgetType: SettingWidgetType.fromInt(json['WT'] ?? 0),
-        value: json["VAL"] ?? 'Empty',
+        value: json["VAL"] ?? '',
         valueInHw:  '',
         smsFormat: json["SF"],
         title: json["TT"],

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart'
-    if (dart.library.html) 'package:mqtt_client/mqtt_browser_client.dart';
+if (dart.library.html) 'package:mqtt_client/mqtt_browser_client.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class MqttService {
@@ -19,10 +19,18 @@ class MqttService {
 
   bool _connected = false;
   Completer<void>? _connectingCompleter;
+
+  // Subscriptions we've been asked for while offline and haven't sent yet.
   final Set<String> _pendingSubscriptions = <String>{};
 
+  // Every deviceId we currently consider "subscribed", regardless of
+  // connection state. This is replayed in full on every connect/reconnect,
+  // since the broker session is started clean (startClean()) and therefore
+  // forgets subscriptions on every new connection, including auto-reconnects.
+  final Set<String> _activeSubscriptions = <String>{};
+
   final StreamController<bool> _connectionController =
-      StreamController<bool>.broadcast();
+  StreamController<bool>.broadcast();
 
   Stream<bool> get connectionStream => _connectionController.stream;
   bool get isConnected => _connected;
@@ -85,7 +93,7 @@ class MqttService {
   void _onConnected() {
     _connected = true;
     _connectionController.add(true);
-    _flushPendingSubscriptions();
+    _resubscribeAll();
 
     if (kDebugMode) {
       kdebugmode('MQTT CONNECTED');
@@ -111,7 +119,7 @@ class MqttService {
   void _onAutoReconnected() {
     _connected = true;
     _connectionController.add(true);
-    _flushPendingSubscriptions();
+    _resubscribeAll();
     if (kDebugMode) {
       kdebugmode('MQTT AUTO RECONNECTED');
     }
@@ -129,20 +137,32 @@ class MqttService {
     }
   }
 
-  void _flushPendingSubscriptions() {
+  /// Re-issues every subscription we believe should be active. This runs on
+  /// every connect/reconnect (including auto-reconnect) since the broker
+  /// session is clean and drops subscriptions on each new connection.
+  void _resubscribeAll() {
     if (!_connected ||
         _client.connectionStatus?.state != MqttConnectionState.connected) {
       return;
     }
 
-    for (final deviceId in _pendingSubscriptions.toList(growable: false)) {
+    for (final deviceId in _activeSubscriptions) {
       final topic = '$_subscribeTopic/$deviceId';
       _client.subscribe(topic, MqttQos.atMostOnce);
+      if (kDebugMode) {
+        kdebugmode('RE-SUBSCRIBED -> $topic');
+      }
     }
+
+    // Anything that was merely pending (requested while offline) is now
+    // covered by _activeSubscriptions above, so just clear it.
     _pendingSubscriptions.clear();
   }
 
   void subscribe(String deviceId, {MqttQos qos = MqttQos.atMostOnce}) {
+    // Always remember subscription intent so it survives reconnects.
+    _activeSubscriptions.add(deviceId);
+
     if (!_connected ||
         _client.connectionStatus?.state != MqttConnectionState.connected) {
       _pendingSubscriptions.add(deviceId);
@@ -162,6 +182,7 @@ class MqttService {
   }
 
   void unsubscribe(String deviceId) {
+    _activeSubscriptions.remove(deviceId);
     _pendingSubscriptions.remove(deviceId);
     if (!_connected ||
         _client.connectionStatus?.state != MqttConnectionState.connected) {
@@ -177,10 +198,10 @@ class MqttService {
   }
 
   void publish(
-    String deviceId,
-    String message, {
-    MqttQos qos = MqttQos.atMostOnce,
-  }) {
+      String deviceId,
+      String message, {
+        MqttQos qos = MqttQos.atMostOnce,
+      }) {
     if (!_connected ||
         _client.connectionStatus?.state != MqttConnectionState.connected) {
       unawaited(_publishWhenConnected(deviceId, message, qos: qos));
@@ -208,10 +229,10 @@ class MqttService {
   }
 
   Future<void> _publishWhenConnected(
-    String deviceId,
-    String message, {
-    MqttQos qos = MqttQos.atMostOnce,
-  }) async {
+      String deviceId,
+      String message, {
+        MqttQos qos = MqttQos.atMostOnce,
+      }) async {
     await _ensureConnected();
     if (!_connected ||
         _client.connectionStatus?.state != MqttConnectionState.connected) {

@@ -597,9 +597,59 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  Widget getBottomNavigationForWlc(int userId, int userType) {
+    return BottomNavigationBar(
+      currentIndex: selectedBottomNavigation == BottomNavigationOption.home ? 0 : 1,
+      onTap: (index) {
+        if (index == 0) {
+          selectedBottomNavigation = BottomNavigationOption.home;
+          context.pushReplacement(
+            "${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType",
+          );
+        } else {
+          selectedBottomNavigation = BottomNavigationOption.setting;
+          context.pushReplacement(
+            "${DashBoardRoutes.settings}?userId=$userId&userType=$userType",
+          );
+        }
+        setState(() {});
+      },
+      type: BottomNavigationBarType.fixed,
+      selectedItemColor: Colors.blue,
+      unselectedItemColor: Colors.grey,
+      showUnselectedLabels: true,
+      items: [
+        BottomNavigationBarItem(
+          icon: Image.asset(
+            AppImages.inActiveHomeIcon,
+            height: 24,
+          ),
+          activeIcon: Image.asset(
+            AppImages.activeHomeIcon,
+            height: 24,
+          ),
+          label: 'Home',
+        ),
+        BottomNavigationBarItem(
+          icon: Image.asset(
+            AppImages.inActiveSettingIcon,
+            height: 24,
+          ),
+          activeIcon: Image.asset(
+            AppImages.activeSettingIcon,
+            height: 24,
+          ),
+          label: 'Settings',
+        ),
+      ],
+    );
+  }
+
   Widget _buildBottomNavigationBar(int userId, int userType, int modelId) {
     if (AppConstants.isIrrigationLive(modelId)) {
       return getBottomNavigationForDrip(userId, userType);
+    }else if (AppConstants.isWlc(modelId)) {
+      return getBottomNavigationForWlc(userId, userType);
     } else {
       return getBottomNavigationForPump(userId, userType);
     }

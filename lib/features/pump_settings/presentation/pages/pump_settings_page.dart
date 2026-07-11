@@ -122,7 +122,7 @@ class PumpSettingsPage extends StatelessWidget {
               )
             ],
           ),
-          floatingActionButton: AppConstants.isWlc(modelId)
+          floatingActionButton: (AppConstants.sendFullSetting(modelId) && !AppConstants.statusCheck(menuId))
               ? FloatingActionButton(
             backgroundColor: Colors.white,
             onPressed: () {
@@ -636,7 +636,7 @@ class _SettingRow extends StatelessWidget {
         children: [
           Expanded(child: _buildInput(context)),
           const SizedBox(width: 8),
-          if (!AppConstants.isWlc(modelId))
+          if (!AppConstants.sendFullSetting(modelId) || AppConstants.statusCheck(menuItemEntity.menu.menuSettingId))
             _SendButton(
               isSending: isSending,
               onPressed: () {
@@ -679,7 +679,7 @@ class _SettingRow extends StatelessWidget {
       modelId: modelId,
     )
         : const <int>[];
-
+    print("setting.widgetType : ${setting.widgetType}");
     return switch (setting.widgetType) {
       SettingWidgetType.phone =>
           _PhoneInput(setting: setting, onChanged: _onChanged(context)),
@@ -697,6 +697,7 @@ class _SettingRow extends StatelessWidget {
             ![1, 2].contains(section.typeId))
             ? PumpSettingsImages.getCommunicationConfigIcons(path)
             : null,
+        floatInput: false,
       ),
       SettingWidgetType.multiText => ([
         "VOLTCAL",
@@ -714,6 +715,7 @@ class _SettingRow extends StatelessWidget {
         splitMotorVisibility ? visibleMotorIndexes : null,
       ),
       _ => SettingListTile(
+        menuId: menuItemEntity.menu.menuSettingId,
         valueInHw: setting.valueInHw,
         title: setting.title,
         leadingIcon: [509].contains(menuItemEntity.menu.menuSettingId)
@@ -730,12 +732,13 @@ class _SettingRow extends StatelessWidget {
     menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
     return switch (setting.widgetType) {
       SettingWidgetType.nothing => const SizedBox.shrink(),
-      SettingWidgetType.text => SizedBox(
+      (SettingWidgetType.text || SettingWidgetType.floatText) => SizedBox(
         width: 80,
         child: _TextInput(
           setting: setting,
           onChanged: _onChanged(context),
           menuId: menuItemEntity.menu.menuSettingId,
+          floatInput: setting.widgetType == SettingWidgetType.floatText,
         ),
       ),
       SettingWidgetType.toggle => CustomSwitch(
@@ -890,6 +893,7 @@ class _TextInput extends StatefulWidget {
   final String? label;
   final String? imagePath;
   final int menuId;
+  final bool floatInput;
 
   const _TextInput({
     required this.setting,
@@ -897,6 +901,7 @@ class _TextInput extends StatefulWidget {
     this.label,
     this.imagePath,
     required this.menuId,
+    required this.floatInput,
   });
 
   @override
@@ -948,19 +953,21 @@ class _TextInputState extends State<_TextInput> {
           child: TextFormField(
             controller: _controller,
             focusNode: _focusNode,
-            keyboardType: !isTextOnly
+            keyboardType:
+            !isTextOnly
                 ? const TextInputType.numberWithOptions(decimal: true)
                 : TextInputType.text,
             textAlign: isTextOnly ? TextAlign.start : TextAlign.center,
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
             onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-            inputFormatters: !isTextOnly
-                ? [
-              FilteringTextInputFormatter.allow(
-                  RegExp(r'^\d*\.?\d{0,9}')),
+            inputFormatters: widget.floatInput ? [
+            FilteringTextInputFormatter.allow(
+                RegExp(r'^\d*\.?\d{0,9}')),
               LengthLimitingTextInputFormatter(5),
-            ]
-                : null,
+              ] :
+            (!isTextOnly
+                ? [ FilteringTextInputFormatter.allow(RegExp(r'^\d+$')),]
+                : null),
             validator: (value) {
               if (value == null || value.trim().isEmpty) return 'Required';
               return null;
@@ -1014,6 +1021,7 @@ class _MultiTimeInput extends StatelessWidget {
               ? titles[i]
               : 'Motor ${i + 1}';
           return SettingListTile(
+            menuId: 0,
             title: title,
             valueInHw: '',
             trailing: Container(

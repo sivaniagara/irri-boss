@@ -2,6 +2,8 @@ import '../../domain/entities/livemessage_entity.dart';
 
 class LiveMessageModel extends LiveMessageEntity {
   const LiveMessageModel({
+    required super.wlcReasonFlag,
+    required super.manualFlag,
     required super.cd,
     required super.ct,
     required super.motorOnOff,
@@ -54,11 +56,11 @@ class LiveMessageModel extends LiveMessageEntity {
   });
 
   factory LiveMessageModel.fromLiveMessage(String? message,
-      {String? typeCode, String? externalLastSync}) {
+      {String? typeCode, String? externalLastSync, String? wlcReasonFlag, String? manualFlag}) {
     if (message == null ||
         message.trim().isEmpty ||
         message.trim().toUpperCase() == "NA") {
-      return _empty(externalLastSync);
+      return _empty(externalLastSync, wlcReasonFlag, manualFlag);
     }
 
     // Check if this looks like stale cached data (all zeros or placeholder values)
@@ -78,7 +80,7 @@ class LiveMessageModel extends LiveMessageEntity {
         }
       }
       if (looksLikeStaleData) {
-        return _empty(externalLastSync);
+        return _empty(externalLastSync, wlcReasonFlag, manualFlag);
       }
     }
 
@@ -326,6 +328,8 @@ class LiveMessageModel extends LiveMessageEntity {
     }
 
     return LiveMessageModel(
+      wlcReasonFlag: wlcReasonFlag ?? '',
+      manualFlag: manualFlag ?? '',
       cd: cd,
       ct: ct,
       motorOnOff: motorOnOff,
@@ -377,7 +381,7 @@ class LiveMessageModel extends LiveMessageEntity {
     );
   }
 
-  static LiveMessageModel _empty(String? sync) {
+  static LiveMessageModel _empty(String? sync, String? rf, String? mf) {
     String cd = '00/00/00';
     String ct = '00:00:00';
     if (sync != null && (sync.contains('\n') || sync.contains(' '))) {
@@ -388,6 +392,8 @@ class LiveMessageModel extends LiveMessageEntity {
       }
     }
     return LiveMessageModel(
+      wlcReasonFlag: rf ?? '',
+      manualFlag: mf ?? '',
       cd: cd,
       ct: ct,
       motorOnOff: '0',
@@ -493,6 +499,8 @@ class LiveMessageModel extends LiveMessageEntity {
     String? msgDesc,
   }) {
     return LiveMessageModel(
+      wlcReasonFlag: wlcReasonFlag,
+      manualFlag: manualFlag,
       cd: cd ?? this.cd,
       ct: ct ?? this.ct,
       motorOnOff: motorOnOff ?? this.motorOnOff,

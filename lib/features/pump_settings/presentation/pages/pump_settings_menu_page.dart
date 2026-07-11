@@ -48,7 +48,7 @@ class PumpSettingsMenuPage extends StatelessWidget {
                 controllerId: controllerId,
                 modelId: modelId,
               ));
-            if (!AppConstants.isWlc(modelId)) {
+            if (!AppConstants.sendFullSetting(modelId)) {
               Future.microtask(() {
                 context.read<PumpSettingsCubit>().loadSettings(
                   userId: userId,
@@ -268,7 +268,6 @@ class _MenuListView extends StatelessWidget {
         final item = state.settings;
         final setting = item.template.sections[0].settings[0];
         final isOn = setting.value == "ON";
-
         return _navigationRow(
           context,
           title: item.menu.menuItem,

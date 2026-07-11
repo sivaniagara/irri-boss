@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/core/utils/app_constants.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/alert_dialog.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/app_alerts.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/custom_switch.dart';
@@ -141,7 +142,7 @@ class Dashboard20 extends StatefulWidget {
 }
 
 class _Dashboard20State extends State<Dashboard20> {
-  List<int> pumpModel = [4, 11, 27];
+  List<int> pumpModel = [4, 11, 27, 46];
 
   int _lastModelId = -1; // -1 = not yet seen any model
 
@@ -289,21 +290,19 @@ class _Dashboard20State extends State<Dashboard20> {
         },
         listener: (context, state) {
           if (state is DashboardGroupsLoaded &&
-              state.changeFromStatus == ChangeFromStatus.loading) {
+              (state.changeFromStatus == ChangeFromStatus.loading ||
+                  state.controlMotorStatus == ControlMotorStatus.loading ||
+                  state.manualModeStatus == ManualModeStatus.loading)) {
             showGradientLoadingDialog(context);
           } else if (state is DashboardGroupsLoaded &&
               state.changeFromStatus == ChangeFromStatus.success) {
             context.pop();
             showSuccessAlert(
-                context: context,
-                message: 'Change From command Success');
+                context: context, message: 'Change From command Success');
           } else if (state is DashboardGroupsLoaded &&
               state.changeFromStatus == ChangeFromStatus.failure) {
             context.pop();
             showErrorAlert(context: context, message: state.errorMsg);
-          } else if (state is DashboardGroupsLoaded &&
-              state.controlMotorStatus == ControlMotorStatus.loading) {
-            showGradientLoadingDialog(context);
           } else if (state is DashboardGroupsLoaded &&
               state.controlMotorStatus == ControlMotorStatus.success) {
             context.pop();
@@ -313,6 +312,15 @@ class _Dashboard20State extends State<Dashboard20> {
               state.controlMotorStatus == ControlMotorStatus.failure) {
             context.pop();
             showErrorAlert(context: context, message: state.errorMsg);
+          } else if (state is DashboardGroupsLoaded &&
+              state.manualModeStatus == ManualModeStatus.success) {
+            context.pop();
+            showSuccessAlert(
+                context: context, message: 'Manual Mode Update Success');
+          } else if (state is DashboardGroupsLoaded &&
+              state.manualModeStatus == ManualModeStatus.failure) {
+            context.pop();
+            showErrorAlert(context: context, message: state.errorMsg);
           }
         },
         listenWhen: (previous, current) {
@@ -320,7 +328,8 @@ class _Dashboard20State extends State<Dashboard20> {
               current is DashboardGroupsLoaded) {
             bool statusChanged =
                 previous.controlMotorStatus != current.controlMotorStatus ||
-                    previous.changeFromStatus != current.changeFromStatus;
+                    previous.changeFromStatus != current.changeFromStatus ||
+                    previous.manualModeStatus != current.manualModeStatus;
             return statusChanged;
           }
           return true;
@@ -356,19 +365,20 @@ class _Dashboard20State extends State<Dashboard20> {
                 Row(
                   spacing: 5,
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.signal_cellular_alt,
-                            color: Colors.green),
-                        Text(
-                          '${liveMessageEntity.signal}%',
-                          style: Theme.of(context)
-                              .textTheme
-                              .labelLarge
-                              ?.copyWith(fontWeight: FontWeight.w400),
-                        ),
-                      ],
-                    ),
+                    if(!AppConstants.isWlc(controllerEntity.modelId))
+                      Row(
+                        children: [
+                          const Icon(Icons.signal_cellular_alt,
+                              color: Colors.green),
+                          Text(
+                            '${liveMessageEntity.signal}%',
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelLarge
+                                ?.copyWith(fontWeight: FontWeight.w400),
+                          ),
+                        ],
+                      ),
                     Row(
                       children: [
                         const Icon(Icons.battery_6_bar_rounded,
@@ -423,20 +433,21 @@ class _Dashboard20State extends State<Dashboard20> {
                         ],
                       ),
                     ),
-                    Row(
-                      children: [
-                        Icon(Icons.cloudy_snowing,
-                            color: Theme.of(context).colorScheme.primary),
-                        Text(
-                          overflow: TextOverflow.ellipsis,
-                          "25\u00B0 C, Windy",
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
+                    if(!AppConstants.isWlc(controllerEntity.modelId))
+                      Row(
+                        children: [
+                          Icon(Icons.cloudy_snowing,
+                              color: Theme.of(context).colorScheme.primary),
+                          Text(
+                            overflow: TextOverflow.ellipsis,
+                            "25\u00B0 C, Windy",
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
                   ],
                 ),
               ],
@@ -471,7 +482,9 @@ class _Dashboard20State extends State<Dashboard20> {
                   color: Theme.of(context).colorScheme.primary),
             ),
             Text(
-              controllerEntity.msgDesc,
+              // !AppConstants.isWlc(controllerEntity.modelId) ?
+              // controllerEntity.msgDesc :
+              getMotorMessage(liveMessageEntity.wlcReasonFlag),
               style: const TextStyle(fontSize: 16, color: Color(0xff424242)),
             ),
             ReadMoreText(
@@ -522,53 +535,54 @@ class _Dashboard20State extends State<Dashboard20> {
               Text('Voltage & Current',
                   style: Theme.of(context).textTheme.labelLarge),
               const Spacer(),
-              InkWell(
-                onTap: () {
-                  if (pumpModel.contains(controllerEntity.modelId)) {
-                    context.push(
-                      RouteConstants.ctrlDetailsPage,
-                      extra: GetControllerDetailsParams(
-                        userId: controllerEntity.userId,
-                        controllerId: controllerEntity.userDeviceId,
-                        deviceId: controllerEntity.deviceId,
-                      ),
-                    );
-                  } else {
-                    context.push(DashBoardRoutes.ctrlLivePage,
-                        extra: controllerEntity);
-                  }
-                },
-                child: Container(
-                  padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xffE6F2FF),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        pumpModel.contains(controllerEntity.modelId)
-                            ? Icons.info_outline
-                            : Icons.developer_board,
-                        size: 20,
-                        color: Colors.black,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        pumpModel.contains(controllerEntity.modelId)
-                            ? "Details"
-                            : "Controller Live",
-                        style: const TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 14),
-                      ),
-                    ],
+              if(!AppConstants.isWlc(controllerEntity.modelId))
+                InkWell(
+                  onTap: () {
+                    if (pumpModel.contains(controllerEntity.modelId)) {
+                      context.push(
+                        RouteConstants.ctrlDetailsPage,
+                        extra: GetControllerDetailsParams(
+                          userId: controllerEntity.userId,
+                          controllerId: controllerEntity.userDeviceId,
+                          deviceId: controllerEntity.deviceId,
+                        ),
+                      );
+                    } else {
+                      context.push(DashBoardRoutes.ctrlLivePage,
+                          extra: controllerEntity);
+                    }
+                  },
+                  child: Container(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xffE6F2FF),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          pumpModel.contains(controllerEntity.modelId)
+                              ? Icons.info_outline
+                              : Icons.developer_board,
+                          size: 20,
+                          color: Colors.black,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          pumpModel.contains(controllerEntity.modelId)
+                              ? "Details"
+                              : "Controller Live",
+                          style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 14),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           Row(
@@ -1108,6 +1122,57 @@ class _Dashboard20State extends State<Dashboard20> {
                       ),
                     ),
                     const Spacer(),
+                    if(AppConstants.isWlc(controllerEntity.modelId))
+                      Row(
+                        spacing: 20,
+                        children: [
+                          Text("Manual Mode",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge),
+                          PopupMenuButton<String>(
+                            initialValue: liveMessageEntity.manualFlag == '1'
+                                ? 'Manual'
+                                : liveMessageEntity.manualFlag == '2'
+                                ? 'Idle'
+                                : 'Auto',
+                            onSelected: (value) {
+                              final controllerContext = context
+                                  .read<ControllerContextCubit>()
+                                  .state as ControllerContextLoaded;
+
+                              final payload = value == 'Manual'
+                                  ? '1'
+                                  : value == 'Idle'
+                                  ? '2'
+                                  : '0';
+
+                              context.read<DashboardPageCubit>().sendManualMode(
+                                  deviceId: controllerContext.deviceId, payload: payload);
+                            },
+                            itemBuilder: (context) => [
+                              PopupMenuItem(
+                                value: 'Auto',
+                                child: Text('Auto', style: TextStyle(color: Colors.black)),
+                              ),
+                              PopupMenuItem(
+                                value: 'Manual',
+                                child: Text('Manual', style: TextStyle(color: Colors.black)),
+                              ),
+                              PopupMenuItem(
+                                value: 'Idle',
+                                child: Text('Idle', style: TextStyle(color: Colors.black)),
+                              ),
+                            ],
+                            child: buildStatusContainer(liveMessageEntity.manualFlag == '1'
+                                ? 'Manual'
+                                : liveMessageEntity.manualFlag == '2'
+                                ? 'Idle'
+                                : 'Auto'),
+                          )
+                        ],
+                      )
+
                   ],
                 ),
                 Row(
@@ -1162,6 +1227,30 @@ class _Dashboard20State extends State<Dashboard20> {
           ),
           ...stackRadius(),
         ],
+      ),
+    );
+  }
+
+  Widget buildStatusContainer(String selectedValue) {
+    print("selectedValue : $selectedValue");
+    final Map<String, Color> statusColors = {
+      'Idle': Colors.blueGrey,
+      'Manual': Colors.green,
+      'Auto': Colors.red,
+    };
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: statusColors[selectedValue],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        selectedValue,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
@@ -1644,5 +1733,57 @@ class _WlcBleScreenState extends State<_WlcBleScreen>
         ),
       ),
     );
+  }
+}
+
+
+String getMotorMessage(String reason) {
+  switch (reason) {
+    case "1":  return "Motor Off sump empty";
+    case "2":  return "Motor Off upper tank full";
+    case "3":  return "Motor Off low voltage";
+    case "4":  return "Motor Off high voltage";
+    case "5":  return "Motor Off voltage SPP";
+    case "6":  return "Motor Off reverse phase";
+    case "7":  return "Motor Off starter trip";
+    case "8":  return "Motor Off dry run";
+    case "9":  return "Motor Off overload";
+    case "10": return "Motor Off current SPP";
+    case "11": return "Motor Off cyclic trip";
+    case "12": return "Motor Off maximum run time";
+    case "13": return "Motor Off sump empty";
+    case "14": return "Motor Off upper tank full";
+    case "15": return "Motor Off RTC 1";
+    case "16": return "Motor Off RTC 2";
+    case "17": return "Motor Off RTC 3";
+    case "18": return "Motor Off RTC 4";
+    case "19": return "Motor Off RTC 5";
+    case "20": return "Motor Off RTC 6";
+    case "21": return "Motor Off auto mobile key off";
+    case "22": return "Motor On cyclic time";
+    case "23": return "Motor On RTC 1";
+    case "24": return "Motor On RTC 2";
+    case "25": return "Motor On RTC 3";
+    case "26": return "Motor On RTC 4";
+    case "27": return "Motor On RTC 5";
+    case "28": return "Motor On RTC 6";
+    case "29": return "Motor On auto mobile key on";
+    case "30": return "Power off";
+    case "31": return "Power on";
+    case "32": return "Ready to start";
+    case "33": return "Motor Off 3 Phase only";
+    case "35": return "Motor Off Cyclic interval";
+    case "36": return "Motor Off Moisture limit";
+    case "37": return "Motor Off Cycles completed";
+    case "38": return "Motor Off Cycle pause";
+    case "39": return "Motor Off wrong feedback";
+    case "40": return "No communication";
+    case "41": return "Motor Off Pressure sensor low";
+    case "42": return "Motor Off Pressure sensor high";
+    case "43": return "Motor Off sump cable disconnected";
+    case "44": return "Motor Off tank cable disconnected";
+    case "45": return "Motor Off sump float failed";
+    case "46": return "Motor Off tank float failed";
+    default: return "";
   }
 }

@@ -411,6 +411,7 @@ class _ViewPumpSettingsView extends StatelessWidget {
           children: [
             for (int i = 0; i < maxLength; i++)
               SettingListTile(
+                menuId: 0,
                 valueInHw: '',
                 title: i < ttItems.length
                     ? ttItems[i].trim()
@@ -431,6 +432,7 @@ class _ViewPumpSettingsView extends StatelessWidget {
       blur: 0,
       opacity: 1,
       child: SettingListTile(
+        menuId: 0,
         valueInHw: '',
         title: data['TT'],
         trailing: trailing,

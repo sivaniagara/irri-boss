@@ -20,6 +20,8 @@ enum ChangeFromStatus { initial, loading, success, failure }
 
 enum ControlMotorStatus { initial, loading, success, failure }
 
+enum ManualModeStatus { initial, loading, success, failure }
+
 abstract class DashboardState extends Equatable {
   @override
   List<Object?> get props => [];
@@ -36,6 +38,7 @@ class DashboardGroupsLoaded extends DashboardState {
   final int? selectedControllerIndex;
   final ChangeFromStatus changeFromStatus;
   final ControlMotorStatus controlMotorStatus;
+  final ManualModeStatus manualModeStatus;
   final String errorMsg;
 
   DashboardGroupsLoaded({
@@ -45,6 +48,7 @@ class DashboardGroupsLoaded extends DashboardState {
     this.selectedControllerIndex,
     this.changeFromStatus = ChangeFromStatus.initial,
     this.controlMotorStatus = ControlMotorStatus.initial,
+    this.manualModeStatus = ManualModeStatus.initial,
     this.errorMsg = '',
   });
 
@@ -56,6 +60,7 @@ class DashboardGroupsLoaded extends DashboardState {
         selectedControllerIndex,
         changeFromStatus,
         controlMotorStatus,
+        manualModeStatus,
         errorMsg
       ];
 
@@ -66,6 +71,7 @@ class DashboardGroupsLoaded extends DashboardState {
     int? selectedControllerIndex,
     ChangeFromStatus? changeFromStatus,
     ControlMotorStatus? controlMotorStatus,
+    ManualModeStatus? manualModeStatus,
     String? errorMsg,
   }) {
     return DashboardGroupsLoaded(
@@ -76,6 +82,7 @@ class DashboardGroupsLoaded extends DashboardState {
           selectedControllerIndex ?? this.selectedControllerIndex,
       changeFromStatus: changeFromStatus ?? this.changeFromStatus,
       controlMotorStatus: controlMotorStatus ?? this.controlMotorStatus,
+      manualModeStatus: manualModeStatus ?? this.manualModeStatus,
       errorMsg: errorMsg ?? this.errorMsg,
     );
   }
@@ -321,7 +328,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
             sl<MqttManager>().subscribe(selectedDeviceId);
             sl<MqttManager>().publish(
               selectedDeviceId,
-              wlcModel.contains(controllers[0].modelId) ? AppConstants.sendWlcCommand("#live") :
+              wlcModel.contains(controllers[0].modelId) ? AppConstants.sendWlcCommand("#live,$selectedDeviceId") :
               jsonEncode(PublishMessageHelper.requestLive),
             );
           } else if (newSelectedIndex != null &&
@@ -384,7 +391,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
           sl<MqttManager>().subscribe(selectedDeviceId);
           sl<MqttManager>().publish(
             selectedDeviceId,
-            wlcModel.contains(controllers[0].modelId) ? AppConstants.sendWlcCommand("#live") :
+            wlcModel.contains(controllers[0].modelId) ? AppConstants.sendWlcCommand("#live,$selectedDeviceId") :
             jsonEncode(PublishMessageHelper.requestLive),
           );
         }
@@ -419,7 +426,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
     sl<MqttOrBle>().subscribe(selectedController.deviceId);
     sl<MqttOrBle>().publish(selectedController.deviceId,
-        wlcModel.contains(selectedController.modelId) ? AppConstants.sendWlcCommand("#live") :
+        wlcModel.contains(selectedController.modelId) ? AppConstants.sendWlcCommand("#live,${selectedController.deviceId}") :
         jsonEncode(PublishMessageHelper.requestLive));
     emit(currentState.copyWith(selectedControllerIndex: controllerIndex));
   }
@@ -427,7 +434,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
   void getLive(String deviceId, int modelId) {
     sl<MqttOrBle>()
         .publish(
-        deviceId, wlcModel.contains(modelId) ? AppConstants.sendWlcCommand("#live") : jsonEncode(PublishMessageHelper.requestLive));
+        deviceId, wlcModel.contains(modelId) ? AppConstants.sendWlcCommand("#live,$deviceId") : jsonEncode(PublishMessageHelper.requestLive));
   }
 
   void resetDashboardSelection() {
@@ -531,6 +538,26 @@ class DashboardPageCubit extends Cubit<DashboardState> {
         emit(currentState.copyWith(changeFromStatus: ChangeFromStatus.success));
       },
     );
+  }
+  
+  Future<void> sendManualMode({
+    required String deviceId,
+    required String payload,
+  }) async {
+    if (state is! DashboardGroupsLoaded) return;
+    final currentState = state as DashboardGroupsLoaded;
+
+    emit(currentState.copyWith(manualModeStatus: ManualModeStatus.loading));
+
+    try {
+      sl<MqttOrBle>().publish(deviceId, AppConstants.sendWlcCommand('MANUAL,$payload'));
+      await Future.delayed(const Duration(seconds: 5));
+      emit(currentState.copyWith(manualModeStatus: ManualModeStatus.success));
+    } catch (e) {
+      emit(currentState.copyWith(
+          manualModeStatus: ManualModeStatus.failure,
+          errorMsg: e.toString()));
+    }
   }
 
   Future<void> controlMotorStatus({
@@ -674,6 +701,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       emit(currentState.copyWith(
         controlMotorStatus: ControlMotorStatus.initial,
         changeFromStatus: ChangeFromStatus.initial,
+        manualModeStatus: ManualModeStatus.initial,
       ));
     }
   }
