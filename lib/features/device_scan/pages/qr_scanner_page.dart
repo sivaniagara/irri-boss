@@ -84,13 +84,9 @@ class _QrScannerPageState extends State<QrScannerPage> {
     dialogOpen = true;
 
     controller.stop();
-
     final data =
     message.split(',');
-
     String outputdate = data[3].trim();
-
-
      final device =
     QRDeviceModel(
       deviceId: data.length > 0 ? data[0].trim() : '',
@@ -108,7 +104,6 @@ class _QrScannerPageState extends State<QrScannerPage> {
       builder:
           (_) => AlertDialog(
             title: const Text("QR Detected",),
-
             content: Column(
               mainAxisSize:
               MainAxisSize.min,
