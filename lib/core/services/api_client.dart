@@ -71,7 +71,8 @@ class ApiClient {
 
       // Make the initial request
       final requestUri = Uri.parse('$baseUrl$endpoint');
-      final timeoutDuration = const Duration(seconds: 30);
+      print(requestUri);
+       final timeoutDuration = const Duration(seconds: 30);
       http.Response response;
       if (method.toUpperCase() == 'GET') {
         response = await client.get(requestUri, headers: mergedHeaders).timeout(timeoutDuration);

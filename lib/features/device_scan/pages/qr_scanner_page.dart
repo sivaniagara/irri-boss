@@ -86,7 +86,7 @@ class _QrScannerPageState extends State<QrScannerPage> {
     controller.stop();
     final data =
     message.split(',');
-    String outputdate = data[3].trim();
+    String outputDate = data[3].trim();
      final device =
     QRDeviceModel(
       deviceId: data.length > 0 ? data[0].trim() : '',
@@ -95,7 +95,7 @@ class _QrScannerPageState extends State<QrScannerPage> {
 
       categoryId: data.length > 2 ? int.parse(data[2]) : 1,
 
-      manufactureDate: outputdate.trim(),
+      manufactureDate: outputDate.trim(),
 
       warrentyMonths: 15,
     );

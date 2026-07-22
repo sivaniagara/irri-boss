@@ -64,7 +64,8 @@ class FlavorConfig {
       case Flavor.irriBossDevelopment:
         return const FlavorValues(
           displayName: 'Niagara',
-          apiBaseUrl: "http://20.193.232.190:8090/api/v1/",
+          apiBaseUrl: "http://20.207.195.118:8090/api/v1/",
+          // apiBaseUrl: "http://20.193.232.190:8090/api/v1/",
           broker: "20.193.232.190",
           userName: "mqttuser",
           password: "Mqtt@456",
@@ -74,7 +75,8 @@ class FlavorConfig {
       case Flavor.irriBossProduction:
         return const FlavorValues(
           displayName: 'Niagara',
-          apiBaseUrl: "http://20.193.232.190:8090/api/v1/",
+          apiBaseUrl: "http://20.207.195.118:8090/api/v1/",
+          // apiBaseUrl: "http://20.193.232.190:8090/api/v1/",
           broker: "20.193.232.190",
           userName: "mqttuser",
           password: "Mqtt@456",

@@ -26,7 +26,6 @@ import '../../features/fault_msg/di/faultmsg_di.dart';
 import '../../features/irrigation_settings/di/irrigation_settings_di.dart';
 import '../../features/pump_settings/utils/pump_settings_dispatcher.dart';
 import '../../features/reports/green_house_reports/di/green_house_di.dart';
-
 import '../../features/serial_set/di/serial_set_di.dart';
 import '../services/mqtt/app_message_dispatcher.dart';
 import '../../features/mapping_and_unmapping_nodes/di/mapping_and_unmapping_node_di.dart';
@@ -75,7 +74,6 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   sl.registerLazySingleton(() => ThemeProvider());
   sl.registerSingleton<NotificationService>(NotificationService());
   sl.registerLazySingleton<SomeService>(() => SomeService());
-
   /// External / third-party
   sl.registerLazySingleton<http.Client>(() => httpClient ?? http.Client());
   sl.registerLazySingleton<ApiClient>(() => ApiClient(baseUrl: FlavorConfig.instance.values.apiBaseUrl, client: sl()));
@@ -95,7 +93,6 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   sl.registerFactory(() => ControllerContextCubit());
   /// Flavor-specific services
   registerFlavorDependencies(sl);
-
   sl.registerLazySingleton<AppMessageDispatcher>(
         () => AppMessageDispatcher(
       dashboard: sl<DashboardMessageDispatcher>(),
@@ -103,12 +100,10 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
       programViewDispatcher: sl<ProgramPreviewDispatcher>(),
     ),
   );
-
   sl.registerLazySingleton<MqttManager>(() => MqttManager(
     mqttService: sl<MqttService>(),
     dispatcher: sl<AppMessageDispatcher>(),
   ));
-
   initDashboardDependencies();
 
   /// Auth Dependencies
