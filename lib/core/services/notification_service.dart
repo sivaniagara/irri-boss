@@ -114,6 +114,9 @@ class NotificationService {
   void handleBackgroundMessage(RemoteMessage message) {
     if (kDebugMode) {
       kdebugmode('Handling background message: ${message.messageId}');
+      kdebugmode('Handling background title: ${message.notification?.title}');
+      kdebugmode('Handling background body: ${message.notification?.body}');
+      kdebugmode('Handling background data: ${message.data.toString()}');
     }
     showNotification(
       title: message.notification?.title ?? 'App Notification',
