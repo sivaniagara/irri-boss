@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/features/device_scan/bloc/device_bloc.dart';
+import 'package:niagara_smart_drip_irrigation/features/device_scan/bloc/device_event.dart';
+import 'package:niagara_smart_drip_irrigation/features/device_scan/pages/device_list_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/domain/usecases/get_sub_user_by_phone_usecase.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/domain/usecases/get_sub_user_details_usecase.dart';
 import 'package:niagara_smart_drip_irrigation/features/side_drawer/sub_users/domain/usecases/get_sub_users_usecase.dart';
@@ -38,42 +41,46 @@ final sideDrawerRoutes = <ShellRoute>[
   ShellRoute(
     builder: (context, state, child) {
       final location = state.matchedLocation;
-      String title = 'Home';
+      String title = 'Dashboard';
       if (location == GroupRoutes.groups) {
         title = 'Groups';
       } else if (location == SubUserRoutes.subUsers) {
         title = 'Sub Users';
-      // } else if (location == RouteConstants.chat) {
-      //   title = 'Chat';
+      } else if (location == RouteConstants.QRScannerListPage) {
+        title = 'Add Devices';
       } else if (location == SubUserRoutes.subUserDetails) {
         title = 'Sub User Details';
       }
+
+      final authState = sl.get<AuthBloc>().state;
+      final bool isAuthenticated = authState is Authenticated;
+      final int userType = isAuthenticated ? authState.user.userDetails.userType : 1;
+      final int userId = isAuthenticated ? authState.user.userDetails.id : 0;
 
       return BlocProvider.value(
         value: sl.get<AuthBloc>(),
         child: Scaffold(
           appBar: AppBar(
-              backgroundColor: (sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType == 2
-                  ? Theme.of(context).primaryColorDark : null,
+              backgroundColor: userType == 2 ? Theme.of(context).primaryColorDark : null,
               centerTitle: true,
               title: Text(title),
-              foregroundColor: (sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType == 2
-                  ? Colors.white
-                  : Colors.black,
-              iconTheme: IconThemeData(color:  (sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType == 2
-                  ? Colors.white : Colors.black)
-            /* title: (sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType == 2 ? Container(
-                width: 140,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                alignment: Alignment.center,
-                child: Image.asset(NiagaraCommonImages.logoSmall),
-              ) : Text(title)*/
+              leading: (location == DashBoardRoutes.dashboard || location == DealerRoutes.dealerDashboard)
+                  ? null
+                  : IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () {
+                        if (isAuthenticated) {
+                          final route = userType == 2 ? DealerRoutes.dealerDashboard : DashBoardRoutes.dashboard;
+                          context.go('$route?userId=$userId&userType=$userType');
+                        } else {
+                          context.go('/');
+                        }
+                      },
+                    ),
+              foregroundColor: userType == 2 ? Colors.white : Colors.black,
+              iconTheme: IconThemeData(color:  userType == 2 ? Colors.white : Colors.black)
           ),
-          drawer: AppDrawer(userData: {"userId": '${(sl.get<AuthBloc>().state as Authenticated).user.userDetails.id}', "userType": '${(sl.get<AuthBloc>().state as Authenticated).user.userDetails.userType}'},),
+          drawer: AppDrawer(userData: {"userId": '$userId', "userType": '$userType'},),
           body: child,
         ),
       );
@@ -150,6 +157,13 @@ final sideDrawerRoutes = <ShellRoute>[
             ),
           );
         },
+      ),
+      GoRoute(
+        path: RouteConstants.QRScannerListPage,
+        builder: (context, state) => BlocProvider(
+          create: (context) => sl<QRDeviceBloc>()..add(LoadDevices()),
+          child: const QRDeviceListPage(),
+        ),
       ),
       GoRoute(
         name: 'QRScanner',

@@ -3,6 +3,7 @@ class PumpSettingsUrls {
   static const String settingReferenceIdForWlc = "800";
   static const String settingReferenceIdForPumpPro = "900";
   static const String newSettings = "newSettings";
+
   /// Get methods
   static const String getSettingsMenu = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/$settingReferenceId/$newSettings';
   static const String getSettingsMenuForWlc = 'user/:userId/subuser/:subuserId/controller/:controllerId/menu/$settingReferenceIdForWlc/$newSettings';

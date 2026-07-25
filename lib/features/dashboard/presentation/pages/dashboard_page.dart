@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Required for SystemNavigator.pop()
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_manager.dart';
@@ -205,6 +206,28 @@ class _DashboardPageState extends State<DashboardPage> {
     return state.groups.length == 1 && state.groups.first.userGroupId == fakeGroupId;
   }
 
+  /// Shows the exit confirmation dialog and returns true if Yes is tapped.
+  Future<bool> _showExitDialog(BuildContext context) async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("Exit App"),
+            content: const Text("Do you want to close the app?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("No"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text("Yes"),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+  }
+
   Widget _buildContent(
       BuildContext context,
       DashboardState state,
@@ -298,22 +321,19 @@ class _DashboardPageState extends State<DashboardPage> {
 
     final (selectedGroup, selectedController, controllers) = _getSelectedGroupAndController(loadedState);
 
-    // Identify if the current route is one that should show the shell (Appbar/Nav)
     final String currentPath = GoRouterState.of(context).uri.path;
     
-    // Define the 5 main tabs that should show the shell's AppBar
     final bool isDashboard = currentPath == DashBoardRoutes.dashboard;
     final bool isReport = currentPath == DashBoardRoutes.report;
     final bool isStandalone = currentPath == DashBoardRoutes.standalone;
     final bool isSettings = currentPath == DashBoardRoutes.settings;
     final bool isSentAndReceive = currentPath == DashBoardRoutes.sentAndReceive;
 
-    // Specific tabs for Standalone Pump models that should also show their "title" AppBar but NOT the dashboard's special AppBar
     final bool isFaultMsg = currentPath == FaultMsgPageRoutes.FaultMsgMsgPage;
     final bool isPowerGraph =
         currentPath == PowerGraphPageRoutes.PowerGraphPage;
 
-    // Determine if we are on a main tab
+    // Determine if the user is on any of the primary navigation pages
     final bool isMainTab = isDashboard ||
         isReport ||
         isStandalone ||
@@ -356,44 +376,65 @@ class _DashboardPageState extends State<DashboardPage> {
               );
         }
       },
-      child: Scaffold(
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: isMainTab
-            ? _buildBottomNavigationBar(
-                userId, userType, selectedController?.modelId ?? 4)
-            : null,
-        // Logic: ONLY show the shell's AppBar if we are on a main tab.
-        // Sub-pages (like PumpSettingsMenu, SumpSettings) should have NO AppBar from this shell.
-        appBar: !isMainTab
-            ? null
-            : (selectedBottomNavigation == BottomNavigationOption.home &&
-                    isDashboard)
-                ? _buildAppBar(
-                    selectedGroup,
-                    selectedController,
-                    controllers,
-                    loadedState,
-                    cubit,
-                    context,
-                    userId,
-                    userType,
-                  )
-                : (selectedBottomNavigation ==
-                            BottomNavigationOption.sentAndReceive &&
-                        isSentAndReceive)
-                    ? null // Sent and Receive has its own or we hide it
-                    : CustomAppBar(
-                        title: selectedBottomNavigation.title(),
-                      ),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        drawer: userType == 1
-            ? AppDrawer(
-                userData: widget.userData,
-              )
-            : null,
-        body: selectedController == null
-            ? const Center(child: CircularProgressIndicator())
-            : widget.child,
+      child: PopScope(
+        canPop: !isMainTab,
+        onPopInvokedWithResult: (didPop, result) async {
+          if (didPop) return;
+
+          if (isDashboard) {
+            // On Home tab, show exit app dialog
+            final shouldExit = await _showExitDialog(context);
+            if (shouldExit) {
+              SystemNavigator.pop(); // Close the app
+            }
+          } else if (isMainTab) {
+            // On another main navigation tab, return to Home tab
+            setState(() {
+              selectedBottomNavigation = BottomNavigationOption.home;
+            });
+            _controller.jumpTo(0); // Update the animated notch bar controller
+            context.go(
+                "${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType");
+          }
+        },
+        child: Scaffold(
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+          floatingActionButton: isMainTab
+              ? _buildBottomNavigationBar(
+                  userId, userType, selectedController?.modelId ?? 4)
+              : null,
+          // ONLY show the shell's AppBar if we are on a main tab.
+          appBar: !isMainTab
+              ? null
+              : (selectedBottomNavigation == BottomNavigationOption.home &&
+                      isDashboard)
+                  ? _buildAppBar(
+                      selectedGroup,
+                      selectedController,
+                      controllers,
+                      loadedState,
+                      cubit,
+                      context,
+                      userId,
+                      userType,
+                    )
+                  : (selectedBottomNavigation ==
+                              BottomNavigationOption.sentAndReceive &&
+                          isSentAndReceive)
+                      ? null // Sent and Receive has its own or we hide it
+                      : CustomAppBar(
+                          title: selectedBottomNavigation.title(),
+                        ),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          drawer: userType == 1
+              ? AppDrawer(
+                  userData: widget.userData,
+                )
+              : null,
+          body: selectedController == null
+              ? const Center(child: CircularProgressIndicator())
+              : widget.child,
+        ),
       ),
     );
   }
@@ -452,7 +493,7 @@ class _DashboardPageState extends State<DashboardPage> {
       onTap: (index) {
         if (index == 0) {
           selectedBottomNavigation = BottomNavigationOption.home;
-          context.pushReplacement(
+          context.go(
               "${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType");
         } else if (index == 1) {
           selectedBottomNavigation = BottomNavigationOption.report;
@@ -551,7 +592,7 @@ class _DashboardPageState extends State<DashboardPage> {
       onTap: (index) {
         if (index == 0) {
           selectedBottomNavigation = BottomNavigationOption.home;
-          context.pushReplacement(
+          context.go(
               "${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType");
         } else if (index == 1) {
           selectedBottomNavigation = BottomNavigationOption.report;
@@ -603,7 +644,7 @@ class _DashboardPageState extends State<DashboardPage> {
       onTap: (index) {
         if (index == 0) {
           selectedBottomNavigation = BottomNavigationOption.home;
-          context.pushReplacement(
+          context.go(
             "${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType",
           );
         } else {

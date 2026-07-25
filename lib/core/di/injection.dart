@@ -1,6 +1,8 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+import 'package:niagara_smart_drip_irrigation/core/services/connectivity_cubit.dart';
+import 'package:niagara_smart_drip_irrigation/core/services/connectivity_service.dart';
 import 'package:niagara_smart_drip_irrigation/features/controller_details/data/datasources/controller_datasource.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/program_preview_dispatcher.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/di/dealer_dashboard_di.dart';
@@ -73,6 +75,8 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   /// Core services
   sl.registerLazySingleton(() => ThemeProvider());
   sl.registerSingleton<NotificationService>(NotificationService());
+  sl.registerLazySingleton<ConnectivityService>(() => ConnectivityService());
+  sl.registerFactory(() => ConnectivityCubit(sl()));
   sl.registerLazySingleton<SomeService>(() => SomeService());
   /// External / third-party
   sl.registerLazySingleton<http.Client>(() => httpClient ?? http.Client());

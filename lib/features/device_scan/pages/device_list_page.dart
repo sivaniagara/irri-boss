@@ -19,7 +19,12 @@ class QRDeviceListPage extends StatefulWidget {
 }
 
 class _QRDeviceListPageState extends State<QRDeviceListPage> {
-  bool _hasAutoOpenedScanner = false;
+  bool _isScannerOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   void _navigateHome() {
     final authState = context.read<AuthBloc>().state;
@@ -29,11 +34,20 @@ class _QRDeviceListPageState extends State<QRDeviceListPage> {
       final route = userType == 2 ? DealerRoutes.dealerDashboard : DashBoardRoutes.dashboard;
       context.go('$route?userId=$userId&userType=$userType');
     } else {
-      context.go('/');
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      } else {
+        context.go('/');
+      }
     }
   }
 
   Future<void> _openScanner() async {
+    if (_isScannerOpen) return;
+    setState(() {
+      _isScannerOpen = true;
+    });
+
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -41,10 +55,16 @@ class _QRDeviceListPageState extends State<QRDeviceListPage> {
       ),
     );
 
-    if (result != null && mounted) {
-      context.read<QRDeviceBloc>().add(
-            AddScannedDevice(result),
-          );
+    if (mounted) {
+      setState(() {
+        _isScannerOpen = false;
+      });
+
+      if (result != null) {
+        context.read<QRDeviceBloc>().add(
+              AddScannedDevice(result),
+            );
+      }
     }
   }
 
@@ -97,13 +117,10 @@ class _QRDeviceListPageState extends State<QRDeviceListPage> {
                 SnackBar(content: Text(state.message)),
               );
             }
-
-            // Auto-open scanner if list is empty and we haven't auto-opened yet
-            if (state is DeviceLoaded && state.devices.isEmpty && !_hasAutoOpenedScanner) {
-              setState(() {
-                _hasAutoOpenedScanner = true;
+            if (state is DeviceLoaded && state.devices.isEmpty && !_isScannerOpen) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _openScanner();
               });
-              _openScanner();
             }
           },
           builder: (context, state) {
