@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl_phone_field/phone_number.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_manager.dart';
 import 'package:niagara_smart_drip_irrigation/core/utils/app_constants.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/entities/menu_item_entity.dart';
@@ -109,52 +110,52 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     if (!isHiddenFlag) {
       final setting = newSettings[settingIndex];
 
-      if (setting.widgetType == SettingWidgetType.text) {
-        final trimmed = newValue.trim();
-        if (setting.title == 'Dry Run Occurance Count') {
-          final val =
-          newValue.contains('.') ? newValue.split('.')[0] : newValue;
-          final number = int.tryParse(val);
-          if (number != null) {
-            processedValue = number.toString().padLeft(2, '0');
-          } else {
-            processedValue = val;
-          }
-        } else if (menuItemEntity.menu.menuSettingId == 508) {
-          processedValue = trimmed;
+      if (setting.title == 'Dry Run Occurrence Count') {
+        final val = newValue.contains('.') ? newValue.split('.')[0] : newValue;
+        final number = int.tryParse(val);
+        if (number != null) {
+          processedValue = number.toString().padLeft(2, '0');
         } else {
-          if (trimmed.isEmpty) {
-            processedValue = trimmed;
-          } else if (trimmed.contains('.')) {
-            final parts = trimmed.split('.');
-            final integerStr = parts[0];
-            final decimalPart = parts.length > 1 ? parts[1] : '0';
+          processedValue = val;
+        }
+      } else if (menuItemEntity.menu.menuSettingId == 508) {
+        processedValue = newValue.trim();
+      } else if (setting.widgetType == SettingWidgetType.floatText) {
+        final trimmed = newValue.trim();
+        if (trimmed.isEmpty) {
+          processedValue = trimmed;
+        } else if (trimmed.contains('.')) {
+          final parts = trimmed.split('.');
+          final integerStr = parts[0];
+          final decimalPart = parts.length > 1 ? parts[1] : '0';
 
-            final intClean = integerStr.replaceAll(RegExp(r'^0+'), '');
-            final intValue =
-            intClean.isEmpty ? 0 : int.tryParse(intClean) ?? -1;
+          final intClean = integerStr.replaceAll(RegExp(r'^0+'), '');
+          final intValue =
+          intClean.isEmpty ? 0 : int.tryParse(intClean) ?? -1;
 
-            String paddedInteger;
-            if (intValue >= 0 && intValue < 100) {
-              paddedInteger = intValue.toString().padLeft(3, '0');
-            } else {
-              paddedInteger = integerStr;
-            }
-
-            processedValue = '$paddedInteger.$decimalPart';
+          String paddedInteger;
+          if (intValue >= 0 && intValue < 100) {
+            paddedInteger = intValue.toString().padLeft(3, '0');
           } else {
-            final number = int.tryParse(trimmed);
-            if (number != null) {
-              if (number < 100) {
-                processedValue = "${number.toString().padLeft(3, '0')}.0";
-              } else {
-                processedValue = "${number.toString()}.0";
-              }
+            paddedInteger = integerStr;
+          }
+          processedValue = '$paddedInteger.$decimalPart';
+        } else {
+          final number = int.tryParse(trimmed);
+          if (number != null) {
+            if (number < 100) {
+              processedValue = "${number.toString().padLeft(3, '0')}.0";
             } else {
-              processedValue = "$trimmed.0";
+              processedValue = number.toString();
             }
+          } else {
+            processedValue = trimmed;
           }
         }
+      } else {
+        // text, toggle, time, multiTime, fullText, phone, multiText, nothing, etc.
+        // no transformation — just pass the raw input through
+        processedValue = newValue;
       }
 
       newSettings[settingIndex] = setting.copyWith(value: processedValue);
@@ -373,7 +374,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       payload.add('SUMP');
     } else if ([535, 539].contains(menuSettingId)) {
       payload.add('CURRENT');
-    }else if ([536, 540].contains(menuSettingId)) {
+    } else if ([536, 540].contains(menuSettingId)) {
       payload.add('VOLTAGE');
     } else if ([542].contains(menuSettingId)) {
       payload.add('SMS');
@@ -397,6 +398,13 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
           payload.add('1');
         }else if (categorySetting.value.contains(":")) {
           payload.add(categorySetting.value.split(':').join(','));
+        }else if(categorySetting.widgetType == SettingWidgetType.phone){
+          print("categorySetting.value : ${categorySetting.value}");
+          final phone = PhoneNumber.fromCompleteNumber(completeNumber: categorySetting.value);
+          final List<String> parts = categorySetting.smsFormat.split(",");
+          print("phone : ${phone}");
+          payload.add(categorySetting.value.isEmpty ?  "," : "+${phone.countryCode},${phone.number}");
+          print("payload : ${payload}");
         } else {
           payload.add(categorySetting.value.toString());
         }

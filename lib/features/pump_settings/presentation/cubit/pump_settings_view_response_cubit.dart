@@ -7,10 +7,11 @@ class PumpSettingsViewResponseCubit extends Cubit<PumpSettingViewState> {
 
   void onViewMessageReceived(Map<String, dynamic> message) {
     final prettyString = message['cM'] ?? 'No content';
-
-    emit(PumpSettingsViewReceived(
-     message: prettyString
-    ));
+    emit(
+        PumpSettingsViewReceived(
+            message: prettyString
+        )
+    );
   }
 
   void clear() => emit(PumpSettingsViewInitial());

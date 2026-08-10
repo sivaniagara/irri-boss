@@ -846,7 +846,9 @@ class _PhoneInputState extends State<_PhoneInput> {
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.setting.value);
+    String fullNumber = widget.setting.value;
+    String localNumber = fullNumber.replaceAll(RegExp(r'^\+\d{1,2}'), "");
+    _controller = TextEditingController(text: localNumber);
     _focusNode = FocusNode();
   }
 
@@ -871,17 +873,22 @@ class _PhoneInputState extends State<_PhoneInput> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
-      child: IntlPhoneField(
-        controller: _controller,
-        focusNode: _focusNode,
-        initialCountryCode: 'IN',
-        decoration: InputDecoration(
-          labelText: widget.setting.title,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        ),
-        onChanged: (phone) => widget.onChanged(phone.completeNumber),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          IntlPhoneField(
+            controller: _controller,
+            focusNode: _focusNode,
+            initialCountryCode: 'IN',
+            decoration: InputDecoration(
+              labelText: widget.setting.title,
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            ),
+            onChanged: (phone) => widget.onChanged(phone.completeNumber),
+          ),
+          Text(widget.setting.valueInHw.isEmpty ? '' : '     Last Updated Value : ${widget.setting.valueInHw}', style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12),),        ],
       ),
     );
   }
