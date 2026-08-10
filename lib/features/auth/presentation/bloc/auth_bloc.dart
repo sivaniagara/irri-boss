@@ -30,6 +30,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthLoading());
       try {
         final result = await loginWithPassword(LoginParams(phone: event.phone, password: event.password));
+        print(result);
         result.fold(
               (failure) => emit(failure is AuthFailure
               ? AuthError(message: failure.message, code: failure.code)

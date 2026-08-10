@@ -84,16 +84,10 @@ class _QrScannerPageState extends State<QrScannerPage> {
     dialogOpen = true;
 
     controller.stop();
-
     final data =
     message.split(',');
-
-    String inputdate = data[3].trim();
-
-    DateTime date = DateFormat('dd-MM-yyyy').parse(inputdate);
-    String outputdate = DateFormat('yyyy-MM-dd').format(date);
-
-    final device =
+    String outputDate = data[3].trim();
+     final device =
     QRDeviceModel(
       deviceId: data.length > 0 ? data[0].trim() : '',
 
@@ -101,7 +95,7 @@ class _QrScannerPageState extends State<QrScannerPage> {
 
       categoryId: data.length > 2 ? int.parse(data[2]) : 1,
 
-      manufactureDate: outputdate.trim(),
+      manufactureDate: outputDate.trim(),
 
       warrentyMonths: 15,
     );
@@ -110,7 +104,6 @@ class _QrScannerPageState extends State<QrScannerPage> {
       builder:
           (_) => AlertDialog(
             title: const Text("QR Detected",),
-
             content: Column(
               mainAxisSize:
               MainAxisSize.min,

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -93,6 +94,74 @@ Widget pageSlider(context, animation, secondaryAnimation, child){
     position: animation.drive(tween),
     child: child,
   );
+}
+
+class BottomTabPopScopeWrapper extends StatelessWidget {
+  final Widget child;
+
+  const BottomTabPopScopeWrapper({Key? key, required this.child}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        
+        final authState = context.read<AuthBloc>().state;
+        if (authState is Authenticated) {
+          final userId = authState.user.userDetails.id;
+          final userType = authState.user.userDetails.userType;
+          
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) {
+              context.go("${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType");
+            }
+          });
+        }
+      },
+      child: child,
+    );
+  }
+}
+
+class DashboardPopScopeWrapper extends StatelessWidget {
+  final Widget child;
+
+  const DashboardPopScopeWrapper({Key? key, required this.child}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        
+        final shouldExit = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("Exit App"),
+            content: const Text("Are you sure want to close the app ?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("No"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text("Yes"),
+              ),
+            ],
+          ),
+        ) ?? false;
+
+        if (shouldExit) {
+          SystemNavigator.pop();
+        }
+      },
+      child: child,
+    );
+  }
 }
 
 class AppRouter {
@@ -203,7 +272,9 @@ class AppRouter {
               GoRoute(
                 path: DashBoardRoutes.dashboard,
                 builder: (context, state) {
-                  return const Dashboard20();
+                  return const DashboardPopScopeWrapper(
+                    child: Dashboard20(),
+                  );
                 },
               ),
               GoRoute(
@@ -223,17 +294,19 @@ class AppRouter {
                   final String toDate = extra['toDate'] ??
                       DateFormat('yyyy-MM-dd').format(DateTime.now());
 
-                  return BlocProvider.value(
-                    value: di.sl<ReportMenuBloc>(),
-                    child: ReportMenuPage(
-                      params: {
-                        "userId": userId,
-                        "subuserId": subUserId,
-                        "controllerId": controllerId,
-                        "deviceId": deviceId,
-                        "fromDate": fromDate,
-                        "toDate": toDate,
-                      },
+                  return BottomTabPopScopeWrapper(
+                    child: BlocProvider.value(
+                      value: di.sl<ReportMenuBloc>(),
+                      child: ReportMenuPage(
+                        params: {
+                          "userId": userId,
+                          "subuserId": subUserId,
+                          "controllerId": controllerId,
+                          "deviceId": deviceId,
+                          "fromDate": fromDate,
+                          "toDate": toDate,
+                        },
+                      ),
                     ),
                   );
                 },
@@ -247,21 +320,23 @@ class AppRouter {
                   final String deviceId = params["deviceId"]?.toString() ?? '';
                   final String subUserId = params["subUserId"]?.toString() ?? '0';
 
-                  return BlocProvider.value(
-                    value: di.sl<StandaloneBloc>(),
-                    child: Builder(
-                      builder: (context) {
-                        final bloc = context.read<StandaloneBloc>();
-                        if (bloc.state is StandaloneInitial && userId.isNotEmpty) {
-                          bloc.add(FetchStandaloneDataEvent(
-                              userId: userId,
-                              controllerId: controllerId,
-                              deviceId: deviceId,
-                              subUserId: subUserId
-                          ));
-                        }
-                        return StandalonePage(data: params);
-                      },
+                  return BottomTabPopScopeWrapper(
+                    child: BlocProvider.value(
+                      value: di.sl<StandaloneBloc>(),
+                      child: Builder(
+                        builder: (context) {
+                          final bloc = context.read<StandaloneBloc>();
+                          if (bloc.state is StandaloneInitial && userId.isNotEmpty) {
+                            bloc.add(FetchStandaloneDataEvent(
+                                userId: userId,
+                                controllerId: controllerId,
+                                deviceId: deviceId,
+                                subUserId: subUserId
+                            ));
+                          }
+                          return StandalonePage(data: params);
+                        },
+                      ),
                     ),
                   );
                 },
@@ -269,7 +344,9 @@ class AppRouter {
               GoRoute(
                   path: DashBoardRoutes.settings,
                   builder: (context, state) {
-                    return SettingsPage();
+                    return BottomTabPopScopeWrapper(
+                      child: SettingsPage(),
+                    );
                   },
                   routes: [
 
@@ -280,14 +357,18 @@ class AppRouter {
                 builder: (context, state) {
                   final controllerContext = context.read<ControllerContextCubit>().state;
                   if (controllerContext is ControllerContextLoaded) {
-                    return SendRevPage(params: {
-                      "userId": controllerContext.userId,
-                      "subuserId": controllerContext.subUserId,
-                      "controllerId": controllerContext.controllerId,
-                    });
+                    return BottomTabPopScopeWrapper(
+                      child: SendRevPage(params: {
+                        "userId": controllerContext.userId,
+                        "subuserId": controllerContext.subUserId,
+                        "controllerId": controllerContext.controllerId,
+                      }),
+                    );
                   }
-                  return const Center(
-                    child: Text('Please select a controller first.'),
+                  return BottomTabPopScopeWrapper(
+                    child: const Center(
+                      child: Text('Please select a controller first.'),
+                    ),
                   );
                 },
               ),

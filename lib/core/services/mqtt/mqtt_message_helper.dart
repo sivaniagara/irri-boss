@@ -370,6 +370,8 @@ class MqttMessageHelper {
 
       String trimmedMsg = msg.trim();
       String msgCode = getMsgCode(trimmedMsg);
+      print("trimmedMsg:$trimmedMsg");
+      print('msgCode:$msgCode');
       String msgDesc = FaultSms.smsMessage(msgCode);
 
       final type = MqttMessageType.fromCode(typeStr);

@@ -9,6 +9,7 @@ import '../../../../../core/utils/route_constants.dart';
 import '../../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../../auth/presentation/bloc/auth_event.dart';
 import '../../../../auth/presentation/bloc/auth_state.dart';
+import '../../../../dashboard/presentation/cubit/dashboard_page_cubit.dart';
 import '../../../../dashboard/utils/dashboard_routes.dart';
 
 class AppDrawer extends StatelessWidget {
@@ -130,16 +131,6 @@ class AppDrawer extends StatelessWidget {
                     Navigator.pop(context);
                   },
                 ),
-                // const Divider(indent: 10, endIndent: 10),
-                // _buildDrawerItem(
-                //   context,
-                //   icon: Icons.chat,
-                //   title: 'Chat',
-                //   onTap: () {
-                //     context.push(RouteConstants.chat);
-                //     Navigator.pop(context);
-                //   },
-                // ),
                 const Divider(indent: 10, endIndent: 10),
                 _buildDrawerItem(
                   context,
@@ -155,10 +146,21 @@ class AppDrawer extends StatelessWidget {
                   context,
                   icon: Icons.add_a_photo,
                   title: 'Scan To Add Device',
-                  onTap: () {
-                    // QR Code scannerPage ()
-                    context.push(RouteConstants.QRScannerListPage);
+                  onTap: () async {
                     Navigator.pop(context);
+                    final result = await context.push(RouteConstants.QRScannerListPage);
+                    if (result == true && context.mounted) {
+                      final authState = context.read<AuthBloc>().state;
+                      if (authState is Authenticated) {
+                        try {
+                          context.read<DashboardPageCubit>().getGroups(
+                            authState.user.userDetails.id,
+                            GoRouterState.of(context),
+                            authState.user.userDetails.userType,
+                          );
+                        } catch (_) {}
+                      }
+                    }
                   },
                 ),
               ],

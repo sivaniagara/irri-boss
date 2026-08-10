@@ -287,37 +287,14 @@ String getDisplayMessage(String message) {
 
 String getMsgCode(String message) {
   if (message.isEmpty) return "";
+
   String trimmed = message.trim();
-  
-  // Try to find the code in format like -001/080 or -068/080
-  final match = RegExp(r'-(\d{3})').firstMatch(trimmed);
-  if (match != null) {
-    return match.group(1)!;
-  }
 
-  // Handle prefixes like LD01: or LD04,
-  String content = trimmed;
-  if (content.contains(':')) {
-    content = content.substring(content.indexOf(':') + 1).trim();
-  } else if (RegExp(r'^[A-Z0-9]{4},').hasMatch(content)) {
-    content = content.substring(content.indexOf(',') + 1).trim();
-  }
-
-  final parts = content.split(',');
-  
-  // New style message with $L
-  int lIndex = parts.indexOf('\$L');
-  if (lIndex != -1 && parts.length > lIndex + 14) {
-    return parts[lIndex + 14].trim();
-  }
-
-  // If we have parts, the first part is often the code
-  if (parts.isNotEmpty) {
-    String firstPart = parts[0].trim();
-    // If it's a numeric code (even if 1 or 2 digits), it's likely a status code
-    if (RegExp(r'^\d+$').hasMatch(firstPart)) {
-      return firstPart.padLeft(3, '0');
-    }
+  // Extract first 5 digit code like 17020 or 55024 and return last 3 digits
+  final fiveDigitMatch = RegExp(r'\b(\d{5})\b').firstMatch(trimmed);
+  if (fiveDigitMatch != null) {
+    String code = fiveDigitMatch.group(1)!;
+    return code.substring(code.length - 3);
   }
 
   return "";

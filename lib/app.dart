@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:firebase_core/firebase_core.dart';
+import 'package:niagara_smart_drip_irrigation/core/services/connectivity_cubit.dart';
+import 'package:niagara_smart_drip_irrigation/core/services/connectivity_service.dart';
+import 'package:niagara_smart_drip_irrigation/core/widgets/no_internet_page.dart';
 import 'package:niagara_smart_drip_irrigation/features/program_settings/presentation/bloc/program_bloc.dart';
-import 'core/utils/network_helper.dart';
 import 'features/dashboard/presentation/cubit/controller_context_cubit.dart';
 import 'features/mapping_and_unmapping_nodes/presentation/bloc/mapping_and_unmapping_nodes_bloc.dart';
 import 'features/progam_zone_set/presentation/cubit/program_tab_cubit.dart';
 import 'features/pump_settings/presentation/cubit/pump_settings_view_response_cubit.dart';
 import 'firebase_options.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
-// import 'package:niagara_smart_drip_irrigation/features/mqtt/bloc/mqtt_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'core/di/injection.dart' as di;
@@ -36,34 +36,32 @@ Future<void> appMain() async {
         options: DefaultFirebaseOptions.currentPlatform,
       );
     } on UnsupportedError catch (e) {
-      // Platform not supported for Firebase initialization (e.g., desktop without config)
-      // Log and continue; Firebase-dependent features should handle missing Firebase gracefully.
-      if (kDebugMode) ('Firebase initialize skipped: $e');
+      if (kDebugMode) print('Firebase initialize skipped: $e');
     }
   }
   await FirebaseMessaging.instance.setAutoInitEnabled(true);
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   await di.sl<NotificationService>().init();
+  
   final authBloc = di.sl<AuthBloc>();
   authBloc.add(CheckCachedUserEvent());
 
   appRouter = AppRouter(authBloc: authBloc);
-  NetworkService().initialise();
 
   runApp(
-      MultiBlocProvider(
-        providers: [
-          BlocProvider(create: (_) => di.sl<ControllerContextCubit>()),
-          BlocProvider(create: (_) => di.sl<ProgramBloc>()),
-          BlocProvider(create: (context) => di.sl<ProgramTabCubit>()),
-          BlocProvider(create: (_)=> di.sl<MappingAndUnmappingNodesBloc>()),
-          BlocProvider.value(
-            value: di.sl<PumpSettingsViewResponseCubit>(),
-          ),
-        ],
-        child: RootApp(authBloc: authBloc),
-      ),
-
+    MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => di.sl<ConnectivityCubit>()),
+        BlocProvider(create: (_) => di.sl<ControllerContextCubit>()),
+        BlocProvider(create: (_) => di.sl<ProgramBloc>()),
+        BlocProvider(create: (context) => di.sl<ProgramTabCubit>()),
+        BlocProvider(create: (_) => di.sl<MappingAndUnmappingNodesBloc>()),
+        BlocProvider.value(
+          value: di.sl<PumpSettingsViewResponseCubit>(),
+        ),
+      ],
+      child: RootApp(authBloc: authBloc),
+    ),
   );
 }
 
@@ -74,7 +72,7 @@ class RootApp extends StatelessWidget {
   RootApp({super.key, required this.authBloc});
 
   @override
-  Widget build(BuildContext dialogContext) {
+  Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: _themeProvider),
@@ -82,33 +80,19 @@ class RootApp extends StatelessWidget {
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {
-          return StreamBuilder<bool>(
-            stream: NetworkService().networkStream,
-            builder: (context, snapshot) {
-              final isOnline = snapshot.data ?? true;
-
-              return MaterialApp.router(
-                debugShowCheckedModeBanner: false,
-                theme: themeProvider.theme,
-                themeMode: ThemeMode.light,
-                routerConfig: appRouter.router,
-
-                // ✅ GLOBAL OVERLAY HERE
-                builder: (context, child) {
+          return MaterialApp.router(
+            debugShowCheckedModeBanner: false,
+            theme: themeProvider.theme,
+            themeMode: ThemeMode.light,
+            routerConfig: appRouter.router,
+            builder: (context, child) {
+              return BlocBuilder<ConnectivityCubit, ConnectivityStatus>(
+                builder: (context, status) {
                   return Stack(
                     children: [
                       child!,
-
-                      // if (!isOnline)
-                      //   Container(
-                      //     color: Colors.black54,
-                      //     child: Center(
-                      //       child: AlertDialog(
-                      //         title: Text("No Internet"),
-                      //         content: Text("Please check your connection"),
-                      //       ),
-                      //     ),
-                      //   ),
+                      if (status == ConnectivityStatus.offline)
+                        const NoInternetPage(),
                     ],
                   );
                 },
@@ -119,5 +103,4 @@ class RootApp extends StatelessWidget {
       ),
     );
   }
-
 }
