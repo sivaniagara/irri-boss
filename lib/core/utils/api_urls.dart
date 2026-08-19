@@ -27,6 +27,7 @@ class ApiUrls {
 
   /// Put methods
   static const String updateController = 'controller';
+  static const String updateLatLong = 'user/:userId/controller/:controllerId/latlong';
 
 
   //TODO: PROGRAM URLs

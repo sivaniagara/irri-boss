@@ -54,6 +54,7 @@ class ControllerDetailsEntities extends Equatable {
   final String customerNumber;
   final String customerCountryCode;
   final int customerUserId;
+  final String latLong; // Added latLong
 
   const ControllerDetailsEntities({
     required this.wpsIp,
@@ -109,6 +110,7 @@ class ControllerDetailsEntities extends Equatable {
     required this.customerNumber,
     required this.customerCountryCode,
     required this.customerUserId,
+    required this.latLong, // Added latLong
   });
 
   @override
@@ -167,6 +169,7 @@ class ControllerDetailsEntities extends Equatable {
         customerNumber,
         customerCountryCode,
         customerUserId,
+        latLong, // Added latLong
       ];
 
 
@@ -224,6 +227,7 @@ class ControllerDetailsEntities extends Equatable {
     String? customerNumber,
     String? customerCountryCode,
     int? customerUserId,
+    String? latLong, // Added latLong
   }) {
     return ControllerDetailsEntities(
       wpsIp: wpsIp ?? this.wpsIp,
@@ -281,6 +285,7 @@ class ControllerDetailsEntities extends Equatable {
       customerNumber: customerNumber ?? this.customerNumber,
       customerCountryCode: customerCountryCode ?? this.customerCountryCode,
       customerUserId: customerUserId ?? this.customerUserId,
+      latLong: latLong ?? this.latLong, // Added latLong
     );
   }
 }

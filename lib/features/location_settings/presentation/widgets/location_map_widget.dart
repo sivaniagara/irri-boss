@@ -5,18 +5,21 @@ class LocationMapWidget extends StatelessWidget {
   final LatLng initialPosition;
   final Function(LatLng) onMarkerDragEnd;
   final Function(GoogleMapController) onMapCreated;
+  final Function(LatLng)? onTap;
 
   const LocationMapWidget({
     super.key,
     required this.initialPosition,
     required this.onMarkerDragEnd,
     required this.onMapCreated,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return GoogleMap(
       onMapCreated: onMapCreated,
+      onTap: onTap,
       initialCameraPosition: CameraPosition(
         target: initialPosition,
         zoom: 15,

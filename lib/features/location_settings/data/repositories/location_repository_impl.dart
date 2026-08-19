@@ -9,7 +9,7 @@ class LocationRepositoryImpl implements LocationRepository {
   LocationRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> updateLatLong({
+  Future<Either<Failure, bool>> updateLatLong({
     required int userId,
     required int controllerId,
     required String latLong,
@@ -20,7 +20,12 @@ class LocationRepositoryImpl implements LocationRepository {
         controllerId: controllerId,
         latLong: latLong,
       );
-      return Right(response);
+      
+      if (response != null && response['code'] == 200) {
+        return const Right(true);
+      } else {
+        return Left(ServerFailure(response?['message'] ?? 'Failed to update location'));
+      }
     } catch (e) {
       return Left(ServerFailure(e.toString()));
     }

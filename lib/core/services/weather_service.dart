@@ -30,7 +30,7 @@ class WeatherService {
 
       kdebugmode("🌦️ Fetching weather from: $url");
 
-      final response = await http.get(url);
+      final response = await client.get(url).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

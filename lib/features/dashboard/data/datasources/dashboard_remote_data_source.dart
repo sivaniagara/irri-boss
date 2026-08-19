@@ -67,7 +67,7 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
       final endpoint =
           buildUrl(DashboardUrls.dashboardForGroupUrl, {'userId': userId});
       final response = await apiClient.get(endpoint);
-      return handleListResponse<GroupDetails>(
+       return handleListResponse<GroupDetails>(
         response,
         fromJson: (json) => GroupDetails.fromJson(json),
       ).fold(

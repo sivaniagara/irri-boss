@@ -7,4 +7,5 @@ class RouteConstants {
   static const String setSerialPage = "/setSerialPage";
   static const String QRScannerPage = "/QRScanner";
   static const String QRScannerListPage = "/QRScannerList";
+  static const String setLocationPage = "/setLocation";
 }
