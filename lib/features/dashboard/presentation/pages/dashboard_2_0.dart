@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:niagara_smart_drip_irrigation/core/services/weather_service.dart';
 import 'package:niagara_smart_drip_irrigation/core/utils/app_constants.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/alert_dialog.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/app_alerts.dart';
@@ -22,6 +23,7 @@ import '../cubit/dashboard_page_cubit.dart';
 import '../widgets/static_progress_circle_with_image.dart';
 import 'package:intl/intl.dart';
 
+import 'package:niagara_smart_drip_irrigation/core/di/injection.dart';
 import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 
 // ---------------------------------------------------------------------------
@@ -145,6 +147,8 @@ class _Dashboard20State extends State<Dashboard20> {
   List<int> pumpModel = [4, 11, 27, 46];
 
   int _lastModelId = -1; // -1 = not yet seen any model
+  String _temperature = "25\u00B0 C";
+  String? _lastWeatherLatLong;
 
   /// Called every time the selected controller changes (modelId differs).
   /// Safe to call from build via addPostFrameCallback.
@@ -161,9 +165,25 @@ class _Dashboard20State extends State<Dashboard20> {
     _lastModelId = newModelId;
   }
 
+  void _fetchWeather(String latLong) async {
+    if (_lastWeatherLatLong == latLong) return;
+    _lastWeatherLatLong = latLong;
+
+    final weatherData = await sl<WeatherService>().getCurrentWeather(latLong);
+    if (mounted) {
+      setState(() {
+        final temp = weatherData['temperature_2m'];
+        if (temp != null && temp != "NA" && temp != "") {
+          _temperature = "$temp\u00B0 C";
+        } else {
+          _temperature = "25\u00B0 C";
+        }
+      });
+    }
+  }
+
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
   }
 
@@ -212,6 +232,17 @@ class _Dashboard20State extends State<Dashboard20> {
           if (_lastModelId != controllerEntity.modelId) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) _onModelChanged(context, controllerEntity.modelId);
+            });
+          }
+
+          // Trigger weather update if latLong changed
+          if (controllerEntity.latLong.isNotEmpty && controllerEntity.latLong != _lastWeatherLatLong) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) _fetchWeather(controllerEntity.latLong);
+            });
+          } else if (controllerEntity.latLong.isEmpty && _temperature != "25\u00B0 C") {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) setState(() => _temperature = "25\u00B0 C");
             });
           }
 
@@ -434,19 +465,28 @@ class _Dashboard20State extends State<Dashboard20> {
                       ),
                     ),
                     if(!AppConstants.isWlc(controllerEntity.modelId))
-                      Row(
-                        children: [
-                          Icon(Icons.cloudy_snowing,
-                              color: Theme.of(context).colorScheme.primary),
-                          Text(
-                            overflow: TextOverflow.ellipsis,
-                            "25\u00B0 C, Windy",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                        ],
+                      InkWell(
+                        onTap: () {
+                          context.push(RouteConstants.setLocationPage, extra: {
+                            'userId': controllerEntity.userId,
+                            'controllerId': controllerEntity.userDeviceId,
+                            'initialLatLong': controllerEntity.latLong,
+                          });
+                        },
+                        child: Row(
+                          children: [
+                            Icon(Icons.cloudy_snowing,
+                                color: Theme.of(context).colorScheme.primary),
+                            Text(
+                              overflow: TextOverflow.ellipsis,
+                              _temperature,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
                       ),
                   ],
                 ),
@@ -719,12 +759,12 @@ class _Dashboard20State extends State<Dashboard20> {
                 ),
                 const Spacer(),
                 Row(
-                  spacing: 10,
-                  children: [
+                  spacing: 1,
+                   children: [
                     Image.asset('assets/images/icons/pressure_gauge_icon.png',
-                        width: 30),
+                        width: 24),
                     Column(
-                      spacing: 5,
+                      spacing: 1,
                       children: [
                         Text('Pressure',
                             style: Theme.of(context).textTheme.labelLarge),

@@ -82,6 +82,7 @@ class ControllerDetails extends ControllerDetailsEntities {
     required super.customerNumber,
     required super.customerCountryCode,
     required super.customerUserId,
+    required super.latLong,
   });
 
   factory ControllerDetails.fromJson(Map<String, dynamic> json) {
@@ -139,6 +140,7 @@ class ControllerDetails extends ControllerDetailsEntities {
       customerNumber: json['customerNumber']?.toString() ?? '',
       customerCountryCode: json['customerCountryCode']?.toString() ?? '',
       customerUserId: json['customerUserId'] is int ? json['customerUserId'] : int.tryParse(json['customerUserId']?.toString() ?? '0') ?? 0,
+      latLong: json['latLong']?.toString() ?? '',
     );
   }
 }

@@ -69,6 +69,7 @@ class ControllerModel extends ControllerEntity {
     required super.setFlow,
     required super.remFlow,
     required super.flowRate,
+    required super.latLong,
   });
 
   factory ControllerModel.fromJson(Map<String, dynamic> json) {
@@ -136,6 +137,7 @@ class ControllerModel extends ControllerEntity {
       setFlow: json['setFlow'] ?? '',
       remFlow: json['remFlow'] ?? '',
       flowRate: json['flowRate'] ?? '',
+      latLong: json['latLong']?.toString() ?? '',
     );
   }
 
@@ -156,6 +158,7 @@ class ControllerModel extends ControllerEntity {
     String? status,
     String? ctrlLatestMsg,
     String? msgDesc,
+    String? latLong,
   }) {
     return ControllerModel(
       userDeviceId: userDeviceId,
@@ -200,6 +203,7 @@ class ControllerModel extends ControllerEntity {
       setFlow: setFlow,
       remFlow: remFlow,
       flowRate: flowRate ?? this.flowRate,
+      latLong: latLong ?? this.latLong,
     );
   }
 }

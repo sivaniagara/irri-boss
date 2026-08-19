@@ -153,26 +153,6 @@ class _DashboardPageState extends State<DashboardPage> {
           _startLiveSync(cubit);
 
           _initializeCubit(cubit, context, userId, userType, groupId);
-          final String path = GoRouterState.of(context).uri.path;
-          final bool isDashboard = path == DashBoardRoutes.dashboard || path == '/';
-          final bool isSentAndReceive = path == DashBoardRoutes.sentAndReceive;
-          final bool isMainTab = isDashboard ||
-              path == DashBoardRoutes.report ||
-              path == DashBoardRoutes.settings ||
-              path == DashBoardRoutes.standalone ||
-              isSentAndReceive;
-              
-          // Sync bottom navigation if we navigated to dashboard externally (e.g. from a back button PopScope)
-          if (isDashboard && selectedBottomNavigation != BottomNavigationOption.home) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                setState(() {
-                  selectedBottomNavigation = BottomNavigationOption.home;
-                });
-                _controller.jumpTo(0);
-              }
-            });
-          }
 
           return BlocBuilder<DashboardPageCubit, DashboardState>(
             builder: (context, state) =>
@@ -232,7 +212,7 @@ class _DashboardPageState extends State<DashboardPage> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text("Exit App"),
-            content: const Text("Are you sure want to close the app ?"),
+            content: const Text("Do you want to close the app?"),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
@@ -396,18 +376,28 @@ class _DashboardPageState extends State<DashboardPage> {
               );
         }
       },
-      child: Builder(
-        builder: (context) {
-          final String path = GoRouterState.of(context).uri.path;
-          final bool isDashboard = path == DashBoardRoutes.dashboard || path == '/';
-          final bool isSentAndReceive = path == DashBoardRoutes.sentAndReceive;
-          final bool isMainTab = isDashboard ||
-              path == DashBoardRoutes.report ||
-              path == DashBoardRoutes.settings ||
-              path == DashBoardRoutes.standalone ||
-              isSentAndReceive;
-              
-          return Scaffold(
+      child: PopScope(
+        canPop: !isMainTab, // Allow pop for sub-pages, intercept for main tabs
+        onPopInvokedWithResult: (didPop, result) async {
+          if (didPop) return;
+
+          if (isDashboard) {
+            // On Home tab, show exit app dialog
+            final shouldExit = await _showExitDialog(context);
+            if (shouldExit) {
+              SystemNavigator.pop(); // Close the app
+            }
+          } else if (isMainTab) {
+            // On another main navigation tab, return to Home tab using context.go
+            setState(() {
+              selectedBottomNavigation = BottomNavigationOption.home;
+            });
+            _controller.jumpTo(0); // Update the animated notch bar controller
+            context.go(
+                "${DashBoardRoutes.dashboard}?userId=$userId&userType=$userType");
+          }
+        },
+        child: Scaffold(
           floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
           floatingActionButton: isMainTab
               ? _buildBottomNavigationBar(
@@ -444,9 +434,8 @@ class _DashboardPageState extends State<DashboardPage> {
           body: selectedController == null
               ? const Center(child: CircularProgressIndicator())
               : widget.child,
-        );
-    },
-    ),
+        ),
+      ),
     );
   }
 

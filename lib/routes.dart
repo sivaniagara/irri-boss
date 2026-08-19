@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:niagara_smart_drip_irrigation/features/alarm_settings/utils/alarm_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/dashboard_2_0.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/presentation/pages/node_status_page.dart';
+import 'package:niagara_smart_drip_irrigation/features/location_settings/utils/location_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/pump_settings/utils/pump_settings_page_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/green_house_reports/utils/green_house_routes.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/moisture_reports/utils/moisture_routes.dart';
@@ -503,6 +504,7 @@ class AppRouter {
         ...SellingDeviceRoutes.sellingDeviceRoutes,
         ...nodeMoistureStatusRoutes,
         ...deviceScanRoutes,
+        ...locationRoutes,
       ],
     );
   }

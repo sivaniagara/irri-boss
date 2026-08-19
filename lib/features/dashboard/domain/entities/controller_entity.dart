@@ -66,6 +66,7 @@ class ControllerEntity extends Equatable {
   final String setFlow;
   final String remFlow;
   final String flowRate;
+  final String latLong;
 
   const ControllerEntity({
     required this.userDeviceId,
@@ -110,6 +111,7 @@ class ControllerEntity extends Equatable {
     required this.setFlow,
     required this.remFlow,
     required this.flowRate,
+    required this.latLong,
   });
 
   @override
@@ -156,6 +158,7 @@ class ControllerEntity extends Equatable {
     setFlow,
     remFlow,
     flowRate,
+    latLong,
   ];
 
   ControllerEntity copyWith({
@@ -169,6 +172,7 @@ class ControllerEntity extends Equatable {
     String? status,
     String? ctrlLatestMsg,
     String? msgDesc,
+    String? latLong,
   }) {
     return ControllerEntity(
       userDeviceId: userDeviceId,
@@ -213,6 +217,7 @@ class ControllerEntity extends Equatable {
       setFlow: setFlow,
       remFlow: remFlow,
       flowRate: flowRate ?? this.flowRate,
+      latLong: latLong ?? this.latLong,
     );
   }
 }

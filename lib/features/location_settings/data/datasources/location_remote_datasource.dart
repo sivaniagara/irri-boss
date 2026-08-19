@@ -29,7 +29,6 @@ class LocationRemoteDataSourceImpl implements LocationRemoteDataSource {
       endpoint,
       body: {'latLong': latLong},
     );
-
-    return response;
+     return response;
   }
 }

@@ -27,7 +27,7 @@ class _SetLocationPageState extends State<SetLocationPage> {
   final TextEditingController _latController = TextEditingController();
   final TextEditingController _lngController = TextEditingController();
   GoogleMapController? _mapController;
-  LatLng _currentPosition = const LatLng(10.7905, 78.7047); // Default if nothing exists
+  LatLng _currentPosition = const LatLng(10.7905, 78.7047); // Default position (Niagara)
 
   @override
   void initState() {
@@ -40,9 +40,11 @@ class _SetLocationPageState extends State<SetLocationPage> {
       try {
         final parts = widget.initialLatLong!.split(',');
         if (parts.length == 2) {
-          final lat = double.parse(parts[0].trim());
-          final lng = double.parse(parts[1].trim());
-          _currentPosition = LatLng(lat, lng);
+          final lat = double.tryParse(parts[0].trim());
+          final lng = double.tryParse(parts[1].trim());
+          if (lat != null && lng != null) {
+            _currentPosition = LatLng(lat, lng);
+          }
         }
       } catch (e) {
         // Fallback to default
@@ -52,7 +54,14 @@ class _SetLocationPageState extends State<SetLocationPage> {
     _lngController.text = _currentPosition.longitude.toString();
   }
 
+  /// Updates the internal state, marker position and optionally the camera and text fields.
   void _updatePosition(LatLng position, {bool updateTextFields = true, bool moveCamera = false}) {
+    // Validate bounds for Google Maps coordinates
+    if (position.latitude < -90.0 || position.latitude > 90.0 || 
+        position.longitude < -180.0 || position.longitude > 180.0) {
+      return;
+    }
+
     setState(() {
       _currentPosition = position;
       if (updateTextFields) {
@@ -60,8 +69,11 @@ class _SetLocationPageState extends State<SetLocationPage> {
         _lngController.text = position.longitude.toString();
       }
     });
-    if (moveCamera) {
-      _mapController?.animateCamera(CameraUpdate.newLatLng(position));
+
+    if (moveCamera && _mapController != null) {
+      _mapController!.animateCamera(
+        CameraUpdate.newLatLng(position),
+      );
     }
   }
 
@@ -123,11 +135,15 @@ class _SetLocationPageState extends State<SetLocationPage> {
                             labelText: "Latitude",
                             border: OutlineInputBorder(),
                           ),
-                          keyboardType: TextInputType.number,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
                           onChanged: (value) {
                             final lat = double.tryParse(value);
                             if (lat != null) {
-                              _updatePosition(LatLng(lat, _currentPosition.longitude), updateTextFields: false, moveCamera: true);
+                              _updatePosition(
+                                LatLng(lat, _currentPosition.longitude), 
+                                updateTextFields: false, 
+                                moveCamera: true,
+                              );
                             }
                           },
                         ),
@@ -140,11 +156,15 @@ class _SetLocationPageState extends State<SetLocationPage> {
                             labelText: "Longitude",
                             border: OutlineInputBorder(),
                           ),
-                          keyboardType: TextInputType.number,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
                           onChanged: (value) {
                             final lng = double.tryParse(value);
                             if (lng != null) {
-                              _updatePosition(LatLng(_currentPosition.latitude, lng), updateTextFields: false, moveCamera: true);
+                              _updatePosition(
+                                LatLng(_currentPosition.latitude, lng), 
+                                updateTextFields: false, 
+                                moveCamera: true,
+                              );
                             }
                           },
                         ),
@@ -166,9 +186,11 @@ class _SetLocationPageState extends State<SetLocationPage> {
             Expanded(
               child: LocationMapWidget(
                 initialPosition: _currentPosition,
-                onMarkerDragEnd: (pos) => _updatePosition(pos),
+                onMarkerDragEnd: (pos) => _updatePosition(pos, moveCamera: true),
+                onTap: (pos) => _updatePosition(pos, moveCamera: true),
                 onMapCreated: (ctrl) {
                   _mapController = ctrl;
+                  _mapController!.animateCamera(CameraUpdate.newLatLng(_currentPosition));
                 },
               ),
             ),
@@ -205,5 +227,12 @@ class _SetLocationPageState extends State<SetLocationPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _latController.dispose();
+    _lngController.dispose();
+    super.dispose();
   }
 }

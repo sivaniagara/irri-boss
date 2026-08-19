@@ -3,10 +3,12 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:niagara_smart_drip_irrigation/core/services/connectivity_cubit.dart';
 import 'package:niagara_smart_drip_irrigation/core/services/connectivity_service.dart';
+import 'package:niagara_smart_drip_irrigation/core/services/weather_service.dart';
 import 'package:niagara_smart_drip_irrigation/features/controller_details/data/datasources/controller_datasource.dart';
 import 'package:niagara_smart_drip_irrigation/features/dashboard/utils/program_preview_dispatcher.dart';
 import 'package:niagara_smart_drip_irrigation/features/dealer_dashboard/di/dealer_dashboard_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/device_scan/di/device_di.dart';
+import 'package:niagara_smart_drip_irrigation/features/location_settings/di/location_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/fertilizer_reports/di/fertilizer_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/flow_graph_reports/di/flow_graph_di.dart';
 import 'package:niagara_smart_drip_irrigation/features/reports/moisture_reports/di/moisture_di.dart';
@@ -77,6 +79,7 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   sl.registerSingleton<NotificationService>(NotificationService());
   sl.registerLazySingleton<ConnectivityService>(() => ConnectivityService());
   sl.registerFactory(() => ConnectivityCubit(sl()));
+  sl.registerLazySingleton<WeatherService>(() => WeatherService(client: sl()));
   sl.registerLazySingleton<SomeService>(() => SomeService());
   /// External / third-party
   sl.registerLazySingleton<http.Client>(() => httpClient ?? http.Client());
@@ -176,6 +179,7 @@ Future<void> init({bool clear = false, SharedPreferences? prefs, http.Client? ht
   initSellingDeviceDependencies();
   initGetMoistureStatus();
   initDeviceScan();
+  initLocationSettings();
 
 }
 
