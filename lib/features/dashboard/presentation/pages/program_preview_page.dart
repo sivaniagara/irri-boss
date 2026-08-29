@@ -67,11 +67,16 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
     if (cachedZones != null && cachedZones.isNotEmpty) {
       for (var zMap in cachedZones) {
         final raw = (zMap["cM"] ?? '').toString();
-        final zonesInMsg = raw.split(",").where((s) => s.trim().isNotEmpty).toList();
+        final zonesInMsg = raw.split(",").where((s) {
+          final trimmed = s.trim();
+          return trimmed.isNotEmpty &&
+              trimmed != "V02" &&
+              trimmed != "V01" &&
+              trimmed != widget.deviceId;
+        }).toList();
         for (var zoneStr in zonesInMsg) {
-          if (zoneStr.trim() == "V02" || zoneStr.trim() == "V01") continue;
           final zone = ZoneViewModel.fromRawString(zoneStr);
-          if (zone.zoneNumber.isEmpty) continue;
+          if (zone.zoneNumber.isEmpty || zone.zoneNumber.length > 3) continue;
           final String normalizedNum = _normalize(zone.zoneNumber);
           int existingIndex = zoneList.indexWhere((z) => _normalize(z.zoneNumber) == normalizedNum);
           if (existingIndex != -1) {
@@ -170,14 +175,18 @@ class _ProgramPreviewPageState extends State<ProgramPreviewPage> with SingleTick
 
       if (mC == "V02") {
         try {
-          final zonesInMsg = rawMessage.split(",").where((s) => s.trim().isNotEmpty).toList();
+          final zonesInMsg = rawMessage.split(",").where((s) {
+            final trimmed = s.trim();
+            return trimmed.isNotEmpty &&
+                trimmed != "V02" &&
+                trimmed != "V01" &&
+                trimmed != widget.deviceId;
+          }).toList();
           if (mounted) {
             setState(() {
               for (var zoneStr in zonesInMsg) {
-                if (zoneStr.trim() == "V02" || zoneStr.trim() == "V01") continue;
-
                 final zone = ZoneViewModel.fromRawString(zoneStr);
-                if (zone.zoneNumber.isEmpty) continue;
+                if (zone.zoneNumber.isEmpty || zone.zoneNumber.length > 3) continue;
 
                 final String normalizedNum = _normalize(zone.zoneNumber);
                 int existingIndex = zoneList.indexWhere((z) => _normalize(z.zoneNumber) == normalizedNum);

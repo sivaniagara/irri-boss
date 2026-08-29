@@ -9,18 +9,19 @@ class ConnectivityService {
   final InternetConnection _internetConnection = InternetConnection();
   
   final StreamController<ConnectivityStatus> _statusController = StreamController<ConnectivityStatus>.broadcast();
-  Stream<ConnectivityStatus> get connectivityStream => _statusController.stream;
+  Stream<ConnectivityStatus> get connectivityStream => _statusController.stream.distinct();
 
   ConnectivityService() {
     _init();
   }
 
   void _init() {
-    // Listen to both network interface changes and actual internet pings
+    // Listen to network interface changes
     _connectivity.onConnectivityChanged.listen((List<ConnectivityResult> results) {
       _checkStatus();
     });
 
+    // Listen to actual internet pings
     _internetConnection.onStatusChange.listen((InternetStatus status) {
       if (status == InternetStatus.connected) {
         _statusController.add(ConnectivityStatus.online);

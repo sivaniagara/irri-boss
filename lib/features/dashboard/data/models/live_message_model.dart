@@ -10,6 +10,7 @@ class LiveMessageModel extends LiveMessageEntity {
     required super.motor2OnOff,
     required super.valveOnOff,
     required super.liveDisplay1,
+    required super.onDelayTimer,
     required super.liveDisplay2,
     required super.rVoltage,
     required super.yVoltage,
@@ -128,6 +129,7 @@ class LiveMessageModel extends LiveMessageEntity {
     String motor2OnOff = '0';
     String valveOnOff = '0';
     String liveDisplay1 = '';
+    String onDelayTimer = '';
     String liveDisplay2 = '';
     String rVoltage = '0';
     String yVoltage = '0';
@@ -169,6 +171,17 @@ class LiveMessageModel extends LiveMessageEntity {
     String versionBoard = '';
     String programPercentage = '0';
     String lastsync = externalLastSync ?? '--';
+
+    String _extractOnDelay(String input) {
+      if (input.toUpperCase().contains('ONDEL')) {
+        // Match ONDEL followed by optional space, =, optional space, and then the time (digits and colons)
+        final match = RegExp(r'ONDEL\s*=\s*([0-9:]+)').firstMatch(input.toUpperCase());
+        if (match != null) {
+          return match.group(1)?.trim() ?? '';
+        }
+      }
+      return '';
+    }
 
     bool isPumpLive = typeCode == 'LD04' || message.startsWith('LD04');
 
@@ -258,12 +271,18 @@ class LiveMessageModel extends LiveMessageEntity {
       programPercentage = safeString(45 + ld04Offset, '0');
       signal = safeString(46 + ld04Offset, '0');
       batVolt = safeString(47 + ld04Offset, '0');
+      // Check index 3 for LD04 as well, just in case ONDEL is there
+      onDelayTimer = _extractOnDelay(safeString(3 + ld04Offset, ''));
     } else {
       // Standard LD01 / LD06
       motorOnOff = safeString(0, '0');
       valveOnOff = safeString(1, '0');
       liveDisplay1 = safeString(3, '');
       liveDisplay2 = safeString(4, '');
+      onDelayTimer = _extractOnDelay(liveDisplay1);
+      if (onDelayTimer.isEmpty) {
+        onDelayTimer = _extractOnDelay(liveDisplay2);
+      }
       rVoltage = safeString(5, '0');
       yVoltage = safeString(6, '0');
       bVoltage = safeString(7, '0');
@@ -336,6 +355,7 @@ class LiveMessageModel extends LiveMessageEntity {
       motor2OnOff: motor2OnOff,
       valveOnOff: valveOnOff,
       liveDisplay1: liveDisplay1,
+      onDelayTimer: onDelayTimer,
       liveDisplay2: liveDisplay2,
       rVoltage: rVoltage,
       yVoltage: yVoltage,
@@ -400,6 +420,7 @@ class LiveMessageModel extends LiveMessageEntity {
       motor2OnOff: '0',
       valveOnOff: '0',
       liveDisplay1: '',
+      onDelayTimer: '',
       liveDisplay2: '',
       rVoltage: '--',
       yVoltage: '--',
@@ -454,6 +475,7 @@ class LiveMessageModel extends LiveMessageEntity {
     String? motor2OnOff,
     String? valveOnOff,
     String? liveDisplay1,
+    String? onDelayTimer,
     String? liveDisplay2,
     String? rVoltage,
     String? yVoltage,
@@ -507,6 +529,7 @@ class LiveMessageModel extends LiveMessageEntity {
       motor2OnOff: motor2OnOff ?? this.motor2OnOff,
       valveOnOff: valveOnOff ?? this.valveOnOff,
       liveDisplay1: liveDisplay1 ?? this.liveDisplay1,
+      onDelayTimer: onDelayTimer ?? this.onDelayTimer,
       liveDisplay2: liveDisplay2 ?? this.liveDisplay2,
       rVoltage: rVoltage ?? this.rVoltage,
       yVoltage: yVoltage ?? this.yVoltage,

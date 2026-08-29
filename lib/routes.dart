@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -57,16 +56,14 @@ import 'features/reports/zone_duration_reports/utils/zone_duration_routes.dart';
 import 'features/reports/zonecyclic_reports/utils/zone_cyclic_routes.dart';
 import 'features/sendrev_msg/presentation/pages/sendrevPage.dart';
 import 'features/sendrev_msg/utils/senrev_routes.dart';
-
-
 import 'features/auth/utils/auth_routes.dart';
-
 import 'core/di/injection.dart' as di;
 import 'core/utils/route_constants.dart';
 import 'features/auth/auth.dart';
 import 'features/serial_set/utils/serial_set_routes.dart';
 import 'features/side_drawer/side_drawer_routes.dart';
 import 'features/get_moisture/utils/get_moisture_status_routes.dart';
+import 'features/location_settings/utils/location_routes.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 class GoRouterRefreshStream extends ChangeNotifier {
@@ -84,7 +81,7 @@ class GoRouterRefreshStream extends ChangeNotifier {
   }
 }
 
-Widget pageSlider(context, animation, secondaryAnimation, child){
+Widget pageSlider(dynamic context, animation, secondaryAnimation, child){
   const begin = Offset(2.0, 0.0);
   const end = Offset.zero;
   const curve = Curves.easeInOut;

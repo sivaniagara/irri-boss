@@ -107,6 +107,9 @@ class DashboardPageCubit extends Cubit<DashboardState> {
   final Map<String, Timer> _deviceTimers = {};
   final Map<String, int> _deviceRemainingSeconds = {};
 
+  final Map<String, Timer> _deviceOnDelayTimers = {};
+  final Map<String, int> _deviceOnDelaySeconds = {};
+
   DashboardPageCubit({
     required this.fetchDashboardGroups,
     required this.fetchControllers,
@@ -118,12 +121,24 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
   int _timeToSeconds(String time) {
     try {
-      final parts = time.split(':');
-      if (parts.length < 3) return 0;
-      final h = int.parse(parts[0]);
-      final m = int.parse(parts[1]);
-      final s = int.parse(parts[2]);
-      return h * 3600 + m * 60 + s;
+      final cleanTime = time.replaceAll(RegExp(r'[^0-9:]'), '').trim();
+      if (cleanTime.isEmpty) return 0;
+
+      final parts = cleanTime.split(':');
+      // Handle HH:MM:SS or MM:SS or SS
+      if (parts.length == 3) {
+        final h = int.parse(parts[0]);
+        final m = int.parse(parts[1]);
+        final s = int.parse(parts[2]);
+        return h * 3600 + m * 60 + s;
+      } else if (parts.length == 2) {
+        final m = int.parse(parts[0]);
+        final s = int.parse(parts[1]);
+        return m * 60 + s;
+      } else if (parts.length == 1) {
+        return int.parse(parts[0]);
+      }
+      return 0;
     } catch (_) {
       return 0;
     }
@@ -158,6 +173,9 @@ class DashboardPageCubit extends Cubit<DashboardState> {
   void _cancelTimerForDevice(String deviceId) {
     _deviceTimers.remove(deviceId)?.cancel();
     _deviceRemainingSeconds.remove(deviceId);
+    
+    _deviceOnDelayTimers.remove(deviceId)?.cancel();
+    _deviceOnDelaySeconds.remove(deviceId);
   }
 
   void _cancelInactiveDeviceTimers(String? activeDeviceId) {
@@ -166,6 +184,72 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       if (activeDeviceId == null || deviceId != activeDeviceId) {
         _cancelTimerForDevice(deviceId);
       }
+    }
+    
+    final onDelayDeviceIds = _deviceOnDelayTimers.keys.toList(growable: false);
+    for (final deviceId in onDelayDeviceIds) {
+      if (activeDeviceId == null || deviceId != activeDeviceId) {
+        _cancelTimerForDevice(deviceId);
+      }
+    }
+  }
+
+  void _manageOnDelayTimer(String deviceId, LiveMessageEntity liveMessage) {
+    final activeDeviceId = _selectedDeviceId();
+    if (activeDeviceId != null && activeDeviceId != deviceId) {
+      _cancelTimerForDevice(deviceId);
+      return;
+    }
+
+    _cancelInactiveDeviceTimers(deviceId);
+
+    // If motor is OFF, stop any existing timer for this device
+    if (liveMessage.motorOnOff == '0') {
+      _cancelTimerForDevice(deviceId);
+      return;
+    }
+
+    // If motor is ON
+    int hardwareOnDelay = _timeToSeconds(liveMessage.onDelayTimer);
+
+    // Check if we should update/start timer
+    // We update if no timer exists OR if the hardware time drifted by more than 5 seconds
+    int? currentOnDelay = _deviceOnDelaySeconds[deviceId];
+    bool shouldReset = _deviceOnDelayTimers[deviceId] == null ||
+        (currentOnDelay != null &&
+            (hardwareOnDelay - currentOnDelay).abs() > 5);
+
+    if (shouldReset && hardwareOnDelay > 0) {
+      _deviceOnDelayTimers[deviceId]?.cancel();
+      _deviceOnDelaySeconds[deviceId] = hardwareOnDelay;
+
+      _deviceOnDelayTimers[deviceId] =
+          Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (_selectedDeviceId() != deviceId) {
+          _cancelTimerForDevice(deviceId);
+          return;
+        }
+
+        if (_deviceOnDelaySeconds[deviceId] == null ||
+            _deviceOnDelaySeconds[deviceId]! <= 0) {
+          timer.cancel();
+          _deviceOnDelayTimers.remove(deviceId);
+          _deviceOnDelaySeconds.remove(deviceId);
+          return;
+        }
+
+        _deviceOnDelaySeconds[deviceId] = _deviceOnDelaySeconds[deviceId]! - 1;
+
+        // Update state with decremented time
+        _updateSingleDeviceState(deviceId, (ctrl) {
+          final model = ctrl as ControllerModel;
+          return model.copyWith(
+            liveMessage: model.liveMessage.copyWith(
+              onDelayTimer: _secondsToTime(_deviceOnDelaySeconds[deviceId]!),
+            ),
+          );
+        });
+      });
     }
   }
 
@@ -328,7 +412,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
             sl<MqttManager>().subscribe(selectedDeviceId);
             sl<MqttManager>().publish(
               selectedDeviceId,
-              wlcModel.contains(controllers[0].modelId) ? AppConstants.sendWlcCommand("#live,$selectedDeviceId") :
+              crcModels.contains(controllers[0].modelId) ? AppConstants.sendWlcCommand("#live,$selectedDeviceId") :
               jsonEncode(PublishMessageHelper.requestLive),
             );
           } else if (newSelectedIndex != null &&
@@ -391,7 +475,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
           sl<MqttManager>().subscribe(selectedDeviceId);
           sl<MqttManager>().publish(
             selectedDeviceId,
-            wlcModel.contains(controllers[0].modelId) ? AppConstants.sendWlcCommand("#live,$selectedDeviceId") :
+            crcModels.contains(controllers[0].modelId) ? AppConstants.sendWlcCommand("#live,$selectedDeviceId") :
             jsonEncode(PublishMessageHelper.requestLive),
           );
         }
@@ -426,7 +510,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
     sl<MqttOrBle>().subscribe(selectedController.deviceId);
     sl<MqttOrBle>().publish(selectedController.deviceId,
-        wlcModel.contains(selectedController.modelId) ? AppConstants.sendWlcCommand("#live,${selectedController.deviceId}") :
+        crcModels.contains(selectedController.modelId) ? AppConstants.sendWlcCommand("#live,${selectedController.deviceId}") :
         jsonEncode(PublishMessageHelper.requestLive));
     emit(currentState.copyWith(selectedControllerIndex: controllerIndex));
   }
@@ -434,7 +518,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
   void getLive(String deviceId, int modelId) {
     sl<MqttOrBle>()
         .publish(
-        deviceId, wlcModel.contains(modelId) ? AppConstants.sendWlcCommand("#live,$deviceId") : jsonEncode(PublishMessageHelper.requestLive));
+        deviceId, crcModels.contains(modelId) ? AppConstants.sendWlcCommand("#live,$deviceId") : jsonEncode(PublishMessageHelper.requestLive));
   }
 
   void resetDashboardSelection() {
@@ -453,8 +537,9 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     print("liveMessage : ${liveMessage}");
     if (state is! DashboardGroupsLoaded) return;
 
-    // Manage Timer independently from state update to avoid recursion loop
+    // Manage Timers independently from state update to avoid recursion loop
     _manageZoneTimer(deviceId, liveMessage);
+    _manageOnDelayTimer(deviceId, liveMessage);
 
     final formattedMessage = (fullMsg != null && fullMsg.trim().isNotEmpty)
         ? fullMsg.trim()
@@ -467,6 +552,9 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       zoneRemainingTime: liveMessage.motorOnOff == '0'
           ? "00:00:00"
           : liveMessage.zoneRemainingTime,
+      onDelayTimer: liveMessage.motorOnOff == '0'
+          ? "00:00:00"
+          : liveMessage.onDelayTimer,
       fullMessage: formattedMessage,
       msgDesc: latestMessageDescription,
     );
@@ -560,6 +648,30 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     }
   }
 
+  Future<void> sendPumpCount({
+    required String deviceId,
+    required int count,
+  }) async {
+    if (state is! DashboardGroupsLoaded) return;
+    final currentState = state as DashboardGroupsLoaded;
+
+    // Standard format for setting pump count: PUMPCOUNT,X
+    final command = 'PUMPCOUNT,$count';
+    final payload = AppConstants.sendWlcCommand(command);
+
+    try {
+      // Send via MQTT
+      sl<MqttOrBle>().publish(deviceId, payload);
+      
+      // We can also send to backend if needed, following the same pattern as controlMotor
+      // For now, publishing via MQTT as requested.
+      
+      kdebugmode("Sent Pump Count: $payload");
+    } catch (e) {
+      kdebugmode("Error sending pump count: $e");
+    }
+  }
+
   Future<void> controlMotorStatus({
     required String userId,
     required String controllerId,
@@ -586,24 +698,27 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     }
 
     final isWlc = wlcModel.contains(modelId);
+    final useCrc = crcModels.contains(modelId);
 
     if (cleanPayload.toUpperCase().contains("ON")) {
       /// -------------------- STEP 1: OFF FIRST --------------------
       dynamic offPayload;
       String offCommand = 'MTROF';
 
-      if (isWlc) {
+      if (useCrc) {
         offPayload = AppConstants.sendWlcCommand(offCommand);
       } else {
         offPayload = PublishMessageHelper.settingsPayload(offCommand);
+      }
 
+      if (!isWlc) {
         // ✅ Call API ONLY for NON-WLC
         await controlMotorUsecase(ControlMotorParams(
           userId: userId,
           controllerId: controllerId,
           programId: programId,
           deviceId: deviceId,
-          payload: "MTROF,",
+          payload: useCrc ? "$offPayload," : "MTROF,",
         ));
       }
 
@@ -620,7 +735,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       }
 
       dynamic onPayload;
-      if (isWlc) {
+      if (useCrc) {
         onPayload = AppConstants.sendWlcCommand(onCommand);
       } else {
         onPayload = PublishMessageHelper.settingsPayload(onCommand);
@@ -640,7 +755,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
           controllerId: controllerId,
           programId: programId,
           deviceId: deviceId,
-          payload: "$onCommand,",
+          payload: useCrc ? "$onPayload," : "$onCommand,",
         ));
 
         result.fold(
@@ -659,10 +774,21 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       }
     } else {
       /// -------------------- OFF FLOW --------------------
-      if (isWlc) {
+      if (useCrc) {
         // ❌ No API call
         final offPayload = AppConstants.sendWlcCommand(cleanPayload);
         sl<MqttOrBle>().publish(deviceId, offPayload);
+
+        if (!isWlc) {
+          // ✅ API call for NON-WLC (e.g. Model 27)
+          await controlMotorUsecase(ControlMotorParams(
+            userId: userId,
+            controllerId: controllerId,
+            programId: programId,
+            deviceId: deviceId,
+            payload: "$offPayload,",
+          ));
+        }
 
         emit(currentState.copyWith(
           controlMotorStatus: ControlMotorStatus.success,
@@ -709,6 +835,9 @@ class DashboardPageCubit extends Cubit<DashboardState> {
   @override
   Future<void> close() {
     for (final t in _deviceTimers.values) {
+      t.cancel();
+    }
+    for (final t in _deviceOnDelayTimers.values) {
       t.cancel();
     }
     return super.close();

@@ -140,8 +140,6 @@ LineChartData buildLineChart(
         spots: [
           FlSpot(0, timeStringToDouble(data.totalPowerOnTime)),
           FlSpot(1, timeStringToDouble(data.motorRunTime)),
-          if (modelId == 27)
-            FlSpot(2, timeStringToDouble(data.motorRunTime)),
         ],
         isCurved: true,
         barWidth: 3,
@@ -224,25 +222,6 @@ List<PieChartSectionData> buildPieSections(
     ),
   );
 
-  /// 🔹 OPTIONAL MOTOR 2
-  if (modelId == 27) {
-    sections.add(
-      PieChartSectionData(
-        value: percent(motorOn),
-        title:
-        "Motor2 ON\n${percent(motorOn).toStringAsFixed(1)}%",
-        color: Colors.lime,
-        radius: 50,
-        titlePositionPercentageOffset: 0.6,
-        titleStyle: const TextStyle(
-          color: Colors.black,
-          fontWeight: FontWeight.bold,
-          fontSize: 11,
-        ),
-      ),
-    );
-  }
-
   return sections;
 }
 
@@ -264,10 +243,6 @@ class Legend extends StatelessWidget {
         const _LegendDot(color: Colors.green, text: "Motor ON"),
         const SizedBox(width: 16),
         !pie ? const _LegendDot(color: Colors.orange, text: "Motor OFF") : Container(),
-        if (modelId == 27) ...[
-          const SizedBox(width: 16),
-          const _LegendDot(color: Colors.lime, text: "Motor2 ON"),
-        ],
       ],
     );
   }
@@ -326,10 +301,6 @@ FlTitlesData barTitles(int modelId) {
               return const Text("Power ON");
             case 1:
               return const Text("Motor ON");
-            case 2:
-              return modelId == 27
-                  ? const Text("Motor2 ON")
-                  : const SizedBox();
             default:
               return const SizedBox();
           }
@@ -378,22 +349,6 @@ List<BarChartGroupData> buildBarGroups(
       ],
     ),
   );
-
-  if (modelId == 27) {
-    groups.add(
-      BarChartGroupData(
-        x: 2,
-        barRods: [
-          BarChartRodData(
-            toY: timeStringToDouble(data.motorRunTime),
-            width: 30,
-            color: Colors.lime,
-            borderRadius: BorderRadius.circular(6),
-          ),
-        ],
-      ),
-    );
-  }
 
   return groups;
 }

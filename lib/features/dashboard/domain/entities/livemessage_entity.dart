@@ -9,6 +9,7 @@ class LiveMessageEntity extends Equatable {
   final String motor2OnOff;
   final String valveOnOff;
   final String liveDisplay1;
+  final String onDelayTimer;
   final String liveDisplay2;
   final String rVoltage;
   final String yVoltage;
@@ -53,6 +54,15 @@ class LiveMessageEntity extends Equatable {
   final String fullMessage;
   final String msgDesc;
 
+  bool get isOnDelayTimerActive =>
+      onDelayTimer.isNotEmpty &&
+      onDelayTimer != '00:00:00' &&
+      onDelayTimer != '00:00' &&
+      onDelayTimer != '0';
+
+  bool get isMotor1OnDelayActive => motorOnOff == '1' && isOnDelayTimerActive;
+  bool get isMotor2OnDelayActive => motor2OnOff == '1' && isOnDelayTimerActive;
+
   const LiveMessageEntity({
     required this.wlcReasonFlag,
     required this.manualFlag,
@@ -62,6 +72,7 @@ class LiveMessageEntity extends Equatable {
     required this.motor2OnOff,
     required this.valveOnOff,
     required this.liveDisplay1,
+    required this.onDelayTimer,
     required this.liveDisplay2,
     required this.rVoltage,
     required this.yVoltage,
@@ -117,6 +128,7 @@ class LiveMessageEntity extends Equatable {
         motor2OnOff,
         valveOnOff,
         liveDisplay1,
+        onDelayTimer,
         liveDisplay2,
         rVoltage,
         yVoltage,
@@ -169,6 +181,7 @@ class LiveMessageEntity extends Equatable {
     String? motor2OnOff,
     String? valveOnOff,
     String? liveDisplay1,
+    String? onDelayTimer,
     String? liveDisplay2,
     String? rVoltage,
     String? yVoltage,
@@ -222,6 +235,7 @@ class LiveMessageEntity extends Equatable {
       motor2OnOff: motor2OnOff ?? this.motor2OnOff,
       valveOnOff: valveOnOff ?? this.valveOnOff,
       liveDisplay1: liveDisplay1 ?? this.liveDisplay1,
+      onDelayTimer: onDelayTimer ?? this.onDelayTimer,
       liveDisplay2: liveDisplay2 ?? this.liveDisplay2,
       rVoltage: rVoltage ?? this.rVoltage,
       yVoltage: yVoltage ?? this.yVoltage,

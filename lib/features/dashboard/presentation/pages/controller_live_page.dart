@@ -423,7 +423,9 @@ class _CtrlLivePageState extends State<CtrlLivePage>
             isOn
                 ? 'assets/images/common/motor_running.gif'
                 : 'assets/images/common/motor_r.png',
-            isOn),
+            isOn,
+            live.onDelayTimer,
+            live.isMotor1OnDelayActive),
         const SizedBox(width: 16),
         Expanded(
           child: Column(
@@ -485,18 +487,52 @@ class _CtrlLivePageState extends State<CtrlLivePage>
     );
   }
 
-  Widget _buildEnhancedMotorWidget(String asset, bool isRunning) {
+  Widget _buildEnhancedMotorWidget(String asset, bool isRunning,
+      String onDelayTimer, bool isOnDelayTimerActive) {
     return Column(
       children: [
-        Image.asset(
-          asset,
-          width: isRunning ? 80 : 55,
-          height: isRunning ? 80 : 55,
-          errorBuilder: (c, e, s) => Icon(
-            Icons.electrical_services,
-            color: isRunning ? Colors.green : Colors.grey,
-            size: isRunning ? 70 : 50,
-          ),
+        Stack(
+          alignment: Alignment.center,
+          clipBehavior: Clip.none,
+          children: [
+            Image.asset(
+              asset,
+              width: isRunning ? 80 : 55,
+              height: isRunning ? 80 : 55,
+              errorBuilder: (c, e, s) => Icon(
+                Icons.electrical_services,
+                color: isRunning ? Colors.green : Colors.grey,
+                size: isRunning ? 70 : 50,
+              ),
+            ),
+            if (isOnDelayTimerActive)
+              Positioned(
+                top: -15, // Move above the motor
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    onDelayTimer,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 6),
         Text(

@@ -353,6 +353,13 @@ bool _isSettingVisible({
   required SettingsEntity setting,
   required int modelId,
 }) {
+  // Specific visibility conditions for Double Pump (Model ID 27)
+  if (modelId == 27) {
+    // You can easily hide settings here by adding if conditions.
+    // Example: if (setting.serialNumber == 1) return false;
+    // Example: if (setting.smsFormat == 'SOME_FORMAT') return false;
+  }
+
   if (_supportsTimerMotorVisibility(menu, setting)) {
     return _visibleTimerMotorSubIndexes(
       menu: menu,

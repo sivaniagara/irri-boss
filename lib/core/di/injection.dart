@@ -62,6 +62,7 @@ import '../services/notification_service.dart';
 import '../theme/theme_provider.dart';
 import '../../features/standalone_settings/di/standalone_settings_di.dart';
 import '../../features/get_moisture/di/get_moisture_status_di.dart';
+import '../../features/location_settings/di/location_di.dart';
 
 final GetIt sl = GetIt.instance;
 

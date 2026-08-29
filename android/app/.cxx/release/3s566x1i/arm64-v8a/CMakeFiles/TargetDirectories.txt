@@ -1,0 +1,2 @@
+C:/Users/rahul/irri-boss/android/app/.cxx/release/3s566x1i/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/rahul/irri-boss/android/app/.cxx/release/3s566x1i/arm64-v8a/CMakeFiles/rebuild_cache.dir

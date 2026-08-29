@@ -87,10 +87,10 @@ class ControllerModel extends ControllerEntity {
     final String parsedSmsSync = getSmsSync(latestMsg);
 
     final int modelId = json['modelId'] ?? 0;
-    final bool isDoublePump = modelId == 27;
+    final bool isDoublePump = false;
     final LiveMessageEntity liveMessage = LiveMessageModel.fromLiveMessage(
       json['liveMessage']?.toString() ?? '',
-      typeCode: isDoublePump ? 'LD04' : null,
+      typeCode: null,
       externalLastSync: formattedDateTime,
     );
 

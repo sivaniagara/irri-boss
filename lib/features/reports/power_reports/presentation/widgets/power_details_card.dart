@@ -21,16 +21,6 @@ class PowerDetailsCard extends StatelessWidget {
               RowItem("Dry Run Time", data.dryRunTripTime, Colors.red,unitIcons: "assets/images/report_menu/dry_run_time.png",),
               RowItem("Cyclic Trip Time", data.cyclicTripTime, Colors.red,unitIcons: "assets/images/report_menu/cyclic_trip_time.png",),
               RowItem("Other Trip Time", data.otherTripTime, Colors.red,unitIcons:"assets/images/report_menu/other_trip_time.png",),
-              if(modelId == 27)
-                RowItem("Motor2 Run Time", data.motorRunTime2, Colors.cyan,unitIcons:"assets/images/report_menu/motor_run_time.png",),
-              if(modelId == 27)
-                RowItem("Motor2 Idle Time", data.motorIdleTime2, Colors.red,unitIcons: "assets/images/report_menu/motor_ideal_time.png",),
-              if(modelId == 27)
-                RowItem("Motor2 DryRun Time", data.dryRunTripTime2, Colors.red,unitIcons: "assets/images/report_menu/dry_run_time.png",),
-              if(modelId == 27)
-                RowItem("Motor2 CyclicTrip Time", data.cyclicTripTime2, Colors.red,unitIcons: "assets/images/report_menu/cyclic_trip_time.png",),
-              if(modelId == 27)
-                RowItem("Motor2 OtherTrip Time", data.otherTripTime2, Colors.red,unitIcons: "assets/images/report_menu/other_trip_time.png",),
             ],
           ),
         ),

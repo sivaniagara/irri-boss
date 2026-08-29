@@ -75,7 +75,11 @@ class ProgramViewModel {
   factory ProgramViewModel.fromRawString(String raw, {String? externalLastSync}) {
     var parts = raw.split(',').map((e) => e.trim()).toList();
 
-    if (parts.isNotEmpty && (parts[0] == 'V01' || parts[0] == 'V02')) {
+    // Remove message type codes or potential device ID at the start
+    while (parts.isNotEmpty &&
+        (parts[0] == 'V01' ||
+            parts[0] == 'V02' ||
+            parts[0].length >= 10)) {
       parts = parts.sublist(1);
     }
 
@@ -203,25 +207,55 @@ class ZoneViewModel {
   String get fertigationFlows => fertFlows.join(":");
 
   factory ZoneViewModel.fromRawString(String rawString) {
+    if (!rawString.contains(';')) {
+      return ZoneViewModel(
+        zoneNumber: "",
+        zoneName: "",
+        valveId: "",
+        irrigationTime: "",
+        irrigationFlow: "",
+        moistureSetting: "",
+        dripCyclicTimers: [],
+        fertTimers: [],
+        fertFlows: [],
+        pumpSelections: [],
+      );
+    }
+
     // 1. First split by semicolon to see the internal structure
     var parts = rawString.trim().split(";");
 
     // 2. Handle cases where "V02" is the first semicolon part or prefixed to it
     if (parts.isNotEmpty) {
-      if (parts[0] == "V02") {
-        // If it's JUST "V02", remove it and the zone number is now at parts[0]
+      if (parts[0] == "V02" || parts[0].length >= 10) {
         parts = parts.sublist(1);
       } else if (parts[0].startsWith("V02")) {
-        // If it's "V021", strip "V02" and the zone number remains at parts[0]
         parts[0] = parts[0].replaceFirst("V02", "").trim();
       }
     }
 
     String safeGet(int index, {String defaultValue = ''}) {
-      return (index >= 0 && index < parts.length) ? parts[index].trim() : defaultValue;
+      return (index >= 0 && index < parts.length)
+          ? parts[index].trim()
+          : defaultValue;
     }
 
     final zoneNum = safeGet(0);
+    // Basic validation: zone number shouldn't be empty or unusually long
+    if (zoneNum.isEmpty || zoneNum.length > 3) {
+      return ZoneViewModel(
+        zoneNumber: "",
+        zoneName: "",
+        valveId: "",
+        irrigationTime: "",
+        irrigationFlow: "",
+        moistureSetting: "",
+        dripCyclicTimers: [],
+        fertTimers: [],
+        fertFlows: [],
+        pumpSelections: [],
+      );
+    }
 
     final fertTimersStr = safeGet(4);
     final fertFlowsStr = safeGet(5);

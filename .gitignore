@@ -46,3 +46,15 @@ app.*.map.json
 /ios/
 /macos/
 /windows/
+
+
+# Android specific build artifacts
+android/app/build/
+android/build/
+android/.gradle/
+android/app/outputs/
+
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec

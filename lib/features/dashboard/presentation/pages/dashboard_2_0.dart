@@ -104,7 +104,7 @@ class _GlowButtonState extends State<GlowButton>
                     ? [
                   BoxShadow(
                     color: widget.activeColor
-                        .withOpacity(_glowAnimation.value * 0.6),
+                        .withValues(alpha:_glowAnimation.value * 0.6),
                     blurRadius: 14 * _glowAnimation.value,
                     spreadRadius: 4 * _glowAnimation.value,
                   ),
@@ -136,6 +136,7 @@ class _GlowButtonState extends State<GlowButton>
 }
 // ---------------------------------------------------------------------------
 List<int> wlcModel = [45];
+List<int> crcModels = [45, 27];
 class Dashboard20 extends StatefulWidget {
   const Dashboard20({super.key});
 
@@ -145,6 +146,8 @@ class Dashboard20 extends StatefulWidget {
 
 class _Dashboard20State extends State<Dashboard20> {
   List<int> pumpModel = [4, 11, 27, 46];
+  int _selectedPumpMotor = 1;
+  int _totalPumps = 2; // For double pump models (1 or 2 pumps)
 
   int _lastModelId = -1; // -1 = not yet seen any model
   String _temperature = "25\u00B0 C";
@@ -681,10 +684,10 @@ class _Dashboard20State extends State<Dashboard20> {
               children: [
                 Column(
                   children: [
-                    Image.asset(
-                      liveMessageEntity.motorOnOff == '1'
-                          ? 'assets/images/common/motor_running.gif'
-                          : 'assets/images/common/motor_r.png',
+                    _motorWithTimer(
+                      isOn: liveMessageEntity.motorOnOff == '1',
+                      onDelayTimer: liveMessageEntity.onDelayTimer,
+                      isActive: liveMessageEntity.isOnDelayTimerActive,
                       width: 60,
                     ),
                     Text(
@@ -1112,7 +1115,7 @@ class _Dashboard20State extends State<Dashboard20> {
   String getDate({required LiveMessageEntity liveData}) {
     try {
       if (liveData.cd.isEmpty) return '---';
-      return DateFormat("d/MMM/yyyy")
+      return DateFormat("dd/MM/yyyy")
           .format(DateTime(
           int.parse(liveData.cd.split('/')[2]),
           int.parse(liveData.cd.split('/')[1]),
@@ -1128,10 +1131,9 @@ class _Dashboard20State extends State<Dashboard20> {
 
   Widget doublePumpWidget(
       {required ControllerEntity controllerEntity,
-        required LiveMessageEntity liveMessageEntity}) {
-    final bool isMotorOn = liveMessageEntity.motor2OnOff == '1' ||
-        (controllerEntity.modelId == 27 &&
-            liveMessageEntity.valveOnOff == '1');
+        required LiveMessageEntity liveMessageEntity})
+  {
+    final bool isMotorOn = liveMessageEntity.motorOnOff == '1';
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -1144,12 +1146,11 @@ class _Dashboard20State extends State<Dashboard20> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Column(
-              spacing: 20,
               children: [
                 Row(
                   children: [
                     iconWithHeader(
-                      title: 'Motor',
+                      title: '1 Pump',
                       iconBackgroundColor: isMotorOn
                           ? const Color(0xffB1E4AA)
                           : const Color(0xffFFCDD2),
@@ -1162,14 +1163,14 @@ class _Dashboard20State extends State<Dashboard20> {
                       ),
                     ),
                     const Spacer(),
-                    if(AppConstants.isWlc(controllerEntity.modelId))
+                    if (AppConstants.isWlc(controllerEntity.modelId))
                       Row(
-                        spacing: 20,
                         children: [
                           Text("Manual Mode",
                               style: Theme.of(context)
                                   .textTheme
                                   .labelLarge),
+                          const SizedBox(width: 20),
                           PopupMenuButton<String>(
                             initialValue: liveMessageEntity.manualFlag == '1'
                                 ? 'Manual'
@@ -1191,15 +1192,15 @@ class _Dashboard20State extends State<Dashboard20> {
                                   deviceId: controllerContext.deviceId, payload: payload);
                             },
                             itemBuilder: (context) => [
-                              PopupMenuItem(
+                              const PopupMenuItem(
                                 value: 'Auto',
                                 child: Text('Auto', style: TextStyle(color: Colors.black)),
                               ),
-                              PopupMenuItem(
+                              const PopupMenuItem(
                                 value: 'Manual',
                                 child: Text('Manual', style: TextStyle(color: Colors.black)),
                               ),
-                              PopupMenuItem(
+                              const PopupMenuItem(
                                 value: 'Idle',
                                 child: Text('Idle', style: TextStyle(color: Colors.black)),
                               ),
@@ -1215,59 +1216,206 @@ class _Dashboard20State extends State<Dashboard20> {
 
                   ],
                 ),
+                const SizedBox(height: 20),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (controllerEntity.modelId == 27)
-                      ...[
-                        Column(
-                          spacing: 15,
-                          children: [
-                            Image.asset(
-                              liveMessageEntity.motorOnOff == '1'
-                                  ? 'assets/images/common/motor_running.gif'
-                                  : 'assets/images/common/motor_r.png',
-                              width: 80,
-                            ),
-                            switches(
-                                liveMessageEntity: liveMessageEntity,
-                                motorNo: 1)
-                          ],
+                    Column(
+                      children: [
+                        _motorWithTimer(
+                          isOn: liveMessageEntity.motorOnOff == '1',
+                          onDelayTimer: liveMessageEntity.onDelayTimer,
+                          isActive: liveMessageEntity.isMotor1OnDelayActive,
+                          width: 60,
                         ),
-                        Column(
-                          spacing: 15,
-                          children: [
-                            Image.asset(
-                              liveMessageEntity.motor2OnOff == '1'
-                                  ? 'assets/images/common/motor_running.gif'
-                                  : 'assets/images/common/motor_r.png',
-                              width: 80,
-                            ),
-                            switches(
-                                liveMessageEntity: liveMessageEntity,
-                                motorNo: 2)
-                          ],
+                        Text(
+                          'Motor',
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: liveMessageEntity.motorOnOff == '1'
+                                    ? Colors.green
+                                    : Colors.red,
+                              ),
                         ),
-                      ]
-                    else
-                      ...[
-                        Image.asset(
-                          liveMessageEntity.motorOnOff == '1'
-                              ? 'assets/images/common/motor_running.gif'
-                              : 'assets/images/common/motor_r.png',
-                          width: 80,
-                        ),
-                        switches(
-                            liveMessageEntity: liveMessageEntity, motorNo: 1)
-                      ]
+                      ],
+                    ),
+                      const SizedBox(width: 30),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: 5,
+                        children: [
+                          Row(
+                            spacing: 10,
+                            children: [
+                              // ── Glow OFF button ──────────────────────────────────
+                              GlowButton(
+                                isActive: liveMessageEntity.motorOnOff != '1',
+                                activeColor: const Color(0xffE9352B),
+                                inactiveColor: Colors.red.shade200,
+                                label: 'OFF',
+                                icon: const Icon(Icons.power_settings_new,
+                                    color: Colors.white),
+                                onPressed: () {
+                                  final controllerContext = context
+                                      .read<ControllerContextCubit>()
+                                      .state as ControllerContextLoaded;
+                                  context.read<DashboardPageCubit>().controlMotorStatus(
+                                      userId: controllerContext.userId,
+                                      controllerId: controllerContext.controllerId,
+                                      programId: SafeParser.getProgramId(
+                                          liveMessageEntity.programName),
+                                      deviceId: controllerContext.deviceId,
+                                      payload: 'MTROF,');
+                                },
+                              ),
+                              // ── Glow ON button ───────────────────────────────────
+                              GlowButton(
+                                isActive: liveMessageEntity.motorOnOff == '1',
+                                activeColor: const Color(0xff4DB53D),
+                                inactiveColor: Colors.green.shade200,
+                                label: 'ON',
+                                icon: const Icon(Icons.power_settings_new,
+                                    color: Colors.white),
+                                onPressed: () {
+                                  final controllerContext = context
+                                      .read<ControllerContextCubit>()
+                                      .state as ControllerContextLoaded;
+                                  context.read<DashboardPageCubit>().controlMotorStatus(
+                                      userId: controllerContext.userId,
+                                      controllerId: controllerContext.controllerId,
+                                      programId: SafeParser.getProgramId(
+                                          liveMessageEntity.programName),
+                                      deviceId: controllerContext.deviceId,
+                                      payload: 'MOTOR1ON,');
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                   ],
-                )
+                ),
               ],
             ),
           ),
           ...stackRadius(),
         ],
       ),
+    );
+  }
+
+  /// Builds a dropdown selector for the total number of pumps (1 or 2).
+  Widget _totalPumpsSelector() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xffF2F7F4),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: _totalPumps,
+          isDense: true,
+          items: const [
+            DropdownMenuItem(value: 1, child: Text('1 Pump')),
+            DropdownMenuItem(value: 2, child: Text('2 Pumps')),
+          ],
+          onChanged: (val) {
+            if (val != null) {
+              setState(() => _totalPumps = val);
+              
+              // Send the payload to hardware/backend
+              final controllerContext = context
+                  .read<ControllerContextCubit>()
+                  .state as ControllerContextLoaded;
+              
+              context.read<DashboardPageCubit>().sendPumpCount(
+                deviceId: controllerContext.deviceId,
+                count: val,
+              );
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _motorSelector() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xffF2F7F4),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: _selectedPumpMotor,
+          isDense: true,
+          items: const [
+            DropdownMenuItem(value: 1, child: Text('Motor 1')),
+            DropdownMenuItem(value: 2, child: Text('Motor 2')),
+          ],
+          onChanged: (motor) {
+            if (motor != null) setState(() => _selectedPumpMotor = motor);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _motorWithTimer({
+    required bool isOn,
+    required String onDelayTimer,
+    required bool isActive,
+    double width = 60,
+  }) {
+    return Stack(
+      alignment: Alignment.center,
+      clipBehavior: Clip.none,
+      children: [
+        Image.asset(
+          isOn
+              ? 'assets/images/common/motor_running.gif'
+              : 'assets/images/common/motor_r.png',
+          width: width,
+        ),
+        if (isActive)
+          Positioned(
+            top: -15, // Move above the motor
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.red, // Use red for attention
+                borderRadius: BorderRadius.circular(4),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                onDelayTimer,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _motorLabel(int motorNumber, bool isOn) {
+    return Text(
+      'Motor $motorNumber',
+      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: isOn ? Colors.green : Colors.red,
+          ),
     );
   }
 
@@ -1331,7 +1479,7 @@ class _Dashboard20State extends State<Dashboard20> {
           activeColor: const Color(0xff4DB53D),
           inactiveColor: Colors.green.shade200,
           label: 'ON',
-          icon: const Icon(Icons.power_settings_new),
+          icon: const Icon(Icons.power_settings_new, color: Colors.white),
           onPressed: () {
             final controllerContext = context
                 .read<ControllerContextCubit>()
@@ -1347,13 +1495,14 @@ class _Dashboard20State extends State<Dashboard20> {
                 payload: payload);
           },
         ),
+        const SizedBox(width: 10),
         // ── Glow OFF button ────────────────────────────────────────────────
         GlowButton(
           isActive: !isOn,
           activeColor: const Color(0xffE9352B),
           inactiveColor: Colors.red.shade200,
           label: 'OFF',
-          icon: const Icon(Icons.power_settings_new),
+          icon: const Icon(Icons.power_settings_new, color: Colors.white),
           onPressed: () {
             final controllerContext = context
                 .read<ControllerContextCubit>()
@@ -1824,6 +1973,9 @@ String getMotorMessage(String reason) {
     case "44": return "Motor Off tank cable disconnected";
     case "45": return "Motor Off sump float failed";
     case "46": return "Motor Off tank float failed";
+    case "47": return "Motor turned On through mobile";
+    case "48": return "Motor turned Off through mobile";
+
     default: return "";
   }
 }
