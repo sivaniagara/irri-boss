@@ -54,15 +54,15 @@ class DashboardGroupsLoaded extends DashboardState {
 
   @override
   List<Object?> get props => [
-        groups,
-        groupControllers,
-        selectedGroupId,
-        selectedControllerIndex,
-        changeFromStatus,
-        controlMotorStatus,
-        manualModeStatus,
-        errorMsg
-      ];
+    groups,
+    groupControllers,
+    selectedGroupId,
+    selectedControllerIndex,
+    changeFromStatus,
+    controlMotorStatus,
+    manualModeStatus,
+    errorMsg
+  ];
 
   DashboardGroupsLoaded copyWith({
     List<GroupDetailsEntity>? groups,
@@ -79,7 +79,7 @@ class DashboardGroupsLoaded extends DashboardState {
       groupControllers: groupControllers ?? this.groupControllers,
       selectedGroupId: selectedGroupId ?? this.selectedGroupId,
       selectedControllerIndex:
-          selectedControllerIndex ?? this.selectedControllerIndex,
+      selectedControllerIndex ?? this.selectedControllerIndex,
       changeFromStatus: changeFromStatus ?? this.changeFromStatus,
       controlMotorStatus: controlMotorStatus ?? this.controlMotorStatus,
       manualModeStatus: manualModeStatus ?? this.manualModeStatus,
@@ -173,7 +173,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
   void _cancelTimerForDevice(String deviceId) {
     _deviceTimers.remove(deviceId)?.cancel();
     _deviceRemainingSeconds.remove(deviceId);
-    
+
     _deviceOnDelayTimers.remove(deviceId)?.cancel();
     _deviceOnDelaySeconds.remove(deviceId);
   }
@@ -185,13 +185,85 @@ class DashboardPageCubit extends Cubit<DashboardState> {
         _cancelTimerForDevice(deviceId);
       }
     }
-    
+
     final onDelayDeviceIds = _deviceOnDelayTimers.keys.toList(growable: false);
     for (final deviceId in onDelayDeviceIds) {
       if (activeDeviceId == null || deviceId != activeDeviceId) {
         _cancelTimerForDevice(deviceId);
       }
     }
+  }
+
+  /// Starts (or restarts) the on-delay local countdown for [deviceId] at
+  /// [startSeconds] and ticks it down once per real second, independent of
+  /// how often live packets arrive.
+  void _startOnDelayCountdown(String deviceId, int startSeconds) {
+    _deviceOnDelayTimers[deviceId]?.cancel();
+    _deviceOnDelaySeconds[deviceId] = startSeconds;
+
+    _deviceOnDelayTimers[deviceId] =
+        Timer.periodic(const Duration(seconds: 1), (timer) {
+          if (_selectedDeviceId() != deviceId) {
+            _cancelTimerForDevice(deviceId);
+            return;
+          }
+
+          if (_deviceOnDelaySeconds[deviceId] == null ||
+              _deviceOnDelaySeconds[deviceId]! <= 0) {
+            timer.cancel();
+            _deviceOnDelayTimers.remove(deviceId);
+            _deviceOnDelaySeconds.remove(deviceId);
+            return;
+          }
+
+          _deviceOnDelaySeconds[deviceId] = _deviceOnDelaySeconds[deviceId]! - 1;
+
+          _updateSingleDeviceState(deviceId, (ctrl) {
+            final model = ctrl as ControllerModel;
+            return model.copyWith(
+              liveMessage: model.liveMessage.copyWith(
+                onDelayTimer: _secondsToTime(_deviceOnDelaySeconds[deviceId]!),
+              ),
+            );
+          });
+        });
+  }
+
+  /// Starts (or restarts) the zone-remaining local countdown for [deviceId]
+  /// at [startSeconds] and ticks it down once per real second, independent
+  /// of how often live packets arrive.
+  void _startZoneCountdown(String deviceId, int startSeconds) {
+    _deviceTimers[deviceId]?.cancel();
+    _deviceRemainingSeconds[deviceId] = startSeconds;
+
+    _deviceTimers[deviceId] =
+        Timer.periodic(const Duration(seconds: 1), (timer) {
+          if (_selectedDeviceId() != deviceId) {
+            _cancelTimerForDevice(deviceId);
+            return;
+          }
+
+          if (_deviceRemainingSeconds[deviceId] == null ||
+              _deviceRemainingSeconds[deviceId]! <= 0) {
+            timer.cancel();
+            _deviceTimers.remove(deviceId);
+            _deviceRemainingSeconds.remove(deviceId);
+            return;
+          }
+
+          _deviceRemainingSeconds[deviceId] =
+              _deviceRemainingSeconds[deviceId]! - 1;
+
+          _updateSingleDeviceState(deviceId, (ctrl) {
+            final model = ctrl as ControllerModel;
+            return model.copyWith(
+              liveMessage: model.liveMessage.copyWith(
+                zoneRemainingTime:
+                _secondsToTime(_deviceRemainingSeconds[deviceId]!),
+              ),
+            );
+          });
+        });
   }
 
   void _manageOnDelayTimer(String deviceId, LiveMessageEntity liveMessage) {
@@ -203,53 +275,24 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
     _cancelInactiveDeviceTimers(deviceId);
 
-    // If motor is OFF, stop any existing timer for this device
-    if (liveMessage.motorOnOff == '0') {
-      _cancelTimerForDevice(deviceId);
+    int hardwareOnDelay = _timeToSeconds(liveMessage.onDelayTimer);
+    if (hardwareOnDelay <= 0) {
+      _deviceOnDelayTimers[deviceId]?.cancel();
+      _deviceOnDelayTimers.remove(deviceId);
+      _deviceOnDelaySeconds.remove(deviceId);
       return;
     }
 
-    // If motor is ON
-    int hardwareOnDelay = _timeToSeconds(liveMessage.onDelayTimer);
+    final bool hasRunningTimer = _deviceOnDelayTimers[deviceId] != null;
+    final int? currentOnDelay = _deviceOnDelaySeconds[deviceId];
 
-    // Check if we should update/start timer
-    // We update if no timer exists OR if the hardware time drifted by more than 5 seconds
-    int? currentOnDelay = _deviceOnDelaySeconds[deviceId];
-    bool shouldReset = _deviceOnDelayTimers[deviceId] == null ||
-        (currentOnDelay != null &&
-            (hardwareOnDelay - currentOnDelay).abs() > 5);
+    final bool freshCycle =
+        currentOnDelay != null && hardwareOnDelay > currentOnDelay + 1;
+    final bool badlyBehind =
+        currentOnDelay != null && hardwareOnDelay < currentOnDelay - 5;
 
-    if (shouldReset && hardwareOnDelay > 0) {
-      _deviceOnDelayTimers[deviceId]?.cancel();
-      _deviceOnDelaySeconds[deviceId] = hardwareOnDelay;
-
-      _deviceOnDelayTimers[deviceId] =
-          Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (_selectedDeviceId() != deviceId) {
-          _cancelTimerForDevice(deviceId);
-          return;
-        }
-
-        if (_deviceOnDelaySeconds[deviceId] == null ||
-            _deviceOnDelaySeconds[deviceId]! <= 0) {
-          timer.cancel();
-          _deviceOnDelayTimers.remove(deviceId);
-          _deviceOnDelaySeconds.remove(deviceId);
-          return;
-        }
-
-        _deviceOnDelaySeconds[deviceId] = _deviceOnDelaySeconds[deviceId]! - 1;
-
-        // Update state with decremented time
-        _updateSingleDeviceState(deviceId, (ctrl) {
-          final model = ctrl as ControllerModel;
-          return model.copyWith(
-            liveMessage: model.liveMessage.copyWith(
-              onDelayTimer: _secondsToTime(_deviceOnDelaySeconds[deviceId]!),
-            ),
-          );
-        });
-      });
+    if (!hasRunningTimer || freshCycle || badlyBehind) {
+      _startOnDelayCountdown(deviceId, hardwareOnDelay);
     }
   }
 
@@ -268,62 +311,38 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       return;
     }
 
-    // If motor is ON
-    int newRemaining = _timeToSeconds(liveMessage.zoneRemainingTime);
+    int hardwareRemaining = _timeToSeconds(liveMessage.zoneRemainingTime);
+    if (hardwareRemaining <= 0) {
+      // A stray zero/unparsable value from one packet shouldn't kill a
+      // countdown that's already running — let it keep ticking locally.
+      return;
+    }
 
-    // Check if we should update/start timer
-    // We update if no timer exists OR if the hardware time drifted by more than 5 seconds
-    int? currentRemaining = _deviceRemainingSeconds[deviceId];
-    bool shouldReset = _deviceTimers[deviceId] == null ||
-        (currentRemaining != null &&
-            (newRemaining - currentRemaining).abs() > 5);
+    final bool hasRunningTimer = _deviceTimers[deviceId] != null;
+    final int? currentRemaining = _deviceRemainingSeconds[deviceId];
 
-    if (shouldReset && newRemaining > 0) {
-      _deviceTimers[deviceId]?.cancel();
-      _deviceRemainingSeconds[deviceId] = newRemaining;
+    // Same reasoning as the on-delay timer above: only resync for a fresh
+    // zone cycle or a large catch-up, never for small per-packet jitter.
+    final bool freshCycle =
+        currentRemaining != null && hardwareRemaining > currentRemaining + 1;
+    final bool badlyBehind =
+        currentRemaining != null && hardwareRemaining < currentRemaining - 5;
 
-      _deviceTimers[deviceId] =
-          Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (_selectedDeviceId() != deviceId) {
-          _cancelTimerForDevice(deviceId);
-          return;
-        }
-
-        if (_deviceRemainingSeconds[deviceId] == null ||
-            _deviceRemainingSeconds[deviceId]! <= 0) {
-          timer.cancel();
-          _deviceTimers.remove(deviceId);
-          _deviceRemainingSeconds.remove(deviceId);
-          return;
-        }
-
-        _deviceRemainingSeconds[deviceId] =
-            _deviceRemainingSeconds[deviceId]! - 1;
-
-        // Update state with decremented time
-        _updateSingleDeviceState(deviceId, (ctrl) {
-          final model = ctrl as ControllerModel;
-          return model.copyWith(
-            liveMessage: model.liveMessage.copyWith(
-              zoneRemainingTime:
-                  _secondsToTime(_deviceRemainingSeconds[deviceId]!),
-            ),
-          );
-        });
-      });
+    if (!hasRunningTimer || freshCycle || badlyBehind) {
+      _startZoneCountdown(deviceId, hardwareRemaining);
     }
   }
 
   /// Helper to update a single device in the complex groupControllers map
   void _updateSingleDeviceState(
-    String deviceId,
-    ControllerEntity Function(ControllerEntity) updateFn,
-  ) {
+      String deviceId,
+      ControllerEntity Function(ControllerEntity) updateFn,
+      ) {
     if (state is! DashboardGroupsLoaded) return;
     final currentState = state as DashboardGroupsLoaded;
 
     final updatedGroupControllers =
-        Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
+    Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
     bool anyUpdated = false;
 
     updatedGroupControllers.forEach((groupId, controllers) {
@@ -367,11 +386,11 @@ class DashboardPageCubit extends Cubit<DashboardState> {
       await fetchControllersForGroup(userId, 0, routeState);
     } else {
       final result =
-          await fetchDashboardGroups(DashboardGroupsParams(userId, routeState));
+      await fetchDashboardGroups(DashboardGroupsParams(userId, routeState));
 
       result.fold(
-        (failure) => emit(DashboardError(message: failure.message)),
-        (groups) {
+            (failure) => emit(DashboardError(message: failure.message)),
+            (groups) {
           int? selectedId = groups.isNotEmpty ? groups[0].userGroupId : null;
           emit(DashboardGroupsLoaded(
             groups: groups,
@@ -392,14 +411,14 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     if (state is DashboardGroupsLoaded) {
       final currentState = state as DashboardGroupsLoaded;
       final result =
-          await fetchControllers(UserGroupParams(userId, groupId, routeState));
+      await fetchControllers(UserGroupParams(userId, groupId, routeState));
 
       final updatedControllers =
-          Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
+      Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
 
       result.fold(
-        (failure) => emit(DashboardError(message: failure.message)),
-        (controllers) {
+            (failure) => emit(DashboardError(message: failure.message)),
+            (controllers) {
           updatedControllers[groupId] = controllers;
 
           int? newSelectedIndex = currentState.selectedControllerIndex;
@@ -438,7 +457,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     kdebugmode("selectGroup");
 
     if (state is! DashboardGroupsLoaded) return (0, 0, '');
-     final currentState = state as DashboardGroupsLoaded;
+    final currentState = state as DashboardGroupsLoaded;
 
     final newState = currentState.copyWith(
       selectedGroupId: groupId,
@@ -449,20 +468,20 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     emit(DashboardLoading());
 
     final result =
-        await fetchControllers(UserGroupParams(userId, groupId, routeState));
+    await fetchControllers(UserGroupParams(userId, groupId, routeState));
     int firstControllerModelId = 0;
     int firstControllerControllerId = 0;
     String firstControllerDeviceId = '';
 
     final response = await result.fold(
-      (failure) async {
+          (failure) async {
         emit(DashboardError(message: failure.message));
-         return (0, 0, '');
+        return (0, 0, '');
       },
-      (controllers) async {
+          (controllers) async {
 
         final updatedControllers =
-            Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
+        Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
         updatedControllers[groupId] = controllers;
 
         String? selectedDeviceId;
@@ -488,8 +507,8 @@ class DashboardPageCubit extends Cubit<DashboardState> {
           selectedGroupId: groupId,
           selectedControllerIndex: controllers.isNotEmpty ? 0 : null,
         ));
-         return (firstControllerModelId, firstControllerControllerId, firstControllerDeviceId);
-       },
+        return (firstControllerModelId, firstControllerControllerId, firstControllerDeviceId);
+      },
     );
     return response;
   }
@@ -516,9 +535,11 @@ class DashboardPageCubit extends Cubit<DashboardState> {
   }
 
   void getLive(String deviceId, int modelId) {
-    sl<MqttOrBle>()
-        .publish(
-        deviceId, crcModels.contains(modelId) ? AppConstants.sendWlcCommand("#live,$deviceId") : jsonEncode(PublishMessageHelper.requestLive));
+    sl<MqttOrBle>().publish(
+        deviceId,
+        (crcModels.contains(modelId) || AppConstants.isWlc(modelId))
+            ? AppConstants.sendWlcCommand("#live,$deviceId")
+            : jsonEncode(PublishMessageHelper.requestLive));
   }
 
   void resetDashboardSelection() {
@@ -537,7 +558,14 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     print("liveMessage : ${liveMessage}");
     if (state is! DashboardGroupsLoaded) return;
 
-    // Manage Timers independently from state update to avoid recursion loop
+    // Manage Timers independently from state update to avoid recursion loop.
+    // These calls are the SOURCE OF TRUTH for the two countdown fields below:
+    // they either (a) leave the existing local per-second counter untouched
+    // (normal case — packet arrived mid-countdown, nothing to do), or
+    // (b) reset the counter to the hardware value if it has drifted by more
+    // than 5s (e.g. motor just turned on, or we lost sync). Either way, after
+    // these two calls _deviceOnDelaySeconds[deviceId] / _deviceRemainingSeconds[deviceId]
+    // hold the correct current value to display.
     _manageZoneTimer(deviceId, liveMessage);
     _manageOnDelayTimer(deviceId, liveMessage);
 
@@ -545,16 +573,29 @@ class DashboardPageCubit extends Cubit<DashboardState> {
         ? fullMsg.trim()
         : liveMessage.fullMessage;
     final latestMessageDescription =
-        (msgDesc != null && msgDesc.trim().isNotEmpty)
-            ? msgDesc.trim()
-            : liveMessage.msgDesc;
+    (msgDesc != null && msgDesc.trim().isNotEmpty)
+        ? msgDesc.trim()
+        : liveMessage.msgDesc;
+
+    // IMPORTANT: don't take zoneRemainingTime / onDelayTimer straight from the
+    // raw incoming packet here. Doing that was clobbering the smoothly
+    // ticking local countdown on every single packet arrival — which is why
+    // the timer looked "frozen" and only ever jumped when the hardware's own
+    // reported value changed. Instead, read the live, ticking value from the
+    // local counters that _manageZoneTimer/_manageOnDelayTimer just updated.
+    final String displayZoneRemaining = liveMessage.motorOnOff == '0'
+        ? "00:00:00"
+        : (_deviceRemainingSeconds[deviceId] != null
+        ? _secondsToTime(_deviceRemainingSeconds[deviceId]!)
+        : liveMessage.zoneRemainingTime);
+
+    final String displayOnDelay = (_deviceOnDelaySeconds[deviceId] != null && _deviceOnDelaySeconds[deviceId]! > 0)
+        ? _secondsToTime(_deviceOnDelaySeconds[deviceId]!)
+        : (liveMessage.isOnDelayTimerActive ? liveMessage.onDelayTimer : "00:00:00");
+
     final updatedLiveMessage = liveMessage.copyWith(
-      zoneRemainingTime: liveMessage.motorOnOff == '0'
-          ? "00:00:00"
-          : liveMessage.zoneRemainingTime,
-      onDelayTimer: liveMessage.motorOnOff == '0'
-          ? "00:00:00"
-          : liveMessage.onDelayTimer,
+      zoneRemainingTime: displayZoneRemaining,
+      onDelayTimer: displayOnDelay,
       fullMessage: formattedMessage,
       msgDesc: latestMessageDescription,
     );
@@ -575,7 +616,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     final currentState = state as DashboardGroupsLoaded;
 
     final newGroupControllers =
-        Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
+    Map<int, List<ControllerEntity>>.from(currentState.groupControllers);
 
     bool updated = false;
 
@@ -618,16 +659,16 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     ));
 
     result.fold(
-      (failure) => emit(currentState.copyWith(
+          (failure) => emit(currentState.copyWith(
           changeFromStatus: ChangeFromStatus.failure,
           errorMsg: failure.message)),
-      (_) {
+          (_) {
         sl<MqttManager>().publish(deviceId, PublishMessageHelper.settingsPayload(payload));
         emit(currentState.copyWith(changeFromStatus: ChangeFromStatus.success));
       },
     );
   }
-  
+
   Future<void> sendManualMode({
     required String deviceId,
     required String payload,
@@ -662,10 +703,10 @@ class DashboardPageCubit extends Cubit<DashboardState> {
     try {
       // Send via MQTT
       sl<MqttOrBle>().publish(deviceId, payload);
-      
+
       // We can also send to backend if needed, following the same pattern as controlMotor
       // For now, publishing via MQTT as requested.
-      
+
       kdebugmode("Sent Pump Count: $payload");
     } catch (e) {
       kdebugmode("Error sending pump count: $e");
@@ -764,7 +805,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
             errorMsg: failure.message,
           )),
               (_) {
-                sl<MqttOrBle>().publish(deviceId, onPayload);
+            sl<MqttOrBle>().publish(deviceId, onPayload);
 
             emit(currentState.copyWith(
               controlMotorStatus: ControlMotorStatus.success,
@@ -809,7 +850,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
             errorMsg: failure.message,
           )),
               (_) {
-                sl<MqttOrBle>().publish(deviceId, PublishMessageHelper.settingsPayload(cleanPayload));
+            sl<MqttOrBle>().publish(deviceId, PublishMessageHelper.settingsPayload(cleanPayload));
 
             emit(currentState.copyWith(
               controlMotorStatus: ControlMotorStatus.success,

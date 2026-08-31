@@ -60,8 +60,8 @@ class LiveMessageEntity extends Equatable {
       onDelayTimer != '00:00' &&
       onDelayTimer != '0';
 
-  bool get isMotor1OnDelayActive => motorOnOff == '1' && isOnDelayTimerActive;
-  bool get isMotor2OnDelayActive => motor2OnOff == '1' && isOnDelayTimerActive;
+  bool get isMotor1OnDelayActive => isOnDelayTimerActive;
+  bool get isMotor2OnDelayActive => isOnDelayTimerActive;
 
   const LiveMessageEntity({
     required this.wlcReasonFlag,

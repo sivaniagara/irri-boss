@@ -1,18 +1,19 @@
 import 'package:intl/intl.dart';
 import 'package:intl_phone_field/phone_number.dart';
 
+import '../../../../core/utils/app_constants.dart';
 import '../entities/setting_widget_type.dart';
 import '../entities/template_json_entity.dart';
 
 class SmsPayloadBuilder {
-  static String build(SettingsEntity setting, String deviceId) {
+  static String build(SettingsEntity setting, String deviceId, {int? modelId}) {
     String value = setting.value.trim();
 
     return switch (setting.widgetType) {
       SettingWidgetType.phone => _buildPhonePayload(setting, value, deviceId),
       SettingWidgetType.multiTime || SettingWidgetType.multiText => _buildMultiTimePayload(setting, value),
       SettingWidgetType.toggle when setting.title == 'DND' => _buildDndPayload(setting),
-      SettingWidgetType.nothing when setting.title == 'Date & Time' => _buildDateTimePayload(setting),
+      SettingWidgetType.nothing when setting.title.toLowerCase().contains('date') => _buildDateTimePayload(setting, isWlc: modelId != null && AppConstants.isWlc(modelId)),
       _ => _buildDefaultPayload(setting, value),
     };
   }
@@ -80,7 +81,10 @@ class SmsPayloadBuilder {
     return parts.join(',');
   }
 
-  static String _buildDateTimePayload(SettingsEntity s) {
+  static String _buildDateTimePayload(SettingsEntity s, {bool isWlc = false}) {
+    if (isWlc) {
+      return AppConstants.formatWlcDateTime();
+    }
     final now = DateTime.now();
     final formatter = DateFormat("','yy','MM','dd','HH','mm','ss");
     return "DT${formatter.format(now)}";

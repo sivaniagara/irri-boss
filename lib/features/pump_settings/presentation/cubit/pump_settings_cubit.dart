@@ -308,7 +308,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       payload = _buildWlcPayload(
           menuItemEntity, sectionIndex, settingIndex, setting, deviceId);
     } else {
-      payload = SmsPayloadBuilder.build(setting, deviceId);
+      payload = SmsPayloadBuilder.build(setting, deviceId, modelId: modelId);
       if (menuItemEntity.menu.menuSettingId == 531 &&
           sectionIndex == 0 &&
           settingIndex == 1) {
@@ -327,7 +327,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       if (payload.isNotEmpty) {
         di.sl<MqttOrBle>().publish(
             deviceId,
-            sendFullSetting
+            (sendFullSetting || AppConstants.isWlc(modelId))
                 ? AppConstants.sendWlcCommand(payload)
                 : publishMessage);
       }
@@ -363,6 +363,11 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       dynamic setting,
       String deviceId,
       ) {
+    final title = setting.title.toString().toLowerCase();
+    final menuTitle = menuItemEntity.menu.menuItem.toLowerCase();
+    if (title.contains('date') || menuTitle.contains('date')) {
+      return AppConstants.formatWlcDateTime();
+    }
     List<dynamic> payload = [];
 
     int menuSettingId = menuItemEntity.menu.menuSettingId;

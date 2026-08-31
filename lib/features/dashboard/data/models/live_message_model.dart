@@ -173,11 +173,15 @@ class LiveMessageModel extends LiveMessageEntity {
     String lastsync = externalLastSync ?? '--';
 
     String _extractOnDelay(String input) {
-      if (input.toUpperCase().contains('ONDEL')) {
-        // Match ONDEL followed by optional space, =, optional space, and then the time (digits and colons)
-        final match = RegExp(r'ONDEL\s*=\s*([0-9:]+)').firstMatch(input.toUpperCase());
+      if (input.isEmpty) return '';
+      final upper = input.toUpperCase().trim();
+      if (upper.contains('ONDEL') || upper.contains('DELAY')) {
+        final match = RegExp(r'(?:ONDEL|ONDELAY|ON\s*DELAY|DELAY)[\s=:]*([0-9:]+)').firstMatch(upper);
         if (match != null) {
-          return match.group(1)?.trim() ?? '';
+          final timeStr = match.group(1)?.trim() ?? '';
+          if (timeStr != '0' && timeStr != '00:00' && timeStr != '00:00:00') {
+            return timeStr;
+          }
         }
       }
       return '';

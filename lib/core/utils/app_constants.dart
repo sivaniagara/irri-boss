@@ -11,6 +11,17 @@ class AppConstants {
   static bool sendFullSetting(int modelId) => {45, 46, 27}.contains(modelId);
   static bool statusCheck(int menuId) => {544}.contains(menuId);
 
+  static String formatWlcDateTime([DateTime? dateTime]) {
+    final dt = dateTime ?? DateTime.now();
+    final ss = dt.second.toString().padLeft(2, '0');
+    final mm = dt.minute.toString().padLeft(2, '0');
+    final hh = dt.hour.toString().padLeft(2, '0');
+    final dd = dt.day.toString().padLeft(2, '0');
+    final m = dt.month.toString();
+    final yy = (dt.year % 100).toString().padLeft(2, '0');
+    return "DATETIME,$ss,$mm,$hh,$dd,$m,$yy";
+  }
+
   static String sendWlcCommand(String payload) {
     String actualPayload = payload;
 

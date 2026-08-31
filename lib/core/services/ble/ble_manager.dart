@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/services/mqtt/mqtt_message_helper.dart';
+import 'package:niagara_smart_drip_irrigation/core/utils/app_constants.dart';
 import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 
 import 'ble_service.dart';
@@ -119,15 +120,25 @@ class BleManager {
       MqttMessageHelper.processMessage(completeJson, dispatcher: dispatcher);
     });
 
-    // Request live data exactly like MQTT does:
-    //   sl<MqttManager>().publish(deviceId, jsonEncode(PublishMessageHelper.requestLive))
-    await _requestLive();
+    // Automatically sync DateTime and request live data upon connection
+    await _syncDateTime();
+    await _requestLive(deviceId);
   }
 
-  Future<void> _requestLive() async {
-    const liveRequest = '{"sentSms":"#live"}';
-    await bleService.publish(liveRequest);
-    if (kDebugMode) kdebugmode('BLE → sent #live request');
+  Future<void> _syncDateTime() async {
+    final dateTimePayload = AppConstants.formatWlcDateTime();
+    final command = AppConstants.sendWlcCommand(dateTimePayload);
+    await bleService.publish(command);
+    print('==================================================');
+    print('🚀 [BLE CONNECT] DATETIME SYNC SENT: $command');
+    print('==================================================');
+    if (kDebugMode) kdebugmode('BLE → sent DateTime sync on connect: $command');
+  }
+
+  Future<void> _requestLive(String deviceId) async {
+    final liveCommand = AppConstants.sendWlcCommand("#live,$deviceId");
+    await bleService.publish(liveCommand);
+    if (kDebugMode) kdebugmode('BLE → sent #live request: $liveCommand');
   }
 
   /// Publish any arbitrary payload to the connected BLE device.
