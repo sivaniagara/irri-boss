@@ -91,8 +91,8 @@ class EditProgramRemoteSourceImpl extends EditProgramRemoteSource{
       );
       kdebugmode('getPrograms => $response');
       for(var payload in listOfPayload){
-        await Future.delayed(Duration(seconds: 8));
         mqttManager.publish(deviceId, payload);
+      await Future.delayed(Duration(seconds: 8));
       }
       return true;
     }catch (e){
