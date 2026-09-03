@@ -85,13 +85,13 @@ class ApiClient {
       } else if (method.toUpperCase() == 'DELETE') {
         response = await client.delete(requestUri, headers: mergedHeaders).timeout(timeoutDuration);
       } else {
-        throw UnsupportedError('HTTP method $method not supported');
+        throw UnsupportedError('HTTP method not supported');
       }
 
       // Handle response with retry logic
       return _handleResponseWithRetry(response, method, endpoint, mergedHeaders, body);
     } on TimeoutException {
-      throw TimeoutException("$method request to $endpoint timed out");
+      throw TimeoutException("request to timed out");
     } catch (e) {
       rethrow; // Re-throw other exceptions
     }
@@ -112,13 +112,13 @@ class ApiClient {
     } else if (statusCode == 401) {
       return await _attemptTokenRefreshAndRetry(method, endpoint, headers, body);
     } else if (statusCode == 500) {
-      throw ServerException(message: responseBody ?? "Internal Server Error", statusCode: 500);
+      throw ServerException(message:"Internal Server Error");
     } else if (statusCode == 404) {
-      throw NotFoundException(message: responseBody ?? "Resource not found", code: 404);
+      throw NotFoundException(message:"Resource not found", code:404);
     } else if (statusCode >= 400 && statusCode < 500) {
-      throw ValidationException(message: responseBody ?? "Invalid request", code: statusCode);
+      throw ValidationException(message:"Invalid request", code: statusCode);
     } else {
-      throw UnexpectedException("Error $statusCode: $responseBody");
+      throw UnexpectedException("Error $statusCode");
     }
   }
 

@@ -2,7 +2,7 @@ import '../error/exceptions.dart';
 
 Future<Map<String, dynamic>> safeApiResponse(dynamic rawResponse) async {
   if (rawResponse is! Map<String, dynamic>) {
-    throw UnexpectedException('Invalid API response format: ${rawResponse.runtimeType}');
+    throw UnexpectedException('Invalid API response format');
   }
   final code = rawResponse['code'] as int?;
   final message = rawResponse['message'] as String? ?? 'Unknown API error';
