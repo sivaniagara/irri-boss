@@ -1,6 +1,6 @@
 import '../../domain/entities/group_entity.dart';
 
-class GroupDetails extends GroupDetailsEntity{
+class GroupDetails extends GroupDetailsEntity {
   GroupDetails({
     required super.userGroupId,
     required super.userId,
@@ -8,10 +8,16 @@ class GroupDetails extends GroupDetailsEntity{
   });
 
   factory GroupDetails.fromJson(Map<String, dynamic> json) {
+    int parseId(dynamic val) {
+      if (val is int) return val;
+      if (val is String) return int.tryParse(val) ?? 0;
+      return 0;
+    }
+
     return GroupDetails(
-      userGroupId: json['userGroupId'] as int? ?? 0,
-      userId: json['userId'] as int? ?? 0,
-      groupName: json['groupName'] as String? ?? '',
+      userGroupId: parseId(json['userGroupId'] ?? json['userClusterId'] ?? json['groupId'] ?? json['id']),
+      userId: parseId(json['userId']),
+      groupName: json['groupName'] as String? ?? json['name'] as String? ?? '',
     );
   }
 

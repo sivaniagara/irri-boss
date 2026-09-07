@@ -1,14 +1,12 @@
-import 'dart:convert';
 import 'dart:ui';
 
 import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../data/model/device_model.dart';
+
 class QrScannerPage extends StatefulWidget {
   const QrScannerPage({super.key});
 
@@ -18,6 +16,7 @@ class QrScannerPage extends StatefulWidget {
 
 class _QrScannerPageState extends State<QrScannerPage> {
   late final MobileScannerController controller;
+  final AudioPlayer _audioPlayer = AudioPlayer();
   BarcodeCapture? barcode;
   bool isStarted = true;
   bool dialogOpen = false;
@@ -36,6 +35,7 @@ class _QrScannerPageState extends State<QrScannerPage> {
   @override
   void dispose() {
     controller.dispose();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -55,6 +55,7 @@ class _QrScannerPageState extends State<QrScannerPage> {
         ),
       );
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(e.toString())),
       );
@@ -62,117 +63,85 @@ class _QrScannerPageState extends State<QrScannerPage> {
   }
 
   bool isValidQr(String qrData) {
-    return qrData.contains('NA-45') &&
-        ','.allMatches(qrData).length == 4;
+    final parts = qrData.split(',');
+    return parts.length >= 4 && parts[0].trim().isNotEmpty;
   }
-  void showAlertDialog(
-      String message,
-      )
-  {
-     if (!isValidQr(message)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Invalid QR Code'),
-        ),
-      );
 
-      controller.start();
+  void showAlertDialog(String message) async {
+    if (!isValidQr(message)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid QR Code'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          dialogOpen = false;
+        }
+      });
       return;
     }
-    if (dialogOpen) return;
-
-    dialogOpen = true;
 
     controller.stop();
-    final data =
-    message.split(',');
-    String outputDate = data[3].trim();
-     final device =
-    QRDeviceModel(
-      deviceId: data.length > 0 ? data[0].trim() : '',
+    final data = message.split(',');
 
-      modelId: data.length > 1 ? int.parse(data[1]) : 45,
+    final deviceId = data.isNotEmpty ? data[0].trim() : '';
+    final modelId = data.length > 1 ? (int.tryParse(data[1].trim()) ?? 45) : 45;
+    final categoryId = data.length > 2 ? (int.tryParse(data[2].trim()) ?? 1) : 1;
+    final outputDate = data.length > 3 ? data[3].trim() : '';
+    final warranty = data.length > 4 ? (int.tryParse(data[4].trim()) ?? 15) : 15;
 
-      categoryId: data.length > 2 ? int.parse(data[2]) : 1,
-
-      manufactureDate: outputDate.trim(),
-
-      warrentyMonths: 15,
+    final device = QRDeviceModel(
+      deviceId: deviceId,
+      modelId: modelId,
+      categoryId: categoryId,
+      manufactureDate: outputDate,
+      warrentyMonths: warranty,
     );
 
-    showDialog(context: context, barrierDismissible: false,
-      builder:
-          (_) => AlertDialog(
-            title: const Text("QR Detected",),
-            content: Column(
-              mainAxisSize:
-              MainAxisSize.min,
-
-              crossAxisAlignment:
-              CrossAxisAlignment.start,
-
-              children: [
-
-                Text(
-                  "Device : ${device.deviceId}",
-                ),
-
-                Text(
-                  "Model : ${device.modelId}",
-                ),
-
-                Text(
-                  "Category : ${device.categoryId}",
-                ),
-              ],
-            ),
-
-            actions: [
-
-              TextButton(
-
-                onPressed: () {
-
-                  Navigator.pop(
-                    context,
-                  );
-
-                  controller.start();
-
-                  dialogOpen =
-                  false;
-                },
-
-                child:
-                const Text(
-                  "Scan Again",
-                ),
-              ),
-
-              TextButton(
-
-                onPressed: () {
-
-                  Navigator.pop(
-                    context,
-                  );
-
-                  Navigator.pop(
-                    context,
-                    device,
-                  );
-                },
-
-                child:
-                const Text(
-                  "OK",
-                ),
-              ),
-            ],
+    final result = await showDialog<QRDeviceModel>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text("QR Detected"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Device : ${device.deviceId}"),
+            Text("Model : ${device.modelId}"),
+            Text("Category : ${device.categoryId}"),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop(null);
+            },
+            child: const Text("Scan Again"),
           ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(dialogContext).pop(device);
+            },
+            child: const Text("OK"),
+          ),
+        ],
+      ),
     );
-  }
 
+    if (!mounted) return;
+
+    if (result != null) {
+      Navigator.of(context).pop(result);
+    } else {
+      controller.start();
+      dialogOpen = false;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -186,7 +155,9 @@ class _QrScannerPageState extends State<QrScannerPage> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(title: Text("Scan QR Code"),),
+      appBar: AppBar(
+        title: const Text("Scan QR Code"),
+      ),
       body: Stack(
         children: [
           // 1. Scanner View
@@ -195,14 +166,18 @@ class _QrScannerPageState extends State<QrScannerPage> {
             fit: BoxFit.cover,
             scanWindow: scanWindow,
             onDetect: (capture) async {
-              await AudioPlayer().play(
-                AssetSource('sounds/beep.mp3'),
-              );
               if (!isStarted || dialogOpen) return;
-              barcode = capture;
-              final value = capture.barcodes.first.rawValue;
 
+              final value = capture.barcodes.firstOrNull?.rawValue;
               if (value == null) return;
+
+              dialogOpen = true;
+
+              try {
+                await _audioPlayer.play(AssetSource('sounds/beep.mp3'));
+              } catch (_) {}
+
+              barcode = capture;
               showAlertDialog(value);
             },
           ),
@@ -214,7 +189,7 @@ class _QrScannerPageState extends State<QrScannerPage> {
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 8.0, sigmaY: 8.0),
                 child: Container(
-                  color: Colors.black.withOpacity(0.7),
+                  color: Colors.black.withAlpha(178),
                 ),
               ),
             ),

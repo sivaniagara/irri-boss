@@ -671,6 +671,9 @@ class _Dashboard20State extends State<Dashboard20> {
   List<Widget> dripDashboard(
       {required ControllerEntity controllerEntity,
         required LiveMessageEntity liveMessageEntity}) {
+    final bool isMotor1On = liveMessageEntity.motorOnOff == '1';
+    final bool isMotor2On = liveMessageEntity.motor2OnOff == '1';
+
     return [
       mountainWidget(controllerEntity, liveMessageEntity),
       voltageAndCurrent(
@@ -678,131 +681,208 @@ class _Dashboard20State extends State<Dashboard20> {
           liveMessageEntity: liveMessageEntity),
       dashboardCard(
         child: Column(
-          spacing: 20,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ── Top Summary Row: Mode, Pressure & Pump Selection ────
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Column(
-                  children: [
-                    _motorWithTimer(
-                      isOn: liveMessageEntity.motorOnOff == '1',
-                      onDelayTimer: liveMessageEntity.onDelayTimer,
-                      isActive: liveMessageEntity.isOnDelayTimerActive,
-                      width: 60,
-                    ),
-                    Text(
-                      'Motor',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: liveMessageEntity.motorOnOff == '1'
-                            ? Colors.green
-                            : Colors.red,
-                      ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 5,
-                  children: [
-                    Row(
-                      spacing: 10,
-                      children: [
-                        // ── Glow OFF button ──────────────────────────────────
-                        GlowButton(
-                          isActive: liveMessageEntity.motorOnOff != '1',
-                          activeColor: Colors.red,
-                          inactiveColor: Colors.red.shade200,
-                          label: 'OFF',
-                          icon: const Icon(Icons.power_settings_new,
-                              color: Colors.white),
-                          onPressed: () {
-                            kdebugmode("call motor off");
-                            final controllerContext = context
-                                .read<ControllerContextCubit>()
-                                .state as ControllerContextLoaded;
-                            context.read<DashboardPageCubit>().controlMotorStatus(
-                                userId: controllerContext.userId,
-                                controllerId: controllerContext.controllerId,
-                                programId: SafeParser.getProgramId(
-                                    liveMessageEntity.programName),
-                                deviceId: controllerContext.deviceId,
-                                payload: 'MTROF,');
-                          },
-                        ),
-                        // ── Glow ON button ───────────────────────────────────
-                        GlowButton(
-                          isActive: liveMessageEntity.motorOnOff == '1',
-                          activeColor: Colors.green,
-                          inactiveColor: Colors.green.shade200,
-                          label: 'ON',
-                          icon: const Icon(Icons.power_settings_new,
-                              color: Colors.white),
-                          onPressed: () {
-                            kdebugmode("call motor on");
-                            final controllerContext = context
-                                .read<ControllerContextCubit>()
-                                .state as ControllerContextLoaded;
-                            context.read<DashboardPageCubit>().controlMotorStatus(
-                                userId: controllerContext.userId,
-                                controllerId: controllerContext.controllerId,
-                                programId: SafeParser.getProgramId(
-                                    liveMessageEntity.programName),
-                                deviceId: controllerContext.deviceId,
-                                payload: 'MTRON,');
-                          },
-                        ),
-                      ],
-                    ),
-                    Text(
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
                         '${liveMessageEntity.modeOfOperation} | Block ${liveMessageEntity.zoneNo}',
-                        style: Theme.of(context).textTheme.bodySmall)
-                  ],
-                ),
-                const Spacer(),
-                Row(
-                  spacing: 1,
-                   children: [
-                    Image.asset('assets/images/icons/pressure_gauge_icon.png',
-                        width: 24),
-                    Column(
-                      spacing: 1,
-                      children: [
-                        Text('Pressure',
-                            style: Theme.of(context).textTheme.labelLarge),
-                        RichText(
-                          text: TextSpan(
-                            children: [
-                              const TextSpan(
-                                  text: "In: ",
-                                  style: TextStyle(
-                                      color: Colors.black54,
-                                      fontWeight: FontWeight.bold)),
-                              TextSpan(
-                                  text: '${liveMessageEntity.prsIn}   ',
-                                  style: const TextStyle(
-                                      color: Colors.red,
-                                      fontWeight: FontWeight.bold)),
-                              const TextSpan(
-                                  text: "Out: ",
-                                  style: TextStyle(
-                                      color: Colors.black54,
-                                      fontWeight: FontWeight.bold)),
-                              TextSpan(
-                                  text: liveMessageEntity.prsOut,
-                                  style: const TextStyle(
-                                      color: Colors.red,
-                                      fontWeight: FontWeight.bold)),
-                            ],
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset(
+                              'assets/images/icons/pressure_gauge_icon.png',
+                              width: 18),
+                          const SizedBox(width: 4),
+                          RichText(
+                            text: TextSpan(
+                              children: [
+                                const TextSpan(
+                                    text: "In: ",
+                                    style: TextStyle(
+                                        color: Colors.black54,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold)),
+                                TextSpan(
+                                    text: '${liveMessageEntity.prsIn}  ',
+                                    style: const TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold)),
+                                const TextSpan(
+                                    text: "Out: ",
+                                    style: TextStyle(
+                                        color: Colors.black54,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold)),
+                                TextSpan(
+                                    text: liveMessageEntity.prsOut,
+                                    style: const TextStyle(
+                                        color: Colors.red,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold)),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    )
-                  ],
-                )
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // ── Number of Pumps Selection Option ───────────────
+                _totalPumpsSelector(),
               ],
             ),
+            const SizedBox(height: 12),
+            const Divider(height: 1, thickness: 0.8),
+            const SizedBox(height: 12),
+
+            // ── Motor Control Layout (1 Pump / Old Design vs 2 Pumps / Enhanced) ──
+            if (_totalPumps == 1) ...[
+              // ── Classic Single Pump (Old Design) ─────────────────
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      _motorWithTimer(
+                        isOn: isMotor1On,
+                        onDelayTimer: liveMessageEntity.onDelayTimer,
+                        isActive: liveMessageEntity.isMotor1OnDelayActive,
+                        width: 55,
+                      ),
+                      const SizedBox(width: 10),
+                      _motorLabel(1, isMotor1On),
+                    ],
+                  ),
+                  switches(liveMessageEntity: liveMessageEntity, motorNo: 1),
+                ],
+              ),
+            ] else ...[
+              // ── Enhanced 2-Pump Design ───────────────────────────
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: isMotor1On ? const Color(0xffF0FDF4) : const Color(0xffF8FAFC),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isMotor1On ? const Color(0xff86EFAC) : const Color(0xffE2E8F0),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        _motorWithTimer(
+                          isOn: isMotor1On,
+                          onDelayTimer: liveMessageEntity.onDelayTimer,
+                          isActive: liveMessageEntity.isMotor1OnDelayActive,
+                          width: 55,
+                        ),
+                        const SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _motorLabel(1, isMotor1On),
+                            const SizedBox(height: 2),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: isMotor1On ? const Color(0xffDCFCE7) : const Color(0xffF1F5F9),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                isMotor1On ? 'RUNNING' : 'STOPPED',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: isMotor1On ? const Color(0xff15803D) : const Color(0xff64748B),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    switches(liveMessageEntity: liveMessageEntity, motorNo: 1),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: isMotor2On ? const Color(0xffF0FDF4) : const Color(0xffF8FAFC),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: isMotor2On ? const Color(0xff86EFAC) : const Color(0xffE2E8F0),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        _motorWithTimer(
+                          isOn: isMotor2On,
+                          onDelayTimer: liveMessageEntity.onDelayTimer,
+                          isActive: liveMessageEntity.isMotor2OnDelayActive,
+                          width: 55,
+                        ),
+                        const SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _motorLabel(2, isMotor2On),
+                            const SizedBox(height: 2),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: isMotor2On ? const Color(0xffDCFCE7) : const Color(0xffF1F5F9),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                isMotor2On ? 'RUNNING' : 'STOPPED',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: isMotor2On ? const Color(0xff15803D) : const Color(0xff64748B),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    switches(liveMessageEntity: liveMessageEntity, motorNo: 2),
+                  ],
+                ),
+              ),
+            ],
+
+            const SizedBox(height: 16),
+            const Divider(height: 1, thickness: 0.8),
+            const SizedBox(height: 16),
+
+            // ── Schedule Cards & Valve Row ───────────────────────────
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -1133,7 +1213,10 @@ class _Dashboard20State extends State<Dashboard20> {
       {required ControllerEntity controllerEntity,
         required LiveMessageEntity liveMessageEntity})
   {
-    final bool isMotorOn = liveMessageEntity.motorOnOff == '1';
+    final bool isMotor1On = liveMessageEntity.motorOnOff == '1';
+    final bool isMotor2On = liveMessageEntity.motor2OnOff == '1';
+    final bool isAnyMotorOn = isMotor1On || isMotor2On;
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -1144,33 +1227,36 @@ class _Dashboard20State extends State<Dashboard20> {
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(12.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
                     iconWithHeader(
-                      title: '1 Pump',
-                      iconBackgroundColor: isMotorOn
+                      title: _totalPumps == 2 ? 'Double Pump' : '1 Pump',
+                      iconBackgroundColor: isAnyMotorOn
                           ? const Color(0xffB1E4AA)
                           : const Color(0xffFFCDD2),
-                      iconColor: isMotorOn ? Colors.green : Colors.red,
-                      titleColor: isMotorOn ? Colors.green : Colors.red,
+                      iconColor: isAnyMotorOn ? Colors.green : Colors.red,
+                      titleColor: isAnyMotorOn ? Colors.green : Colors.red,
                       icon: Image.asset(
                         'assets/images/common/motor_icon.png',
                         width: 20,
-                        color: isMotorOn ? Colors.green : Colors.red,
+                        color: isAnyMotorOn ? Colors.green : Colors.red,
                       ),
                     ),
                     const Spacer(),
-                    if (AppConstants.isWlc(controllerEntity.modelId))
+                    _totalPumpsSelector(),
+                    if (AppConstants.isWlc(controllerEntity.modelId)) ...[
+                      const SizedBox(width: 8),
                       Row(
                         children: [
                           Text("Manual Mode",
                               style: Theme.of(context)
                                   .textTheme
                                   .labelLarge),
-                          const SizedBox(width: 20),
+                          const SizedBox(width: 8),
                           PopupMenuButton<String>(
                             initialValue: liveMessageEntity.manualFlag == '1'
                                 ? 'Manual'
@@ -1213,88 +1299,56 @@ class _Dashboard20State extends State<Dashboard20> {
                           )
                         ],
                       )
-
+                    ]
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
+
+                // ── Motor 1 Section ──────────────────────────────────────────
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Column(
+                    Row(
                       children: [
                         _motorWithTimer(
-                          isOn: liveMessageEntity.motorOnOff == '1',
+                          isOn: isMotor1On,
                           onDelayTimer: liveMessageEntity.onDelayTimer,
                           isActive: liveMessageEntity.isMotor1OnDelayActive,
-                          width: 60,
+                          width: 55,
                         ),
-                        Text(
-                          'Motor',
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: liveMessageEntity.motorOnOff == '1'
-                                    ? Colors.green
-                                    : Colors.red,
-                              ),
-                        ),
+                        const SizedBox(width: 10),
+                        _motorLabel(1, isMotor1On),
                       ],
                     ),
-                      const SizedBox(width: 30),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: 5,
-                        children: [
-                          Row(
-                            spacing: 10,
-                            children: [
-                              // ── Glow OFF button ──────────────────────────────────
-                              GlowButton(
-                                isActive: liveMessageEntity.motorOnOff != '1',
-                                activeColor: const Color(0xffE9352B),
-                                inactiveColor: Colors.red.shade200,
-                                label: 'OFF',
-                                icon: const Icon(Icons.power_settings_new,
-                                    color: Colors.white),
-                                onPressed: () {
-                                  final controllerContext = context
-                                      .read<ControllerContextCubit>()
-                                      .state as ControllerContextLoaded;
-                                  context.read<DashboardPageCubit>().controlMotorStatus(
-                                      userId: controllerContext.userId,
-                                      controllerId: controllerContext.controllerId,
-                                      programId: SafeParser.getProgramId(
-                                          liveMessageEntity.programName),
-                                      deviceId: controllerContext.deviceId,
-                                      payload: 'MTROF,');
-                                },
-                              ),
-                              // ── Glow ON button ───────────────────────────────────
-                              GlowButton(
-                                isActive: liveMessageEntity.motorOnOff == '1',
-                                activeColor: const Color(0xff4DB53D),
-                                inactiveColor: Colors.green.shade200,
-                                label: 'ON',
-                                icon: const Icon(Icons.power_settings_new,
-                                    color: Colors.white),
-                                onPressed: () {
-                                  final controllerContext = context
-                                      .read<ControllerContextCubit>()
-                                      .state as ControllerContextLoaded;
-                                  context.read<DashboardPageCubit>().controlMotorStatus(
-                                      userId: controllerContext.userId,
-                                      controllerId: controllerContext.controllerId,
-                                      programId: SafeParser.getProgramId(
-                                          liveMessageEntity.programName),
-                                      deviceId: controllerContext.deviceId,
-                                      payload: 'MOTOR1ON,');
-                                },
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                    switches(liveMessageEntity: liveMessageEntity, motorNo: 1),
                   ],
                 ),
+
+                // ── Motor 2 Section (when _totalPumps == 2) ──────────────────
+                if (_totalPumps == 2) ...[
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12.0),
+                    child: Divider(height: 1, thickness: 0.8),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          _motorWithTimer(
+                            isOn: isMotor2On,
+                            onDelayTimer: liveMessageEntity.onDelayTimer,
+                            isActive: liveMessageEntity.isMotor2OnDelayActive,
+                            width: 55,
+                          ),
+                          const SizedBox(width: 10),
+                          _motorLabel(2, isMotor2On),
+                        ],
+                      ),
+                      switches(liveMessageEntity: liveMessageEntity, motorNo: 2),
+                    ],
+                  ),
+                ],
               ],
             ),
           ),

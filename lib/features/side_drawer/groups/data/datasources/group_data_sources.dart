@@ -5,6 +5,7 @@ import '../../domain/entities/group_entity.dart';
 import '../model/group_details.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
+
 abstract class GroupDataSources {
   Future<List<GroupEntity>> fetchGroups(int userId);
   Future<String> addGroups(int userId, String groupName);
@@ -21,13 +22,16 @@ class GroupDataSourcesImpl extends GroupDataSources {
     try {
       final endpoint = GroupsUrls.getGroupValues.replaceAll(':userId', userId.toString());
       final response = await apiClient.get(endpoint);
-      if (response['code'] == 200) {
-        final List<dynamic> dataList = response['data'];
-        final List<GroupModel> parsedGroups = dataList.map((json) => GroupModel.fromJson(json as Map<String, dynamic>)).toList();
+      final code = response['code'] ?? response['statusCode'];
+      if (code == 200 || code == '200') {
+        final List<dynamic> dataList = response['data'] ?? [];
+        final List<GroupModel> parsedGroups = dataList
+            .map((json) => GroupModel.fromJson(json as Map<String, dynamic>))
+            .toList();
         return parsedGroups.cast<GroupEntity>();
       } else {
         throw ServerException(
-          statusCode: response['code'],
+          statusCode: code is int ? code : 500,
           message: response['message'] ?? 'Group details fetching Error',
         );
       }
@@ -48,12 +52,13 @@ class GroupDataSourcesImpl extends GroupDataSources {
           'groupName': groupName
         },
       );
-      if (response['code'] == 200) {
-        return response['message'];
+      final code = response['code'] ?? response['statusCode'];
+      if (code == 200 || code == 201 || code == '200' || code == '201') {
+        return response['message'] ?? 'Group added successfully';
       } else {
         throw ServerException(
-          statusCode: response['code'],
-          message: response['message'],
+          statusCode: code is int ? code : 500,
+          message: response['message'] ?? 'Failed to add group',
         );
       }
     } catch (e) {
@@ -71,22 +76,22 @@ class GroupDataSourcesImpl extends GroupDataSources {
         'groupId': groupId,
         'groupName': groupName
       };
-      // kdebugmode("body :: $body");
       final response = await apiClient.put(
         endpoint,
         body: body,
       );
-      if (response['code'] == 200) {
-        return response['message'];
+      final code = response['code'] ?? response['statusCode'];
+      if (code == 200 || code == '200') {
+        return response['message'] ?? 'Group updated successfully';
       } else {
         throw ServerException(
-          statusCode: response['code'],
-          message: response['message'],
+          statusCode: code is int ? code : 500,
+          message: response['message'] ?? 'Failed to update group',
         );
       }
     } catch (e) {
       kdebugmode('editGroups error: $e');
-      throw Exception('Failed to fetch editGroups: $e');
+      throw Exception('Failed to edit group: $e');
     }
   }
 
@@ -97,18 +102,18 @@ class GroupDataSourcesImpl extends GroupDataSources {
       final response = await apiClient.delete(
         endpoint,
       );
-      // kdebugmode("response :: $response");
-      if (response['code'] == 200) {
-        return response['message'];
+      final code = response['code'] ?? response['statusCode'];
+      if (code == 200 || code == '200') {
+        return response['message'] ?? 'Group deleted successfully';
       } else {
         throw ServerException(
-          statusCode: response['code'],
-          message: response['message'],
+          statusCode: code is int ? code : 500,
+          message: response['message'] ?? 'Failed to delete group',
         );
       }
     } catch (e) {
       kdebugmode('deleteGroup error: $e');
-      throw Exception('Failed to fetch deleteGroup: $e');
+      throw Exception('Failed to delete group: $e');
     }
   }
 }

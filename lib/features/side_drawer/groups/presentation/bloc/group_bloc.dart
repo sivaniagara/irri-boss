@@ -6,7 +6,7 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
   final GroupFetchingUsecase groupFetchingUsecase;
   final GroupAddingUsecase groupAddingUsecase;
   final EditGroupUsecase editGroupUsecase;
-  final DeleteGroupUsecase deleteGroupUsecase; // New usecase
+  final DeleteGroupUsecase deleteGroupUsecase;
 
   GroupBloc({
     required this.groupFetchingUsecase,
@@ -30,11 +30,15 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
       emit(GroupAddingStarted());
       final result = await groupAddingUsecase(GroupAddingParams(event.userId, event.groupName));
 
-      result.fold(
-        (failure) => emit(GroupAddingError(message: failure.message)),
-        (message) {
+      await result.fold(
+        (failure) async => emit(GroupAddingError(message: failure.message)),
+        (message) async {
           emit(GroupAddingLoaded(message: message));
-          add(FetchGroupsEvent(event.userId));
+          final fetchResult = await groupFetchingUsecase(GroupFetchParams(event.userId));
+          fetchResult.fold(
+            (failure) => emit(GroupFetchingError(message: failure.message)),
+            (groups) => emit(GroupLoaded(groups: groups)),
+          );
         },
       );
     });
@@ -43,25 +47,32 @@ class GroupBloc extends Bloc<GroupEvent, GroupState> {
       emit(EditGroupInitial());
       final result = await editGroupUsecase(EditGroupParams(event.userId, event.groupId, event.groupName));
 
-      result.fold(
-        (failure) => emit(EditGroupError(message: failure.message)),
-        (message) {
+      await result.fold(
+        (failure) async => emit(EditGroupError(message: failure.message)),
+        (message) async {
           emit(EditGroupSuccess(message: message));
-          add(FetchGroupsEvent(event.userId));
+          final fetchResult = await groupFetchingUsecase(GroupFetchParams(event.userId));
+          fetchResult.fold(
+            (failure) => emit(GroupFetchingError(message: failure.message)),
+            (groups) => emit(GroupLoaded(groups: groups)),
+          );
         },
       );
     });
 
-    // New Delete Handler
     on<GroupDeleteEvent>((event, emit) async {
       emit(GroupDeletingStarted());
       final result = await deleteGroupUsecase(DeleteGroupParams(event.userId, event.groupId));
 
-      result.fold(
-        (failure) => emit(GroupDeleteError(message: failure.message)),
-        (message) {
+      await result.fold(
+        (failure) async => emit(GroupDeleteError(message: failure.message)),
+        (message) async {
           emit(GroupDeleteSuccess(message: message));
-          add(FetchGroupsEvent(event.userId)); // Refetch after successful delete
+          final fetchResult = await groupFetchingUsecase(GroupFetchParams(event.userId));
+          fetchResult.fold(
+            (failure) => emit(GroupFetchingError(message: failure.message)),
+            (groups) => emit(GroupLoaded(groups: groups)),
+          );
         },
       );
     });

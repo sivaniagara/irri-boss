@@ -116,9 +116,23 @@ class AppDrawer extends StatelessWidget {
                   context,
                   icon: Icons.group_work,
                   title: 'Groups',
-                  onTap: () {
-                    context.push(GroupRoutes.groups);
+                  onTap: () async {
                     Navigator.pop(context);
+                    await context.push(GroupRoutes.groups);
+                    if (context.mounted) {
+                      final authState = context.read<AuthBloc>().state;
+                      if (authState is Authenticated) {
+                        try {
+                          final userId = authState.user.userDetails.id;
+                          final userType = authState.user.userDetails.userType;
+                          context.read<DashboardPageCubit>().getGroups(
+                            userId,
+                            GoRouterState.of(context),
+                            userType,
+                          );
+                        } catch (_) {}
+                      }
+                    }
                   },
                 ),
                 const Divider(indent: 10, endIndent: 10),
