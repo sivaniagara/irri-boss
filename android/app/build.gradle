@@ -2,7 +2,7 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
-}
+ }
 
 android {
     flavorDimensions "flavor-type"
@@ -10,17 +10,17 @@ android {
     productFlavors {
         irriBossDevelopment {
             dimension "flavor-type"
-            applicationId "com.niagaraautomations.irriBossDevelopment"
+            applicationId "com.amanora.irriBossDevelopment"
             resValue "string", "app_name", "Irri Boss"
         }
         irriBossProduction {
             dimension "flavor-type"
-            applicationId "com.niagaraautomations.irriBossProduction"
+            applicationId "com.amanora.irriBossProduction"
             resValue "string", "app_name", "Irri Boss"
         }
     }
 
-    namespace = "com.niagaraautomations"
+    namespace = "com.amanora"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 

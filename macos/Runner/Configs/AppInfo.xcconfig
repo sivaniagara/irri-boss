@@ -8,7 +8,7 @@
 PRODUCT_NAME = niagara_smart_drip_irrigation
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.niagaraautomations
+PRODUCT_BUNDLE_IDENTIFIER = com.amanora
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2025 com.niagaraautomations. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2025 com.amanora. All rights reserved.
