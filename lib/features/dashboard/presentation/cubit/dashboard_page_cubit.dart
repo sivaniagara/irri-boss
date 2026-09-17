@@ -769,7 +769,7 @@ class DashboardPageCubit extends Cubit<DashboardState> {
 
       /// -------------------- STEP 2: ON COMMAND --------------------
       String onCommand;
-      if (modelId == 27) {
+      if (AppConstants.isDoublePumpLive(modelId) || modelId == 27) {
         onCommand = cleanPayload.toUpperCase();
       } else {
         onCommand = "MTRON";

@@ -4,17 +4,21 @@ import 'setting_widget_type.dart';
 
 class TemplateJsonEntity extends Equatable{
   final List<SettingSectionEntity> sections;
+  final List<SettingSectionEntity> p2Sections;
 
   const TemplateJsonEntity({
     required this.sections,
+    this.p2Sections = const [],
   });
 
   TemplateJsonEntity copyWith({
     String? type,
     List<SettingSectionEntity>? sections,
+    List<SettingSectionEntity>? p2Sections,
   }) {
     return TemplateJsonEntity(
       sections: sections ?? this.sections,
+      p2Sections: p2Sections ?? this.p2Sections,
     );
   }
 
@@ -30,7 +34,7 @@ class TemplateJsonEntity extends Equatable{
   }
 
   @override
-  List<Object?> get props => [sections];
+  List<Object?> get props => [sections, p2Sections];
 }
 
 class SettingsEntity extends Equatable {

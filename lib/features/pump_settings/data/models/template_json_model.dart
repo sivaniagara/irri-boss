@@ -5,28 +5,39 @@ import '../../domain/entities/setting_widget_type.dart';
 class TemplateJsonModel extends TemplateJsonEntity {
   const TemplateJsonModel({
     required super.sections,
+    super.p2Sections = const [],
   });
 
   factory TemplateJsonModel.fromJson(Map<String, dynamic> json) {
     final sections = (json['setting'] ?? []) as List<dynamic>;
+    final p2Sections = (json['p2Setting'] ?? []) as List<dynamic>;
 
     return TemplateJsonModel(
       sections: sections
           .map<SettingSectionEntity>((sectionJson) => SettingsSectionModel.fromJson(sectionJson))
           .toList(),
+      p2Sections: p2Sections
+          .map<SettingSectionEntity>((sectionJson) => SettingsSectionModel.fromJson(sectionJson))
+          .toList(),
     );
   }
 
-  // ADD THIS
   Map<String, dynamic> toJson() {
-    return {
+    final map = <String, dynamic>{
       "setting": sections.map((section) => (section as SettingsSectionModel).toJson()).toList(),
     };
+    if (p2Sections.isNotEmpty) {
+      map["p2Setting"] = p2Sections.map((section) => (section as SettingsSectionModel).toJson()).toList();
+    }
+    return map;
   }
 
   factory TemplateJsonModel.fromEntity(TemplateJsonEntity entity) {
     return TemplateJsonModel(
       sections: entity.sections
+          .map((section) => SettingsSectionModel.fromEntity(section))
+          .toList(),
+      p2Sections: entity.p2Sections
           .map((section) => SettingsSectionModel.fromEntity(section))
           .toList(),
     );

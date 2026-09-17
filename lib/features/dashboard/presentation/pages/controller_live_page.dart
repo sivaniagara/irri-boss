@@ -497,8 +497,8 @@ class _CtrlLivePageState extends State<CtrlLivePage>
           children: [
             Image.asset(
               asset,
-              width: isRunning ? 80 : 55,
-              height: isRunning ? 80 : 55,
+              width: isRunning ? 80 : 70,
+              height: isRunning ? 80 : 70,
               errorBuilder: (c, e, s) => Icon(
                 Icons.electrical_services,
                 color: isRunning ? Colors.green : Colors.grey,

@@ -48,17 +48,15 @@ class PumpSettingsMenuPage extends StatelessWidget {
                 controllerId: controllerId,
                 modelId: modelId,
               ));
-            if (!AppConstants.sendFullSetting(modelId)) {
-              Future.microtask(() {
-                context.read<PumpSettingsCubit>().loadSettings(
-                  userId: userId,
-                  subUserId: subUserId,
-                  controllerId: controllerId,
-                  menuId: 502,
-                  modelId: modelId,
-                );
-              });
-            }
+            Future.microtask(() {
+              context.read<PumpSettingsCubit>().loadSettings(
+                userId: userId,
+                subUserId: subUserId,
+                controllerId: controllerId,
+                menuId: 502,
+                modelId: modelId,
+              );
+            });
             return bloc;
           },
         ),
@@ -104,16 +102,16 @@ class PumpSettingsMenuPage extends StatelessWidget {
   }
 
   void _showHideMenuDialog(BuildContext context) {
-    final cubit = context.read<PumpSettingsCubit>();
+    final menuBloc = context.read<PumpSettingsMenuBloc>();
 
     GlassyAlertDialog.show(
       context: context,
       title: "Hide/Show Menu",
-      content: BlocProvider.value(
-        value: cubit,
+      content: BlocProvider<PumpSettingsMenuBloc>.value(
+        value: menuBloc,
         child: SizedBox(
           width: double.maxFinite,
-          child: _HideShowSettingsDialog(
+          child: _HideShowMenuDialog(
             userId: userId,
             subUserId: subUserId,
             controllerId: controllerId,
@@ -125,7 +123,7 @@ class PumpSettingsMenuPage extends StatelessWidget {
       actionsBuilder: (dialogContext) => [
         TextButton(
           onPressed: () => Navigator.pop(dialogContext),
-          child: const Text("Cancel"),
+          child: const Text("Close"),
         ),
       ],
     );
@@ -261,11 +259,11 @@ class _MenuListView extends StatelessWidget {
 
   Widget _buildSpecialTwoPhaseTile(BuildContext context) {
     return BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
-      buildWhen: (_, state) => state is GetPumpSettingsLoaded,
       builder: (context, state) {
-        if (state is! GetPumpSettingsLoaded) return const SizedBox.shrink();
+        final cubit = context.read<PumpSettingsCubit>();
+        final item = cubit.twoPhaseMenuItem;
+        if (item == null) return const SizedBox.shrink();
 
-        final item = state.settings;
         final setting = item.template.sections[0].settings[0];
         final isOn = setting.value == "ON";
         return _navigationRow(
@@ -297,7 +295,7 @@ class _MenuListView extends StatelessWidget {
 
   void _toggleTwoPhase(BuildContext context, bool isOn, MenuItemEntity item) {
     final newValue = isOn ? "OF" : "ON";
-    context.read<PumpSettingsCubit>().updateSettingValue(newValue, 0, 0, item);
+    context.read<PumpSettingsCubit>().updateSettingValue(newValue, 0, 0);
   }
 
   void _sendTwoPhaseSettings(BuildContext context, MenuItemEntity item) {
@@ -475,11 +473,11 @@ class _MenuItemTile extends StatelessWidget {
   }
 }
 
-class _HideShowSettingsDialog extends StatelessWidget {
+class _HideShowMenuDialog extends StatelessWidget {
   final int userId, subUserId, controllerId, modelId;
   final String deviceId;
 
-  const _HideShowSettingsDialog({
+  const _HideShowMenuDialog({
     required this.userId,
     required this.subUserId,
     required this.controllerId,
@@ -489,52 +487,43 @@ class _HideShowSettingsDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PumpSettingsCubit, PumpSettingsState>(
-      buildWhen: (_, state) => state is GetPumpSettingsLoaded,
+    return BlocBuilder<PumpSettingsMenuBloc, PumpSettingsState>(
+      buildWhen: (_, state) => state is GetPumpSettingsMenuLoaded,
       builder: (context, state) {
-        if (state is! GetPumpSettingsLoaded) {
+        if (state is! GetPumpSettingsMenuLoaded) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final setting = state.settings.template.sections[0].settings[0];
+        final menuList = state.settingMenuList;
 
-        return CheckboxListTile(
-          title: Text(
-            setting.title,
-            style: const TextStyle(fontSize: 14),
+        return SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: menuList.map((item) {
+              final isVisible = item.menu.hiddenFlag != 0;
+              return CheckboxListTile(
+                title: Text(
+                  item.menu.menuItem,
+                  style: const TextStyle(fontSize: 14),
+                ),
+                value: isVisible,
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                onChanged: (bool? newValue) {
+                  if (newValue == null) return;
+                  final updatedMenu = item.menu.copyWith(newValue ? 1 : 0);
+                  context.read<PumpSettingsMenuBloc>().add(
+                        UpdateHiddenFlagsEvent(
+                          userId: userId,
+                          subUserId: subUserId,
+                          controllerId: controllerId,
+                          settingsMenuEntity: updatedMenu,
+                        ),
+                      );
+                },
+              );
+            }).toList(),
           ),
-          value: setting.hiddenFlag == "1",
-          dense: true,
-          contentPadding: EdgeInsets.zero,
-          onChanged: (bool? shouldHide) async {
-            if (shouldHide == null) return;
-
-            final cubit = context.read<PumpSettingsCubit>();
-
-            cubit.updateSettingValue(
-              shouldHide ? '1' : '0',
-              0,
-              0,
-              state.settings,
-              isHiddenFlag: true,
-            );
-
-            await Future.delayed(const Duration(milliseconds: 60));
-
-            final updated = cubit.state;
-            if (updated is! GetPumpSettingsLoaded) return;
-
-            await cubit.updateHiddenFlags(
-              userId: userId,
-              subUserId: subUserId,
-              controllerId: controllerId,
-              menuItemEntity: updated.settings,
-              sentSms: "",
-              modelId: modelId,
-            );
-
-            if (context.mounted) Navigator.pop(context);
-          },
         );
       },
     );

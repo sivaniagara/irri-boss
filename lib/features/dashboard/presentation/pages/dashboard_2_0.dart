@@ -146,8 +146,6 @@ class Dashboard20 extends StatefulWidget {
 
 class _Dashboard20State extends State<Dashboard20> {
   List<int> pumpModel = [4, 11, 27, 46];
-  int _selectedPumpMotor = 1;
-  int _totalPumps = 2; // For double pump models (1 or 2 pumps)
 
   int _lastModelId = -1; // -1 = not yet seen any model
   String _temperature = "25\u00B0 C";
@@ -504,14 +502,21 @@ class _Dashboard20State extends State<Dashboard20> {
   List<Widget> pumpDashboard(
       {required ControllerEntity controllerEntity,
         required LiveMessageEntity liveMessageEntity}) {
+    final bool isDoublePump = AppConstants.isDoublePumpLive(controllerEntity.modelId);
+
     return [
       mountainWidget(controllerEntity, liveMessageEntity),
       voltageAndCurrent(
           controllerEntity: controllerEntity,
           liveMessageEntity: liveMessageEntity),
-      doublePumpWidget(
-          controllerEntity: controllerEntity,
-          liveMessageEntity: liveMessageEntity),
+      if (isDoublePump)
+        doublePumpWidget(
+            controllerEntity: controllerEntity,
+            liveMessageEntity: liveMessageEntity)
+      else
+        singlePumpWidget(
+            controllerEntity: controllerEntity,
+            liveMessageEntity: liveMessageEntity),
       dashboardCard(
         child: Column(
           spacing: 20,
@@ -628,23 +633,45 @@ class _Dashboard20State extends State<Dashboard20> {
                 ),
             ],
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              rybWidget(
-                  backgroundColor: const Color(0xffE21E11),
-                  value: liveMessageEntity.rVoltage,
-                  phase: 'R Phase'),
-              rybWidget(
-                  backgroundColor: const Color(0xffFEC106),
-                  value: liveMessageEntity.yVoltage,
-                  phase: 'Y Phase'),
-              rybWidget(
+          AppConstants.isWlc(controllerEntity.modelId) &&
+                  (liveMessageEntity.yVoltage == '0' ||
+                   liveMessageEntity.yVoltage == '0.0' ||
+                   liveMessageEntity.yVoltage == '--' ||
+                   liveMessageEntity.yVoltage.isEmpty ||
+                   liveMessageEntity.bVoltage == '0' ||
+                   liveMessageEntity.bVoltage == '0.0' ||
+                   liveMessageEntity.bVoltage == '--' ||
+                   liveMessageEntity.bVoltage.isEmpty ||
+                   liveMessageEntity.phase.toUpperCase().contains('SINGLE') ||
+                   liveMessageEntity.phase.toUpperCase().contains('1') ||
+                   liveMessageEntity.phase.toUpperCase().contains('2'))
+              ? rybWidget(
                   backgroundColor: const Color(0xff6C8DB7),
-                  value: liveMessageEntity.bVoltage,
-                  phase: 'B Phase'),
-            ],
-          ),
+                  value: liveMessageEntity.brVoltage != '0' &&
+                          liveMessageEntity.brVoltage != '--' &&
+                          liveMessageEntity.brVoltage.isNotEmpty
+                      ? liveMessageEntity.brVoltage
+                      : liveMessageEntity.rVoltage,
+                  phase: 'RB Phase',
+                  isFullWidth: true,
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    rybWidget(
+                        backgroundColor: const Color(0xffE21E11),
+                        value: liveMessageEntity.rVoltage,
+                        phase: 'R Phase'),
+                    rybWidget(
+                        backgroundColor: const Color(0xffFEC106),
+                        value: liveMessageEntity.yVoltage,
+                        phase: 'Y Phase'),
+                    rybWidget(
+                        backgroundColor: const Color(0xff6C8DB7),
+                        value: liveMessageEntity.bVoltage,
+                        phase: 'B Phase'),
+                  ],
+                ),
           Center(
             child: Container(
               width: double.infinity,
@@ -654,7 +681,20 @@ class _Dashboard20State extends State<Dashboard20> {
                   color: const Color(0xffE1EEEE)),
               child: Center(
                 child: Text(
-                  'Current : C1 ${liveMessageEntity.rCurrent}A , C2 ${liveMessageEntity.yCurrent}A , C3 ${liveMessageEntity.bCurrent}A',
+                  AppConstants.isWlc(controllerEntity.modelId) &&
+                          (liveMessageEntity.yVoltage == '0' ||
+                           liveMessageEntity.yVoltage == '0.0' ||
+                           liveMessageEntity.yVoltage == '--' ||
+                           liveMessageEntity.yVoltage.isEmpty ||
+                           liveMessageEntity.bVoltage == '0' ||
+                           liveMessageEntity.bVoltage == '0.0' ||
+                           liveMessageEntity.bVoltage == '--' ||
+                           liveMessageEntity.bVoltage.isEmpty ||
+                           liveMessageEntity.phase.toUpperCase().contains('SINGLE') ||
+                           liveMessageEntity.phase.toUpperCase().contains('1') ||
+                           liveMessageEntity.phase.toUpperCase().contains('2'))
+                      ? 'Current : ${liveMessageEntity.bCurrent}A'
+                      : 'Current : C1 ${liveMessageEntity.rCurrent}A , C2 ${liveMessageEntity.yCurrent}A , C3 ${liveMessageEntity.bCurrent}A',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
@@ -673,6 +713,7 @@ class _Dashboard20State extends State<Dashboard20> {
         required LiveMessageEntity liveMessageEntity}) {
     final bool isMotor1On = liveMessageEntity.motorOnOff == '1';
     final bool isMotor2On = liveMessageEntity.motor2OnOff == '1';
+    final bool isDoublePump = AppConstants.isDoublePumpLive(controllerEntity.modelId);
 
     return [
       mountainWidget(controllerEntity, liveMessageEntity),
@@ -743,38 +784,14 @@ class _Dashboard20State extends State<Dashboard20> {
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                // ── Number of Pumps Selection Option ───────────────
-                _totalPumpsSelector(),
               ],
             ),
             const SizedBox(height: 12),
             const Divider(height: 1, thickness: 0.8),
             const SizedBox(height: 12),
-
-            // ── Motor Control Layout (1 Pump / Old Design vs 2 Pumps / Enhanced) ──
-            if (_totalPumps == 1) ...[
-              // ── Classic Single Pump (Old Design) ─────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      _motorWithTimer(
-                        isOn: isMotor1On,
-                        onDelayTimer: liveMessageEntity.onDelayTimer,
-                        isActive: liveMessageEntity.isMotor1OnDelayActive,
-                        width: 55,
-                      ),
-                      const SizedBox(width: 10),
-                      _motorLabel(1, isMotor1On),
-                    ],
-                  ),
-                  switches(liveMessageEntity: liveMessageEntity, motorNo: 1),
-                ],
-              ),
-            ] else ...[
-              // ── Enhanced 2-Pump Design ───────────────────────────
+            // ── Motor Control Layout (Shows 2-Motor design when Motor 2 is active in Live data) ──
+            if (isDoublePump && isMotor2On) ...[
+              // ── Motor 1 Container ──
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
@@ -787,16 +804,19 @@ class _Dashboard20State extends State<Dashboard20> {
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        const SizedBox(width: 8),
                         _motorWithTimer(
                           isOn: isMotor1On,
                           onDelayTimer: liveMessageEntity.onDelayTimer,
                           isActive: liveMessageEntity.isMotor1OnDelayActive,
-                          width: 55,
+                          width: 70,
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 12),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -826,6 +846,7 @@ class _Dashboard20State extends State<Dashboard20> {
                 ),
               ),
               const SizedBox(height: 10),
+              // ── Motor 2 Container ──
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
@@ -838,16 +859,19 @@ class _Dashboard20State extends State<Dashboard20> {
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        const SizedBox(width: 8),
                         _motorWithTimer(
                           isOn: isMotor2On,
                           onDelayTimer: liveMessageEntity.onDelayTimer,
                           isActive: liveMessageEntity.isMotor2OnDelayActive,
-                          width: 55,
+                          width: 70,
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 12),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -875,6 +899,29 @@ class _Dashboard20State extends State<Dashboard20> {
                     switches(liveMessageEntity: liveMessageEntity, motorNo: 2),
                   ],
                 ),
+              ),
+            ] else ...[
+              // ── Single Motor Design ────────────────────────
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(width: 8),
+                      _motorWithTimer(
+                        isOn: isMotor1On,
+                        onDelayTimer: liveMessageEntity.onDelayTimer,
+                        isActive: liveMessageEntity.isMotor1OnDelayActive,
+                        width: 70,
+                      ),
+                      const SizedBox(width: 12),
+                      _motorLabel(1, isMotor1On),
+                    ],
+                  ),
+                  switches(liveMessageEntity: liveMessageEntity, motorNo: 1),
+                ],
               ),
             ],
 
@@ -920,9 +967,9 @@ class _Dashboard20State extends State<Dashboard20> {
                       width: 70, fit: BoxFit.contain)
                       : Image.asset('assets/images/common/valve_off.png',
                       width: 70, fit: BoxFit.contain),
-                )
+                ),
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -1209,6 +1256,127 @@ class _Dashboard20State extends State<Dashboard20> {
     }
   }
 
+  Widget singlePumpWidget(
+      {required ControllerEntity controllerEntity,
+        required LiveMessageEntity liveMessageEntity}) {
+    final bool isMotor1On = liveMessageEntity.motorOnOff == '1';
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      clipBehavior: Clip.hardEdge,
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    iconWithHeader(
+                      title: 'Pump Control',
+                      iconBackgroundColor: isMotor1On
+                          ? const Color(0xffB1E4AA)
+                          : const Color(0xffFFCDD2),
+                      iconColor: isMotor1On ? Colors.green : Colors.red,
+                      titleColor: isMotor1On ? Colors.green : Colors.red,
+                      icon: Image.asset(
+                        'assets/images/common/motor_icon.png',
+                        width: 20,
+                        color: isMotor1On ? Colors.green : Colors.red,
+                      ),
+                    ),
+                    const Spacer(),
+                    if (AppConstants.isWlc(controllerEntity.modelId)) ...[
+                      Row(
+                        children: [
+                          Text("Manual Mode",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .labelLarge),
+                          const SizedBox(width: 8),
+                          PopupMenuButton<String>(
+                            initialValue: liveMessageEntity.manualFlag == '1'
+                                ? 'Manual'
+                                : liveMessageEntity.manualFlag == '2'
+                                ? 'Idle'
+                                : 'Auto',
+                            onSelected: (value) {
+                              final controllerContext = context
+                                  .read<ControllerContextCubit>()
+                                  .state as ControllerContextLoaded;
+
+                              final payload = value == 'Manual'
+                                  ? '1'
+                                  : value == 'Idle'
+                                  ? '2'
+                                  : '0';
+
+                              context.read<DashboardPageCubit>().sendManualMode(
+                                  deviceId: controllerContext.deviceId, payload: payload);
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: 'Auto',
+                                child: Text('Auto', style: TextStyle(color: Colors.black)),
+                              ),
+                              const PopupMenuItem(
+                                value: 'Manual',
+                                child: Text('Manual', style: TextStyle(color: Colors.black)),
+                              ),
+                              const PopupMenuItem(
+                                value: 'Idle',
+                                child: Text('Idle', style: TextStyle(color: Colors.black)),
+                              ),
+                            ],
+                            child: buildStatusContainer(liveMessageEntity.manualFlag == '1'
+                                ? 'Manual'
+                                : liveMessageEntity.manualFlag == '2'
+                                ? 'Idle'
+                                : 'Auto'),
+                          )
+                        ],
+                      )
+                    ]
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // ── Motor 1 Section ──────────────────────────────────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(width: 8),
+                        _motorWithTimer(
+                          isOn: isMotor1On,
+                          onDelayTimer: liveMessageEntity.onDelayTimer,
+                          isActive: liveMessageEntity.isMotor1OnDelayActive,
+                          width: 70,
+                        ),
+                        const SizedBox(width: 12),
+                        _motorLabel(1, isMotor1On),
+                      ],
+                    ),
+                    switches(liveMessageEntity: liveMessageEntity, motorNo: 1),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          ...stackRadius(),
+        ],
+      ),
+    );
+  }
+
   Widget doublePumpWidget(
       {required ControllerEntity controllerEntity,
         required LiveMessageEntity liveMessageEntity})
@@ -1227,14 +1395,14 @@ class _Dashboard20State extends State<Dashboard20> {
       child: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
                     iconWithHeader(
-                      title: _totalPumps == 2 ? 'Double Pump' : '1 Pump',
+                      title: 'Double Pump',
                       iconBackgroundColor: isAnyMotorOn
                           ? const Color(0xffB1E4AA)
                           : const Color(0xffFFCDD2),
@@ -1247,7 +1415,6 @@ class _Dashboard20State extends State<Dashboard20> {
                       ),
                     ),
                     const Spacer(),
-                    _totalPumpsSelector(),
                     if (AppConstants.isWlc(controllerEntity.modelId)) ...[
                       const SizedBox(width: 8),
                       Row(
@@ -1302,21 +1469,24 @@ class _Dashboard20State extends State<Dashboard20> {
                     ]
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
 
                 // ── Motor 1 Section ──────────────────────────────────────────
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        const SizedBox(width: 8),
                         _motorWithTimer(
                           isOn: isMotor1On,
                           onDelayTimer: liveMessageEntity.onDelayTimer,
                           isActive: liveMessageEntity.isMotor1OnDelayActive,
-                          width: 55,
+                          width: 70,
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 12),
                         _motorLabel(1, isMotor1On),
                       ],
                     ),
@@ -1324,24 +1494,27 @@ class _Dashboard20State extends State<Dashboard20> {
                   ],
                 ),
 
-                // ── Motor 2 Section (when _totalPumps == 2) ──────────────────
-                if (_totalPumps == 2) ...[
+                // ── Motor 2 Section (when Motor 2 is active in live data) ──
+                if (isMotor2On) ...[
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 12.0),
                     child: Divider(height: 1, thickness: 0.8),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
+                          const SizedBox(width: 8),
                           _motorWithTimer(
                             isOn: isMotor2On,
                             onDelayTimer: liveMessageEntity.onDelayTimer,
                             isActive: liveMessageEntity.isMotor2OnDelayActive,
-                            width: 55,
+                            width: 70,
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(width: 12),
                           _motorLabel(2, isMotor2On),
                         ],
                       ),
@@ -1358,70 +1531,13 @@ class _Dashboard20State extends State<Dashboard20> {
     );
   }
 
-  /// Builds a dropdown selector for the total number of pumps (1 or 2).
-  Widget _totalPumpsSelector() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xffF2F7F4),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
-          value: _totalPumps,
-          isDense: true,
-          items: const [
-            DropdownMenuItem(value: 1, child: Text('1 Pump')),
-            DropdownMenuItem(value: 2, child: Text('2 Pumps')),
-          ],
-          onChanged: (val) {
-            if (val != null) {
-              setState(() => _totalPumps = val);
-              
-              // Send the payload to hardware/backend
-              final controllerContext = context
-                  .read<ControllerContextCubit>()
-                  .state as ControllerContextLoaded;
-              
-              context.read<DashboardPageCubit>().sendPumpCount(
-                deviceId: controllerContext.deviceId,
-                count: val,
-              );
-            }
-          },
-        ),
-      ),
-    );
-  }
 
-  Widget _motorSelector() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: const Color(0xffF2F7F4),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<int>(
-          value: _selectedPumpMotor,
-          isDense: true,
-          items: const [
-            DropdownMenuItem(value: 1, child: Text('Motor 1')),
-            DropdownMenuItem(value: 2, child: Text('Motor 2')),
-          ],
-          onChanged: (motor) {
-            if (motor != null) setState(() => _selectedPumpMotor = motor);
-          },
-        ),
-      ),
-    );
-  }
 
   Widget _motorWithTimer({
     required bool isOn,
     required String onDelayTimer,
     required bool isActive,
-    double width = 60,
+    double width = 70,
   }) {
     return Stack(
       alignment: Alignment.center,
@@ -1525,52 +1641,71 @@ class _Dashboard20State extends State<Dashboard20> {
         ? liveMessageEntity.motor2OnOff == '1'
         : liveMessageEntity.motorOnOff == '1';
 
-    return Row(
-      children: [
-        // ── Glow ON button ─────────────────────────────────────────────────
-        GlowButton(
-          isActive: isOn,
-          activeColor: const Color(0xff4DB53D),
-          inactiveColor: Colors.green.shade200,
-          label: 'ON',
-          icon: const Icon(Icons.power_settings_new, color: Colors.white),
-          onPressed: () {
-            final controllerContext = context
-                .read<ControllerContextCubit>()
-                .state as ControllerContextLoaded;
-            final payload =
-            motorNo == 2 ? 'MOTOR2ON,' : 'MOTOR1ON,';
-            context.read<DashboardPageCubit>().controlMotorStatus(
-                userId: controllerContext.userId,
-                controllerId: controllerContext.controllerId,
-                programId: SafeParser.getProgramId(
-                    liveMessageEntity.programName),
-                deviceId: controllerContext.deviceId,
-                payload: payload);
-          },
-        ),
-        const SizedBox(width: 10),
-        // ── Glow OFF button ────────────────────────────────────────────────
-        GlowButton(
-          isActive: !isOn,
-          activeColor: const Color(0xffE9352B),
-          inactiveColor: Colors.red.shade200,
-          label: 'OFF',
-          icon: const Icon(Icons.power_settings_new, color: Colors.white),
-          onPressed: () {
-            final controllerContext = context
-                .read<ControllerContextCubit>()
-                .state as ControllerContextLoaded;
-            context.read<DashboardPageCubit>().controlMotorStatus(
-                userId: controllerContext.userId,
-                controllerId: controllerContext.controllerId,
-                programId: SafeParser.getProgramId(
-                    liveMessageEntity.programName),
-                deviceId: controllerContext.deviceId,
-                payload: 'MTROF,');
-          },
-        ),
-      ],
+    final bool isIdleMode = liveMessageEntity.manualFlag == '2';
+
+    return Opacity(
+      opacity: isIdleMode ? 0.6 : 1.0,
+      child: Row(
+        children: [
+          // ── Glow ON button ─────────────────────────────────────────────────
+          GlowButton(
+            isActive: isOn,
+            activeColor: const Color(0xff4DB53D),
+            inactiveColor: Colors.green.shade200,
+            label: 'ON',
+            icon: const Icon(Icons.power_settings_new, color: Colors.white),
+            onPressed: isIdleMode
+                ? () {
+                    showErrorAlert(
+                        context: context,
+                        message:
+                            'Cannot operate motor manually while in Idle mode');
+                  }
+                : () {
+                    final controllerContext = context
+                        .read<ControllerContextCubit>()
+                        .state as ControllerContextLoaded;
+                    final payload =
+                    motorNo == 2 ? 'MOTOR2ON,' : 'MOTOR1ON,';
+                    context.read<DashboardPageCubit>().controlMotorStatus(
+                        userId: controllerContext.userId,
+                        controllerId: controllerContext.controllerId,
+                        programId: SafeParser.getProgramId(
+                            liveMessageEntity.programName),
+                        deviceId: controllerContext.deviceId,
+                        payload: payload);
+                  },
+          ),
+          const SizedBox(width: 10),
+          // ── Glow OFF button ────────────────────────────────────────────────
+          GlowButton(
+            isActive: !isOn,
+            activeColor: const Color(0xffE9352B),
+            inactiveColor: Colors.red.shade200,
+            label: 'OFF',
+            icon: const Icon(Icons.power_settings_new, color: Colors.white),
+            onPressed: isIdleMode
+                ? () {
+                    showErrorAlert(
+                        context: context,
+                        message:
+                            'Cannot operate motor manually while in Idle mode');
+                  }
+                : () {
+                    final controllerContext = context
+                        .read<ControllerContextCubit>()
+                        .state as ControllerContextLoaded;
+                    context.read<DashboardPageCubit>().controlMotorStatus(
+                        userId: controllerContext.userId,
+                        controllerId: controllerContext.controllerId,
+                        programId: SafeParser.getProgramId(
+                            liveMessageEntity.programName),
+                        deviceId: controllerContext.deviceId,
+                        payload: 'MTROF,');
+                  },
+          ),
+        ],
+      ),
     );
   }
 
@@ -1578,28 +1713,66 @@ class _Dashboard20State extends State<Dashboard20> {
     required Color backgroundColor,
     required String value,
     required String phase,
+    bool isFullWidth = false,
   }) {
+    final bool isRb = phase == 'RB Phase';
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: isFullWidth ? double.infinity : null,
+      padding: EdgeInsets.symmetric(vertical: isFullWidth ? 18 : 16, horizontal: 16),
       decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12), color: backgroundColor),
-      child: Column(
-        spacing: 5,
-        children: [
-          Text(phase,
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  fontSize: 14)),
-          IntrinsicWidth(
-              child: Container(width: 60, height: 0.8, color: Colors.white)),
-          Text('$value V',
-              style: const TextStyle(
-                  fontSize: 20,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold)),
-        ],
+        borderRadius: BorderRadius.circular(isFullWidth ? 16 : 12),
+        color: isFullWidth ? null : backgroundColor,
+        gradient: isFullWidth
+            ? const LinearGradient(
+                colors: [Color(0xFF0F8AD0), Color(0xFF32618D)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null,
+        boxShadow: isFullWidth
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF0F8AD0).withValues(alpha: 0.35),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
       ),
+      child: isRb
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.electric_bolt, color: Colors.amberAccent, size: 24),
+                const SizedBox(width: 10),
+                Text(
+                  'RB : $value V',
+                  style: const TextStyle(
+                    fontSize: 24,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
+            )
+          : Column(
+              spacing: 5,
+              children: [
+                Text(phase,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 14)),
+                IntrinsicWidth(
+                    child: Container(width: 60, height: 0.8, color: Colors.white)),
+                Text('$value V',
+                    style: const TextStyle(
+                        fontSize: 20,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold)),
+              ],
+            ),
     );
   }
 

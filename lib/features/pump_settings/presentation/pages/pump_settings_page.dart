@@ -138,6 +138,7 @@ class PumpSettingsPage extends StatelessWidget {
                   (cubit.state as GetPumpSettingsLoaded).settings,
                   modelId,
                   menuName ?? 'Pump Settings',
+                  isPump2: cubit.selectedPump == 2,
                 );
                 context.read<PumpSettingsViewResponseCubit>().clear();
               }
@@ -200,6 +201,7 @@ class PumpSettingsPage extends StatelessWidget {
                         .sendPumpSettingViewCommand(
                       deviceId: deviceId,
                       menuItemEntity: loadedState.settings,
+                      modelId: modelId,
                     );
                   },
                   child: SingleChildScrollView(
@@ -397,13 +399,18 @@ class _HideShowSettingsDialog extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
+        final cubit = context.read<PumpSettingsCubit>();
+        final bool isPump2 = cubit.selectedPump == 2;
         final menu = state.settings;
+        final sections = (isPump2 && menu.template.p2Sections.isNotEmpty)
+            ? menu.template.p2Sections
+            : menu.template.sections;
+
         return SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children:
-            List.generate(menu.template.sections.length, (sectionIndex) {
-              final section = menu.template.sections[sectionIndex];
+            children: List.generate(sections.length, (sectionIndex) {
+              final section = sections[sectionIndex];
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -458,8 +465,8 @@ class _HideShowSettingsDialog extends StatelessWidget {
                                 updatedFlags.join(';'),
                                 sectionIndex,
                                 settingIndex,
-                                menu,
                                 isHiddenFlag: true,
+                                isPump2: isPump2,
                               );
                             },
                           );
@@ -477,13 +484,13 @@ class _HideShowSettingsDialog extends StatelessWidget {
                           newValue == true ? "1" : "0",
                           sectionIndex,
                           settingIndex,
-                          menu,
                           isHiddenFlag: true,
+                          isPump2: isPump2,
                         );
                       },
                     );
                   }),
-                  if (sectionIndex < menu.template.sections.length - 1)
+                  if (sectionIndex < sections.length - 1)
                     const Divider(),
                 ],
               );
@@ -495,14 +502,14 @@ class _HideShowSettingsDialog extends StatelessWidget {
   }
 }
 
-class _SettingsList extends StatelessWidget {
+class _SettingsList extends StatefulWidget {
   final int userId, subUserId, controllerId;
   final int modelId;
   final MenuItemEntity menu;
   final String deviceId;
-  String? menuName;
+  final String? menuName;
 
-  _SettingsList({
+  const _SettingsList({
     required this.menu,
     required this.deviceId,
     required this.userId,
@@ -513,85 +520,177 @@ class _SettingsList extends StatelessWidget {
   });
 
   @override
+  State<_SettingsList> createState() => _SettingsListState();
+}
+
+class _SettingsListState extends State<_SettingsList> {
+  late int _selectedPump;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedPump = context.read<PumpSettingsCubit>().selectedPump;
+  }
+
+  void _onPumpSelected(int pump) {
+    setState(() {
+      _selectedPump = pump;
+    });
+    context.read<PumpSettingsCubit>().selectPump(pump);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: menu.template.sections.length,
-      itemBuilder: (context, sectionIndex) {
-        final section = menu.template.sections[sectionIndex];
-        final hasVisibleSetting = section.settings.asMap().entries.any((entry) {
-          return _isSettingVisible(
-            menu: menu,
-            setting: entry.value,
-            modelId: modelId,
-          );
-        });
-        if (!hasVisibleSetting) return const SizedBox();
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Text(
-                  section.sectionName,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w400,
+    final bool showPumpSelector = widget.menu.template.p2Sections.isNotEmpty || widget.modelId == 1;
+    final sections = (_selectedPump == 2 && widget.menu.template.p2Sections.isNotEmpty)
+        ? widget.menu.template.p2Sections
+        : widget.menu.template.sections;
+
+    return Column(
+      children: [
+        if (showPumpSelector)
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xffE2E8F0),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _onPumpSelected(1),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: _selectedPump == 1
+                            ? Theme.of(context).primaryColor
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Pump 1',
+                          style: TextStyle(
+                            color: _selectedPump == 1 ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              CustomCard(
-                child: ListView.separated(
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  itemBuilder: (BuildContext context, int index) {
-                    final setting = section.settings[index];
-                    if (!_isSettingVisible(
-                      menu: menu,
-                      setting: setting,
-                      modelId: modelId,
-                    )) {
-                      return const SizedBox();
-                    }
-                    return _SettingRow(
-                      menuItemEntity: menu,
-                      sectionIndex: sectionIndex,
-                      settingIndex: index,
-                      deviceId: deviceId,
-                      userId: userId,
-                      subUserId: subUserId,
-                      controllerId: controllerId,
-                      modelId: modelId,
-                      menuName: menuName ?? 'Pump Settings',
-                    );
-                  },
-                  separatorBuilder: (BuildContext context, int index) {
-                    final setting = section.settings[index];
-                    if (!_isSettingVisible(
-                      menu: menu,
-                      setting: setting,
-                      modelId: modelId,
-                    )) {
-                      return const SizedBox();
-                    }
-                    if (setting.widgetType == SettingWidgetType.multiText) {
-                      return const SizedBox.shrink();
-                    }
-                    return const Divider(thickness: 0.6);
-                  },
-                  itemCount: section.settings.length,
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => _onPumpSelected(2),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: _selectedPump == 2
+                            ? Theme.of(context).primaryColor
+                            : Colors.transparent,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Text(
+                          'Pump 2',
+                          style: TextStyle(
+                            color: _selectedPump == 2 ? Colors.white : Colors.black87,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-              )
-            ],
+              ],
+            ),
           ),
-        );
-      },
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: sections.length,
+          itemBuilder: (context, sectionIndex) {
+            final section = sections[sectionIndex];
+            final hasVisibleSetting = section.settings.asMap().entries.any((entry) {
+              return _isSettingVisible(
+                menu: widget.menu,
+                setting: entry.value,
+                modelId: widget.modelId,
+              );
+            });
+            if (!hasVisibleSetting) return const SizedBox();
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Text(
+                      section.sectionName,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  CustomCard(
+                    child: ListView.separated(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      itemBuilder: (BuildContext context, int index) {
+                        final setting = section.settings[index];
+                        if (!_isSettingVisible(
+                          menu: widget.menu,
+                          setting: setting,
+                          modelId: widget.modelId,
+                        )) {
+                          return const SizedBox();
+                        }
+                        return _SettingRow(
+                          menuItemEntity: widget.menu,
+                          sectionIndex: sectionIndex,
+                          settingIndex: index,
+                          deviceId: widget.deviceId,
+                          userId: widget.userId,
+                          subUserId: widget.subUserId,
+                          controllerId: widget.controllerId,
+                          modelId: widget.modelId,
+                          menuName: widget.menuName ?? 'Pump Settings',
+                          isPump2: _selectedPump == 2,
+                        );
+                      },
+                      separatorBuilder: (BuildContext context, int index) {
+                        final setting = section.settings[index];
+                        if (!_isSettingVisible(
+                          menu: widget.menu,
+                          setting: setting,
+                          modelId: widget.modelId,
+                        )) {
+                          return const SizedBox();
+                        }
+                        if (setting.widgetType == SettingWidgetType.multiText) {
+                          return const SizedBox.shrink();
+                        }
+                        return const Divider(thickness: 0.6);
+                      },
+                      itemCount: section.settings.length,
+                    ),
+                  )
+                ],
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 }
@@ -603,9 +702,10 @@ class _SettingRow extends StatelessWidget {
   final int sectionIndex;
   final int settingIndex;
   final String deviceId;
-  String? menuName;
+  final String? menuName;
+  final bool isPump2;
 
-  _SettingRow({
+  const _SettingRow({
     required this.menuItemEntity,
     required this.sectionIndex,
     required this.settingIndex,
@@ -615,19 +715,18 @@ class _SettingRow extends StatelessWidget {
     required this.controllerId,
     required this.modelId,
     this.menuName,
+    this.isPump2 = false,
   });
 
   static final _formKeys = <String, GlobalKey<FormState>>{};
 
-  String get _formKeyId => '$sectionIndex-$settingIndex';
+  String get _formKeyId => '$sectionIndex-$settingIndex-$isPump2';
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<PumpSettingsCubit>();
     final formKey =
     _formKeys.putIfAbsent(_formKeyId, () => GlobalKey<FormState>());
-    final setting =
-    menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
 
     final bool isSending = context.select((PumpSettingsCubit c) {
       final s = c.state;
@@ -658,6 +757,7 @@ class _SettingRow extends StatelessWidget {
                     menuItemEntity,
                     modelId,
                     menuName ?? 'Pump Setting',
+                    isPump2: isPump2,
                   );
                   context.read<PumpSettingsViewResponseCubit>().clear();
                 } else {
@@ -671,7 +771,10 @@ class _SettingRow extends StatelessWidget {
   }
 
   Widget _buildInput(BuildContext context) {
-    final section = menuItemEntity.template.sections[sectionIndex];
+    final sections = (isPump2 && menuItemEntity.template.p2Sections.isNotEmpty)
+        ? menuItemEntity.template.p2Sections
+        : menuItemEntity.template.sections;
+    final section = sections[sectionIndex];
     final setting = section.settings[settingIndex];
     print("setting.valueInHw : ${setting.valueInHw}");
     print("setting.value : ${setting.value}");
@@ -735,8 +838,10 @@ class _SettingRow extends StatelessWidget {
   }
 
   Widget _buildTrailing(BuildContext context) {
-    final setting =
-    menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
+    final sections = (isPump2 && menuItemEntity.template.p2Sections.isNotEmpty)
+        ? menuItemEntity.template.p2Sections
+        : menuItemEntity.template.sections;
+    final setting = sections[sectionIndex].settings[settingIndex];
     return switch (setting.widgetType) {
       SettingWidgetType.nothing => const SizedBox.shrink(),
       (SettingWidgetType.text || SettingWidgetType.floatText) => SizedBox(
@@ -773,7 +878,7 @@ class _SettingRow extends StatelessWidget {
         newValue,
         sectionIndex,
         settingIndex,
-        menuItemEntity,
+        isPump2: isPump2,
         userId: userId,
         subUserId: subUserId,
         controllerId: controllerId,
@@ -783,8 +888,10 @@ class _SettingRow extends StatelessWidget {
 
   void _handleTap(BuildContext context) async {
     String? newValue;
-    final setting =
-    menuItemEntity.template.sections[sectionIndex].settings[settingIndex];
+    final sections = (isPump2 && menuItemEntity.template.p2Sections.isNotEmpty)
+        ? menuItemEntity.template.p2Sections
+        : menuItemEntity.template.sections;
+    final setting = sections[sectionIndex].settings[settingIndex];
 
     switch (setting.widgetType) {
       case SettingWidgetType.toggle:

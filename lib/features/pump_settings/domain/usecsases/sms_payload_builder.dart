@@ -27,6 +27,15 @@ class SmsPayloadBuilder {
       if (number != null) {
         processedValue = number.toString().padLeft(2, '0');
       }
+    } else if (s.smsFormat.toUpperCase().contains("AMP") ||
+               s.smsFormat.toUpperCase().contains("OVERLOAD") ||
+               s.smsFormat.toUpperCase().contains("O/L")) {
+      final double? parsedVal = double.tryParse(value.replaceAll(RegExp(r'[^0-9.]'), ''));
+      if (parsedVal != null) {
+        final int intPart = parsedVal.toInt();
+        final int fracPart = ((parsedVal - intPart) * 10).round().abs();
+        processedValue = "$intPart${fracPart.toString().padLeft(3, '0')}";
+      }
     }
 
     return "${s.smsFormat}$processedValue"

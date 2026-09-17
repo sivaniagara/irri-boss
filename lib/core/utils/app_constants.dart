@@ -4,11 +4,11 @@ import 'package:flutter/foundation.dart';
 
 class AppConstants {
   static bool isPumpLive(int modelId) => {11, 13, 4, 6, 12, 30, 38, 46}.contains(modelId);
-  static bool isDoublePumpLive(int modelId) => false;
+  static bool isDoublePumpLive(int modelId) => {1, 5}.contains(modelId);
   static bool isIrrigationLive(int modelId) => {1, 5}.contains(modelId);
   static bool isWlc(int modelId) => {45}.contains(modelId);
   static bool isPumpPro(int modelId) => {46}.contains(modelId);
-  static bool sendFullSetting(int modelId) => {45, 46, 27}.contains(modelId);
+  static bool sendFullSetting(int modelId) => true;
   static bool statusCheck(int menuId) => {544}.contains(menuId);
 
   static String formatWlcDateTime([DateTime? dateTime]) {
@@ -22,8 +22,15 @@ class AppConstants {
     return "DATETIME,$ss,$mm,$hh,$dd,$m,$yy";
   }
 
-  static String sendWlcCommand(String payload) {
+  static String sendWlcCommand(String payload, {bool appendCrc = true, bool includeBrackets = true}) {
     String actualPayload = payload;
+
+    if (!appendCrc) {
+      if (kDebugMode) {
+        print('Payload (No CRC): $actualPayload');
+      }
+      return includeBrackets ? '{$actualPayload}' : actualPayload;
+    }
 
     // --- CRC-16 (Modbus) calculation ---
     List<int> bytes = actualPayload.codeUnits;
@@ -49,7 +56,7 @@ class AppConstants {
             crcLow.toRadixString(16).padLeft(2, '0');
 
     // --- Keep your original output format ---
-    String finalPayload = '{$actualPayload,$crcHex}';
+    String finalPayload = includeBrackets ? '{$actualPayload,$crcHex}' : '$actualPayload,$crcHex';
 
     if (kDebugMode) {
       print('CRC16: $crcHex');

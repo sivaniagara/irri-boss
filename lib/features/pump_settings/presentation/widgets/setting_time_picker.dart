@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
+import 'package:flutter/services.dart';
 
 class SettingTimePicker extends StatefulWidget {
   final String initialTime;
@@ -42,42 +42,81 @@ class _SettingTimePickerState extends State<SettingTimePicker> {
     return '$h:$m:$s';
   }
 
+  void _updateTime(int type, int value) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      if (type == 0) {
+        currentTime = DateTime(2025, 1, 1, value, currentTime.minute, currentTime.second);
+      } else if (type == 1) {
+        currentTime = DateTime(2025, 1, 1, currentTime.hour, value, currentTime.second);
+      } else {
+        currentTime = DateTime(2025, 1, 1, currentTime.hour, currentTime.minute, value);
+      }
+    });
+    widget.onTimeChanged(_formatTime());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const SizedBox(height: 16),
+        const SizedBox(height: 10),
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildHeader("HH"),
-            const SizedBox(width: 75),
-            _buildHeader("MM"),
-            if (widget.showSeconds) ...[
-              const SizedBox(width: 75),
-              _buildHeader("SS"),
-            ],
+            Expanded(child: Center(child: _buildHeader("HOURS"))),
+            Expanded(child: Center(child: _buildHeader("MINUTES"))),
+            if (widget.showSeconds)
+              Expanded(child: Center(child: _buildHeader("SECONDS"))),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Expanded(
-          child: TimePickerSpinner(
-            time: currentTime,
-            is24HourMode: true,
+          child: Stack(
             alignment: Alignment.center,
-            spacing: 60,
-            itemHeight: 80,
-            isForce2Digits: true,
-            normalTextStyle: const TextStyle(fontSize: 28, color: Colors.grey),
-            highlightedTextStyle: const TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-            ),
-            onTimeChange: (newTime) {
-              setState(() => currentTime = newTime);
-              widget.onTimeChanged(_formatTime());
-            },
-            isShowSeconds: widget.showSeconds,
+            children: [
+              // Glassy selection highlight
+              Container(
+                height: 54,
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Theme.of(context).primaryColor.withOpacity(0.15), 
+                    width: 1.5,
+                  ),
+                ),
+              ),
+              // Wheel Pickers
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Expanded(
+                    child: _AttractiveWheel(
+                      maxCount: 24,
+                      initialValue: currentTime.hour,
+                      onChanged: (val) => _updateTime(0, val),
+                    ),
+                  ),
+                  Expanded(
+                    child: _AttractiveWheel(
+                      maxCount: 60,
+                      initialValue: currentTime.minute,
+                      onChanged: (val) => _updateTime(1, val),
+                    ),
+                  ),
+                  if (widget.showSeconds)
+                    Expanded(
+                      child: _AttractiveWheel(
+                        maxCount: 60,
+                        initialValue: currentTime.second,
+                        onChanged: (val) => _updateTime(2, val),
+                      ),
+                    ),
+                ],
+              ),
+            ],
           ),
         ),
       ],
@@ -88,10 +127,78 @@ class _SettingTimePickerState extends State<SettingTimePicker> {
     return Text(
       label,
       style: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w600,
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
         color: Colors.blueGrey.withOpacity(0.8),
         letterSpacing: 1.2,
+      ),
+    );
+  }
+}
+
+class _AttractiveWheel extends StatefulWidget {
+  final int maxCount;
+  final int initialValue;
+  final ValueChanged<int> onChanged;
+
+  const _AttractiveWheel({
+    required this.maxCount,
+    required this.initialValue,
+    required this.onChanged,
+  });
+
+  @override
+  State<_AttractiveWheel> createState() => _AttractiveWheelState();
+}
+
+class _AttractiveWheelState extends State<_AttractiveWheel> {
+  late FixedExtentScrollController _controller;
+  late int _selectedValue;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedValue = widget.initialValue;
+    _controller = FixedExtentScrollController(initialItem: widget.initialValue);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListWheelScrollView.useDelegate(
+      controller: _controller,
+      itemExtent: 54,
+      physics: const FixedExtentScrollPhysics(),
+      perspective: 0.005,
+      squeeze: 1.1,
+      overAndUnderCenterOpacity: 0.4,
+      onSelectedItemChanged: (index) {
+        final val = index % widget.maxCount;
+        setState(() {
+          _selectedValue = val;
+        });
+        widget.onChanged(val);
+      },
+      childDelegate: ListWheelChildLoopingListDelegate(
+        children: List.generate(widget.maxCount, (index) {
+          final isSelected = _selectedValue == index;
+          return Center(
+            child: AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 150),
+              style: TextStyle(
+                fontSize: isSelected ? 28 : 22,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected ? Theme.of(context).primaryColor : Colors.grey.shade500,
+              ),
+              child: Text(index.toString().padLeft(2, '0')),
+            ),
+          );
+        }),
       ),
     );
   }

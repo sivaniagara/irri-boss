@@ -29,7 +29,7 @@ class SettingsPage extends StatelessWidget {
         // Condition check based on modelId
         final bool isDoublePump = AppConstants.isDoublePumpLive(modelId);
         final bool isSinglePump = AppConstants.isPumpLive(modelId);
-        final bool isAnyPump = isDoublePump || isSinglePump;
+        final bool isStandAlonePump = isSinglePump || modelId == 27;
 
         return SingleChildScrollView(
           child: Column(
@@ -87,8 +87,8 @@ class SettingsPage extends StatelessWidget {
                     }
                 ),
 
-              // Hide these items for Single and Double Pump models
-              if (!isAnyPump && !AppConstants.isWlc(modelId)) ...[
+              // Hide these items for Standalone Pump models and WLC
+              if (!isStandAlonePump && !AppConstants.isWlc(modelId)) ...[
                 _buildSettingsItem(
                     context: context,
                     title: 'Irrigation Settings',

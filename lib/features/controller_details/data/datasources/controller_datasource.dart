@@ -27,11 +27,11 @@ class ControllerRemoteDataSourceImpl extends ControllerRemoteDataSource {
           .replaceAll(':userId', params.userId.toString())
           .replaceAll(':userDeviceId', params.controllerId.toString());
 
-      kdebugmode("âž¡ï¸ GET API: $endpoint");
+      kdebugmode(" GET API: $endpoint");
 
       final response = await apiClient.get(endpoint);
 
-      kdebugmode("â¬…ï¸ GET RESPONSE: $response");
+      kdebugmode("GET RESPONSE: $response");
 
       if (response == null) {
         throw ServerException(statusCode: 500, message: "Empty server response");
@@ -46,7 +46,7 @@ class ControllerRemoteDataSourceImpl extends ControllerRemoteDataSource {
         message: response['message'] ?? "Unknown server error",
       );
     } catch (e) {
-      kdebugmode("âŒ getControllerDetails ERROR: $e");
+      kdebugmode(" getControllerDetails ERROR: $e");
       throw ServerException(statusCode: 500, message: e.toString());
     }
   }
@@ -58,7 +58,7 @@ class ControllerRemoteDataSourceImpl extends ControllerRemoteDataSource {
     try {
       final endpoint = ApiUrls.updateController;
 
-       // kdebugmode("âž¡ï¸ BODY: $body");
+
       Map<String, dynamic> body = {
         "userId" : params.userId,
         "userDeviceId" : params.controllerId,
