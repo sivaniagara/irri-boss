@@ -1,4 +1,4 @@
-package com.niagaraautomations
+package com.amanora
 
 import io.flutter.embedding.android.FlutterActivity
 

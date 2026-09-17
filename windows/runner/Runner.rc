@@ -89,11 +89,11 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.niagaraautomations" "\0"
+            VALUE "CompanyName", "com.amanora" "\0"
             VALUE "FileDescription", "niagara_smart_drip_irrigation" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "niagara_smart_drip_irrigation" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2025 com.niagaraautomations. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2025 com.amanora. All rights reserved." "\0"
             VALUE "OriginalFilename", "niagara_smart_drip_irrigation.exe" "\0"
             VALUE "ProductName", "niagara_smart_drip_irrigation" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
