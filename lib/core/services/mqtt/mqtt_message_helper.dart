@@ -322,7 +322,8 @@ class MqttMessageHelper {
         }
       }catch(e, stackTrace){
         debugPrint('wlc payload formation error : $e');
-        debugPrint('wlc payload formation stackTrace : $stackTrace');
+        debugPrint(''
+            'wlc payload formation stackTrace : $stackTrace');
       }
     }else{
       Map<String, dynamic> jsonObject = {};

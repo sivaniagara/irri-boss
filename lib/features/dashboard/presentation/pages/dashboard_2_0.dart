@@ -530,13 +530,15 @@ class _Dashboard20State extends State<Dashboard20> {
                   color: Theme.of(context).colorScheme.primary),
             ),
             Text(
-              // !AppConstants.isWlc(controllerEntity.modelId) ?
-              // controllerEntity.msgDesc :
-              getMotorMessage(liveMessageEntity.wlcReasonFlag),
+              !AppConstants.isWlc(controllerEntity.modelId)
+                  ? (liveMessageEntity.msgDesc.isNotEmpty ? liveMessageEntity.msgDesc : controllerEntity.msgDesc)
+                  : getMotorMessage(liveMessageEntity.wlcReasonFlag),
               style: const TextStyle(fontSize: 16, color: Color(0xff424242)),
             ),
             ReadMoreText(
-              controllerEntity.ctrlLatestMsg,
+              liveMessageEntity.fullMessage.isNotEmpty
+                  ? liveMessageEntity.fullMessage
+                  : controllerEntity.ctrlLatestMsg,
               trimLines: 2,
               trimMode: TrimMode.Line,
               trimCollapsedText: ' Show more',
@@ -1166,11 +1168,16 @@ class _Dashboard20State extends State<Dashboard20> {
               icon: Icon(Icons.message,
                   color: Theme.of(context).colorScheme.primary),
             ),
-            Text(controllerEntity.msgDesc,
+            Text(
+                liveMessageEntity.msgDesc.isNotEmpty
+                    ? liveMessageEntity.msgDesc
+                    : controllerEntity.msgDesc,
                 style: const TextStyle(
                     fontSize: 16, color: Color(0xff424242))),
             ReadMoreText(
-              controllerEntity.ctrlLatestMsg,
+              liveMessageEntity.fullMessage.isNotEmpty
+                  ? liveMessageEntity.fullMessage
+                  : controllerEntity.ctrlLatestMsg,
               trimLines: 2,
               trimMode: TrimMode.Line,
               trimCollapsedText: ' Show more',
@@ -1358,7 +1365,7 @@ class _Dashboard20State extends State<Dashboard20> {
                         _motorWithTimer(
                           isOn: isMotor1On,
                           onDelayTimer: liveMessageEntity.onDelayTimer,
-                          isActive: liveMessageEntity.isMotor1OnDelayActive,
+                          isActive: AppConstants.isPumpPro(controllerEntity.modelId) ? liveMessageEntity.isMotor1OnDelayActive : false,
                           width: 70,
                         ),
                         const SizedBox(width: 12),
