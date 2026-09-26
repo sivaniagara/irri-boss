@@ -531,15 +531,13 @@ class _Dashboard20State extends State<Dashboard20> {
             ),
             Text(
               !AppConstants.isWlc(controllerEntity.modelId)
-                  ? (liveMessageEntity.msgDesc.isNotEmpty ? liveMessageEntity.msgDesc : controllerEntity.msgDesc)
-                  : getMotorMessage(liveMessageEntity.wlcReasonFlag),
+                  ? (liveMessageEntity.fullMessage.isNotEmpty ? liveMessageEntity.msgDesc : '')
+                  : (liveMessageEntity.wlcReasonFlag.isNotEmpty ? getMotorMessage(liveMessageEntity.wlcReasonFlag) : ''),
               style: const TextStyle(fontSize: 16, color: Color(0xff424242)),
             ),
             Builder(
               builder: (context) {
-                final String msg = controllerEntity.ctrlLatestMsg.isNotEmpty
-                    ? controllerEntity.ctrlLatestMsg
-                    : liveMessageEntity.fullMessage;
+                final String msg = liveMessageEntity.fullMessage;
                 if (msg.isEmpty || _isRawDataPacket(msg)) {
                   return const SizedBox.shrink();
                 }
@@ -1181,16 +1179,14 @@ class _Dashboard20State extends State<Dashboard20> {
                   color: Theme.of(context).colorScheme.primary),
             ),
             Text(
-                liveMessageEntity.msgDesc.isNotEmpty
+                liveMessageEntity.fullMessage.isNotEmpty
                     ? liveMessageEntity.msgDesc
-                    : controllerEntity.msgDesc,
+                    : '',
                 style: const TextStyle(
                     fontSize: 16, color: Color(0xff424242))),
             Builder(
               builder: (context) {
-                final String msg = controllerEntity.ctrlLatestMsg.isNotEmpty
-                    ? controllerEntity.ctrlLatestMsg
-                    : liveMessageEntity.fullMessage;
+                final String msg = liveMessageEntity.fullMessage;
                 if (msg.isEmpty || _isRawDataPacket(msg)) {
                   return const SizedBox.shrink();
                 }

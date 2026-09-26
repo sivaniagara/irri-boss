@@ -363,7 +363,12 @@ class MqttMessageHelper {
       final String ct = (jsonObject['cT']?.toString() ?? '').isNotEmpty
           ? jsonObject['cT'].toString()
           : defaultCt;
-      String cl = (jsonObject['cL'] ?? '').toString();
+      String cl = (jsonObject['cL'] ?? '').toString().trim();
+      if (cl.startsWith(r'$L,')) {
+        cl = cl.substring(3).trim();
+      } else if (cl.contains(r'$L,')) {
+        cl = cl.replaceAll(r'$L,', '').trim();
+      }
 
       if (kDebugMode) {
         kdebugmode('Extracted Data -> Date: $cd, Time: $ct');
