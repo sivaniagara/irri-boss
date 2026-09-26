@@ -235,7 +235,21 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       }
     }
 
-    List<String> parts = cleanMessage.split(',');
+    List<String> rawParts = cleanMessage.split(',');
+    List<String> parts = [];
+    for (var p in rawParts) {
+      if (p.contains(';')) {
+        final subParts = p.split(';');
+        for (var sub in subParts) {
+          if (sub.trim().isNotEmpty) {
+            parts.add(sub.trim());
+          }
+        }
+      } else {
+        parts.add(p.trim());
+      }
+    }
+
     if (parts.isEmpty) {
       kdebugmode('onViewMessageReceived: payload too short, ignoring');
       return;
@@ -250,7 +264,6 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
         String pumpNum = parts[1].trim();
         isPump2Payload = (pumpNum == '2');
       }
-
     }
 
     final targetSections =
@@ -264,12 +277,30 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
           return setting;
         }
 
+        String rawValue = parts[valueIndex].trim();
+        if (RegExp(r'^\d+:').hasMatch(rawValue)) {
+          rawValue = rawValue.replaceFirst(RegExp(r'^\d+:'), '').trim();
+        }
+
         String value = '';
         if (setting.widgetType == SettingWidgetType.time ||
             setting.widgetType == SettingWidgetType.multiTime ||
             setting.value.contains(':')) {
-          // consume 3 parts for HH, MM, SS
-          if (valueIndex + 2 < parts.length) {
+          if (rawValue.contains(':')) {
+            final tParts = rawValue.split(':');
+            if (tParts.length == 3) {
+              if (tParts[0] == '00' && tParts[1] != '00') {
+                value = '${tParts[1].padLeft(2, '0')}:${tParts[2].padLeft(2, '0')}:00';
+              } else {
+                value = '${tParts[0].padLeft(2, '0')}:${tParts[1].padLeft(2, '0')}:${tParts[2].padLeft(2, '0')}';
+              }
+            } else if (tParts.length == 2) {
+              value = '${tParts[0].padLeft(2, '0')}:${tParts[1].padLeft(2, '0')}:00';
+            } else {
+              value = rawValue;
+            }
+            valueIndex++;
+          } else if (valueIndex + 2 < parts.length) {
             String hh = parts[valueIndex].trim().padLeft(2, '0');
             String mm = parts[valueIndex + 1].trim().padLeft(2, '0');
             String ss = parts[valueIndex + 2].trim().padLeft(2, '0');
@@ -279,7 +310,6 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
             valueIndex++;
           }
         } else if (setting.widgetType == SettingWidgetType.phone) {
-          // Consume 2 parts for country code and number
           if (valueIndex + 1 < parts.length) {
             String cc = parts[valueIndex].trim();
             String num = parts[valueIndex + 1].trim();
@@ -293,17 +323,16 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
             valueIndex++;
           }
         } else {
-          String rawValue = parts[valueIndex].trim();
           if (setting.widgetType == SettingWidgetType.toggle) {
-            value = (rawValue == '1') ? 'ON' : 'OF'; // Map 1/0 to ON/OF
+            value = (rawValue == '1' || rawValue.toUpperCase() == 'ON') ? 'ON' : 'OF';
           } else {
             value = rawValue;
           }
           valueIndex++;
         }
 
-        if (value.isNotEmpty) {
-          return setting.copyWith(valueInHw: value);
+        if (value.isNotEmpty && !value.contains(';')) {
+          return setting.copyWith(value: value, valueInHw: value);
         }
         return setting;
       }).toList();

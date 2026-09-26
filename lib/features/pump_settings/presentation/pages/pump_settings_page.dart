@@ -22,6 +22,7 @@ import '../../domain/entities/template_json_entity.dart';
 import '../../utils/pump_settings_images.dart';
 import '../bloc/pump_setting_view_state.dart';
 import '../bloc/pump_settings_state.dart';
+import '../cubit/pump_settings_cubit.dart';
 import '../cubit/pump_settings_view_response_cubit.dart';
 
 class PumpSettingsPage extends StatelessWidget {
@@ -1002,7 +1003,7 @@ class _PhoneInputState extends State<_PhoneInput> {
             ),
             onChanged: (phone) => widget.onChanged(phone.completeNumber),
           ),
-          Text(widget.setting.valueInHw.isEmpty ? '' : '     Last Updated Value : ${widget.setting.valueInHw}', style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12),),        ],
+          Text((widget.setting.valueInHw.isEmpty || widget.setting.valueInHw.contains(';')) ? '' : '     Last Updated Value : ${widget.setting.valueInHw}', style: TextStyle(color: Theme.of(context).primaryColor, fontSize: 12),),        ],
       ),
     );
   }

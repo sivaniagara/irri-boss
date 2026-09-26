@@ -70,7 +70,9 @@ class SettingListTile extends StatelessWidget {
         title,
         style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.bold),
       ),
-      subtitle: valueInHw.isEmpty ? null : Text('Last Updated Value : $valueInHw', style: TextStyle(color: Theme.of(dialogContext).primaryColor, fontSize: 12),),
+      subtitle: (valueInHw.isEmpty || valueInHw.contains(';'))
+          ? null
+          : Text('Last Updated Value : $valueInHw', style: TextStyle(color: Theme.of(dialogContext).primaryColor, fontSize: 12),),
       trailing: IntrinsicWidth(child: trailingWidget),
       onTap: onTap,
       minTileHeight: 45,
