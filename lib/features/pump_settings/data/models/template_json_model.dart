@@ -72,7 +72,7 @@ class SettingsModel extends SettingsEntity {
       serialNumber: entity.serialNumber,
       widgetType: entity.widgetType,
       value: entity.value,
-      valueInHw: '',
+      valueInHw: entity.valueInHw,
       smsFormat: entity.smsFormat,
       title: entity.title,
       hiddenFlag: entity.hiddenFlag,

@@ -13,7 +13,7 @@ class SmsPayloadBuilder {
       SettingWidgetType.phone => _buildPhonePayload(setting, value, deviceId),
       SettingWidgetType.multiTime || SettingWidgetType.multiText => _buildMultiTimePayload(setting, value),
       SettingWidgetType.toggle when setting.title == 'DND' => _buildDndPayload(setting),
-      SettingWidgetType.nothing when setting.title.toLowerCase().contains('date') => _buildDateTimePayload(setting, isWlc: modelId != null && AppConstants.isWlc(modelId)),
+      SettingWidgetType.nothing when setting.title.toLowerCase().contains('date') => _buildDateTimePayload(setting, isWlc: modelId != null && (AppConstants.isWlc(modelId) || AppConstants.isPumpPro(modelId))),
       _ => _buildDefaultPayload(setting, value),
     };
   }
