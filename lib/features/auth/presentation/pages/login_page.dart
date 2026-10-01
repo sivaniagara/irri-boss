@@ -55,9 +55,14 @@ class LoginPage extends StatelessWidget {
                       const SizedBox(height: 24),
                       // 🔹 Illustration
                       Center(
-                        child: !state.useOtpLogin ? Image.asset("assets/images/common/login.png",
-                          height: 200,) : Image.asset("assets/images/common/otp_login.png",
-                          height: !state.useOtpLogin ? 200 : 250,
+                        child: !state.useOtpLogin
+                            ? Image.asset(
+                          "assets/images/common/login.png",
+                          height: 200,
+                        )
+                            : Image.asset(
+                          "assets/images/common/otp_login.png",
+                          height: 250,
                         ),
                       ),
 
@@ -78,25 +83,25 @@ class LoginPage extends StatelessWidget {
                                 controller: state.phoneController,
                                 initialCountryCode: 'IN',
                                 decoration: InputDecoration(
-                                  hintText: "Mobile Number", // 👈 use hint instead of label
+                                  hintText: "Mobile Number",
                                   filled: true,
                                   fillColor: Colors.white,
-                                  contentPadding:
-                                  const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-
+                                  contentPadding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 14),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(color: Colors.grey.shade300),
+                                    borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
                                   ),
-
                                   enabledBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide(color: Colors.grey.shade300),
+                                    borderSide:
+                                    BorderSide(color: Colors.grey.shade300),
                                   ),
-
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
-                                    borderSide: const BorderSide(color: Colors.blue),
+                                    borderSide:
+                                    const BorderSide(color: Colors.blue),
                                   ),
                                 ),
                                 onCountryChanged: (country) {
@@ -112,48 +117,16 @@ class LoginPage extends StatelessWidget {
                           ),
                         ),
                       ),
-                      // 🔹 Password
 
+                      // 🔹 Password
                       if (!state.useOtpLogin) ...[
                         const Text(
                           "Password",
                           style: TextStyle(fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(height: 8),
-                        TextFormField(
-                          controller: state.passwordController,
-                          obscureText: true,
-                          keyboardType: TextInputType.text,
-                          decoration: InputDecoration(
-                            hintText: "Enter password",
-                            suffixIcon: const Icon(Icons.visibility_off, size: 20),
-                            filled: true,
-                            fillColor: Colors.white,
-                            contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
-                            ),
-
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(color: Colors.grey.shade300),
-                            ),
-
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Colors.blue),
-                            ),
-                          ),
-                          validator: (value) =>
-                          value == null || value.isEmpty
-                              ? 'Please enter your password'
-                              : null,
-                        ),
+                        _PasswordField(controller: state.passwordController),
                       ],
-
 
                       if (state.errorMessage != null) ...[
                         const SizedBox(height: 12),
@@ -163,7 +136,6 @@ class LoginPage extends StatelessWidget {
                               color: Colors.red, fontWeight: FontWeight.w500),
                         ),
                       ],
-
 
                       const SizedBox(height: 10),
 
@@ -235,9 +207,12 @@ class LoginPage extends StatelessWidget {
                         child: OutlinedButton.icon(
                           onPressed: cubit.toggleLoginMode,
                           icon: const Icon(Icons.lock_outline),
-                          label:  Text(!state.useOtpLogin ? "Continue with OTP Verification" : "Continue with UserID ",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ) ,
+                          label: Text(
+                            !state.useOtpLogin
+                                ? "Continue with OTP Verification"
+                                : "Continue with UserID ",
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
                           style: OutlinedButton.styleFrom(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -251,13 +226,59 @@ class LoginPage extends StatelessWidget {
               },
             ),
           ),
-
         ),
-
       ),
     );
   }
+}
 
+/// Password field with a working show/hide toggle.
+class _PasswordField extends StatefulWidget {
+  final TextEditingController controller;
 
+  const _PasswordField({required this.controller});
 
+  @override
+  State<_PasswordField> createState() => _PasswordFieldState();
+}
+
+class _PasswordFieldState extends State<_PasswordField> {
+  bool _obscure = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      controller: widget.controller,
+      obscureText: _obscure,
+      keyboardType: TextInputType.visiblePassword,
+      decoration: InputDecoration(
+        hintText: "Enter password",
+        suffixIcon: IconButton(
+          icon: Icon(
+            _obscure ? Icons.visibility_off : Icons.visibility,
+            size: 20,
+          ),
+          onPressed: () => setState(() => _obscure = !_obscure),
+        ),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding:
+        const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: Colors.blue),
+        ),
+      ),
+      validator: (value) =>
+      value == null || value.isEmpty ? 'Please enter your password' : null,
+    );
+  }
 }

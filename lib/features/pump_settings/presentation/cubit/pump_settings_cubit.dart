@@ -19,6 +19,8 @@ import '../bloc/pump_settings_state.dart';
 
 import 'package:niagara_smart_drip_irrigation/core/utils/log.dart';
 
+import '../../domain/usecsases/view_payload_parser.dart';
+
 class PumpSettingsCubit extends Cubit<PumpSettingsState> {
   final GetPumpSettingsUsecase getPumpSettingsUsecase;
   final SendPumpSettingsUsecase sendPumpSettingsUsecase;
@@ -26,6 +28,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
 
   MenuItemEntity? twoPhaseMenuItem;
   int selectedPump = 1;
+  int? currentModelId;
 
   PumpSettingsCubit({
     required this.getPumpSettingsUsecase,
@@ -71,6 +74,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     required int menuId,
     required int modelId,
   }) async {
+    currentModelId = modelId;
     selectedPump = 1;
     // ✅ Always reset and fetch fresh for each menu navigation
     emit(GetPumpSettingsInitial());
@@ -84,8 +88,8 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     ));
 
     result.fold(
-      (failure) => emit(GetPumpSettingsError(message: failure.message)),
-      (menuItem) {
+          (failure) => emit(GetPumpSettingsError(message: failure.message)),
+          (menuItem) {
         final updatedSections = menuItem.template.sections.map((section) {
           final updatedSettings = section.settings.map((setting) {
             return setting;
@@ -107,23 +111,23 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
   }
 
   void updateSettingValue(
-    String newValue,
-    int sectionIndex,
-    int settingIndex, {
-    bool isHiddenFlag = false,
-    bool isPump2 = false,
-    int? userId,
-    int? subUserId,
-    int? controllerId,
-  }) {
+      String newValue,
+      int sectionIndex,
+      int settingIndex, {
+        bool isHiddenFlag = false,
+        bool isPump2 = false,
+        int? userId,
+        int? subUserId,
+        int? controllerId,
+      }) {
     if (state is! GetPumpSettingsLoaded) return;
     final currentLoadedState = state as GetPumpSettingsLoaded;
     final menuItemEntity = currentLoadedState.settings;
 
     final targetSections =
-        (isPump2 && menuItemEntity.template.p2Sections.isNotEmpty)
-            ? menuItemEntity.template.p2Sections
-            : menuItemEntity.template.sections;
+    (isPump2 && menuItemEntity.template.p2Sections.isNotEmpty)
+        ? menuItemEntity.template.p2Sections
+        : menuItemEntity.template.sections;
 
     final newSections = List<SettingSectionEntity>.from(targetSections);
     final targetSection = newSections[sectionIndex];
@@ -201,9 +205,9 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
 
     newSections[sectionIndex] = targetSection.copyWith(settings: newSettings);
     final newTemplate =
-        (isPump2 && menuItemEntity.template.p2Sections.isNotEmpty)
-            ? menuItemEntity.template.copyWith(p2Sections: newSections)
-            : menuItemEntity.template.copyWith(sections: newSections);
+    (isPump2 && menuItemEntity.template.p2Sections.isNotEmpty)
+        ? menuItemEntity.template.copyWith(p2Sections: newSections)
+        : menuItemEntity.template.copyWith(sections: newSections);
     final newMenuItem = menuItemEntity.copyWith(template: newTemplate);
 
     if (menuItemEntity.menu.menuSettingId == 502) {
@@ -225,38 +229,140 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     final current = state as GetPumpSettingsLoaded;
     final menuItem = current.settings;
 
+    // Special parsing for Pump Pro and WLC models (they use index,value; format)
+    if (currentModelId != null &&
+        (AppConstants.isPumpPro(currentModelId!) ||
+            AppConstants.isWlc(currentModelId!))) {
+      final wlcValues = ViewPayloadParser.parseIndexed(message);
 
-    String cleanMessage = message;
-    if (cleanMessage.startsWith('{') && cleanMessage.endsWith('}')) {
-      cleanMessage = cleanMessage.substring(1, cleanMessage.length - 1);
-      int lastComma = cleanMessage.lastIndexOf(',');
-      if (lastComma != -1) {
-        cleanMessage = cleanMessage.substring(0, lastComma);
+      if (wlcValues != null && wlcValues.isNotEmpty) {
+        final allSettings =
+        menuItem.template.sections.expand((s) => s.settings).toList();
+        final int visibleSlots = allSettings
+            .where((s) => _isSettingVisible(menuItem, s, currentModelId!))
+            .length;
+        final int maxIdx = wlcValues.keys.fold<int>(0, (m, k) => k > m ? k : m);
+
+        // Hardware may number every setting (incl. hidden ones) or only the
+        // visible ones. If it sent more slots than we have visible settings,
+        // hidden settings own a slot too, so they must consume an index.
+        final bool useAllSlots = maxIdx > visibleSlots;
+        kdebugmode('view parse: maxIdx=$maxIdx visible=$visibleSlots '
+            'total=${allSettings.length} useAllSlots=$useAllSlots '
+            'values=$wlcValues');
+
+        int slot = 1;
+        final updatedSections = menuItem.template.sections.map((section) {
+          final updatedSettings = section.settings.map((setting) {
+            final visible =
+            _isSettingVisible(menuItem, setting, currentModelId!);
+            if (!visible && !useAllSlots) return setting;
+
+            final String? rawValue = wlcValues[slot];
+            slot++;
+
+            if (!visible) return setting; // slot consumed, value not shown
+
+            if (rawValue != null && rawValue.isNotEmpty) {
+              String value = rawValue;
+              if (setting.widgetType == SettingWidgetType.toggle) {
+                value = (rawValue == '1' || rawValue.toUpperCase() == 'ON')
+                    ? 'ON'
+                    : 'OF';
+              } else if (setting.widgetType == SettingWidgetType.multiText || 
+                         setting.widgetType == SettingWidgetType.multiTime) {
+                value = rawValue.replaceAll(',', ';');
+              }
+              return setting.copyWith(value: value, valueInHw: value);
+            }
+            return setting;
+          }).toList();
+          return section.copyWith(settings: updatedSettings);
+        }).toList();
+
+        emit(GetPumpSettingsLoaded(
+          settings: menuItem.copyWith(
+            template: menuItem.template.copyWith(sections: updatedSections),
+          ),
+        ));
+        return;
       }
     }
 
-    List<String> parts = cleanMessage.split(',');
+    String cleanMessage = message.trim();
+    if (cleanMessage.startsWith('{')) {
+      cleanMessage = cleanMessage.substring(1);
+    }
+    if (cleanMessage.endsWith('}')) {
+      cleanMessage = cleanMessage.substring(0, cleanMessage.length - 1);
+    }
+
+    List<String> rawParts = cleanMessage.split(',');
+    if (rawParts.length > 1) {
+      final last = rawParts.last.trim();
+      if (RegExp(r'^[0-9a-fA-F]{4}$').hasMatch(last)) {
+        rawParts.removeLast();
+      }
+    }
+
+    List<String> parts = [];
+    for (var p in rawParts) {
+      if (p.contains(';')) {
+        final subParts = p.split(';');
+        for (var sub in subParts) {
+          if (sub.trim().isNotEmpty) {
+            parts.add(sub.trim());
+          }
+        }
+      } else {
+        parts.add(p.trim());
+      }
+    }
+
     if (parts.isEmpty) {
       kdebugmode('onViewMessageReceived: payload too short, ignoring');
       return;
     }
 
-    String command = parts[0].trim().toUpperCase();
-    int valueIndex = 1;
+    String firstPart = parts[0].trim().toUpperCase();
+    final knownCommands = [
+      'DELAY',
+      'TIMER',
+      'SUMP',
+      'CURRENT',
+      'VOLTAGE',
+      'SMS',
+      'COMMUNICATION',
+      'STATUS_CHECK',
+      'NUM_REG',
+      'OTHER',
+      'NOTIFICATION'
+    ];
+
+    bool isKnownCommand = knownCommands.contains(firstPart);
+    int valueIndex = 0;
     bool isPump2Payload = selectedPump == 2;
 
-    if (['DELAY', 'TIMER', 'SUMP', 'CURRENT'].contains(command)) {
-      if (parts.length > 1) {
-        String pumpNum = parts[1].trim();
-        isPump2Payload = (pumpNum == '2');
-      }
+    if (isKnownCommand) {
+      valueIndex = 1;
+      bool hasPumpNumber = (currentModelId != null && AppConstants.isIrrigationLive(currentModelId!)) &&
+          ['DELAY', 'TIMER', 'SUMP', 'CURRENT'].contains(firstPart);
 
+      if (hasPumpNumber) {
+        if (parts.length > 1) {
+          String pumpNum = parts[1].trim();
+          isPump2Payload = (pumpNum == '2');
+        }
+        valueIndex = 2;
+      }
+    } else {
+      valueIndex = 0;
     }
 
     final targetSections =
-        (isPump2Payload && menuItem.template.p2Sections.isNotEmpty)
-            ? menuItem.template.p2Sections
-            : menuItem.template.sections;
+    (isPump2Payload && menuItem.template.p2Sections.isNotEmpty)
+        ? menuItem.template.p2Sections
+        : menuItem.template.sections;
 
     final updatedSections = targetSections.map((section) {
       final updatedSettings = section.settings.map((setting) {
@@ -264,12 +370,43 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
           return setting;
         }
 
+        String rawValue = parts[valueIndex].trim();
+        if (RegExp(r'^\d+:').hasMatch(rawValue)) {
+          rawValue = rawValue.replaceFirst(RegExp(r'^\d+:'), '').trim();
+        }
+
         String value = '';
         if (setting.widgetType == SettingWidgetType.time ||
             setting.widgetType == SettingWidgetType.multiTime ||
             setting.value.contains(':')) {
-          // consume 3 parts for HH, MM, SS
-          if (valueIndex + 2 < parts.length) {
+          if (rawValue.contains(':')) {
+            final tParts = rawValue.split(':');
+            if (tParts.length >= 3) {
+              String hh = tParts[0].padLeft(2, '0');
+              String mm = tParts[1].padLeft(2, '0');
+              String ss = tParts[2].padLeft(2, '0');
+              value = '$hh:$mm:$ss';
+            } else if (tParts.length == 2) {
+              String hh = tParts[0].padLeft(2, '0');
+              String mm = tParts[1].padLeft(2, '0');
+              value = '$hh:$mm:00';
+            } else {
+              value = rawValue;
+            }
+            valueIndex++;
+          } else if (valueIndex + 4 < parts.length &&
+              (parts[valueIndex + 5] == '0' ||
+                  parts[valueIndex + 5] == '1' ||
+                  parts[valueIndex + 5].toUpperCase() == 'OFF' ||
+                  parts[valueIndex + 5].toUpperCase() == 'OF' ||
+                  parts[valueIndex + 5].toUpperCase() == 'ON' ||
+                  valueIndex + 5 == parts.length)) {
+            String hh = parts[valueIndex].trim().padLeft(2, '0');
+            String mm = parts[valueIndex + 1].trim().padLeft(2, '0');
+            String ss = parts[valueIndex + 2].trim().padLeft(2, '0');
+            value = '$hh:$mm:$ss';
+            valueIndex += 5;
+          } else if (valueIndex + 2 < parts.length) {
             String hh = parts[valueIndex].trim().padLeft(2, '0');
             String mm = parts[valueIndex + 1].trim().padLeft(2, '0');
             String ss = parts[valueIndex + 2].trim().padLeft(2, '0');
@@ -279,7 +416,6 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
             valueIndex++;
           }
         } else if (setting.widgetType == SettingWidgetType.phone) {
-          // Consume 2 parts for country code and number
           if (valueIndex + 1 < parts.length) {
             String cc = parts[valueIndex].trim();
             String num = parts[valueIndex + 1].trim();
@@ -293,17 +429,16 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
             valueIndex++;
           }
         } else {
-          String rawValue = parts[valueIndex].trim();
           if (setting.widgetType == SettingWidgetType.toggle) {
-            value = (rawValue == '1') ? 'ON' : 'OF'; // Map 1/0 to ON/OF
+            value = (rawValue == '1' || rawValue.toUpperCase() == 'ON') ? 'ON' : 'OF';
           } else {
             value = rawValue;
           }
           valueIndex++;
         }
 
-        if (value.isNotEmpty) {
-          return setting.copyWith(valueInHw: value);
+        if (value.isNotEmpty && !value.contains(';')) {
+          return setting.copyWith(value: value, valueInHw: value);
         }
         return setting;
       }).toList();
@@ -312,15 +447,16 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     }).toList();
 
     final updatedTemplate =
-        (isPump2Payload && menuItem.template.p2Sections.isNotEmpty)
-            ? menuItem.template.copyWith(p2Sections: updatedSections)
-            : menuItem.template.copyWith(sections: updatedSections);
+    (isPump2Payload && menuItem.template.p2Sections.isNotEmpty)
+        ? menuItem.template.copyWith(p2Sections: updatedSections)
+        : menuItem.template.copyWith(sections: updatedSections);
 
     final updatedMenuItem = menuItem.copyWith(template: updatedTemplate);
 
     emit(GetPumpSettingsLoaded(settings: updatedMenuItem));
     kdebugmode('onViewMessageReceived: state updated from BLE');
   }
+
 
   void sendPumpSettingViewCommand({
     required String deviceId,
@@ -330,25 +466,25 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     String command = '';
     int menuSettingId = menuItemEntity.menu.menuSettingId;
 
-    if ([503, 532, 538].contains(menuSettingId)) {
+    if ([502, 532, 538].contains(menuSettingId)) {
       command = 'DELAY';
-    } else if ([533, 541].contains(menuSettingId)) {
+    } else if ([505, 533, 541].contains(menuSettingId)) {
       command = 'TIMER';
-    } else if ([534, 547].contains(menuSettingId)) {
+    } else if ([512, 534, 547].contains(menuSettingId)) {
       command = 'SUMP';
-    } else if ([535, 539].contains(menuSettingId)) {
+    } else if ([503, 535, 539].contains(menuSettingId)) {
       command = 'CURRENT';
-    } else if ([536, 540].contains(menuSettingId)) {
+    } else if ([504, 536, 540].contains(menuSettingId)) {
       command = 'VOLTAGE';
-    } else if ([542].contains(menuSettingId)) {
+    } else if ([506, 542].contains(menuSettingId)) {
       command = 'SMS';
-    } else if ([543].contains(menuSettingId)) {
+    } else if ([507, 543].contains(menuSettingId)) {
       command = 'COMMUNICATION';
-    } else if ([544].contains(menuSettingId)) {
+    } else if ([508, 544].contains(menuSettingId)) {
       command = 'STATUS_CHECK';
-    } else if ([545].contains(menuSettingId)) {
+    } else if ([509, 545].contains(menuSettingId)) {
       command = 'NUM_REG';
-    } else if ([537, 546].contains(menuSettingId)) {
+    } else if ([511, 537, 546].contains(menuSettingId)) {
       command = 'OTHER';
     } else if ([548].contains(menuSettingId)) {
       command = 'NOTIFICATION';
@@ -384,7 +520,8 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
 
     String payload = '${command}VIEW';
 
-    bool hasPumpNumber = ['delay', 'timer', 'sump', 'current'].contains(command.toLowerCase());
+    bool hasPumpNumber = AppConstants.isIrrigationLive(modelId) &&
+        ['delay', 'timer', 'sump', 'current'].contains(command.toLowerCase());
     if (hasPumpNumber) {
       payload += ',$selectedPump';
     }
@@ -401,27 +538,27 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
   }
 
   void sendCurrentSetting(
-    int sectionIndex,
-    int settingIndex,
-    String deviceId,
-    int userId,
-    int subUserId,
-    int controllerId,
-    MenuItemEntity menuItemEntity,
-    int modelId,
-    String menuName, {
-    bool isPump2 = false,
-  }) async {
+      int sectionIndex,
+      int settingIndex,
+      String deviceId,
+      int userId,
+      int subUserId,
+      int controllerId,
+      MenuItemEntity menuItemEntity,
+      int modelId,
+      String menuName, {
+        bool isPump2 = false,
+      }) async {
     emit(SettingSendingState(sectionIndex, settingIndex));
 
     final targetSections =
-        (isPump2 && menuItemEntity.template.p2Sections.isNotEmpty)
-            ? menuItemEntity.template.p2Sections
-            : menuItemEntity.template.sections;
+    (isPump2 && menuItemEntity.template.p2Sections.isNotEmpty)
+        ? menuItemEntity.template.p2Sections
+        : menuItemEntity.template.sections;
 
     final setting = (targetSections.isNotEmpty &&
-            sectionIndex < targetSections.length &&
-            settingIndex < targetSections[sectionIndex].settings.length)
+        sectionIndex < targetSections.length &&
+        settingIndex < targetSections[sectionIndex].settings.length)
         ? targetSections[sectionIndex].settings[settingIndex]
         : menuItemEntity.template.sections[0].settings[0];
 
@@ -450,7 +587,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
 
     try {
       final publishMessage =
-          jsonEncode(PublishMessageHelper.settingsPayload(payload));
+      jsonEncode(PublishMessageHelper.settingsPayload(payload));
       if (payload.isNotEmpty) {
         String finalPayload;
         if (sendFullSetting || AppConstants.isWlc(modelId)) {
@@ -477,12 +614,12 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       ));
 
       result.fold(
-        (failure) => emit(SettingsFailureState(
+            (failure) => emit(SettingsFailureState(
             message:
-                "${sendFullSetting ? menuName : setting.title} sending ${failure.message}")),
-        (message) => emit(SettingsSendSuccessState(
+            "${sendFullSetting ? menuName : setting.title} sending ${failure.message}")),
+            (message) => emit(SettingsSendSuccessState(
             message:
-                "${sendFullSetting ? menuName : setting.title} sent $message")),
+            "${sendFullSetting ? menuName : setting.title} sent $message")),
       );
     } catch (e) {
       emit(SettingsFailureState(
@@ -493,14 +630,14 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
   }
 
   String _buildWlcPayload(
-    MenuItemEntity menuItemEntity,
-    int sectionIndex,
-    int settingIndex,
-    dynamic setting,
-    String deviceId, {
-    bool isPump2 = false,
-    int modelId = 1,
-  }) {
+      MenuItemEntity menuItemEntity,
+      int sectionIndex,
+      int settingIndex,
+      dynamic setting,
+      String deviceId, {
+        bool isPump2 = false,
+        int modelId = 1,
+      }) {
     final title = setting.title.toString().toLowerCase();
     final menuTitle = menuItemEntity.menu.menuItem.toLowerCase();
     if (title.contains('date') || menuTitle.contains('date')) {
@@ -511,25 +648,25 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     int menuSettingId = menuItemEntity.menu.menuSettingId;
 
     String command = '';
-    if ([503, 532, 538].contains(menuSettingId)) {
+    if ([502, 532, 538].contains(menuSettingId)) {
       command = 'DELAY';
-    } else if ([533, 541].contains(menuSettingId)) {
+    } else if ([505, 533, 541].contains(menuSettingId)) {
       command = 'TIMER';
-    } else if ([534, 547].contains(menuSettingId)) {
+    } else if ([512, 534, 547].contains(menuSettingId)) {
       command = 'SUMP';
-    } else if ([535, 539].contains(menuSettingId)) {
+    } else if ([503, 535, 539].contains(menuSettingId)) {
       command = 'CURRENT';
-    } else if ([536, 540].contains(menuSettingId)) {
+    } else if ([504, 536, 540].contains(menuSettingId)) {
       command = 'VOLTAGE';
-    } else if ([542].contains(menuSettingId)) {
+    } else if ([506, 542].contains(menuSettingId)) {
       command = 'SMS';
-    } else if ([543].contains(menuSettingId)) {
+    } else if ([507, 543].contains(menuSettingId)) {
       command = 'COMMUNICATION';
-    } else if ([544].contains(menuSettingId)) {
+    } else if ([508, 544].contains(menuSettingId)) {
       command = 'STATUS_CHECK';
-    } else if ([545].contains(menuSettingId)) {
+    } else if ([509, 545].contains(menuSettingId)) {
       command = 'NUM_REG';
-    } else if ([537, 546].contains(menuSettingId)) {
+    } else if ([511, 537, 546].contains(menuSettingId)) {
       command = 'OTHER';
     } else if ([548].contains(menuSettingId)) {
       command = 'NOTIFICATION';
@@ -565,46 +702,36 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
       payload.add(command);
     }
 
-    bool hasPumpNumber = ['delay', 'timer', 'sump', 'current'].contains(command.toLowerCase());
+    bool hasPumpNumber = AppConstants.isIrrigationLive(modelId) &&
+        ['delay', 'timer', 'sump', 'current'].contains(command.toLowerCase());
     if (hasPumpNumber) {
       payload.add(isPump2 ? '2' : '1');
     }
 
     final targetSections =
-        (isPump2 && menuItemEntity.template.p2Sections.isNotEmpty)
-            ? menuItemEntity.template.p2Sections
-            : menuItemEntity.template.sections;
+    (isPump2 && menuItemEntity.template.p2Sections.isNotEmpty)
+        ? menuItemEntity.template.p2Sections
+        : menuItemEntity.template.sections;
 
     for (var category in targetSections) {
       for (var categorySetting in category.settings) {
-        if (!_isSettingVisible(menuItemEntity, categorySetting, modelId)) {
-          continue;
-        }
-
         if (categorySetting.value == 'OF') {
           payload.add('0');
         } else if (categorySetting.value == 'ON') {
           payload.add('1');
         } else if (categorySetting.value.contains(":") ||
             categorySetting.value.contains(";")) {
-          
-          // Filter sub-values if this is a multi-value setting (e.g. Cyclic Timer motors)
-          final visibleVals = _getVisibleValues(menuItemEntity, categorySetting, modelId);
-          String combined = visibleVals.join(';');
 
-          payload.add(combined
+          payload.add(categorySetting.value
               .replaceAll(':', ',')
               .replaceAll(';', ',')
               .replaceAll(RegExp(r'\s+'), ''));
         } else if (categorySetting.widgetType == SettingWidgetType.phone) {
-          print("categorySetting.value : ${categorySetting.value}");
           final phone = PhoneNumber.fromCompleteNumber(
               completeNumber: categorySetting.value);
-          print("phone : $phone");
           payload.add(categorySetting.value.isEmpty
               ? ","
               : "+${phone.countryCode},${phone.number}");
-          print("payload : ${payload}");
         } else {
           payload.add(categorySetting.value.toString());
         }
@@ -616,9 +743,9 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
 
   List<String> _getVisibleValues(MenuItemEntity menu, SettingsEntity setting, int modelId) {
     if (!setting.value.contains(';')) {
-       return [setting.value];
+      return [setting.value];
     }
-    
+
     final titleParts = setting.title.trim().isEmpty ? <String>[] : setting.title.split(';').map((e) => e.trim()).toList();
     final valueParts = setting.value.trim().isEmpty ? <String>[] : setting.value.split(';').map((e) => e.trim()).toList();
     final hiddenParts = setting.hiddenFlag.trim().isEmpty ? <String>[] : setting.hiddenFlag.split(';').map((e) => e.trim()).toList();
@@ -628,7 +755,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     if (hiddenParts.length > maxCount) maxCount = hiddenParts.length;
 
     bool isVisibleFlag(String flag) => flag.trim().isNotEmpty && flag.trim() != "0";
-    
+
     if (menu.menu.menuSettingId == 505) {
       final combinedText = '${setting.title} ${setting.smsFormat}'.toLowerCase();
       if ((combinedText.contains('motor') || combinedText.contains('pump')) && maxCount > 1) {
@@ -643,13 +770,13 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
         List<String> visibleValues = [];
         for (int i = 0; i < maxCount; i++) {
           if (i < hiddenFlags.length && isVisibleFlag(hiddenFlags[i])) {
-             visibleValues.add(i < valueParts.length ? valueParts[i] : "");
+            visibleValues.add(i < valueParts.length ? valueParts[i] : "");
           }
         }
         return visibleValues;
       }
     }
-    
+
     return valueParts;
   }
 
@@ -709,8 +836,8 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
           modelId: modelId));
 
       result.fold(
-        (failure) => emit(SettingsFailureState(message: failure.message)),
-        (message) => emit(SettingsSendSuccessState(message: message)),
+            (failure) => emit(SettingsFailureState(message: failure.message)),
+            (message) => emit(SettingsSendSuccessState(message: message)),
       );
     } catch (e) {
       emit(SettingsFailureState(

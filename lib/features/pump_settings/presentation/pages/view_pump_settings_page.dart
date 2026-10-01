@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:niagara_smart_drip_irrigation/core/widgets/glass_effect.dart';
+import 'package:niagara_smart_drip_irrigation/features/pump_settings/domain/usecsases/view_payload_parser.dart';
 import '../../../../core/di/injection.dart' as di;
 import '../../../../core/services/mqtt/app_message_dispatcher.dart';
 import '../../utils/pump_settings_dispatcher.dart';
@@ -114,7 +115,16 @@ class _ViewPumpSettingsView extends StatelessWidget {
             return const Center(child: Text("No available templates"));
           }
 
-          final List<String> allValues = state.settingsJson!.split(',');
+          List<String> allValues = [];
+          final wlcMap = ViewPayloadParser.parseIndexed(state.settingsJson!);
+          if (wlcMap != null) {
+            final maxIdx = wlcMap.keys.fold<int>(0, (m, k) => k > m ? k : m);
+            for (int i = 1; i <= maxIdx; i++) {
+              allValues.add(wlcMap[i] ?? '');
+            }
+          } else {
+            allValues = state.settingsJson!.split(',');
+          }
 
           final List<int> templateSettingCounts = [];
           for (final template in filteredLabels) {
@@ -206,9 +216,12 @@ class _ViewPumpSettingsView extends StatelessWidget {
               final int startOffset = cumulativeOffsets[selectedIndex];
               final int settingsCount = templateSettingCounts[selectedIndex];
 
-              final List<String> templateValues = settingsCount > 0
-                  ? allValues.sublist(startOffset, startOffset + settingsCount)
-                  : <String>[];
+              final List<String> templateValues = List<String>.generate(
+                settingsCount,
+                    (i) => (startOffset + i) < allValues.length
+                    ? allValues[startOffset + i]
+                    : '',
+              );
 
               final selectedTemplate = filteredLabels[selectedIndex];
               final int currentMenuSettingId =
@@ -395,7 +408,11 @@ class _ViewPumpSettingsView extends StatelessWidget {
 
     if (data['TT'].contains(';')) {
       final ttItems = data['TT'].split(';');
-      final valueItems = value.split(data['WT'] == 7 ? ':' : ';');
+      
+      // Hardware sends multi-values separated by comma, but UI expects ; or :
+      final delim = data['WT'] == 7 ? ':' : ';';
+      final String normalizedValue = value.replaceAll(',', delim);
+      final valueItems = normalizedValue.split(delim);
 
       // Determine the maximum length to avoid index errors
       final maxLength = ttItems.length > valueItems.length

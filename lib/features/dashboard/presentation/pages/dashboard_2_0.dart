@@ -530,26 +530,34 @@ class _Dashboard20State extends State<Dashboard20> {
                   color: Theme.of(context).colorScheme.primary),
             ),
             Text(
-              // !AppConstants.isWlc(controllerEntity.modelId) ?
-              // controllerEntity.msgDesc :
-              getMotorMessage(liveMessageEntity.wlcReasonFlag),
+              !AppConstants.isWlc(controllerEntity.modelId)
+                  ? (liveMessageEntity.fullMessage.isNotEmpty ? liveMessageEntity.msgDesc : '')
+                  : (liveMessageEntity.wlcReasonFlag.isNotEmpty ? getMotorMessage(liveMessageEntity.wlcReasonFlag) : ''),
               style: const TextStyle(fontSize: 16, color: Color(0xff424242)),
             ),
-            ReadMoreText(
-              controllerEntity.ctrlLatestMsg,
-              trimLines: 2,
-              trimMode: TrimMode.Line,
-              trimCollapsedText: ' Show more',
-              trimExpandedText: ' Show less',
-              style: const TextStyle(fontSize: 16, color: Color(0xff424242)),
-              moreStyle: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor),
-              lessStyle: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor),
+            Builder(
+              builder: (context) {
+                final String msg = liveMessageEntity.fullMessage;
+                if (msg.isEmpty || _isRawDataPacket(msg)) {
+                  return const SizedBox.shrink();
+                }
+                return ReadMoreText(
+                  msg,
+                  trimLines: 2,
+                  trimMode: TrimMode.Line,
+                  trimCollapsedText: ' Show more',
+                  trimExpandedText: ' Show less',
+                  style: const TextStyle(fontSize: 16, color: Color(0xff424242)),
+                  moreStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor),
+                  lessStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor),
+                );
+              },
             )
           ],
         ),
@@ -647,11 +655,15 @@ class _Dashboard20State extends State<Dashboard20> {
                    liveMessageEntity.phase.toUpperCase().contains('2'))
               ? rybWidget(
                   backgroundColor: const Color(0xff6C8DB7),
-                  value: liveMessageEntity.brVoltage != '0' &&
-                          liveMessageEntity.brVoltage != '--' &&
-                          liveMessageEntity.brVoltage.isNotEmpty
-                      ? liveMessageEntity.brVoltage
-                      : liveMessageEntity.rVoltage,
+                  value: liveMessageEntity.ryVoltage != '0' &&
+                          liveMessageEntity.ryVoltage != '--' &&
+                          liveMessageEntity.ryVoltage.isNotEmpty
+                      ? liveMessageEntity.ryVoltage
+                      : liveMessageEntity.brVoltage != '0' &&
+                              liveMessageEntity.brVoltage != '--' &&
+                              liveMessageEntity.brVoltage.isNotEmpty
+                          ? liveMessageEntity.brVoltage
+                          : liveMessageEntity.rVoltage,
                   phase: 'RB Phase',
                   isFullWidth: true,
                 )
@@ -1166,25 +1178,36 @@ class _Dashboard20State extends State<Dashboard20> {
               icon: Icon(Icons.message,
                   color: Theme.of(context).colorScheme.primary),
             ),
-            Text(controllerEntity.msgDesc,
+            Text(
+                liveMessageEntity.fullMessage.isNotEmpty
+                    ? liveMessageEntity.msgDesc
+                    : '',
                 style: const TextStyle(
                     fontSize: 16, color: Color(0xff424242))),
-            ReadMoreText(
-              controllerEntity.ctrlLatestMsg,
-              trimLines: 2,
-              trimMode: TrimMode.Line,
-              trimCollapsedText: ' Show more',
-              trimExpandedText: ' Show less',
-              style:
-              const TextStyle(fontSize: 16, color: Color(0xff424242)),
-              moreStyle: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor),
-              lessStyle: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor),
+            Builder(
+              builder: (context) {
+                final String msg = liveMessageEntity.fullMessage;
+                if (msg.isEmpty || _isRawDataPacket(msg)) {
+                  return const SizedBox.shrink();
+                }
+                return ReadMoreText(
+                  msg,
+                  trimLines: 2,
+                  trimMode: TrimMode.Line,
+                  trimCollapsedText: ' Show more',
+                  trimExpandedText: ' Show less',
+                  style:
+                  const TextStyle(fontSize: 16, color: Color(0xff424242)),
+                  moreStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor),
+                  lessStyle: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).primaryColor),
+                );
+              },
             )
           ],
         ),
@@ -1358,7 +1381,7 @@ class _Dashboard20State extends State<Dashboard20> {
                         _motorWithTimer(
                           isOn: isMotor1On,
                           onDelayTimer: liveMessageEntity.onDelayTimer,
-                          isActive: liveMessageEntity.isMotor1OnDelayActive,
+                          isActive: AppConstants.isPumpPro(controllerEntity.modelId) ? liveMessageEntity.isMotor1OnDelayActive : false,
                           width: 70,
                         ),
                         const SizedBox(width: 12),
@@ -2152,6 +2175,17 @@ class _WlcBleScreenState extends State<_WlcBleScreen>
   }
 }
 
+bool _isRawDataPacket(String msg) {
+  if (msg.isEmpty) return true;
+  final trimmed = msg.trim();
+  if (trimmed.contains(',') && RegExp(r'^[0-9,\.\-\s]+$').hasMatch(trimmed)) {
+    return true;
+  }
+  if (RegExp(r'^[0-9]+\s*,\s*[0-9]').hasMatch(trimmed) && trimmed.split(',').length > 3) {
+    return true;
+  }
+  return false;
+}
 
 String getMotorMessage(String reason) {
   switch (reason) {

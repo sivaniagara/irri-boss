@@ -296,6 +296,19 @@ abstract class MessageDispatcher {
 
 
 class MqttMessageHelper {
+  static String _extractViewString(Map<String, dynamic> json) {
+    if (json.containsKey('cM') && json['cM'].toString().isNotEmpty) {
+      return json['cM'].toString();
+    }
+    for (var entry in json.entries) {
+      if (!['cC', 'mC', 'cD', 'cT', 'rF', 'mM'].contains(entry.key) &&
+          entry.value.toString().isNotEmpty) {
+        return entry.value.toString();
+      }
+    }
+    return json.values.isNotEmpty ? json.values.first.toString() : '';
+  }
+
   static Future<void> processMessage(
       String mqttMsg, {
         required MessageDispatcher dispatcher,
@@ -316,13 +329,14 @@ class MqttMessageHelper {
               processMessage(splitPayload[0], dispatcher: dispatcher);
             }else{
               debugPrint("pump view setting updated..");
-              dispatcher.onNewViewSettings('', wlcLivePayload.values.first);
+              dispatcher.onNewViewSettings('', _extractViewString(wlcLivePayload));
             }
           }
         }
       }catch(e, stackTrace){
         debugPrint('wlc payload formation error : $e');
-        debugPrint('wlc payload formation stackTrace : $stackTrace');
+        debugPrint(''
+            'wlc payload formation stackTrace : $stackTrace');
       }
     }else{
       Map<String, dynamic> jsonObject = {};
@@ -334,7 +348,7 @@ class MqttMessageHelper {
       try {
         jsonObject = jsonDecode(mqttMsg);
         if(!jsonObject.containsKey('cC')){
-          dispatcher.onNewViewSettings('', jsonObject[jsonObject.keys.first]);
+          dispatcher.onNewViewSettings('', _extractViewString(jsonObject));
         }
         typeStr = (jsonObject['mC'] ?? '').toString().trim();
         qrCode = (jsonObject['cC'] ?? '').toString().trim();
@@ -362,7 +376,12 @@ class MqttMessageHelper {
       final String ct = (jsonObject['cT']?.toString() ?? '').isNotEmpty
           ? jsonObject['cT'].toString()
           : defaultCt;
-      String cl = (jsonObject['cL'] ?? '').toString();
+      String cl = (jsonObject['cL'] ?? '').toString().trim();
+      if (cl.startsWith(r'$L,')) {
+        cl = cl.substring(3).trim();
+      } else if (cl.contains(r'$L,')) {
+        cl = cl.replaceAll(r'$L,', '').trim();
+      }
 
       if (kDebugMode) {
         kdebugmode('Extracted Data -> Date: $cd, Time: $ct');

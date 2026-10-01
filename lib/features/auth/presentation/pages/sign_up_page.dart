@@ -324,7 +324,7 @@ class _UserProfileFormBodyState extends State<_UserProfileFormBody> {
 
                 _buildField(address1Ctrl, 'Address Line 1', Icons.home),
                 const SizedBox(height: 16),
-                _buildField(address2Ctrl, 'Address Line 2 (Optional)', Icons.home),
+                _buildField(address2Ctrl, 'Address Line 2 ', Icons.home),
                 const SizedBox(height: 16),
                 _buildField(townCtrl, 'Town', Icons.location_on),
                 const SizedBox(height: 16),
@@ -380,9 +380,9 @@ class _UserProfileFormBodyState extends State<_UserProfileFormBody> {
                 const SizedBox(height: 16),
                 _buildField(postalCodeCtrl, 'Postal Code', Icons.mail),
                 const SizedBox(height: 16),
-                _buildField(altPhoneCtrl, 'Alternate Phone (Optional)', Icons.phone),
+                _buildField(altPhoneCtrl, 'Alternate Phone ', Icons.phone),
                 const SizedBox(height: 16),
-                _buildField(emailCtrl, 'Email (Optional)', Icons.email,
+                _buildField(emailCtrl, 'Email ', Icons.email,
                     keyboardType: TextInputType.emailAddress,
                     validator: (v) {
                       if (v!.isNotEmpty && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
