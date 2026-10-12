@@ -463,57 +463,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     required MenuItemEntity menuItemEntity,
     required int modelId,
   }) {
-    String command = '';
-    int menuSettingId = menuItemEntity.menu.menuSettingId;
-
-    if ([502, 532, 538].contains(menuSettingId)) {
-      command = 'DELAY';
-    } else if ([505, 533, 541].contains(menuSettingId)) {
-      command = 'TIMER';
-    } else if ([512, 534, 547].contains(menuSettingId)) {
-      command = 'SUMP';
-    } else if ([503, 535, 539].contains(menuSettingId)) {
-      command = 'CURRENT';
-    } else if ([504, 536, 540].contains(menuSettingId)) {
-      command = 'VOLTAGE';
-    } else if ([506, 542].contains(menuSettingId)) {
-      command = 'SMS';
-    } else if ([507, 543].contains(menuSettingId)) {
-      command = 'COMMUNICATION';
-    } else if ([508, 544].contains(menuSettingId)) {
-      command = 'STATUS_CHECK';
-    } else if ([509, 545].contains(menuSettingId)) {
-      command = 'NUM_REG';
-    } else if ([511, 537, 546].contains(menuSettingId)) {
-      command = 'OTHER';
-    } else if ([548].contains(menuSettingId)) {
-      command = 'NOTIFICATION';
-    }
-
-    if (command.isEmpty) {
-      final menuTitle = menuItemEntity.menu.menuItem.toLowerCase();
-      if (menuTitle.contains('delay'))
-        command = 'DELAY';
-      else if (menuTitle.contains('timer'))
-        command = 'TIMER';
-      else if (menuTitle.contains('sump'))
-        command = 'SUMP';
-      else if (menuTitle.contains('current'))
-        command = 'CURRENT';
-      else if (menuTitle.contains('voltage'))
-        command = 'VOLTAGE';
-      else if (menuTitle.contains('sms'))
-        command = 'SMS';
-      else if (menuTitle.contains('communication'))
-        command = 'COMMUNICATION';
-      else if (menuTitle.contains('other'))
-        command = 'OTHER';
-      else if (menuTitle.contains('notification'))
-        command = 'NOTIFICATION';
-      else
-        command = menuTitle.split(' ').first.toUpperCase();
-    }
-
+    String command = _resolveCommand(menuItemEntity);
     if (AppConstants.isIrrigationLive(modelId)) {
       command = command.toLowerCase();
     }
@@ -645,56 +595,7 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     }
     List<dynamic> payload = [];
 
-    int menuSettingId = menuItemEntity.menu.menuSettingId;
-
-    String command = '';
-    if ([502, 532, 538].contains(menuSettingId)) {
-      command = 'DELAY';
-    } else if ([505, 533, 541].contains(menuSettingId)) {
-      command = 'TIMER';
-    } else if ([512, 534, 547].contains(menuSettingId)) {
-      command = 'SUMP';
-    } else if ([503, 535, 539].contains(menuSettingId)) {
-      command = 'CURRENT';
-    } else if ([504, 536, 540].contains(menuSettingId)) {
-      command = 'VOLTAGE';
-    } else if ([506, 542].contains(menuSettingId)) {
-      command = 'SMS';
-    } else if ([507, 543].contains(menuSettingId)) {
-      command = 'COMMUNICATION';
-    } else if ([508, 544].contains(menuSettingId)) {
-      command = 'STATUS_CHECK';
-    } else if ([509, 545].contains(menuSettingId)) {
-      command = 'NUM_REG';
-    } else if ([511, 537, 546].contains(menuSettingId)) {
-      command = 'OTHER';
-    } else if ([548].contains(menuSettingId)) {
-      command = 'NOTIFICATION';
-    }
-
-    if (command.isEmpty) {
-      if (menuTitle.contains('delay'))
-        command = 'DELAY';
-      else if (menuTitle.contains('timer'))
-        command = 'TIMER';
-      else if (menuTitle.contains('sump'))
-        command = 'SUMP';
-      else if (menuTitle.contains('current'))
-        command = 'CURRENT';
-      else if (menuTitle.contains('voltage'))
-        command = 'VOLTAGE';
-      else if (menuTitle.contains('sms'))
-        command = 'SMS';
-      else if (menuTitle.contains('communication'))
-        command = 'COMMUNICATION';
-      else if (menuTitle.contains('other'))
-        command = 'OTHER';
-      else if (menuTitle.contains('notification'))
-        command = 'NOTIFICATION';
-      else
-        command = menuTitle.split(' ').first.toUpperCase();
-    }
-
+    String command = _resolveCommand(menuItemEntity);
     if (command.isNotEmpty) {
       if (AppConstants.isIrrigationLive(modelId)) {
         command = command.toLowerCase();
@@ -715,6 +616,12 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
 
     for (var category in targetSections) {
       for (var categorySetting in category.settings) {
+        // Skip static header/label strings like "CURRENTCAL/VOLTAGCAL"
+        final valStr = categorySetting.value.toString();
+        if (valStr.contains('/') || (valStr.toUpperCase() == categorySetting.title.toUpperCase())) {
+          continue;
+        }
+
         if (categorySetting.value == 'OF') {
           payload.add('0');
         } else if (categorySetting.value == 'ON') {
@@ -908,5 +815,62 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
     }
 
     kdebugmode("Device view settings received:\n$prettyString");
+  }
+
+  String _resolveCommand(MenuItemEntity menuItemEntity) {
+    final menuTitle = menuItemEntity.menu.menuItem.toLowerCase();
+    int menuSettingId = menuItemEntity.menu.menuSettingId;
+
+    // 1. Primary check: title matching (robust against backend ID shifts)
+    if (menuTitle.contains('delay')) {
+      return 'DELAY';
+    } else if (menuTitle.contains('timer')) {
+      return 'TIMER';
+    } else if (menuTitle.contains('sump')) {
+      return 'SUMP';
+    } else if (menuTitle.contains('current')) {
+      return 'CURRENT';
+    } else if (menuTitle.contains('voltage')) {
+      return 'VOLTAGE';
+    } else if (menuTitle.contains('communication')) {
+      return 'COMMUNICATION';
+    } else if (menuTitle.contains('status')) {
+      return 'STATUS_CHECK';
+    } else if (menuTitle.contains('number') || menuTitle.contains('reg')) {
+      return 'NUM_REG';
+    } else if (menuTitle.contains('other')) {
+      return 'OTHER';
+    } else if (menuTitle.contains('sms')) {
+      return 'SMS';
+    } else if (menuTitle.contains('notification')) {
+      return 'NOTIFICATION';
+    }
+
+    // 2. Fallback check: menuSettingId mapping
+    if ([502, 532, 538].contains(menuSettingId)) {
+      return 'DELAY';
+    } else if ([505, 533, 541].contains(menuSettingId)) {
+      return 'TIMER';
+    } else if ([512, 534, 547].contains(menuSettingId)) {
+      return 'SUMP';
+    } else if ([503, 535, 539].contains(menuSettingId)) {
+      return 'CURRENT';
+    } else if ([504, 536, 540].contains(menuSettingId)) {
+      return 'VOLTAGE';
+    } else if ([506, 542].contains(menuSettingId)) {
+      return 'SMS';
+    } else if ([507, 543].contains(menuSettingId)) {
+      return 'COMMUNICATION';
+    } else if ([508, 544].contains(menuSettingId)) {
+      return 'STATUS_CHECK';
+    } else if ([509, 545].contains(menuSettingId)) {
+      return 'NUM_REG';
+    } else if ([511, 537, 546].contains(menuSettingId)) {
+      return 'OTHER';
+    } else if ([548].contains(menuSettingId)) {
+      return 'NOTIFICATION';
+    }
+
+    return menuTitle.split(' ').first.toUpperCase();
   }
 }

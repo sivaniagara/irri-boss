@@ -542,7 +542,7 @@ class _SettingsListState extends State<_SettingsList> {
 
   @override
   Widget build(BuildContext context) {
-    final bool showPumpSelector = widget.menu.template.p2Sections.isNotEmpty || widget.modelId == 1;
+    final bool showPumpSelector = widget.menu.template.p2Sections.isNotEmpty || AppConstants.isDoublePumpLive(widget.modelId);
     final sections = (_selectedPump == 2 && widget.menu.template.p2Sections.isNotEmpty)
         ? widget.menu.template.p2Sections
         : widget.menu.template.sections;

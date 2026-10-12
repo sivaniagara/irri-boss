@@ -127,16 +127,7 @@ class _SendRevPageState extends State<SendRevPage> {
           }
 
           if (state is SendrevLoaded) {
-            final filteredMessages = state.messages.where((m) {
-              final text = m.ctrlMsg ?? "";
-              final bool isSpecialMessage = text.length > 4 &&
-                  text[3] == ':' &&
-                  ':'.allMatches(text).length > 4;
-
-              return showColonMessagesOnly
-                  ? isSpecialMessage
-                  : !isSpecialMessage;
-            }).toList();
+            final filteredMessages = state.messages;
 
             if (filteredMessages.isEmpty) {
               return const Center(
@@ -147,24 +138,30 @@ class _SendRevPageState extends State<SendRevPage> {
               );
             }
 
-            return ListView.builder(
-              itemCount: filteredMessages.length,
-              padding: const EdgeInsets.only(top: 10, bottom: 100),
-              itemBuilder: (context, index) {
-                final m = filteredMessages[index];
-
-                return ChatBubble(
-                  msg: SendrevDatum(
-                    date: m.date,
-                    msgType: m.msgType,
-                    ctrlMsg: m.ctrlMsg,
-                    ctrlDesc: m.ctrlDesc,
-                    status: m.status,
-                    msgCode: "",
-                    time: m.time,
-                  ),
-                );
+            return RefreshIndicator(
+              onRefresh: () async {
+                _loadInitialMessages();
               },
+              child: ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: filteredMessages.length,
+                padding: const EdgeInsets.only(top: 10, bottom: 100),
+                itemBuilder: (context, index) {
+                  final m = filteredMessages[index];
+
+                  return ChatBubble(
+                    msg: SendrevDatum(
+                      date: m.date,
+                      msgType: m.msgType,
+                      ctrlMsg: m.ctrlMsg,
+                      ctrlDesc: m.ctrlDesc,
+                      status: m.status,
+                      msgCode: "",
+                      time: m.time,
+                    ),
+                  );
+                },
+              ),
             );
           }
 

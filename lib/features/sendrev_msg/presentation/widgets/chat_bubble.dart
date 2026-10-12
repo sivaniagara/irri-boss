@@ -8,7 +8,8 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isSent = msg.msgType == "SENT";
+    final typeUpper = msg.msgType.trim().toUpperCase();
+    final isSent = typeUpper.contains("SENT") || typeUpper == "S" || typeUpper == "OUT";
     
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),

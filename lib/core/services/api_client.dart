@@ -65,13 +65,12 @@ class ApiClient {
         ...?headers,
       };
 
-      print("Request Method: $method | Endpoint: $endpoint");
-      kdebugmode("Request Body: $body");
-      // print("Encoded Body: ${jsonEncode(body)}");
-
       // Make the initial request
       final requestUri = Uri.parse('$baseUrl$endpoint');
-      print(requestUri);
+      print("🌐 [API REQUEST] $method -> $requestUri");
+      if (body != null) {
+        kdebugmode("📦 [API BODY] $body");
+      }
        final timeoutDuration = const Duration(seconds: 30);
       http.Response response;
       if (method.toUpperCase() == 'GET') {
@@ -106,6 +105,10 @@ class ApiClient {
   ) async {
     final statusCode = response.statusCode;
     final responseBody = response.body.isNotEmpty ? response.body : null;
+    print("📥 [API RESPONSE] [$statusCode] for $method $endpoint");
+    if (responseBody != null) {
+      kdebugmode("📄 [API DATA] $responseBody");
+    }
 
     if (statusCode >= 200 && statusCode < 300) {
       return responseBody != null ? jsonDecode(responseBody) : null;

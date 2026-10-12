@@ -52,7 +52,7 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
     try {
       final endPoint = buildUrl(
           AppConstants.isWlc(modelId) ? PumpSettingsUrls.getSettingsMenuForWlc : AppConstants.isPumpPro(modelId) ? PumpSettingsUrls.getSettingsMenuForPumpPro : PumpSettingsUrls.getSettingsMenu,
-          _baseParams(userId: userId, controllerId: controllerId, subuserId: 0)
+          _baseParams(userId: userId, controllerId: controllerId, subuserId: subuserId)
       );
       final response = await apiClient.get(endPoint);
       return handleListResponse<MenuItemModel>(response, fromJson: (json) => MenuItemModel.fromJson(json))
@@ -72,7 +72,7 @@ class PumpSettingsDataSourcesImpl implements PumpSettingsDataSources {
     try {
       final endPoint = buildUrl(
           AppConstants.isWlc(modelId) ? PumpSettingsUrls.getFinalMenuForWlc : AppConstants.isPumpPro(modelId) ? PumpSettingsUrls.getFinalMenuForPumpPro : PumpSettingsUrls.getFinalMenu,
-          _baseParams(userId: userId, controllerId: controllerId, subuserId: 0, menuId: menuId)
+          _baseParams(userId: userId, controllerId: controllerId, subuserId: subuserId, menuId: menuId)
       );
 
       final response = await apiClient.get(endPoint);
