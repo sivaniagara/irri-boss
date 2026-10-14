@@ -10,6 +10,7 @@ class AppConstants {
   static bool isPumpPro(int modelId) => {46}.contains(modelId);
   static bool sendFullSetting(int modelId) => true;
   static bool statusCheck(int menuId) => {544}.contains(menuId);
+  static bool numberRegistration(int menuId) => {509, 545}.contains(menuId);
 
   static String formatWlcDateTime([DateTime? dateTime]) {
     final dt = dateTime ?? DateTime.now();

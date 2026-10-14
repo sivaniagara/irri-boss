@@ -743,7 +743,7 @@ class _SettingRow extends StatelessWidget {
         children: [
           Expanded(child: _buildInput(context)),
           const SizedBox(width: 8),
-          if (!AppConstants.sendFullSetting(modelId) || AppConstants.statusCheck(menuItemEntity.menu.menuSettingId))
+          if (!AppConstants.sendFullSetting(modelId) || AppConstants.statusCheck(menuItemEntity.menu.menuSettingId) || AppConstants.numberRegistration(menuItemEntity.menu.menuSettingId))
             _SendButton(
               isSending: isSending,
               onPressed: () {

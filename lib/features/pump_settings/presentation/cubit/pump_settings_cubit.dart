@@ -512,8 +512,13 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
         ? targetSections[sectionIndex].settings[settingIndex]
         : menuItemEntity.template.sections[0].settings[0];
 
+    final bool isPhoneSetting = setting.widgetType == SettingWidgetType.phone;
+    final bool isNumReg = _resolveCommand(menuItemEntity) == 'NUM_REG' ||
+        AppConstants.numberRegistration(menuItemEntity.menu.menuSettingId) ||
+        isPhoneSetting;
     final bool sendFullSetting = (AppConstants.sendFullSetting(modelId) &&
-        !AppConstants.statusCheck(menuItemEntity.menu.menuSettingId));
+        !AppConstants.statusCheck(menuItemEntity.menu.menuSettingId) &&
+        !isNumReg);
 
     String payload;
 
@@ -588,6 +593,11 @@ class PumpSettingsCubit extends Cubit<PumpSettingsState> {
         bool isPump2 = false,
         int modelId = 1,
       }) {
+    int menuSettingId = menuItemEntity.menu.menuSettingId;
+    if ([509, 545].contains(menuSettingId) || _resolveCommand(menuItemEntity) == 'NUM_REG' || setting.widgetType == SettingWidgetType.phone) {
+      return SmsPayloadBuilder.build(setting, deviceId, modelId: modelId);
+    }
+
     final title = setting.title.toString().toLowerCase();
     final menuTitle = menuItemEntity.menu.menuItem.toLowerCase();
     if (title.contains('date') || menuTitle.contains('date')) {

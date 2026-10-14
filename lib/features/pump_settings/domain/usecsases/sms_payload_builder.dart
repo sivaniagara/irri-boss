@@ -62,6 +62,17 @@ class SmsPayloadBuilder {
         return "${parts[0]},+${phone.countryCode},${phone.number}";
       }
 
+      if (s.smsFormat.startsWith("SM#") || s.smsFormat.isEmpty || s.smsFormat.toUpperCase().contains("NUM_REG") || s.smsFormat.toUpperCase().contains("REG")) {
+        final String deviceSuffix = deviceId.length >= 4 ? deviceId.substring(deviceId.length - 4) : deviceId;
+        String prefix = "SM#$deviceSuffix";
+        if (s.smsFormat.startsWith("SM#")) {
+          if (parts.isNotEmpty && parts[0] != "SM#" && parts[0] != "SM") {
+            prefix = parts[0];
+          }
+        }
+        return "$prefix,+${phone.countryCode},${phone.number},$deviceId,1234";
+      }
+
       // Existing logic for other phone types, ensuring indices are valid
       List<String> resultParts = List.from(parts);
       while (resultParts.length < 3) {
